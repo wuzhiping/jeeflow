@@ -101,6 +101,16 @@ app = FastAPI(root_path= ("/jeeflow"), title="jeeflow api", version="0.1.0")
 # CORS——允许 jeeflow-ui (localhost:5173) 跨域直连
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
+from fastapi.staticfiles import StaticFiles
+app.mount(
+    "/ui/",
+    StaticFiles(
+        directory="ui/apps/demo/dist",
+        html=True,
+    ),
+    name="ui",
+)
+
 # ─── Helpers（boot2 CommonResult：code=0 成功 / 99999999 失败，字段 code/msg/data）──
 
 def _ok(data=None):

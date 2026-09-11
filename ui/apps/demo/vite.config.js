@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 
 export default defineConfig({
   plugins: [vue()],
+  base: "./",
   resolve: {
     alias: {
       // workspace 源码引用：ui-kit 改代码即时热更新（阶段 2 发布后换 npm 依赖）
