@@ -1,0 +1,14 @@
+{
+  "name": "jeeflow-ui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "jeeflow 流程中心 monorepo：@mldong/jeeflow-ui 组件包 + demo 演示站 + embed iframe 壳",
+  "scripts": {
+    "dev": "pnpm --filter @jeeflow/demo dev",
+    "build": "pnpm -r build",
+    "build:kit": "pnpm --filter @mldong/jeeflow-ui build",
+    "build:demo": "pnpm --filter @jeeflow/demo build"
+  },
+  "license": "Apache-2.0"
+}

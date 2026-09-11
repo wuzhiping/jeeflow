@@ -1,0 +1,108 @@
+<template>
+  <div class="jf-flow-viewer" ref="container">
+    <div v-if="!ready" class="jf-viewer-loading">加载设计器...</div>
+    <FlowDesigner
+      v-if="ready && localGraphData"
+      :value="localGraphData"
+      mode="dingtalk"
+      :viewer="true"
+      :high-light="highLight ?? undefined"
+      :assignee-text-data="assigneeTextData"
+      :theme="theme"
+      @on-init="onInit"
+    />
+    <div v-else-if="ready && !localGraphData" class="jf-viewer-empty">无流程图数据</div>
+    <!-- 高亮图例 -->
+    <div v-if="hasHighLight" class="jf-viewer-legend">
+      <span class="lg"><i class="lg-dot lg-active"></i>进行中</span>
+      <span class="lg"><i class="lg-dot lg-history"></i>已完成</span>
+      <span class="lg"><i class="lg-dot lg-idle"></i>未激活</span>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, watch, onMounted } from 'vue'
+import FlowDesigner from 'mldong-flow-designer-dingtalk'
+import 'mldong-flow-designer-dingtalk/lib/style.css'
+import type { FlowGraph, HighLightData, AssigneeTextRow } from '../types'
+
+defineOptions({ name: 'JfFlowViewer' })
+
+const props = withDefaults(defineProps<{
+  graphData?: FlowGraph | Record<string, any> | null
+  highLight?: HighLightData | Record<string, any> | null
+  /** 节点处理人回显（getAssigneeTextData，对齐 vben5 assignee-text-data） */
+  assigneeTextData?: AssigneeTextRow[] | null
+  /** 容器高度（默认铺满父容器） */
+  height?: string
+  /** 主题色覆盖（默认蓝） */
+  primaryColor?: string
+}>(), { height: '100%', primaryColor: '#1677ff', assigneeTextData: () => [] })
+
+const lfInstance = ref<any>(null)
+
+function applyAssigneeText() {
+  const rows = props.assigneeTextData
+  if (!rows?.length || !lfInstance.value) return
+  for (const item of rows) {
+    if (item?.value && item?.label) lfInstance.value.updateText?.(item.value, item.label)
+  }
+}
+
+function onInit(lf: any) {
+  lfInstance.value = lf
+  applyAssigneeText()
+}
+
+watch(() => props.assigneeTextData, applyAssigneeText, { deep: true })
+
+const ready = ref(false)
+const localGraphData = computed(() => props.graphData)
+const hasHighLight = computed(() =>
+  Boolean(props.highLight?.activeNodeNames?.length || props.highLight?.historyNodeNames?.length)
+)
+
+const theme = computed(() => ({
+  primaryColor: props.primaryColor,
+  edgePrimaryColor: props.primaryColor,
+  activeColor: '#fa8c16',
+  historyColor: '#52c41a',
+  backgroundColor: '#fafbfc',
+}))
+
+onMounted(() => {
+  setTimeout(() => (ready.value = true), 100)
+})
+</script>
+
+<style scoped>
+.jf-flow-viewer {
+  width: 100%;
+  height: v-bind(height);
+  min-height: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.jf-flow-viewer :deep(.ding-designer) {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+}
+.jf-viewer-loading, .jf-viewer-empty {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: #999; font-size: 14px;
+}
+.jf-viewer-legend {
+  display: flex; gap: 18px; justify-content: center;
+  padding: 8px 0 2px; font-size: 13px; color: #666;
+  flex-shrink: 0;
+}
+.lg { display: inline-flex; align-items: center; gap: 6px; }
+.lg-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.lg-active { background: #fa8c16; }
+.lg-history { background: #52c41a; }
+.lg-idle { background: #d9d9d9; }
+</style>

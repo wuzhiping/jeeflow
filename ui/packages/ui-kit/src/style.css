@@ -1,0 +1,202 @@
+/**
+ * @mldong/jeeflow-ui 全局样式（主题 tokens + 通用类）
+ * 宿主引入一次：import '@mldong/jeeflow-ui/dist/jeeflow-ui.css'
+ */
+
+/* 主题 tokens（钉钉风浅色办公风）——宿主可重定义覆盖（白标/主题色） */
+:root {
+  --jf-primary: #1677ff;
+  --jf-primary-soft: #e8f1ff;
+  --jf-success: #52c41a;
+  --jf-danger: #ff4d4f;
+  --jf-warn: #faad14;
+  --jf-text: #1f2937;
+  --jf-text-2: #4b5563;
+  --jf-muted: #9ca3af;
+  --jf-bg: #fff;
+  --jf-content-bg: #f5f7fa;
+  --jf-header-bg: #fff;
+  --jf-sider-bg: #fff;
+  --jf-hover: #f5f7fa;
+  --jf-border: #e8eaed;
+}
+
+.jf-page { padding: 20px 24px; }
+.jf-page-title {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 18px; font-weight: 600; margin: 0 0 16px; color: var(--jf-text, #1f1f1f);
+}
+.jf-group-title { font-size: 15px; font-weight: 600; color: #666; margin: 18px 0 10px; }
+.jf-card-group { margin-bottom: 8px; }
+.jf-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+.jf-card {
+  background: var(--jf-bg, #fff); border: 1px solid var(--jf-border, #f0f0f0);
+  border-radius: 10px; padding: 14px; cursor: pointer; transition: all .15s;
+}
+.jf-card:hover { box-shadow: 0 4px 14px rgba(0, 0, 0, .08); border-color: var(--jf-primary, #1677ff); }
+.jf-card-icon { font-size: 26px; margin-bottom: 8px; color: var(--jf-primary, #1677ff); display: flex; }
+.jf-card-name { font-size: 14px; font-weight: 600; color: var(--jf-text, #333); }
+.jf-card-remark { font-size: 12px; color: #999; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* 表格 */
+.jf-table { width: 100%; border-collapse: collapse; background: var(--jf-bg, #fff); border-radius: 8px; overflow: hidden; }
+.jf-table th, .jf-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--jf-border, #f0f0f0); font-size: 14px; }
+.jf-table th { background: var(--jf-hover, #fafafa); font-weight: 600; color: var(--jf-text-2, #555); }
+.jf-table tbody tr:hover { background: var(--jf-primary-soft, #fafcff); }
+.jf-row-flash { background: #fffbe6; }
+
+/* 按钮 */
+.jf-btn {
+  padding: 6px 14px; border-radius: 6px; border: 1px solid var(--jf-border, #d9d9d9);
+  background: #fff; color: var(--jf-text, #333); font-size: 13px; cursor: pointer; transition: all .15s;
+}
+.jf-btn:hover { border-color: var(--jf-primary, #1677ff); color: var(--jf-primary, #1677ff); }
+.jf-btn:disabled { opacity: .5; cursor: not-allowed; }
+.jf-btn--primary { background: var(--jf-primary, #1677ff); border-color: var(--jf-primary, #1677ff); color: #fff; }
+.jf-btn--primary:hover { opacity: .85; color: #fff; }
+.jf-btn--danger { color: #cf1322; border-color: #ffccc7; }
+.jf-btn--danger:hover { background: #fff1f0; color: #cf1322; border-color: #cf1322; }
+.jf-btn--ghost { background: transparent; }
+.jf-btn--sm { padding: 3px 10px; font-size: 12px; }
+.jf-btn-row { display: flex; gap: 6px; }
+
+/* 输入 */
+.jf-input {
+  width: 100%; padding: 7px 10px; border: 1px solid var(--jf-border, #d9d9d9);
+  border-radius: 6px; font-size: 13px; background: #fff; outline: none;
+}
+.jf-input:focus { border-color: var(--jf-primary, #1677ff); }
+.jf-form-item { margin-bottom: 14px; }
+.jf-form-row { display: flex; gap: 12px; }
+.jf-form-row .jf-form-item { flex: 1; }
+.jf-form-label { display: block; font-size: 13px; color: #555; margin-bottom: 6px; }
+
+/* 抽屉内动作栏 */
+.jf-drawer-actions {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding-top: 14px; margin-top: 14px; border-top: 1px solid var(--jf-border, #f0f0f0);
+}
+
+/* 详情 */
+.jf-detail-body { display: flex; flex-direction: column; height: 100%; min-height: 0; gap: 12px; }
+.jf-detail-body > .jf-tabs { flex: 1; min-height: 0; }
+.jf-detail-graph { flex: 1; min-height: 300px; border: 1px solid var(--jf-border, #f0f0f0); border-radius: 8px; overflow: hidden; }
+.jf-detail-meta { display: flex; gap: 20px; font-size: 13px; color: #666; margin: 12px 0; flex-wrap: wrap; }
+.jf-detail-actions { display: flex; gap: 8px; margin-bottom: 14px; }
+.jf-section-title { font-size: 14px; font-weight: 600; color: #555; margin: 16px 0 8px; }
+
+/* 状态 */
+.jf-loading { text-align: center; padding: 40px; color: #888; }
+.jf-empty { text-align: center; padding: 32px; color: #999; font-size: 13px; }
+.jf-muted { color: #888; font-size: 13px; }
+
+/* 分页 */
+.jf-pagination { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 16px 0; }
+
+/* 列表项（弹窗内选择） */
+.jf-list { display: flex; flex-direction: column; gap: 8px; }
+.jf-list-item {
+  padding: 10px 14px; border: 1px solid var(--jf-border, #f0f0f0); border-radius: 8px;
+  background: #fff; cursor: pointer; text-align: left; font-size: 14px; transition: all .15s;
+}
+.jf-list-item:hover { border-color: var(--jf-primary, #1677ff); color: var(--jf-primary, #1677ff); }
+
+/* 设计器页：编辑态铺满内容区，列表态仍随内容滚动 */
+.jf-page--full { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.jf-page--designing { overflow: hidden; padding-bottom: 0; }
+.jf-page--full .jf-page-title { flex-shrink: 0; }
+.jf-page--full .jf-designer-wrap { flex: 1; min-height: 0; }
+.jf-designer-wrap { display: flex; flex-direction: column; min-height: 0; }
+.jf-designer-bar {
+  display: flex; align-items: center; gap: 10px; padding: 12px 20px;
+  background: var(--jf-bg, #fff); border-bottom: 1px solid var(--jf-border, #f0f0f0);
+  flex-shrink: 0;
+}
+.jf-designer-body {
+  flex: 1; min-height: 0; background: #fafbfc; position: relative;
+  display: flex; flex-direction: column;
+}
+.jf-designer-body > * { flex: 1; min-height: 0; height: 100%; }
+
+/* 轻量 toast（toast.ts DOM 注入） */
+.jf-toast-host {
+  position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+  z-index: 3000; display: flex; flex-direction: column; align-items: center; gap: 8px;
+  pointer-events: none;
+}
+.jf-toast {
+  padding: 8px 18px; border-radius: 8px; font-size: 13px; line-height: 1.5;
+  color: #fff; background: rgba(0, 0, 0, .75); box-shadow: 0 4px 14px rgba(0, 0, 0, .15);
+  animation: jf-toast-in .18s ease-out;
+}
+.jf-toast--success { background: var(--jf-success, #52c41a); }
+.jf-toast--error { background: var(--jf-danger, #ff4d4f); }
+.jf-toast--info { background: rgba(0, 0, 0, .75); }
+@keyframes jf-toast-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+textarea.jf-input { resize: vertical; font-family: inherit; }
+
+/* SchemaForm */
+.jf-schema-form { display: flex; flex-wrap: wrap; gap: 0 16px; }
+.jf-schema-form .jf-form-item { width: 100%; }
+.jf-req { color: var(--jf-danger, #ff4d4f); margin-left: 2px; }
+.jf-form-error { font-size: 12px; color: var(--jf-danger, #ff4d4f); margin-top: 4px; }
+.jf-input:disabled, textarea.jf-input:disabled, select.jf-input:disabled {
+  background: var(--jf-hover, #f5f7fa); color: var(--jf-text-2, #4b5563); cursor: not-allowed;
+}
+
+/* 表单只读明细（自定义表单 view 模式） */
+.jf-detail-text { font-size: 14px; color: var(--jf-text, #1f1f1f); line-height: 1.6; word-break: break-all; }
+
+/* Tabs */
+.jf-tabs { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.jf-tabs__nav {
+  display: flex; gap: 4px; border-bottom: 1px solid var(--jf-border, #e8eaed);
+  flex-shrink: 0; margin-bottom: 12px;
+}
+.jf-tabs__tab {
+  padding: 8px 16px; border: none; background: transparent; cursor: pointer;
+  font-size: 14px; color: var(--jf-text-2, #4b5563); border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.jf-tabs__tab:hover { color: var(--jf-primary, #1677ff); }
+.jf-tabs__tab--active {
+  color: var(--jf-primary, #1677ff); font-weight: 600;
+  border-bottom-color: var(--jf-primary, #1677ff);
+}
+.jf-tabs__body {
+  flex: 1; min-height: 0; overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.jf-tabs__body > * {
+  flex: 1; min-height: 0; overflow: auto;
+  display: flex; flex-direction: column;
+}
+
+/* Timeline */
+.jf-timeline { list-style: none; margin: 0; padding: 0 0 0 12px; }
+.jf-timeline__item {
+  position: relative; padding: 0 0 16px 20px;
+  border-left: 2px solid var(--jf-border, #e8eaed);
+}
+.jf-timeline__item:last-child { border-left-color: transparent; padding-bottom: 0; }
+.jf-timeline__dot {
+  position: absolute; left: -7px; top: 4px; width: 12px; height: 12px;
+  border-radius: 50%; background: #d9d9d9; border: 2px solid #fff;
+}
+.jf-timeline__dot--doing { background: #faad14; }
+.jf-timeline__dot--done { background: #52c41a; }
+.jf-timeline__dot--reject { background: #ff4d4f; }
+.jf-timeline__dot--info { background: #1677ff; }
+.jf-timeline__head { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+.jf-timeline__meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 4px; font-size: 13px; }
+
+/* Drawer tab panes：流程图铺满 Tab 剩余高度（不再写死 52vh/480px） */
+.jf-pane-flow {
+  flex: 1; min-height: 280px; height: 100%;
+  border: 1px solid var(--jf-border, #f0f0f0); border-radius: 8px; overflow: hidden;
+}
+.jf-approve-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }

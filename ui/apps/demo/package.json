@@ -1,0 +1,23 @@
+{
+  "name": "@jeeflow/demo",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "jeeflow 演示站（薄壳：消费 @mldong/jeeflow-ui）",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@mldong/jeeflow-ui": "workspace:*",
+    "mldong-flow-designer-dingtalk": "^3.1.1",
+    "vue": "^3.4.30",
+    "vue-router": "^4.4.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.5",
+    "vite": "^5.3.1"
+  },
+  "license": "Apache-2.0"
+}

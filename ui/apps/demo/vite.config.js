@@ -1,0 +1,29 @@
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import { fileURLToPath } from 'node:url'
+
+export default defineConfig({
+  plugins: [vue()],
+  resolve: {
+    alias: {
+      // workspace 源码引用：ui-kit 改代码即时热更新（阶段 2 发布后换 npm 依赖）
+      '@mldong/jeeflow-ui': fileURLToPath(new URL('../../packages/ui-kit/src/index.ts', import.meta.url)),
+    },
+  },
+  server: {
+    port: 5173,
+    proxy: {
+      // 开发环境：相对路径代理到本地后端，rewrite 去掉前缀
+      '/python-api': {
+        target: 'http://localhost:8101/jeeflow',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/python-api/, ''),
+      },
+      '/jeeflow': {
+        target: 'http://localhost:8101/jeeflow',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/jeeflow/, ''),
+      },        
+    },
+  },
+})

@@ -1,0 +1,112 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font: 16px/1.7 system-ui, -apple-system, sans-serif; background: #f0f2f5; color: #333; }
+main { max-width: 1280px; margin: 24px auto; padding: 0 16px; }
+
+/* Cards */
+.card { background: #fff; border-radius: 10px; padding: 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+.card h2 { font-size: 17px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+
+/* Stats */
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+.stat { text-align: center; padding: 20px; background: #fff; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+.stat .num { font-size: 34px; font-weight: 700; color: #1677ff; }
+.stat .label { font-size: 14px; color: #666; margin-top: 4px; }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid #e8e8e8; font-size: 14px; }
+th { background: #fafafa; font-weight: 600; color: #444; }
+
+/* Buttons */
+.btn { padding: 8px 18px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all .2s; }
+.btn-primary { background: #1677ff; color: #fff; }
+.btn-primary:hover { background: #4096ff; }
+.btn-danger { background: #ff4d4f; color: #fff; }
+.btn-danger:hover { background: #ff7875; }
+.btn-sm { padding: 4px 12px; font-size: 13px; }
+.btn-ghost { background: transparent; border: 1px solid #d9d9d9; color: #555; }
+.btn-ghost:hover { border-color: #1677ff; color: #1677ff; }
+
+/* Badges */
+.badge { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 13px; font-weight: 600; }
+.badge-doing { background: #e6f4ff; color: #1677ff; }
+.badge-done { background: #f6ffed; color: #389e0d; }
+.badge-reject { background: #fff2f0; color: #d4380d; }
+
+/* Forms */
+input, select, textarea { padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 14px; width: 100%; transition: border-color .2s; }
+input:focus, select:focus { border-color: #1677ff; outline: none; box-shadow: 0 0 0 2px rgba(22,119,255,.1); }
+.form-row { display: flex; gap: 12px; align-items: center; }
+.form-row label { width: 80px; text-align: right; flex-shrink: 0; font-size: 14px; color: #555; }
+
+/* Toast */
+.toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 14px 30px; border-radius: 8px; color: #fff; font-size: 15px; z-index: 200; opacity: 0; transition: opacity .3s; pointer-events: none; }
+.toast.show { opacity: 1; }
+.toast.success { background: #52c41a; }
+.toast.error { background: #ff4d4f; }
+
+/* Modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 100; display: flex; justify-content: center; align-items: center; }
+.modal { background: #fff; border-radius: 12px; width: 900px; max-width: 95vw; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
+.modal-header { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f0f0; flex-shrink: 0; }
+.modal-header h3 { margin: 0; font-size: 17px; }
+.modal-body { flex: 1; overflow: auto; }
+
+/* User tabs */
+.user-tabs { display: flex; gap: 0; margin-left: auto; }
+.user-tab { padding: 4px 12px; border: 1px solid #d9d9d9; background: #fafafa; color: #555; cursor: pointer; font-size: 13px; transition: .2s; }
+.user-tab:first-child { border-radius: 4px 0 0 4px; }
+.user-tab:last-child { border-radius: 0 4px 4px 0; }
+.user-tab:not(:first-child) { margin-left: -1px; }
+.user-tab:hover { color: #1677ff; background: #e6f4ff; }
+.user-tab.active { background: #1677ff; color: #fff; border-color: #1677ff; z-index: 1; position: relative; }
+
+/* ── 演示辅助（issues/11）── */
+
+/* 操作行高亮：被处理行橙色闪烁 0.9s */
+@keyframes rowFlash {
+  0% { background: #fff7e6; }
+  50% { background: #ffe7ba; }
+  100% { background: #fff; }
+}
+.row-flash { animation: rowFlash .9s ease; }
+
+/* 列表刷新淡入 */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.fade-in { animation: fadeIn .18s ease; }
+
+/* 演示模式：全局字号 +2px（录屏专用） */
+body.demo-mode { font-size: 18px; }
+body.demo-mode main { max-width: 1340px; }
+
+/* 顶部步骤提示条（演示模式开启时） */
+.demo-step {
+  position: sticky; top: 0; z-index: 150;
+  background: linear-gradient(90deg, #1677ff, #4096ff);
+  color: #fff; text-align: center; padding: 8px 16px;
+  font-size: 15px; font-weight: 600; letter-spacing: .5px;
+  box-shadow: 0 2px 8px rgba(22,119,255,.3);
+}
+
+/* Header 动作按钮（重置/演示模式） */
+.header-actions { display: flex; align-items: center; gap: 8px; }
+.btn-demo { background: #fa8c16; color: #fff; }
+.btn-demo:hover { background: #ffa940; }
+.btn-demo.active { outline: 2px solid #ffd591; }
+
+/* Toast 升级：图标 + 关键操作大字号 */
+.toast .toast-icon { margin-right: 6px; font-weight: 700; }
+.toast.big { font-size: 18px; padding: 16px 34px; }
+
+/* ── 功能补齐（issues/12）── */
+
+/* Stats 联动 */
+.stat.clickable { cursor: pointer; transition: all .15s; }
+.stat.clickable:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.1); }
+
+/* 动态表单 */
+.dyn-form { margin-top: 14px; padding: 14px 16px; background: #fafafa; border: 1px dashed #d9d9d9; border-radius: 8px; }
+.dyn-form-title { font-size: 13px; color: #666; margin-bottom: 10px; }
+.dyn-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.dyn-field label { display: block; font-size: 13px; color: #555; margin-bottom: 4px; }
+.dyn-field .req { color: #ff4d4f; margin-left: 2px; }
