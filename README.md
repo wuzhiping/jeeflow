@@ -1,4 +1,4 @@
-# UI
+# UI (可以略过)
 * cd ui
 * pnpm install
 * pnpm dev
