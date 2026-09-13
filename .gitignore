@@ -2,6 +2,5 @@ __pycache__/
 .ipynb_checkpoints/
 .venv/
 node_modules/
-dist/
 .DS_Store
 *.local

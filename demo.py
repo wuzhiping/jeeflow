@@ -14,6 +14,28 @@ DEMO_USERS = {
     "boss": ("钱七", "总经理"),
 }
 
+# 四端统一同一套 4 个角色（与 assignment-handler 流程的角色码对齐）
+DEMO_ROLES = {
+    "engineer": "工程师",
+    "leader": "组长",
+    "manager": "经理",
+    "director": "总监",
+}
+
+# 四端统一同一套字典项（请假类型 / 流程类型）：{value,label}[] 形态，宿主按 code 拉取
+DEMO_DICTS = {
+    "wf_leave_type": [
+        {"value": "annual", "label": "年假"},
+        {"value": "sick", "label": "病假"},
+        {"value": "personal", "label": "事假"},
+    ],
+    "wf_process_type": [
+        {"value": "oa", "label": "OA"},
+        {"value": "hr", "label": "人事"},
+        {"value": "finance", "label": "财务"},
+    ],
+}
+
 def demo_user_map(uid: str) -> dict:
     real_name, post_name = DEMO_USERS.get(uid, ("用户" + uid, "工程师"))
     return {"userId": uid, "realName": real_name, "deptId": "D01", "deptName": "研发部",

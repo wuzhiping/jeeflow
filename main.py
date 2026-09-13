@@ -60,7 +60,7 @@ repo = MemoryRepository()
 ext_repo = MemoryExtRepository()  # 扩展仓储（内存实现）：流程设计/历史/委托
 idgen = SnowflakeIDGen()
 
-from demo import SimpleUserProvider, DemoOrgUserProvider, demo_user_search
+from demo import SimpleUserProvider, DemoOrgUserProvider, demo_user_search, DEMO_USERS, DEMO_ROLES, DEMO_DICTS
 user_prov = SimpleUserProvider()
 org_prov = DemoOrgUserProvider()
 
@@ -209,6 +209,44 @@ async def api_stats(userId: str = "user1"):
     tasks = [t for t in repo.all_tasks() if t.taskState == TaskState.DOING and userId in repo._actors.get(t.id, [])]
     insts = [i for i in repo.all_instances() if i.operator == userId]
     return _ok({"todoCount": len(tasks), "myInstanceCount": len(insts)})
+
+
+@app.post("/api/users")
+async def api_users(request: Request):
+    """演示用户列表（与四后端同一套 8 个具名用户）：body.keyword 可选模糊检索"""
+    body = await request.json() if await request.body() else {}
+    keyword = str(body.get("keyword") or "").strip().lower()
+    rows = []
+    for uid, (real_name, post_name) in DEMO_USERS.items():
+        if keyword and keyword not in uid.lower() and keyword not in real_name.lower():
+            continue
+        rows.append({
+            "userId": uid, "realName": real_name,
+            "deptId": "D01", "deptName": "研发部",
+            "postId": "P01", "postName": post_name,
+        })
+    return _ok(rows)
+
+
+@app.post("/api/roles")
+async def api_roles(request: Request):
+    """演示角色列表（与四后端同一套 4 个角色）：body.keyword 可选模糊检索"""
+    body = await request.json() if await request.body() else {}
+    keyword = str(body.get("keyword") or "").strip().lower()
+    rows = []
+    for role_id, role_name in DEMO_ROLES.items():
+        if keyword and keyword not in role_id.lower() and keyword not in role_name.lower():
+            continue
+        rows.append({"roleId": role_id, "roleName": role_name})
+    return _ok(rows)
+
+
+@app.post("/api/dicts")
+async def api_dicts(request: Request):
+    """演示字典全集（与四后端同一套 wf_* 字典）：返回 [{code, items:[{value,label}]}]，前端按 code 索引缓存"""
+    rows = [{"code": code, "items": list(items)} for code, items in DEMO_DICTS.items()]
+    return _ok(rows)
+
 
 if __name__ == "__main__":
     import uvicorn

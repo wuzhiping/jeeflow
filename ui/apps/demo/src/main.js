@@ -4,36 +4,86 @@ import { createJeeflowUi, JeeflowUiKey } from '@mldong/jeeflow-ui'
 import ApplyForm from './forms/apply-form.vue'
 import ExpenseForm from './forms/expense-form.vue'
 
-// 演示用户（与四后端同一套 8 个具名用户）
-export const DEMO_USERS = [
-  { userId: 'user1', realName: '张三', deptName: '研发部', postName: '工程师' },
-  { userId: 'userA', realName: '孙倩', deptName: '研发部', postName: '工程师' },
-  { userId: 'userB', realName: '周明', deptName: '研发部', postName: '工程师' },
-  { userId: 'userC', realName: '吴婷', deptName: '研发部', postName: '工程师' },
-  { userId: 'leader', realName: '李四', deptName: '研发部', postName: '组长' },
-  { userId: 'manager', realName: '王五', deptName: '研发部', postName: '经理' },
-  { userId: 'director', realName: '赵六', deptName: '研发部', postName: '总监' },
-  { userId: 'boss', realName: '钱七', deptName: '研发部', postName: '总经理' },
-]
+// 演示用户（与四后端同一套 8 个具名用户）：启动时从后端 /api/users 拉取，本地缓存复用
+export const DEMO_USERS = []
 
-const DEMO_ROLES = [
-  { roleId: 'engineer', roleName: '工程师' },
-  { roleId: 'leader', roleName: '组长' },
-  { roleId: 'manager', roleName: '经理' },
-  { roleId: 'director', roleName: '总监' },
-]
+function currentBaseUrl() {
+  return localStorage.getItem('jeeflow_backend')
+    || import.meta.env.VITE_BACKEND_PYTHON
+    || '/jeeflow'
+}
 
-const DEMO_DICTS = {
-  wf_leave_type: [
-    { value: 'annual', label: '年假' },
-    { value: 'sick', label: '病假' },
-    { value: 'personal', label: '事假' },
-  ],
-  wf_process_type: [
-    { value: 'oa', label: 'OA' },
-    { value: 'hr', label: '人事' },
-    { value: 'finance', label: '财务' },
-  ],
+let usersPromise = null
+export function fetchUsers() {
+  if (usersPromise) return usersPromise
+  usersPromise = fetch(`${currentBaseUrl()}/api/users`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+  })
+    .then((r) => r.json())
+    .then((res) => {
+      const list = Array.isArray(res?.data) ? res.data : []
+      DEMO_USERS.splice(0, DEMO_USERS.length, ...list)
+      return DEMO_USERS
+    })
+    .catch((e) => {
+      console.error('fetch /api/users failed:', e)
+      return DEMO_USERS
+    })
+  return usersPromise
+}
+fetchUsers()
+
+const DEMO_ROLES = []
+
+let rolesPromise = null
+function fetchRoles() {
+  if (rolesPromise) return rolesPromise
+  rolesPromise = fetch(`${currentBaseUrl()}/api/roles`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+  })
+    .then((r) => r.json())
+    .then((res) => {
+      const list = Array.isArray(res?.data) ? res.data : []
+      DEMO_ROLES.splice(0, DEMO_ROLES.length, ...list)
+      return DEMO_ROLES
+    })
+    .catch((e) => {
+      console.error('fetch /api/roles failed:', e)
+      return DEMO_ROLES
+    })
+  return rolesPromise
+}
+fetchRoles()
+
+const DEMO_DICTS = {}
+
+let dictsPromise = null
+function fetchDict(code) {
+  if (DEMO_DICTS[code]) return Promise.resolve(DEMO_DICTS[code])
+  if (!dictsPromise) {
+    dictsPromise = fetch(`${currentBaseUrl()}/api/dicts`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    })
+      .then((r) => r.json())
+      .then((res) => {
+        const list = Array.isArray(res?.data) ? res.data : []
+        for (const row of list) {
+          if (row?.code) DEMO_DICTS[row.code] = Array.isArray(row.items) ? row.items : []
+        }
+        return DEMO_DICTS
+      })
+      .catch((e) => {
+        console.error('fetch /api/dicts failed:', e)
+        return DEMO_DICTS
+      })
+  }
+  return dictsPromise.then(() => DEMO_DICTS[code] || [])
 }
 
 function filterByKw(list, keyword, keys) {
@@ -51,10 +101,10 @@ const jeeflowUi = createJeeflowUi({
   getToken: () => null,
   hasPermission: () => true, // demo 无权限体系：全放行（宿主接入时按 wf:{action} 权限码判断）
   adapters: {
-    listUsers: async (keyword) => filterByKw(DEMO_USERS, keyword, ['userId', 'realName']),
-    getUsersByIds: async (ids) => DEMO_USERS.filter((u) => ids.includes(u.userId)),
-    listRoles: async (keyword) => filterByKw(DEMO_ROLES, keyword, ['roleId', 'roleName']),
-    getDict: async (code) => DEMO_DICTS[code] || [],
+    listUsers: async (keyword) => filterByKw(await fetchUsers(), keyword, ['userId', 'realName']),
+    getUsersByIds: async (ids) => (await fetchUsers()).filter((u) => ids.includes(u.userId)),
+    listRoles: async (keyword) => filterByKw(await fetchRoles(), keyword, ['roleId', 'roleName']),
+    getDict: async (code) => fetchDict(code),
     // demo 无真实存储：返回可识别的占位 path（宿主应上传后回真实 url）
     upload: async (file) => `demo://${file.name}`,
   },
