@@ -410,12 +410,13 @@ async def lifespan(app: FastAPI):
     _wrap_facade_flow(facade, repo)
 
     try:
-        n = await load_seed(repo)
-        print(f"[main_pg] loaded {n} process definitions from {FLOWS_DIR}")
-        await _populate_define_ordinal_cache(repo)
-        print(f"[main_pg] define ordinal cache: {len(_DEFINE_ORDINAL_CACHE)}")
-        await seed_business(facade)
-        print("[main_pg] seed_business done")
+        pass
+        # n = await load_seed(repo)
+        # print(f"[main_pg] loaded {n} process definitions from {FLOWS_DIR}")
+        # await _populate_define_ordinal_cache(repo)
+        # print(f"[main_pg] define ordinal cache: {len(_DEFINE_ORDINAL_CACHE)}")
+        # await seed_business(facade)
+        # print("[main_pg] seed_business done")
     except Exception as e:
         print(f"[main_pg] startup seed failed: {e!r}（PG 可能未就绪或表未建）", file=sys.stderr)
 
