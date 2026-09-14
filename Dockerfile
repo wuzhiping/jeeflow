@@ -12,7 +12,7 @@ COPY . .
 
 # 安装 Python 依赖
 RUN uv sync --frozen
-
+RUN uv pip install jeeflow[postgres]
 # 服务端口
 EXPOSE 8101
 
