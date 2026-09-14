@@ -8,3 +8,15 @@
 * uv run main.py
 
 # http://localhost:8101/jeeflow/ui/
+
+```
+# sqlite:Memory for DEV
+from jeeflow import MemoryRepository
+repo = MemoryRepository()
+
+# PostgreSQL（pip install jeeflow[postgres]）
+import asyncpg
+from jeeflow import JdbcRepository, PostgresAdapter
+pool = await asyncpg.create_pool("postgresql://root:pwd@127.0.0.1/jeeflow")
+repo = JdbcRepository(PostgresAdapter(pool))
+```
