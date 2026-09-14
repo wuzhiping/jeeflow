@@ -3,7 +3,7 @@
 * pnpm install
 * pnpm dev
 * pnpm build:demo
-  
+
 # API (aio)
 * uv run main.py
 

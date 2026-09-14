@@ -1,8 +1,11 @@
 """jeeflow FastAPI demo —— boot2 接口规范对齐"""
 import asyncio
 import json
+import mimetypes
 import os
 import sys
+
+mimetypes.add_type("application/javascript", ".cjs")
 
 # sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 

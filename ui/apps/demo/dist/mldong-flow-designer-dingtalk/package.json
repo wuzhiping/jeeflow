@@ -1,0 +1,41 @@
+{
+  "name": "mldong-flow-designer-dingtalk",
+  "version": "3.1.1",
+  "type": "module",
+  "description": "钉钉风格流程设计器（精简版，无 LogicFlow 依赖）",
+  "keywords": [
+    "工作流",
+    "流程设计器",
+    "钉钉审批流",
+    "Vue3"
+  ],
+  "main": "./lib/mldong-flow-designer-dingtalk.umd.cjs",
+  "module": "./lib/mldong-flow-designer-dingtalk.js",
+  "types": "./packages/types/index.dingtalk.d.ts",
+  "exports": {
+    ".": {
+      "types": "./packages/types/index.dingtalk.d.ts",
+      "import": "./lib/mldong-flow-designer-dingtalk.js",
+      "require": "./lib/mldong-flow-designer-dingtalk.umd.cjs"
+    },
+    "./lib/style.css": "./lib/style.css",
+    "./*": "./*"
+  },
+  "files": [
+    "lib",
+    "packages"
+  ],
+  "author": "mldong",
+  "license": "Apache License 2.0",
+  "homepage": "https://www.npmjs.com/package/mldong-flow-designer-plus",
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitee.com/mldong/flow-designer.git"
+  },
+  "bugs": {
+    "url": "https://gitee.com/mldong/flow-designer/issues"
+  },
+  "peerDependencies": {
+    "vue": "^3.4.0"
+  }
+}

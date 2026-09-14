@@ -1,0 +1,24 @@
+.lf-control-clear {
+  background-image: url("../assets/lf-control-clear.svg");
+}
+.lf-control-see {
+  background-image: url("../assets/lf-control-see.svg");
+}
+.lf-control-import {
+  background-image: url("../assets/lf-control-import.svg");
+}
+.lf-control-highlight {
+  background-image: url("../assets/lf-control-highlight.svg");
+}
+.lf-control-save {
+  background-image: url("../assets/lf-control-save.svg");
+}
+.lf-control-fullscreen.enter {
+  background-image: url("../assets/lf-control-fullscreen-enter.svg");
+}
+.lf-control-fullscreen.exit {
+  background-image: url("../assets/lf-control-fullscreen-exit.svg");
+}
+.lf-control-auto-layout{
+  background-image: url("../assets/lf-control-auto-layout.svg");
+}
