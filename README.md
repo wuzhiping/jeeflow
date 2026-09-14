@@ -21,3 +21,8 @@ from jeeflow import JdbcRepository, PostgresAdapter
 pool = await asyncpg.create_pool("postgresql://root:pwd@127.0.0.1/jeeflow")
 repo = JdbcRepository(PostgresAdapter(pool))
 ```
+
+```
+docker build -t shawoo/jeeflow .
+docker run --rm -p 8101:8101 shawoo/jeeflow
+```
