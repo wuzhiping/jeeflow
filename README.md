@@ -9,7 +9,7 @@
 
 # http://localhost:8101/jeeflow/ui/
 
-# [SPI][(https://jeeflow-doc.mldong.com/languages/python/spi-guide)
+# [SPI](https://jeeflow-doc.mldong.com/languages/python/spi-guide)
 ```
 # sqlite:Memory for DEV
 from jeeflow import MemoryRepository
