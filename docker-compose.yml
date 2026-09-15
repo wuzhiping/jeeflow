@@ -1,0 +1,15 @@
+version: '2'
+services:
+
+  jeeflow:
+    image: shawoo/jeeflow
+    restart: always
+    #command: ["uv", "run", "main_pg.py"]
+    command: ["uv", "run", "main.py"]
+    ports:
+      - "8101:8101"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    environment:
+      - JEEFLOW_PG_DSN=postgresql://uid:pwd@127.0.0.1:5432/jeeflow
