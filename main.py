@@ -22,7 +22,7 @@ from jeeflow.model import InstanceState, TaskState, ProcessDefine, ProcessInstan
 from jeeflow.spi import IDGenerator, ExpressionEvaluator, OrgUserProvider
 
 import flows_resolver
-sys.path.insert(0, os.path.dirname(__file__))  # uvicorn demo.main:app 从仓根导入时 demo/ 不在 sys.path
+sys.path.insert(0, os.path.dirname(__file__))  # 确保 spi.py / seed_business.py 仓根模块可被 import
 from seed_business import seed_business
 
 # ─── Setup ───────────────────────────────────────────────────────────────────────
@@ -63,16 +63,16 @@ repo = MemoryRepository()
 ext_repo = MemoryExtRepository()  # 扩展仓储（内存实现）：流程设计/历史/委托
 idgen = SnowflakeIDGen()
 
-from demo import SimpleUserProvider, DemoOrgUserProvider, demo_user_search, DEMO_USERS, DEMO_ROLES, DEMO_DICTS
+from spi import SimpleUserProvider, SpiOrgUserProvider, spi_user_search, SPI_USERS, SPI_ROLES, SPI_DICTS
 user_prov = SimpleUserProvider()
-org_prov = DemoOrgUserProvider()
+org_prov = SpiOrgUserProvider()
 
 engine = EngineImpl(repo, user_prov, idgen, SimpleExprEvaluator())
 # 内置参与者 handler（部门领导/角色取人等，assignment-handler 流程依赖）
 _registry = HandlerRegistry()
 register_builtin_assignments(_registry, user_prov, org_prov)
 engine.set_extensions(EngineExtensions(registry=_registry))
-facade = JeeflowFacade(engine, repo, ext_repo, user_search=demo_user_search, org_prov=org_prov)
+facade = JeeflowFacade(engine, repo, ext_repo, user_search=spi_user_search, org_prov=org_prov)
 
 def load_seed():
     """预加载流程定义（种子）——/api/reset 重置后复用"""
@@ -220,7 +220,9 @@ async def api_users(request: Request):
     body = await request.json() if await request.body() else {}
     keyword = str(body.get("keyword") or "").strip().lower()
     rows = []
-    for uid, (real_name, post_name) in DEMO_USERS.items():
+    for uid, info in SPI_USERS.items():
+        real_name = info["name"]
+        post_name = info["post"]
         if keyword and keyword not in uid.lower() and keyword not in real_name.lower():
             continue
         rows.append({
@@ -237,7 +239,7 @@ async def api_roles(request: Request):
     body = await request.json() if await request.body() else {}
     keyword = str(body.get("keyword") or "").strip().lower()
     rows = []
-    for role_id, role_name in DEMO_ROLES.items():
+    for role_id, role_name in SPI_ROLES.items():
         if keyword and keyword not in role_id.lower() and keyword not in role_name.lower():
             continue
         rows.append({"roleId": role_id, "roleName": role_name})
@@ -247,7 +249,7 @@ async def api_roles(request: Request):
 @app.post("/api/dicts")
 async def api_dicts(request: Request):
     """演示字典全集（与四后端同一套 wf_* 字典）：返回 [{code, items:[{value,label}]}]，前端按 code 索引缓存"""
-    rows = [{"code": code, "items": list(items)} for code, items in DEMO_DICTS.items()]
+    rows = [{"code": code, "items": list(items)} for code, items in SPI_DICTS.items()]
     return _ok(rows)
 
 

@@ -1,0 +1,12 @@
+{
+  "wf_leave_type": [
+    {"value": "annual", "label": "年假"},
+    {"value": "sick", "label": "病假"},
+    {"value": "personal", "label": "事假"}
+  ],
+  "wf_process_type": [
+    {"value": "oa", "label": "OA"},
+    {"value": "hr", "label": "人事"},
+    {"value": "finance", "label": "财务"}
+  ]
+}

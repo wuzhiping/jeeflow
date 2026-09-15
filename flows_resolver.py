@@ -10,7 +10,7 @@ dir() 的语义：
      （拷贝所有 .json + 删除本仓多出的孤儿 .json，防 id 按文件名排序错位）
   4. 始终返回本仓 flows/ 路径 —— 所有读取点只读这里，Java 仓不再被直接读取
 
-放在仓根（不进 jeeflow* 发布包）：demo 已把仓根 insert 进 sys.path，
+放在仓根（不进 jeeflow* 发布包）：main.py / main_pg.py 已把仓根 insert 进 sys.path，
 pytest 从仓根跑，两者都能 import flows_resolver。
 """
 import os

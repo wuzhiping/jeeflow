@@ -29,7 +29,7 @@ from jeeflow.model import InstanceState, TaskState, ProcessDefine, ProcessInstan
 from jeeflow.spi import IDGenerator, ExpressionEvaluator, OrgUserProvider
 
 import flows_resolver
-sys.path.insert(0, os.path.dirname(__file__))  # uvicorn demo.main:app 从仓根导入时 demo/ 不在 sys.path
+sys.path.insert(0, os.path.dirname(__file__))  # 确保 spi.py / seed_business.py 仓根模块可被 import
 from seed_business import seed_business
 
 # ─── Setup ───────────────────────────────────────────────────────────────────────
@@ -89,7 +89,7 @@ class SimpleExprEvaluator(ExpressionEvaluator):
         return False
 
 
-from demo import SimpleUserProvider, DemoOrgUserProvider, demo_user_search, DEMO_USERS, DEMO_ROLES, DEMO_DICTS
+from spi import SimpleUserProvider, SpiOrgUserProvider, spi_user_search, SPI_USERS, SPI_ROLES, SPI_DICTS
 
 
 async def _truncate_all(adapter: PostgresAdapter) -> None:
@@ -128,7 +128,7 @@ async def load_seed(repo: JdbcRepository) -> int:
 
 
 # ─── 启动期补丁 ─────────────────────────────────────────────────────────────────
-# seed_business.py / demo.py / docs/pg_schema.sql 不可改动；本模块在 lifespan 内对
+# seed_business.py / spi.py / docs/pg_schema.sql 不可改动；本模块在 lifespan 内对
 # facade.flow 与 repo 的写方法做轻量 wrap，把入参规整成 PG 能接受的形态，再透传给原
 # 实现。三个 known issue：
 #   A. processSurrogate/save|update 调用方不一定传 enabled；facade._apply_surrogate_fields
@@ -391,12 +391,12 @@ async def lifespan(app: FastAPI):
 
     idgen = SnowflakeIDGen()
     user_prov = SimpleUserProvider()
-    org_prov = DemoOrgUserProvider()
+    org_prov = SpiOrgUserProvider()
     engine = EngineImpl(repo, user_prov, idgen, SimpleExprEvaluator())
     _registry = HandlerRegistry()
     register_builtin_assignments(_registry, user_prov, org_prov)
     engine.set_extensions(EngineExtensions(registry=_registry))
-    facade = JeeflowFacade(engine, repo, ext_repo, user_search=demo_user_search, org_prov=org_prov)
+    facade = JeeflowFacade(engine, repo, ext_repo, user_search=spi_user_search, org_prov=org_prov)
 
     state["pool"] = pool
     state["adapter"] = adapter
@@ -563,7 +563,9 @@ async def api_users(request: Request):
     body = await request.json() if await request.body() else {}
     keyword = str(body.get("keyword") or "").strip().lower()
     rows = []
-    for uid, (real_name, post_name) in DEMO_USERS.items():
+    for uid, info in SPI_USERS.items():
+        real_name = info["name"]
+        post_name = info["post"]
         if keyword and keyword not in uid.lower() and keyword not in real_name.lower():
             continue
         rows.append({
@@ -580,7 +582,7 @@ async def api_roles(request: Request):
     body = await request.json() if await request.body() else {}
     keyword = str(body.get("keyword") or "").strip().lower()
     rows = []
-    for role_id, role_name in DEMO_ROLES.items():
+    for role_id, role_name in SPI_ROLES.items():
         if keyword and keyword not in role_id.lower() and keyword not in role_name.lower():
             continue
         rows.append({"roleId": role_id, "roleName": role_name})
@@ -590,7 +592,7 @@ async def api_roles(request: Request):
 @app.post("/api/dicts")
 async def api_dicts(request: Request):
     """演示字典全集（与四后端同一套 wf_* 字典）：返回 [{code, items:[{value,label}]}]，前端按 code 索引缓存"""
-    rows = [{"code": code, "items": list(items)} for code, items in DEMO_DICTS.items()]
+    rows = [{"code": code, "items": list(items)} for code, items in SPI_DICTS.items()]
     return _ok(rows)
 
 
