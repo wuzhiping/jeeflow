@@ -8,14 +8,19 @@
 
 | 角色 | 目标 | 主要产物 |
 | --- | --- | --- |
-| 设计 Agent | 根据业务需求产出可被引擎解析的流程 JSON | `flows/<name>.json`（可新建） |
-| 测试 Agent | 把 JSON 部署到引擎、启动实例、走完审批流并核验 | `docs/test_<name>.md`（curl 脚本与日志）或临时脚本 |
+| 设计 Agent | 根据业务需求产出可被引擎解析的流程 JSON | `./tdd/<name>.json`（WIP；测试通过后可晋升为 `./flows/<name>.json`） |
+| 测试 Agent | 把 JSON 部署到引擎、启动实例、走完审批流并核验 | `./tdd/test_<name>_<YYYYMMDDHHMMSS>.md`（curl 脚本 + 请求/响应日志）+ 测试中发现的字段语义补充到 `./docs/flow.md` |
 
-**硬约束（来自 `AGENTS.md` §2.6）**：
+**TDD 闭环**：每次新增 / 修改流程都必须经过 `设计 → ./tdd/ 落地 → 校验 → 部署测试 → 写 docs` 五步；缺一步视为未完成。
 
-- 仅修改 `/opt/jupyter/src/RD/projects/jeeFlow/main_pg.py`（其余代码视为只读）
+**硬约束**：
+
+- 流程开发**不修改任何代码文件**（`main_pg.py`、jeeflow 包、其它 Python 源码均只读）
 - 不得安装依赖；不得访问项目目录外
 - 进度仅在当前会话维护，不得落盘
+- 所有 action 调用必须来自 `./docs/actions.md` 已登记的清单（参见 §5 速查表），**禁止**臆造 action 名
+- 禁止阅读 jeeflow 源码（`engine.py` / `facade.py` / `builtin.py`）；字段语义疑问回查 `./docs/flow.md` / `./docs/actions.md`
+- 所有文件路径引用一律使用 `./` 开头的相对路径，**禁止**使用绝对路径 `/opt/jupyter/...`
 
 ---
 
@@ -23,17 +28,12 @@
 
 | 文件 | 内容 | 何时读 |
 | --- | --- | --- |
-| `docs/flow.md` | 流程 JSON 完整规范（9 节 + 速查） | 设计前读全文；测试中遇到歧义回查 §4-§6 |
-| `docs/actions.md` | 47 action + 路由解析 + 47 条 curl 模板（端口 8101） | 测试时按 action 名查表 |
-| `flows/*.json` | 15 个真实样例（01-13） | 设计时挑最相似的样例 fork |
-| `main_pg.py` | 唯一可变文件（含 lifespan、wrap、helpers） | 仅当修改代码时读 |
-| `seed_business.py` | 演示数据生成（不写 flow JSON） | 仅当需要重建业务表数据时 |
-| `docs/pg_schema.sql` | 真实 PostgreSQL 表 DDL | 查字段含义 |
-
-**测试 Agent 还需读**：
-
-- `/opt/jupyter/src/RD/projects/jeeFlow/.venv/lib/python3.12/site-packages/jeeflow/engine.py`（常量、execute_task、decision 评估）
-- `/opt/jupyter/src/RD/projects/jeeFlow/.venv/lib/python3.12/site-packages/jeeflow/facade.py`（deploy、start、completeTask 等方法）
+| `./docs/flow.md` | 流程 JSON 完整规范（10 节 + 速查） | 设计前读全文；测试中遇到歧义回查 §3-§7 |
+| `./docs/actions.md` | 47 action + 路由解析 + curl 模板（端口 8101） | 测试时按 action 名查表 |
+| `./flows/*.json` | 15 个真实样例（01-13） | 设计时挑最相似的样例 fork（**只读模板，不得改写**） |
+| `./tdd/*.json` | WIP 流程 JSON | 当前会话要开发的新流程；测试通过后再决定是否晋升到 `./flows/` |
+| `./tdd/README.md` | TDD 目录使用约定 | 写新流程前必读 |
+| `./docs/pg_schema.sql` | 真实 PostgreSQL 表 DDL（仅参考） | 查字段含义 |
 
 ---
 
@@ -49,21 +49,26 @@
 4. 分支条件（若用决策）
 5. 是否需要会签 / 驳回 / 自定义节点
 
-### 3.2 设计步骤
+### 3.2 TDD 设计步骤（必须按顺序）
 
 ```
 1) 列出节点序列（含 start / end）
 2) 选择节点类型（start / task / decision / fork / join / custom / end）
-3) 写 properties（按 docs/flow.md §3.3-§3.5）
+3) 写 properties（按 ./docs/flow.md §3.3-§3.5）
 4) 写边 properties（decision 出边 expr / 其他边可空）
-5) 文件落地到 flows/<key>.json
-6) python -c "import json; json.load(open('flows/<key>.json'))"  语法校验
-7) （可选）人工对照 §4 模板逐行核对
+5) 文件落地到 ./tdd/<key>.json          ← WIP，**不要写到 ./flows/**
+6) python -c "import json; json.load(open('./tdd/<key>.json'))"  语法校验
+7) 【TDD】部署 + 启动 + 跑通（curl 见 §5），过程中记录每次请求/响应
+8) 【TDD】写 ./tdd/test_<key>_<YYYYMMDDHHMMSS>.md（测试日志 + 校验结果）
+9) 【TDD】若发现新字段语义 / 边界条件 → 同步更新 ./docs/flow.md 对应节
+10) （可选）人工对照 §4 模板逐行核对
+11) （可选）测试稳定后把 ./tdd/<key>.json 晋升为 ./flows/<key>.json（须在
+    ./tdd/test_<key>_<YYYYMMDDHHMMSS>.md 顶部标注「已晋升」+ 提交号）
 ```
 
 ### 3.3 节点 id / 边 id 命名
 
-参见 `docs/flow.md §4a`。**禁止**节点 id 含空格 / `-` / 中文（引擎底层有部分宽限，但跨语言 Java 端会触发键映射问题）。
+参见 `./docs/flow.md §4a`。**禁止**节点 id 含空格 / `-` / 中文（引擎底层有部分宽限，但跨语言 Java 端会触发键映射问题）。
 
 ---
 
@@ -71,22 +76,22 @@
 
 | 业务场景 | 推荐样板 | 关键字段 |
 | --- | --- | --- |
-| 申请人→上级→结束 | `flows/01-simple.json` | apply=`applicant`、task1=`leader`、`field.PERMISSION_*` |
-| 多层审批 | `flows/02-multi-task.json` | 三个 task 节点串行 |
-| 金额分支 | `flows/03-decision-expr.json` | decision1 + 两出边 expr `amount>1000` / `amount<=1000` |
-| 并行审批 + 汇合 | `flows/04-fork-join.json` | fork1→taskA/taskB→join1；taskB `taskType:1` |
-| 并行会签（多人同时审） | `flows/05-countersign-parallel.json` | `performType=1, countersignType=PARALLEL`，assignee 多值 |
-| 串行会签（按顺序审） | `flows/06-countersign-sequential.json` | `countersignType=SEQUENTIAL` |
-| 比例会签 | `flows/07-countersign-ratio.json` | `countersignCompletionCondition: "#nrOfCompletedInstances==2"`（放 field 内） |
-| 一票否决会签 | `flows/13-countersign-one-vote-veto.json` | `countersignCompletionCondition: "ONE_VOTE_VETO"` |
-| 自定义节点 | `flows/08-custom-node.json` | `clazz + methodName + args + val` |
-| 驳回路径 | `flows/09-with-reject.json` | submitType=Reject 走 reject 边 |
-| 业务流 + 拦截器 | `flows/10-mixed-mode.json` | 顶层 `preInterceptors/postInterceptors`；`type: "business"` |
-| 处理人为变量 | `flows/11-assignee-vars.json` | `assignee: "deptLeader"` / `"userA,userB"` |
-| 内置 handler 全部列示 | `flows/11-assignment-handler.json` | 7 个 FQCN（见 `docs/flow.md §6`） |
-| 候选人分页 | `flows/12-candidate-page.json` | 节点级 `candidateUsers/candidateGroups`（properties 根下） |
+| 申请人→上级→结束 | `./flows/01-simple.json` | apply=`applicant`、task1=`leader`、`field.PERMISSION_*` |
+| 多层审批 | `./flows/02-multi-task.json` | 三个 task 节点串行 |
+| 金额分支 | `./flows/03-decision-expr.json` | decision1 + 两出边 expr `amount>1000` / `amount<=1000` |
+| 并行审批 + 汇合 | `./flows/04-fork-join.json` | fork1→taskA/taskB→join1；taskB `taskType:1` |
+| 并行会签（多人同时审） | `./flows/05-countersign-parallel.json` | `performType=1, countersignType=PARALLEL`，assignee 多值 |
+| 串行会签（按顺序审） | `./flows/06-countersign-sequential.json` | `countersignType=SEQUENTIAL` |
+| 比例会签 | `./flows/07-countersign-ratio.json` | `countersignCompletionCondition: "#nrOfCompletedInstances==2"`（放 field 内） |
+| 一票否决会签 | `./flows/13-countersign-one-vote-veto.json` | `countersignCompletionCondition: "ONE_VOTE_VETO"` |
+| 自定义节点 | `./flows/08-custom-node.json` | `clazz + methodName + args + val` |
+| 驳回路径 | `./flows/09-with-reject.json` | submitType=Reject 走 reject 边 |
+| 业务流 + 拦截器 | `./flows/10-mixed-mode.json` | 顶层 `preInterceptors/postInterceptors`；`type: "business"` |
+| 处理人为变量 | `./flows/11-assignee-vars.json` | `assignee: "deptLeader"` / `"userA,userB"` |
+| 内置 handler 全部列示 | `./flows/11-assignment-handler.json` | 7 个 FQCN（见 `./docs/flow.md §6`） |
+| 候选人分页 | `./flows/12-candidate-page.json` | 节点级 `candidateUsers/candidateGroups`（properties 根下） |
 
-**复合场景**：`flows/08-countersign-sequential-approve.json`（串行会签后并联 approve）。
+**复合场景**：`./flows/08-countersign-sequential-approve.json`（串行会签后并联 approve）。
 
 ---
 
@@ -94,16 +99,34 @@
 
 ### 5.1 启动 uvicorn
 
-端口：**8101**（参见 `docs/actions.md §1`）。
+端口：**8101**（参见 `./docs/actions.md §1`）。
 
 外部 launcher 已固化（PPID=1，`setsid nohup & disown`，详见先前 `/tmp/opencode/start_uvicorn.sh` 经验）。**禁止**用 inline `nohup &` —— watchdog 会 SIGKILL 连带进程。
 
 ### 5.2 健康检查
 
 ```bash
-curl -s http://127.0.0.1:8101/wf/overview | jq
+curl -s -X POST http://127.0.0.1:8101/wf/processInstance/stats/overview \
+  -H 'Content-Type: application/json' -d '{}' | jq
 # 期望：{ "code": 0, "data": { ... }, "msg": "成功" }
 ```
+
+### 5.2.5 重置测试环境（`/api/reset`，必要时调用）
+
+`/api/reset` **不在** `./docs/actions.md §1-§7` 的 47 个工作流 action 清单里 —— 它是 main_pg.py:526 注册的旁路端点，用于一键清空 PG 表 + 重载流程定义种子（详见 main_pg.py:528 注释 `issues/11`）。
+
+```bash
+curl -s -X POST http://127.0.0.1:8101/api/reset | jq
+# 期望：{ "code": 0, "data": { "reloadedDefines": <N> }, "msg": "成功" }
+```
+
+**用途**：跑完一组用例想从干净状态开始下一组、或数据被前序测试污染时调用。会清空所有 identity / 实例 / 任务，重载 seed 中的流程定义。
+
+**约束**：
+- **非工作流 action**，不走 `/wf/{action}` 门面，AGENTS.md §5.3-§5.8 的 action 替换规则对它无效。
+- 调用前确认磁盘上没有未晋升的 `./tdd/<key>.json`（WIP 数据本身不会被清，因为 reset 只动 PG 表），但若该流程已部署到 PG，部署的副本会消失 —— 需要重新部署或从 `./flows/<key>.json` 再次启动。
+- 幂等：可重复调用。
+- 不计日志章节的常规 action —— `./tdd/test_<key>_<YYYYMMDDHHMMSS>.md` 里只记「调用前 X 次调用 / 调用后 Y 次」即可，不必详写每次 reset 的响应。
 
 ### 5.3 部署流程（设计器 → 定义）
 
@@ -115,7 +138,7 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDesign/save \
     "name": "test-simple",
     "displayName": "测试-简单审批",
     "type": "approval",
-    "content": '"$(cat flows/01-simple.json | jq -c . | sed 's/"/\\"/g')"'
+    "content": '"$(cat ./flows/01-simple.json | jq -c . | sed 's/"/\\"/g')"'
   }'
 
 # Step B：取设计 id（返回 data.id）
@@ -127,12 +150,14 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDesign/deploy \
   -d "{\"id\": $DESIGN_ID}"
 ```
 
-`processDesign/deploy` 内部调用 `facade._deploy`（`facade.py:186-202`），按 `name` 自动 `+1` version。
+`processDesign/deploy` 按 `name` 自动 `+1` version（详见 `./docs/actions.md §2 #14`）。
 
 ### 5.4 启动流程实例
 
+`./docs/actions.md` 中**仅开放** `processInstance/startAndExecute`（及其别名 `startAndExecute`），该方法一次性完成「启动 + 跑第一步」。**禁止**使用 `/wf/processInstance/start`（不在清单中；同等处理见 §6 关键约束）。
+
 ```bash
-curl -s -X POST http://127.0.0.1:8101/wf/processInstance/start \
+curl -s -X POST http://127.0.0.1:8101/wf/processInstance/startAndExecute \
   -H 'Content-Type: application/json' \
   -d '{
     "name": "simple",
@@ -150,48 +175,49 @@ curl -s -X POST http://127.0.0.1:8101/wf/processInstance/start \
 
 返回 `data.processInstanceId`（数字）。所有 id 字段出口会被 `_stringify_ids` 转字符串。
 
-### 5.5 完成任务
+### 5.5 取待办 + 执行任务
+
+`./docs/actions.md` 中**仅开放** `processTask/todoList`（列待办）和 `processTask/execute`（提交任务）。**禁止**使用 `/wf/task/page` 或 `/wf/processInstance/completeTask`（不在清单中）。
 
 ```bash
 # 取 todo 列表
-curl -s -X POST http://127.0.0.1:8101/wf/task/page \
+curl -s -X POST http://127.0.0.1:8101/wf/processTask/todoList \
   -H 'Content-Type: application/json' \
-  -d '{"pageNum": 1, "pageSize": 20}'
+  -d '{"operator": "leader", "pageNum": 1, "pageSize": 20}'
 
 # 取任务 id 后提交
-curl -s -X POST http://127.0.0.1:8101/wf/processInstance/completeTask \
+curl -s -X POST http://127.0.0.1:8101/wf/processTask/execute \
   -H 'Content-Type: application/json' \
   -d '{
     "taskId": <TASK_ID>,
     "submitType": 0,
     "operator": "leader",
-    "args": { "submitType": 0, "u_userId": "leader" }
+    "args": { "submitType": 0, "u_userId": "leader", "u_realName": "领导" }
   }'
 ```
 
 ### 5.6 校验
 
 ```bash
+# 实例详情
 curl -s -X POST http://127.0.0.1:8101/wf/processInstance/detail \
-  -H 'Content-Type: application/json' \
-  -d '{"id": <INSTANCE_ID>}'
+  -H 'Content-Type: application/json' -d '{"id": <INSTANCE_ID>}'
 
+# 审批记录
 curl -s -X POST http://127.0.0.1:8101/wf/processInstance/approvalRecord \
-  -H 'Content-Type: application/json' \
-  -d '{"id": <INSTANCE_ID>}'
+  -H 'Content-Type: application/json' -d '{"id": <INSTANCE_ID>}'
 
+# 节点高亮（流程图当前位置）
 curl -s -X POST http://127.0.0.1:8101/wf/processInstance/highLight \
-  -H 'Content-Type: application/json'  -d '{"id": <INSTANCE_ID>}'
-
-# 流程图高亮（看当前节点位置）
-curl -s -X POST http://127.0.0.1:8101/wf/processInstance/highLight \
-  -H 'Content-Type: application/json' \
-  -d '{"id": <INSTANCE_ID>}'
+  -H 'Content-Type: application/json' -d '{"id": <INSTANCE_ID>}'
 
 # 实例变量（含发起人/操作人/流程变量）
 curl -s -X POST http://127.0.0.1:8101/wf/processInstance/bizData \
-  -H 'Content-Type: application/json' \
-  -d '{"id": <INSTANCE_ID>}'
+  -H 'Content-Type: application/json' -d '{"id": <INSTANCE_ID>}'
+
+# 定义详情（查版本）
+curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
+  -H 'Content-Type: application/json' -d '{"name": "simple"}'
 ```
 
 ### 5.7 字段权限核验
@@ -204,8 +230,8 @@ curl -s -X POST http://127.0.0.1:8101/wf/processInstance/bizData \
 
 | 类型 | curl 操作 | 预期 `performType/countersignType` | 预期完成条件 |
 | --- | --- | --- | --- |
-| 并行 | 三用户同时 `completeTask` | `1 / PARALLEL` | 任一通过即流转 |
-| 串行 | 三个用户按顺序 `completeTask` | `1 / SEQUENTIAL` | 仅最后一个通过即流转 |
+| 并行 | 三用户同时 `processTask/execute` | `1 / PARALLEL` | 任一通过即流转 |
+| 串行 | 三个用户按顺序 `processTask/execute` | `1 / SEQUENTIAL` | 仅最后一个通过即流转 |
 | 比例 | N 个用户中 K 个通过 | `1 / PARALLEL` | `countersignCompletionCondition` 在 field 下 |
 | 一票否决 | 任一用户 reject | `1 / PARALLEL` | `ONE_VOTE_VETO` |
 
@@ -215,18 +241,18 @@ curl -s -X POST http://127.0.0.1:8101/wf/processInstance/bizData \
 
 | # | 约束 | 出处 |
 | --- | --- | --- |
-| 1 | 顶层 `name` 全局唯一 | `facade._deploy` 校验 |
+| 1 | 顶层 `name` 全局唯一 | `./docs/flow.md §2` |
 | 2 | 节点 id 不含空格 / `-` / 中文 | Java 端兼容性 |
-| 3 | 流程图必须 `start` 开 / `end` 收 | 引擎拓扑检查 |
-| 4 | decision 出边按顺序评估，首个真值即流转 | `engine.py:355-375` |
-| 5 | `performType=1` 必须配 `countersignType` | `engine.py:282, 387` |
-| 6 | `countersignCompletionCondition` 两位置：`properties` 根 或 `properties.field` | 引擎双路径解析 |
-| 7 | `assignmentHandler` 与 `assignee` 互斥；同时写则 handler 优先 | `builtin.py` |
-| 8 | 操作人 `u_*` 只进执行上下文，不写回实例（issues/97） | `engine.py:200-220` |
-| 9 | 实例变量 `f_*`（发起时） vs `tf_*`（执行时）分工 | `engine.py:8-40` |
-| 10 | 字段权限码 `1`=只读 `2`=隐藏 | `engine.py:200-220` |
-| 11 | `instanceUrl` 用于前端发起跳转 | 顶层可选 |
-| 12 | 顶层 `type` 默认 `approval`，`business` 见样例 10 | `facade.py:204-220` |
+| 3 | 流程图必须 `start` 开 / `end` 收 | `./docs/flow.md §3.1` |
+| 4 | decision 出边按顺序评估，首个真值即流转 | `./docs/flow.md §3.4` |
+| 5 | `performType=1` 必须配 `countersignType` | `./docs/flow.md §3.3` |
+| 6 | `countersignCompletionCondition` 两位置：`properties` 根 或 `properties.field` | `./docs/flow.md §3.3` |
+| 7 | `assignmentHandler` 与 `assignee` 互斥；同时写则 handler 优先 | `./docs/flow.md §6` |
+| 8 | 操作人 `u_*` 只进执行上下文，不写回实例 | `./docs/flow.md §7` |
+| 9 | 实例变量 `f_*`（发起时） vs `tf_*`（执行时）分工 | `./docs/flow.md §7` |
+| 10 | 字段权限码 `1`=只读 `2`=隐藏 | `./docs/flow.md §5` |
+| 11 | `instanceUrl` 用于前端发起跳转 | `./docs/flow.md §2` |
+| 12 | 顶层 `type` 默认 `approval`，`business` 见样例 10 | `./docs/flow.md §2` |
 
 ---
 
@@ -237,11 +263,14 @@ curl -s -X POST http://127.0.0.1:8101/wf/processInstance/bizData \
 | 决策节点所有 `expr` 都不满足 | 引擎兜底走第一条出边 | 加默认边 `expr=""` 或显式兜底分支 |
 | `performType` 字符串 "1" 但 `countersignType` 漏配 | 子任务生成但完成逻辑乱 | 引擎容错解析，但 `countersignType` 必须给 |
 | `countersignCompletionCondition` 写 `field` 但 assignees 全是变量 | 条件永远不评估 | 改用根 `properties` 写，或确保 field.candidateUsers 非空 |
-| `assignmentHandler` 拼写错（大小写） | 引擎走默认 handler = `inst.operator` | 严格照 `docs/flow.md §6` FQCN |
+| `assignmentHandler` 拼写错（大小写） | 引擎走默认 handler = `inst.operator` | 严格照 `./docs/flow.md §6` FQCN |
 | 节点 `form: ""` 但后续字段回写 | `args` 没字段 | 让 form 为 None 或省略，提交时也只给 `u_*` |
 | 发起人 `u_realName` 想每次改 | 引擎恒以发起人为准 | 设计上不覆盖 |
 | 测试中 operator 与 assignee 解析错 | `inst.operator` 取不到 | 启动时必传 `args.u_userId` |
 | 会签串行下被中断 | `submitType != 0` 时引擎忽略完成条件 | 测试时保持 `submitType=0` 触发"通过" |
+| 测试用 `/wf/processInstance/start` / `/wf/task/page` 等未登记 action | 404 或路由不命中 | 严格按 §5.1 速查表选用 action |
+| WIP JSON 直接写到 `./flows/` | 与稳定样例混在一起，无法区分 | 先写 `./tdd/<key>.json`，测试稳定后再 cp 晋升 |
+| 测试通过但没写 `./tdd/test_<key>_<YYYYMMDDHHMMSS>.md` | 复测 / 移交时无记录 | §3.2 step 8 是必做项 |
 
 ---
 
@@ -251,14 +280,16 @@ curl -s -X POST http://127.0.0.1:8101/wf/processInstance/bizData \
 2. **对照预期** — `approvalRecord` 期望节点顺序 vs 实际
 3. **看 `highLight`** — 当前节点是否预期
 4. **查 `bizData`** — 实例变量是否注入；`u_*` 是否非持久化
-5. **回查引擎源码** — `engine.py` 内对应方法（如 `_evaluate_decision` / `execute_task` / `_previous_task_name`）
+5. **回查文档** — `./docs/flow.md §3.3-§3.5` 节点字段语义、`./docs/actions.md §X` action 行为；**禁止**回查 jeeflow 源码
 
-必要时重启 uvicorn：
+必要时重启 uvicorn（不改代码）：
 
 ```bash
 pkill -f 'main_pg\.py' 2>/dev/null
 sleep 1
-# 重新拉起（参考 /tmp/opencode/start_uvicorn.sh 模式）
+# 重新拉起（参考 /tmp/opencode/start_uvicorn.sh 模式，PPID=1）
+# /tmp/opencode/start_uvicorn.sh 是项目外的 launcher 脚本（先前会话固化），
+# 不属于项目目录；本约束不要求把它的路径改成相对形式。
 ```
 
 ---
@@ -267,35 +298,44 @@ sleep 1
 
 | 问题 | 章节 |
 | --- | --- |
-| 顶层 JSON 怎么写 | `docs/flow.md §2` |
-| 任务节点 properties 全字段 | `docs/flow.md §3.3` |
-| 决策节点 properties | `docs/flow.md §3.4` |
-| custom 节点 properties | `docs/flow.md §3.5` |
-| 边 properties 怎么写 | `docs/flow.md §4` |
-| 节点 / 边命名约定 | `docs/flow.md §4a` |
-| 字段权限 | `docs/flow.md §5` |
-| 7 个内置 handler | `docs/flow.md §6` |
-| 引擎变量 KEY | `docs/flow.md §7` |
-| 15 个样例索引 | `docs/flow.md §8` |
-| 47 个 action 路由 + curl | `docs/actions.md §X` |
+| 顶层 JSON 怎么写 | `./docs/flow.md §2` |
+| 任务节点 properties 全字段 | `./docs/flow.md §3.3` |
+| 决策节点 properties | `./docs/flow.md §3.4` |
+| custom 节点 properties | `./docs/flow.md §3.5` |
+| 边 properties 怎么写 | `./docs/flow.md §4` |
+| 节点 / 边命名约定 | `./docs/flow.md §4a` |
+| 字段权限 | `./docs/flow.md §5` |
+| 7 个内置 handler | `./docs/flow.md §6` |
+| 引擎变量 KEY | `./docs/flow.md §7` |
+| 15 个样例索引 | `./docs/flow.md §8` |
+| TDD 目录使用约定 | `./tdd/README.md` |
+| 47 个 action 路由 + curl | `./docs/actions.md §X` |
+| 一键重置测试环境 | §5.2.5（`/api/reset`，不在 action 清单） |
 
 ---
 
 ## 10. 完成定义
 
-设计 Agent 自检清单：
+设计 Agent 自检清单（提交前必检）：
 
+- [ ] JSON 文件落在 `./tdd/<key>.json`（**不是** `./flows/`）
 - [ ] JSON 通过 `python -m json.tool` 校验
 - [ ] 节点 id / 边 id 符合命名约定
 - [ ] 会签配齐 `performType + countersignType + countersignCompletionCondition`（按放置位置）
 - [ ] 候选人 / 字段权限 / 表单 key 已声明
 - [ ] 与最近一个相似样例做了 diff，确认改动点正确
 
-测试 Agent 自检清单：
+测试 Agent 自检清单（TDD 闭环）：
 
-- [ ] uvicorn 起在 8101，`/wf/overview` 返回 `code:0`
-- [ ] `processDesign/deploy` 返回 `code:0`，版本号 +1
-- [ ] `processInstance/start` 返回 `processInstanceId`
-- [ ] 走完所有 task，`processInstance/detail` 显示 `state==7`（已完成）
+- [ ] **WIP 文件位置**：JSON 在 `./tdd/<key>.json`（不是 `./flows/`）
+- [ ] uvicorn 起在 8101，`/wf/processInstance/stats/overview` 返回 `code:0`
+- [ ] `processDesign/save` + `processDesign/deploy` 返回 `code:0`，版本号 +1
+- [ ] `processInstance/startAndExecute` 返回 `processInstanceId`
+- [ ] 走完所有 task（用 `processTask/todoList` + `processTask/execute`），`processInstance/detail` 显示 `state==7`（已完成）
 - [ ] `approvalRecord` 节点顺序与设计一致
 - [ ] `bizData` 实例变量符合预期（`u_*` 仅启动时写，`f_*` 持久化）
+- [ ] 所有调用 action 名均在 §5.1 速查表内（不得使用未登记的 action）
+- [ ] **测试日志落盘**：写了 `./tdd/test_<key>_<YYYYMMDDHHMMSS>.md`，含 curl 命令 + 每次请求/响应片段 + 校验结论
+- [ ] **环境重置**：必要时调用过 `/api/reset` 且响应 `code:0`（按需，非强制）
+- [ ] **文档同步**：若发现新字段语义 / 边界条件，已追加到 `./docs/flow.md` 对应节
+- [ ] **晋升决策**：稳定样例 cp 到 `./flows/<key>.json` 并在 `./tdd/test_<key>_<YYYYMMDDHHMMSS>.md` 顶部标注「已晋升」
