@@ -1,0 +1,250 @@
+{
+  "name": "nested-decision",
+  "displayName": "嵌套多层 decision + 自定义变量",
+  "type": "approval",
+  "instanceUrl": "/fix/nested-decision/detail",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "apply-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_amount": 0,
+          "f_category": ""
+        }
+      },
+      "text": {
+        "value": "发起"
+      }
+    },
+    {
+      "id": "dec_low",
+      "type": "snaker:decision",
+      "x": 300,
+      "y": 100,
+      "properties": {
+        "width": 80,
+        "height": 50
+      },
+      "text": {
+        "value": "小额?"
+      }
+    },
+    {
+      "id": "dec_mid",
+      "type": "snaker:decision",
+      "x": 300,
+      "y": 200,
+      "properties": {
+        "width": 80,
+        "height": 50
+      },
+      "text": {
+        "value": "中额?"
+      }
+    },
+    {
+      "id": "dec_high",
+      "type": "snaker:decision",
+      "x": 300,
+      "y": 300,
+      "properties": {
+        "width": 80,
+        "height": 50
+      },
+      "text": {
+        "value": "大额?"
+      }
+    },
+    {
+      "id": "mgr_review",
+      "type": "snaker:task",
+      "x": 450,
+      "y": 100,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "review-form",
+        "assignee": "manager",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "经理审批"
+      }
+    },
+    {
+      "id": "dir_review",
+      "type": "snaker:task",
+      "x": 450,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "review-form",
+        "assignee": "director",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "总监审批"
+      }
+    },
+    {
+      "id": "ceo_review",
+      "type": "snaker:task",
+      "x": 450,
+      "y": 300,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "review-form",
+        "assignee": "boss",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "总经理审批"
+      }
+    },
+    {
+      "id": "notify",
+      "type": "snaker:task",
+      "x": 600,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "notify-form",
+        "assignee": "user1",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "通知发起人"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 750,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e_apply_low",
+      "sourceNodeId": "apply",
+      "targetNodeId": "dec_low",
+      "properties": {}
+    },
+    {
+      "id": "e_low_mgr",
+      "sourceNodeId": "dec_low",
+      "targetNodeId": "mgr_review",
+      "properties": {
+        "expr": "#amount<1000"
+      }
+    },
+    {
+      "id": "e_low_mid",
+      "sourceNodeId": "dec_low",
+      "targetNodeId": "dec_mid",
+      "properties": {
+        "expr": "#amount>=1000"
+      }
+    },
+    {
+      "id": "e_mid_dir",
+      "sourceNodeId": "dec_mid",
+      "targetNodeId": "dir_review",
+      "properties": {
+        "expr": "#amount<5000"
+      }
+    },
+    {
+      "id": "e_mid_high",
+      "sourceNodeId": "dec_mid",
+      "targetNodeId": "dec_high",
+      "properties": {
+        "expr": "#amount>=5000"
+      }
+    },
+    {
+      "id": "e_high_ceo",
+      "sourceNodeId": "dec_high",
+      "targetNodeId": "ceo_review",
+      "properties": {
+        "expr": "#amount>=5000"
+      }
+    },
+    {
+      "id": "e_high_default",
+      "sourceNodeId": "dec_high",
+      "targetNodeId": "ceo_review",
+      "properties": {}
+    },
+    {
+      "id": "e_mgr_notify",
+      "sourceNodeId": "mgr_review",
+      "targetNodeId": "notify",
+      "properties": {}
+    },
+    {
+      "id": "e_dir_notify",
+      "sourceNodeId": "dir_review",
+      "targetNodeId": "notify",
+      "properties": {}
+    },
+    {
+      "id": "e_ceo_notify",
+      "sourceNodeId": "ceo_review",
+      "targetNodeId": "notify",
+      "properties": {}
+    },
+    {
+      "id": "e_notify_end",
+      "sourceNodeId": "notify",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

@@ -1,0 +1,170 @@
+{
+  "name": "handler-chain",
+  "displayName": "多 handler 链路审批",
+  "type": "approval",
+  "instanceUrl": "/fix/handler-chain/detail",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "apply-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_approver": "",
+          "f_deptId": ""
+        }
+      },
+      "text": {
+        "value": "发起申请"
+      }
+    },
+    {
+      "id": "finance",
+      "type": "snaker:task",
+      "x": 300,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "review-form",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "财务角色(handler:TaskRole)"
+      }
+    },
+    {
+      "id": "approver",
+      "type": "snaker:task",
+      "x": 450,
+      "y": 200,
+      "properties": {
+        "width": 110,
+        "height": 50,
+        "form": "review-form",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.FormFieldAssigneeHandler",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "PERMISSION_f_approver": 1
+        }
+      },
+      "text": {
+        "value": "表单字段(handler:FormField)"
+      }
+    },
+    {
+      "id": "deptleader",
+      "type": "snaker:task",
+      "x": 600,
+      "y": 200,
+      "properties": {
+        "width": 110,
+        "height": 50,
+        "form": "review-form",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$DeptLeaderAssignmentHandler",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "部门领导(handler:DeptLeader)"
+      }
+    },
+    {
+      "id": "decision_pass",
+      "type": "snaker:decision",
+      "x": 750,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50
+      },
+      "text": {
+        "value": "通过?"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 900,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e_apply_fr",
+      "sourceNodeId": "apply",
+      "targetNodeId": "finance",
+      "properties": {}
+    },
+    {
+      "id": "e_fr_ar",
+      "sourceNodeId": "finance",
+      "targetNodeId": "approver",
+      "properties": {}
+    },
+    {
+      "id": "e_ar_dl",
+      "sourceNodeId": "approver",
+      "targetNodeId": "deptleader",
+      "properties": {}
+    },
+    {
+      "id": "e_dl_dec",
+      "sourceNodeId": "deptleader",
+      "targetNodeId": "decision_pass",
+      "properties": {}
+    },
+    {
+      "id": "e_dec_pass",
+      "sourceNodeId": "decision_pass",
+      "targetNodeId": "end",
+      "properties": {
+        "expr": "#submitType==1"
+      }
+    },
+    {
+      "id": "e_dec_default",
+      "sourceNodeId": "decision_pass",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

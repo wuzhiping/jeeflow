@@ -1,0 +1,147 @@
+{
+  "name": "sign-parallel-5",
+  "displayName": "5 人 PARALLEL 会签 + ONE_VOTE_VETO 场景",
+  "type": "approval",
+  "instanceUrl": "/fix/sign-parallel-5/detail",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "apply-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_topic": ""
+        }
+      },
+      "text": {
+        "value": "发起"
+      }
+    },
+    {
+      "id": "committee",
+      "type": "snaker:task",
+      "x": 300,
+      "y": 200,
+      "properties": {
+        "width": 120,
+        "height": 60,
+        "form": "vote-form",
+        "assignee": "leader,manager,director,boss,userA",
+        "taskType": 0,
+        "performType": 1,
+        "countersignType": "PARALLEL",
+        "countersignCompletionCondition": "ALL",
+        "field": {
+          "f_vote": ""
+        }
+      },
+      "text": {
+        "value": "5 人委员会(PARALLEL)"
+      }
+    },
+    {
+      "id": "decision_pass",
+      "type": "snaker:decision",
+      "x": 450,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50
+      },
+      "text": {
+        "value": "通过?"
+      }
+    },
+    {
+      "id": "notify",
+      "type": "snaker:task",
+      "x": 600,
+      "y": 100,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "notify-form",
+        "assignee": "user1",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "通知发起人"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 750,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e_apply_cm",
+      "sourceNodeId": "apply",
+      "targetNodeId": "committee",
+      "properties": {}
+    },
+    {
+      "id": "e_cm_dec",
+      "sourceNodeId": "committee",
+      "targetNodeId": "decision_pass",
+      "properties": {}
+    },
+    {
+      "id": "e_dec_pass",
+      "sourceNodeId": "decision_pass",
+      "targetNodeId": "notify",
+      "properties": {
+        "expr": "#submitType==1"
+      }
+    },
+    {
+      "id": "e_dec_default",
+      "sourceNodeId": "decision_pass",
+      "targetNodeId": "end",
+      "properties": {}
+    },
+    {
+      "id": "e_notify_end",
+      "sourceNodeId": "notify",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

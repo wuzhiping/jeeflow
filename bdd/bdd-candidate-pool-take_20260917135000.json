@@ -1,0 +1,147 @@
+{
+  "name": "candidate-pool-take",
+  "displayName": "候选人池接单审批",
+  "type": "approval",
+  "instanceUrl": "/fix/candidate-pool/detail",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "apply-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_topic": "",
+          "f_priority": ""
+        }
+      },
+      "text": {
+        "value": "发起申请"
+      }
+    },
+    {
+      "id": "pool_review",
+      "type": "snaker:task",
+      "x": 300,
+      "y": 200,
+      "properties": {
+        "width": 120,
+        "height": 50,
+        "form": "pool-form",
+        "assignee": "userA",
+        "candidateUsers": "userA,userB,userC",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_opinion": ""
+        }
+      },
+      "text": {
+        "value": "审批池(userA/B/C)"
+      }
+    },
+    {
+      "id": "decision_pass",
+      "type": "snaker:decision",
+      "x": 450,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50
+      },
+      "text": {
+        "value": "是否通过"
+      }
+    },
+    {
+      "id": "finish_notify",
+      "type": "snaker:task",
+      "x": 600,
+      "y": 100,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "notify-form",
+        "assignee": "userA",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "通知发起人"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 750,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e_apply_pool",
+      "sourceNodeId": "apply",
+      "targetNodeId": "pool_review",
+      "properties": {}
+    },
+    {
+      "id": "e_pool_dec",
+      "sourceNodeId": "pool_review",
+      "targetNodeId": "decision_pass",
+      "properties": {}
+    },
+    {
+      "id": "e_dec_pass",
+      "sourceNodeId": "decision_pass",
+      "targetNodeId": "finish_notify",
+      "properties": {
+        "expr": "#submitType==1"
+      }
+    },
+    {
+      "id": "e_dec_default",
+      "sourceNodeId": "decision_pass",
+      "targetNodeId": "end",
+      "properties": {}
+    },
+    {
+      "id": "e_notify_end",
+      "sourceNodeId": "finish_notify",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}
