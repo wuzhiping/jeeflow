@@ -1,0 +1,149 @@
+{
+  "name": "reject-rollback",
+  "displayName": "驳回-回退到发起人",
+  "type": "approval",
+  "instanceUrl": "/fix/reject-rollback/detail",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "apply-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_reason": ""
+        }
+      },
+      "text": {
+        "value": "发起申请"
+      }
+    },
+    {
+      "id": "leader_review",
+      "type": "snaker:task",
+      "x": 300,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "review-form",
+        "assignee": "leader",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_remark": ""
+        }
+      },
+      "text": {
+        "value": "领导审批"
+      }
+    },
+    {
+      "id": "decision_pass",
+      "type": "snaker:decision",
+      "x": 450,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50
+      },
+      "text": {
+        "value": "通过?"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 600,
+      "y": 100,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    },
+    {
+      "id": "re_apply",
+      "type": "snaker:task",
+      "x": 600,
+      "y": 300,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "reapply-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_reason": ""
+        }
+      },
+      "text": {
+        "value": "重新修改"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e_apply_review",
+      "sourceNodeId": "apply",
+      "targetNodeId": "leader_review",
+      "properties": {}
+    },
+    {
+      "id": "e_review_dec",
+      "sourceNodeId": "leader_review",
+      "targetNodeId": "decision_pass",
+      "properties": {}
+    },
+    {
+      "id": "e_dec_pass",
+      "sourceNodeId": "decision_pass",
+      "targetNodeId": "end",
+      "properties": {
+        "expr": "#submitType==1"
+      }
+    },
+    {
+      "id": "e_dec_reject",
+      "sourceNodeId": "decision_pass",
+      "targetNodeId": "re_apply",
+      "properties": {
+        "expr": "#submitType==6"
+      }
+    },
+    {
+      "id": "e_reapply_review",
+      "sourceNodeId": "re_apply",
+      "targetNodeId": "leader_review",
+      "properties": {}
+    }
+  ]
+}

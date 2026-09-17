@@ -1,4 +1,11 @@
-"""jeeflow FastAPI demo —— boot2 接口规范对齐"""
+"""jeeflow FastAPI demo —— boot2 接口规范对齐
+
+注意（2026-09-17 §36）：
+- 本入口使用内存后端（MemoryRepository）
+- 与 main_pg.py（PG 后端）行为有差异：拦截器未注册时 main.py 静默通过，main_pg.py 抛错
+- 拦截器相关测试请用 main_pg.py
+- 详见 docs/known-issues.md §36 / docs/flow.md §2
+"""
 import asyncio
 import json
 import mimetypes

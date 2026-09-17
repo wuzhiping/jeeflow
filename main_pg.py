@@ -4,6 +4,12 @@ PG 模式与内存版（main.py）路由契约完全一致；差异：
 - pool / repo / ext_repo / facade / 流程定义种子 / 业务数据种子 全部在 FastAPI lifespan 异步上下文创建；
 - 重置路径走 TRUNCATE … RESTART IDENTITY CASCADE，不依赖内部字典；
 - 所有仓储读取改为 JdbcRepository 的 async API（find_define_by_id / query_*_for_stats / find_task_actors）。
+
+注意（2026-09-17 §36）：
+- 本入口使用 PG 后端（JdbcRepository），拦截器未注册严格抛错
+- 与 main.py（内存后端）行为有差异：main.py 拦截器未注册静默通过
+- 拦截器相关测试建议用本入口（契约级行为）
+- 详见 docs/known-issues.md §36 / docs/flow.md §2
 """
 import asyncio
 import json

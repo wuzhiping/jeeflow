@@ -1,0 +1,179 @@
+{
+  "name": "candidate-multi-route",
+  "displayName": "多候选人+多分支审批",
+  "type": "approval",
+  "instanceUrl": "/fix/candidate-multi/detail",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "apply-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_route": ""
+        }
+      },
+      "text": {
+        "value": "发起申请"
+      }
+    },
+    {
+      "id": "decision_route",
+      "type": "snaker:decision",
+      "x": 300,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50
+      },
+      "text": {
+        "value": "路由"
+      }
+    },
+    {
+      "id": "tech_review",
+      "type": "snaker:task",
+      "x": 450,
+      "y": 100,
+      "properties": {
+        "width": 120,
+        "height": 60,
+        "form": "tech-review-form",
+        "assignee": "userA",
+        "candidateUsers": "userA,userB,userC",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "技术审批(候选userA/B/C)"
+      }
+    },
+    {
+      "id": "mgmt_review",
+      "type": "snaker:task",
+      "x": 450,
+      "y": 200,
+      "properties": {
+        "width": 120,
+        "height": 60,
+        "form": "mgmt-review-form",
+        "assignee": "leader",
+        "candidateGroups": "finance",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "管理审批(候选finance)"
+      }
+    },
+    {
+      "id": "boss_review",
+      "type": "snaker:task",
+      "x": 450,
+      "y": 300,
+      "properties": {
+        "width": 120,
+        "height": 60,
+        "form": "boss-review-form",
+        "assignee": "boss",
+        "candidateGroups": "boss_audit",
+        "candidateUsers": "director,boss",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "高管审批(候选boss/director)"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 620,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e_apply_dec",
+      "sourceNodeId": "apply",
+      "targetNodeId": "decision_route",
+      "properties": {}
+    },
+    {
+      "id": "e_dec_tech",
+      "sourceNodeId": "decision_route",
+      "targetNodeId": "tech_review",
+      "properties": {
+        "expr": "#route==1"
+      }
+    },
+    {
+      "id": "e_dec_mgmt",
+      "sourceNodeId": "decision_route",
+      "targetNodeId": "mgmt_review",
+      "properties": {
+        "expr": "#route==2"
+      }
+    },
+    {
+      "id": "e_dec_boss",
+      "sourceNodeId": "decision_route",
+      "targetNodeId": "boss_review",
+      "properties": {}
+    },
+    {
+      "id": "e_tech_end",
+      "sourceNodeId": "tech_review",
+      "targetNodeId": "end",
+      "properties": {}
+    },
+    {
+      "id": "e_mgmt_end",
+      "sourceNodeId": "mgmt_review",
+      "targetNodeId": "end",
+      "properties": {}
+    },
+    {
+      "id": "e_boss_end",
+      "sourceNodeId": "boss_review",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

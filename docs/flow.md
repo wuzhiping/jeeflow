@@ -20,6 +20,22 @@
 
 来源：`jeeflow/model.py:8-14` + `_KNOWN_MODEL = {name,displayName,type,nodes,edges}`（`model.py:316`）。
 
+**后端选择（2026-09-17 §36 新增）**：
+- 本项目提供两个后端入口：`main.py`（内存 / `MemoryRepository`）和 `main_pg.py`（PG / `JdbcRepository`）
+- 两者**引擎核心一致**（共享 `jeeflow/engine.py`），但**行为细节有差异**（见下方速查表）
+- 详见 `./docs/known-issues.md §36`
+
+| 行为 | main.py（内存） | main_pg.py（PG） | 推荐测试后端 |
+|---|---|---|---|
+| 拦截器未注册 | **静默通过** code=0 | **抛错** code=99999999 | **main_pg.py** |
+| ID 格式 | 整数 1, 2, 113（UPSERT 累计）| 19 位雪花 ID | 均可 |
+| reset 行为 | 清 instances/tasks/actors/cc/designs | + TRUNCATE PG 表 | 均可 |
+| `v1.5.x` 修复 | main.py 含 v1.5.1/2/3 | main_pg.py 含 v1.5.1-PG/2-PG/3-PG | 均可 |
+
+**测试建议**：
+- 拦截器相关行为（postInterceptors/handler FQCN）→ 用 **main_pg.py**（严格抛错，便于发现）
+- 其他场景 → main.py 即可
+
 ```json
 {
   "name": "simple",                          // 流程 key（必填，全局唯一，字母数字下划线）
@@ -36,6 +52,21 @@
 `parse_flow_model` 严格过滤未知字段，写入额外键（如设计器 UI 元数据）会被丢弃。
 
 `type` 已知值：`"approval"`（默认）、`"business"`（见 `flows/10-mixed-mode.json`，对应业务流）。`preInterceptors` / `postInterceptors` 当前样例为空串，预留扩展点。
+
+**type=approval vs business（实测 2026-09-17 BDD Task 19）**：
+- 引擎对两种 type 处理**无差异**（路由/状态/任务流转一致）
+- 仅用于前端 UI 分类 / 报表分类（业务流与审批流视觉区分）
+- 测试中两者行为完全一致
+
+**`preInterceptors` 字段状态（2026-09-17 BDD Task 19 实测）**：
+- 当前 Python 引擎**静默未生效**（已知问题 §34）：`_resolve_interceptors` 只读 `postInterceptors`
+- 写 `preInterceptors` 不会抛错，但无任何效果（pre_handle 不被调用）
+- **建议**：当前版本不要使用 preInterceptors，只用 postInterceptors
+
+**`postInterceptors` 字段**：
+- 逗号分隔拦截器名 → 从 `engine.ext.interceptor_registry` 取
+- 已注册：`pre_handle` 在节点执行前调用（返回 False 阻断流转）；`post_handle` 在节点执行后调用
+- **未注册时立即抛 ValueError 阻断流程启动**（engine.py:528）— 不静默跳过
 
 ---
 
@@ -83,7 +114,7 @@
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `assignee` | string | 否（与 `assignmentHandler` 互斥） | 处理人解析：`"applicant"`=发起人；`"leader"`=运营占位；逗号分隔多值；或流程变量 token（`f_xxx`/`xxx`，`engine.py:265-275`） |
+| `assignee` | string | 否（与 `assignmentHandler` 互斥） | 处理人解析：`"applicant"`=发起人；`"leader"`=运营占位；逗号分隔多值；或流程变量 token（`f_xxx`/`xxx`，`engine.py:265-275`）|
 | `assignmentHandler` | string | 否 | 处理器全限定类名（Java 类名约定，跨语言通用，见 §6） |
 | `form` | string | 否 | 表单 key（前端按 key 渲染；空串合法，见 10-mixed-mode.json task3） |
 | `taskType` | int | 是 | `0`=主审 `1`=副审（旁审）`2`=记录（`TaskType` 枚举，`model.py:80`）；样例 `04-fork-join.json` taskB 与 `10-mixed-mode.json` task3 均用 1 |
@@ -94,9 +125,60 @@
 | `candidateGroups` | string | 否 | 候选角色组（同上两种位置，逗号分隔） |
 | `field` | object | 否 | 字段集合：可放 `candidateUsers` / `candidateGroups` / `countersignCompletionCondition` / `PERMISSION_xxx`（任务字段权限，1=只读、2=隐藏，见 §5） |
 
+**assignee 解析规则（实测 2026-09-17 §35）**：
+- `"applicant"` → `inst.operator`（流程发起人）
+- `inst.variables` 中存在的 key → 查变量值（list/tuple 展开）
+- 其他字符串 → **直接当 userId**（**不查 SPI 角色映射**）
+- 多值：逗号分隔，逐个解析
+- 角色映射仅通过 `assignmentHandler="...TaskRoleAssigneeHandler"` 实现（§25）
+
+**actor 复用（实测 2026-09-17 BDD Task 20）**：
+- 同一 userId 可在不同 taskName 节点分别作为 actor
+- assignee 在每个节点独立解析
+- BDD Task 20 中 leader 在 team_lead 和 hr_review 节点各处理一次（taskName 不同）
+
+**candidateUsers/candidateGroups 行为（实测 2026-09-17 BDD Task 18）**：
+- **仅用于前端候选分页过滤**（`processTask/candidatePage` API）
+- **不参与 actor 解析**（actor 仍由 assignee / handler 决定）
+- 测试时 actor 必须是真实 user id（如 `leader`），不能是占位字符串
+
+**submitType 路由（实测 2026-09-17 BDD Task 17）**：
+
+| submitType | 值 | 引擎行为 | 用途 |
+|---|---|---|---|
+| APPLY | 0 | execute_process_task | startAndExecute 自动注入 |
+| AGREE | 1 | execute_process_task | 同意/通过 |
+| REJECT | 2 | execute_and_jump_to_end | 驳回 → state=45 |
+| ROLLBACK | 3 | execute_and_jump_task | 跳到指定 taskName（需 args.taskName） |
+| RE_APPLY | 5 | execute_process_task | 重提（语义同 AGREE） |
+| ROLLBACK_TO_OPERATOR | 6 | execute_and_jump_to_first_task_node | 跳到流程图第一个 task 节点 |
+| COUNTERSIGN_DISAGREE | 20 | execute_process_task + disagreeFlag | 会签否决（ONE_VOTE_VETO 场景） |
+
+注意：`submitType=2` REJECT **不走 decision**，facade 拦截后直接调 `execute_and_jump_to_end`（state=45）；decision 节点只看 submitType 1/5/20（其他 fallback 到首边）。
+
+**比例会签（N/M 通过）扩展（实测 2026-09-17 BDD Task 16）**：
+- `countersignType=PARALLEL` + `countersignCompletionCondition="#nrOfCompletedInstances>=K"`
+- 每次 task 完成时 evaluate 表达式；true → **abandon 剩余 DOING**（taskState=99 ABANDON）+ 推进下游
+- RatioCapableEngine 扩展（`main_pg.py:93-155`）
+
 ### 3.4 decision 节点 properties
 
 `engine._evaluate_decision`（`engine.py:353-375`）按出边 `properties.expr` 依次求值，第一个真值即沿该边。`properties.expr` 可空（默认边），`handleClass` 兼容 Java 扩展点（样例 03-decision-expr.json 与 10-mixed-mode.json 均保留 `"handleClass": ""` 占位，当前未触发，留作后续扩展）。
+
+**decision 兜底边（实测 2026-09-17 §33）**：
+- 决策节点按 edge 顺序评估 expr，首个 true 即流转
+- 所有 expr 都不匹配 → **fallback 到第一条出边**（即使 `expr=""`）
+- 设计建议：第一条出边用 `expr=""`（默认/兜底），后续出边用显式 expr
+
+**多条件分支处理（实测 2026-09-17 BDD Task 16）**：
+- `SimpleExprEvaluator` 不支持 `&&` / `||`，单 expr 仅单 key op number
+- 多条件需用**多层 decision 串接**（decision_low → decision_high → ...）
+- 详见 §3.4 expr 约束 + 多层 decision 样例 `bdd/bdd-expense-ratio-tiered_20260917132000.json`
+
+**decision 与 submitType 路由（实测 2026-09-17 BDD Task 17）**：
+- decision 节点只看 submitType 1/5/20（其他 fallback 到首边）
+- submitType=2 REJECT 不走 decision，facade 拦截后直接 `execute_and_jump_to_end`（state=45）
+- submitType=6 ROLLBACK_TO_OPERATOR 不走 decision，直接跳到流程图第一个 task 节点
 
 > ✅ **决策 expr 实测约束（2026-09-17 已解决）**：
 > - `SimpleExprEvaluator.eval`（`main_pg.py:71-89`）严格匹配正则 `^\s*(\w+)\s*(>=|<=|!=|==|>|<)\s*(\d+(?:\.\d+)?)\s*$`

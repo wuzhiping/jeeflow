@@ -1,0 +1,203 @@
+{
+  "name": "expense-ratio-tiered",
+  "displayName": "报销-金额分层比例会签",
+  "type": "approval",
+  "instanceUrl": "/fix/expense-ratio/detail",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "apply-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_amount": "",
+          "f_category": ""
+        }
+      },
+      "text": {
+        "value": "发起报销"
+      }
+    },
+    {
+      "id": "decision_low",
+      "type": "snaker:decision",
+      "x": 300,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50
+      },
+      "text": {
+        "value": "低额?"
+      }
+    },
+    {
+      "id": "decision_high",
+      "type": "snaker:decision",
+      "x": 420,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50
+      },
+      "text": {
+        "value": "高额?"
+      }
+    },
+    {
+      "id": "finance_only",
+      "type": "snaker:task",
+      "x": 450,
+      "y": 100,
+      "properties": {
+        "width": 110,
+        "height": 50,
+        "form": "finance-form",
+        "assignee": "leader",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "财务单签"
+      }
+    },
+    {
+      "id": "finance_mgr",
+      "type": "snaker:task",
+      "x": 580,
+      "y": 200,
+      "properties": {
+        "width": 110,
+        "height": 50,
+        "form": "ratio-form-2",
+        "assignee": "leader,manager",
+        "taskType": 0,
+        "performType": 1,
+        "countersignType": "PARALLEL",
+        "field": {
+          "candidateUsers": "finance,manager",
+          "countersignCompletionCondition": "#nrOfCompletedInstances>=1"
+        }
+      },
+      "text": {
+        "value": "财务+经理1/2通过"
+      }
+    },
+    {
+      "id": "finance_mgr_dir",
+      "type": "snaker:task",
+      "x": 600,
+      "y": 300,
+      "properties": {
+        "width": 130,
+        "height": 50,
+        "form": "ratio-form-3",
+        "assignee": "leader,manager,director",
+        "taskType": 0,
+        "performType": 1,
+        "countersignType": "PARALLEL",
+        "field": {
+          "candidateUsers": "finance,manager,director",
+          "countersignCompletionCondition": "#nrOfCompletedInstances>=2"
+        }
+      },
+      "text": {
+        "value": "财务+经理+总监2/3通过"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 780,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e_apply_dec",
+      "sourceNodeId": "apply",
+      "targetNodeId": "decision_low",
+      "properties": {}
+    },
+    {
+      "id": "e_dec_small",
+      "sourceNodeId": "decision_low",
+      "targetNodeId": "finance_only",
+      "properties": {
+        "expr": "#amount<=5000"
+      }
+    },
+    {
+      "id": "e_dec_other",
+      "sourceNodeId": "decision_low",
+      "targetNodeId": "decision_high",
+      "properties": {}
+    },
+    {
+      "id": "e_dec_mid",
+      "sourceNodeId": "decision_high",
+      "targetNodeId": "finance_mgr",
+      "properties": {
+        "expr": "#amount<=30000"
+      }
+    },
+    {
+      "id": "e_dec_large",
+      "sourceNodeId": "decision_high",
+      "targetNodeId": "finance_mgr_dir",
+      "properties": {}
+    },
+    {
+      "id": "e_fin_end",
+      "sourceNodeId": "finance_only",
+      "targetNodeId": "end",
+      "properties": {}
+    },
+    {
+      "id": "e_fm_end",
+      "sourceNodeId": "finance_mgr",
+      "targetNodeId": "end",
+      "properties": {}
+    },
+    {
+      "id": "e_fmd_end",
+      "sourceNodeId": "finance_mgr_dir",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

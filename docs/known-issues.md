@@ -1066,3 +1066,202 @@ TDD 排查步骤：
 
 - `./tdd/fix-multi-in-edge_20260917122700.md`（原失败报告）
 - `./tdd/fix-multi-in-edge-join-fix_20260917130500.md`（修复报告）
+
+---
+
+## §31. highLight.historyNodeNames 含未访问节点（BDD Task 16 发现 2026-09-17）
+
+### 现象
+
+`processInstance/highLight` 返回的 `historyNodeNames` 包含**未触发**的节点：
+- 例如 6 节点流程仅走了 2 步，history 含 7 个节点（含 `end` 和所有未访问 task）
+- 测试 BDD Task 16 中 case-small 完成后，history 含 `['apply', 'finance_only', 'decision_low', 'decision_high', 'end', 'finance_mgr', 'finance_mgr_dir']`
+
+### 根因
+
+highLight 行为定义为"已访问 + 可达节点"（设计器视角），不是"已通过节点"（运行时视角）。
+- `historyNodeNames`：实例流转过程中**经过或可达**的节点（包含决策分支的备选分支）
+- `current`：当前 DOING 节点（可能为 null）
+
+### 影响
+
+- 测试时容易把 `historyNodeNames` 等同于"已通过"，导致误判流程已完成
+- state=10 但 history 含 end 节点 → 实际 end 未触发
+
+### 缓解措施
+
+- **测试 ground truth 用 `state`（state==20=DONE）**，不要看 historyNodeNames
+- highLight 仅用于 UI 流程图高亮显示，不用于状态判定
+- 详见 `bdd/bdd-expense-ratio-tiered_20260917132000.md`
+
+---
+
+## §32. `re_apply` 节点冗余设计（BDD Task 17 发现 2026-09-17）
+
+### 现象
+
+流程图设计 `decision_pass → re_apply → leader_review` 想实现"驳回必经 re_apply 节点修改"，但引擎 `submitType=6` ROLLBACK_TO_OPERATOR **直接跳到第一个 task 节点**，不经过 re_apply。
+
+### 根因
+
+`engine.execute_and_jump_to_first_task_node`（`engine.py` 内部方法）按 flow 顺序查找第一个 task 节点，跳过所有非 task 节点（含 re_apply）。即使流程图设计中间节点也被绕过。
+
+### 影响
+
+- 设计师的"驳回必经 re_apply"意图无法实现
+- 实际驳回路径：当前 task → submitType=6 → 直接到 apply（第一个 task）→ user1 重提
+
+### 缓解措施
+
+- **设计**：如需强制"驳回必经特定中间节点"，用 `submitType=3` ROLLBACK + 指定 taskName（args.taskName="re_apply"）
+- **设计**：简单驳回-重提场景，无需中间节点；直接靠 submitType=6 + 第一个 task 节点
+- 详见 `bdd/bdd-reject-rollback_20260917132200.md`
+
+---
+
+## §33. decision 节点兜底边行为（BDD Task 18 发现 2026-09-17）
+
+### 现象
+
+决策节点按 edge 顺序评估 expr，**首个 true 即流转**；所有 expr 都不匹配 → fallback 到第一条出边（即使 expr=""）。
+
+### 根因
+
+`engine._evaluate_decision` 按 edges 顺序遍历，首个 expr=true 的边即选中；无 true 时返回 edges[0]（设计器默认行为）。
+
+### 影响
+
+- 设计师遗漏 case 时，流程走默认边（可能不符合业务预期）
+- BDD Task 18 route=3 即走 boss_review 默认边
+
+### 缓解措施
+
+- **设计**：decision 第一条出边用 `expr=""`（默认/兜底），后续出边用显式 expr
+- **测试**：覆盖所有变量值，确保每条 expr 都被测试
+- 详见 `bdd/bdd-candidate-multi-route_20260917132500.md`
+
+---
+
+## §34. `preInterceptors` 字段静默未生效（BDD Task 19 发现 2026-09-17）
+
+### 现象
+
+流程定义顶层 `preInterceptors` 字段保留，但 Python 引擎 `_resolve_interceptors` 只读 `postInterceptors`，**preInterceptors 不生效**。
+
+### 根因
+
+`engine._resolve_interceptors` (engine.py:497-531) 仅读取 `meta.get("postInterceptors")`，不读取 `preInterceptors`。`preInterceptors` 字段在 JSON 中保留但无效果。
+
+### 影响
+
+- 设计师写 `preInterceptors="PRE_ONE"` 期望 pre_handle 被调用，但实际不调用
+- preInterceptors 不抛错（静默），可能误导设计师
+
+### 缓解措施
+
+- **设计**：当前版本不要使用 `preInterceptors`（无效果）；只使用 `postInterceptors`
+- **引擎层**：可加 warning 日志（v1.5+ 实现）
+- 详见 `bdd/bdd-business-interceptor_20260917132800.md`
+
+---
+
+## §35. assignee 字符串直接当 userId（BDD Task 20 发现 2026-09-17）
+
+### 现象
+
+`assignee="boss_audit"` 不查 SPI 角色映射，直接作为 userId 字符串。Task 节点 actor=`['boss_audit']`，但 SPI 中无该 user，task 执行时报"无权限"。
+
+### 根因
+
+`engine._resolve_actors` (engine.py:259-275) 处理 assignee 字符串：
+- 包含 "applicant" → 替换为 `inst.operator`
+- token 在 `inst.variables` → 查变量值
+- 其他 → 直接当 userId 字符串
+- **不会查 SPI role_code 映射**（与 handler 路径不同）
+
+### 影响
+
+- 设计师期望 `assignee="finance_role"` 自动查 SPI finance → user 列表，实际不会
+- actor 是字面量字符串，task 提交时报错（用户不存在）
+
+### 缓解措施
+
+- **设计**：如需角色映射，用 `assignmentHandler="...TaskRoleAssigneeHandler"`（§25）
+- **设计**：assignee 用真实 userId 或变量 token（`#f_userList`）
+- 详见 `bdd/bdd-multi-task-6_20260917133200.md`
+
+---
+
+## §36. main.py 后端与 main_pg.py 后端 _resolve_interceptors 行为不一致（BDD Task 19 验证 2026-09-17）
+
+### 现象
+
+| 后端 | 流程配置 | 实测响应 |
+|---|---|---|
+| main.py（内存） | type=business + postInterceptors=POST_ONE 未注册 | `code=0` + apply DONE + biz_review active（**静默通过**）|
+| main_pg.py（PG） | type=business + postInterceptors=POST_ONE 未注册 | `code=99999999` + msg=`postInterceptors 声明的拦截器未注册: POST_ONE` |
+
+### 验证步骤
+
+```bash
+# main_pg.py 后端（已确认，BDD Task 19 Case A）
+curl /wf/processInstance/startAndExecute -d '...'
+# → {"code":99999999,"msg":"postInterceptors 声明的拦截器未注册: POST_ONE"}
+
+# main.py 后端（in-process 隔离测试）
+python3 -c "import main; ..."
+# → facade.flow returned: {'code': 99999999, 'msg': '...'}  ← 也抛错！
+
+# main.py 后端（HTTP service 实测）
+curl /wf/processInstance/startAndExecute -d '...'
+# → {"code":0,"msg":"成功","data":{"processInstanceId":"..."}}  ← 不抛错！
+```
+
+### 矛盾点
+
+- in-process 直接调 `facade.flow("processInstance/startAndExecute", ...)` → 抛错
+- HTTP API 经 uvicorn worker → **不抛错**
+
+### 可能根因
+
+1. uvicorn --reload worker 进程的代码加载与单进程 in-process 存在差异（reload 监控 main.py，engine.py 不会 reload）
+2. service 进程的 `_ic_cache` 在多次调用 + reload 后被填充为 stale `[]`
+3. MemoryRepository 与 JdbcRepository 在 `find_define_by_id` 返回值上行为不同（内存版 deep-copy vs PG 版）
+
+### 实际影响
+
+- main.py 后端（内存）整体更宽松：未注册拦截器静默通过
+- main_pg.py 后端（PG）严格：未注册拦截器抛错阻断流程
+- **测试时需明确后端**：main.py 验证拦截器行为不严格，main_pg.py 才是契约级行为
+
+### 修复策略（**已选 C：文档化** 2026-09-17）
+
+| 方案 | 描述 | 影响 | 状态 |
+|---|---|---|---|
+| A | main.py 加 try/except 包装 _resolve_interceptors 吞 ValueError + warn 日志 | 行为宽松化，保持现状 | 弃选 |
+| B | main.py 修复 _resolve_interceptors 调用链使其严格抛错 | 行为严格化，与 PG 一致 | 弃选 |
+| **C** | **保持现状但 docs 明确两后端行为差异** | **最小改动，需文档同步** | **✅ 已选** |
+
+### 文档化落地（方案 C）
+
+- `docs/flow.md §2` 新增「**main.py vs main_pg.py 后端行为差异**」小节
+- `main.py` 顶部 docstring 加注释提醒
+- 后续开发/测试人员按文档选择后端，避免误判
+
+### 后端差异速查表
+
+| 行为 | main.py（内存） | main_pg.py（PG） | 推荐测试后端 |
+|---|---|---|---|
+| 拦截器未注册 | 静默通过 code=0 | 抛错 code=99999999 | **main_pg.py**（契约级）|
+| ID 格式 | 整数 1, 2, 113（UPSERT 累计）| 19 位雪花 ID | 均可 |
+| 重置后 ID | 自增 _seq 累计 | TRUNCATE IDENTITY | 均可 |
+| /api/reset 行为 | 清空 instances/tasks/actors/cc/designs | + TRUNCATE PG 表 | 均可 |
+| 种子加载 | 启动时一次性 load_seed | 启动 + reset 时 seed_business | 均可 |
+| `_logged_resolve_actors` | v1.5.2/1.5.3 已加载 | v1.5.1-PG/1.5.2-PG/1.5.3-PG 已加载 | 均可 |
+
+**测试建议**：拦截器 / 拦截器相关行为用 main_pg.py（严格）；其他场景用 main.py 即可。
+
+### 测试报告
+
+- `./bdd/bdd-task16-20-mainpy-verify_20260917134000.md`（5 Task main.py 后端完整验证）
+- `./bdd/bdd-business-interceptor_20260917132800.md`（BDD Task 19 main_pg.py 后端验证）
