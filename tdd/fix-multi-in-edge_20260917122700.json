@@ -1,0 +1,60 @@
+{
+  "name": "fix-multi-in-edge-fanin",
+  "displayName": "FIX-multi-in-edge-task重复",
+  "type": "approval",
+  "instanceUrl": "/fix/multi-in-edge/detail",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 100, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 200, "y": 200,
+      "properties": {"width": 100, "height": 50, "form": "f", "assignee": "user1", "taskType": 0, "performType": 0, "field": {}},
+      "text": {"value": "提交"}
+    },
+    {
+      "id": "fork1",
+      "type": "snaker:fork",
+      "x": 350, "y": 200,
+      "properties": {"width": 50, "height": 50},
+      "text": {"value": "分支"}
+    },
+    {
+      "id": "branch_A",
+      "type": "snaker:task",
+      "x": 500, "y": 50,
+      "properties": {"width": 100, "height": 50, "form": "f", "assignee": "leader", "taskType": 0, "performType": 0, "field": {}},
+      "text": {"value": "A"}
+    },
+    {
+      "id": "branch_B",
+      "type": "snaker:task",
+      "x": 500, "y": 350,
+      "properties": {"width": 100, "height": 50, "form": "f", "assignee": "manager", "taskType": 0, "performType": 0, "field": {}},
+      "text": {"value": "B"}
+    },
+    {
+      "id": "fanin_task",
+      "type": "snaker:task",
+      "x": 650, "y": 200,
+      "properties": {"width": 100, "height": 50, "form": "f", "assignee": "userA", "taskType": 0, "performType": 0, "field": {}},
+      "text": {"value": "fanin-task(双入边)"}
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 800, "y": 200,
+      "properties": {"width": 50, "height": 50},
+      "text": {"value": "结束"}
+    }
+  ],
+  "edges": [
+    {"id": "e1", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e2", "sourceNodeId": "apply", "targetNodeId": "fork1", "properties": {}},
+    {"id": "e_to_A", "sourceNodeId": "fork1", "targetNodeId": "branch_A", "properties": {}},
+    {"id": "e_to_B", "sourceNodeId": "fork1", "targetNodeId": "branch_B", "properties": {}},
+    {"id": "e_A_fanin", "sourceNodeId": "branch_A", "targetNodeId": "fanin_task", "properties": {}},
+    {"id": "e_B_fanin", "sourceNodeId": "branch_B", "targetNodeId": "fanin_task", "properties": {}},
+    {"id": "e_fanin_end", "sourceNodeId": "fanin_task", "targetNodeId": "end", "properties": {}}
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "name": "bdd-recruit-approval",
+  "displayName": "BDD-招聘审批",
+  "type": "approval",
+  "instanceUrl": "/bdd/recruit/detail",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "text": {"value": "发起"}, "properties": {}},
+    {"id": "apply", "type": "snaker:task", "x": 200, "y": 200,
+     "text": {"value": "用人部门申请"},
+     "properties": {
+       "form": "recruit-form",
+       "taskType": 0,
+       "performType": 0,
+       "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.FormFieldAssigneeHandler",
+       "field": {
+         "PERMISSION_f_position": 1,
+         "PERMISSION_f_salary": 2,
+         "f_recruiter": "user1"
+       }
+     }},
+    {"id": "dept_leader", "type": "snaker:task", "x": 400, "y": 200,
+     "text": {"value": "部门领导审批(DeptLeader)"},
+     "properties": {
+       "form": "dept-form",
+       "taskType": 0,
+       "performType": 0,
+       "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$DeptLeaderAssignmentHandler"
+     }},
+    {"id": "hr_review", "type": "snaker:task", "x": 600, "y": 200,
+     "text": {"value": "HR审批(Operator)"},
+     "properties": {
+       "form": "hr-form",
+       "taskType": 0,
+       "performType": 0,
+       "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OperatorAssignmentHandler"
+     }},
+    {"id": "countersign", "type": "snaker:task", "x": 800, "y": 200,
+     "text": {"value": "高管会签(ONE_VOTE_VETO)"},
+     "properties": {
+       "form": "exec-form",
+       "assignee": "manager,director,boss",
+       "taskType": 0,
+       "performType": 1,
+       "countersignType": "PARALLEL",
+       "countersignCompletionCondition": "ONE_VOTE_VETO"
+     }},
+    {"id": "end", "type": "snaker:end", "x": 1000, "y": 200,
+     "text": {"value": "结束"}, "properties": {}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {"expr": ""}},
+    {"id": "e_apply_dept", "sourceNodeId": "apply", "targetNodeId": "dept_leader", "properties": {"expr": ""}},
+    {"id": "e_dept_hr", "sourceNodeId": "dept_leader", "targetNodeId": "hr_review", "properties": {"expr": ""}},
+    {"id": "e_hr_cs", "sourceNodeId": "hr_review", "targetNodeId": "countersign", "properties": {"expr": ""}},
+    {"id": "e_cs_end", "sourceNodeId": "countersign", "targetNodeId": "end", "properties": {"expr": ""}}
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "name": "bdd-performance-review",
+  "displayName": "BDD-绩效评估",
+  "type": "approval",
+  "instanceUrl": "/bdd/perf/detail",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 100, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 200, "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "perf-form",
+        "assignee": "userA",
+        "taskType": 0, "performType": 0,
+        "field": {
+          "PERMISSION_f_employee": 1, "PERMISSION_f_period": 1,
+          "PERMISSION_f_score": 1, "PERMISSION_f_comment": 1
+        }
+      },
+      "text": {"value": "HR发起评估"}
+    },
+    {
+      "id": "self_review",
+      "type": "snaker:task",
+      "x": 350, "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "perf-form",
+        "assignee": "userB,userC",
+        "candidateUsers": "userB,userC",
+        "taskType": 0, "performType": 0,
+        "field": {"PERMISSION_f_period": 1}
+      },
+      "text": {"value": "员工自评(candidate)"}
+    },
+    {
+      "id": "leader_review",
+      "type": "snaker:task",
+      "x": 500, "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "perf-form",
+        "assignee": "leader",
+        "candidateGroups": "leader",
+        "taskType": 0, "performType": 0,
+        "field": {"PERMISSION_f_score": 1, "PERMISSION_f_comment": 1}
+      },
+      "text": {"value": "主管评分(candidate group)"}
+    },
+    {
+      "id": "hr_review",
+      "type": "snaker:task",
+      "x": 650, "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "perf-form",
+        "assignee": "userA",
+        "candidateGroups": "engineer",
+        "taskType": 0, "performType": 0,
+        "field": {"PERMISSION_f_score": 1}
+      },
+      "text": {"value": "HR复核(candidate group)"}
+    },
+    {
+      "id": "decision_grade",
+      "type": "snaker:decision",
+      "x": 800, "y": 200,
+      "properties": {"width": 100, "height": 50, "expr": "f_score>=90", "handleClass": ""},
+      "text": {"value": "≥90?"}
+    },
+    {
+      "id": "director_review",
+      "type": "snaker:task",
+      "x": 950, "y": 100,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "perf-form",
+        "assignee": "director",
+        "taskType": 0, "performType": 0
+      },
+      "text": {"value": "总监审批(优秀)"}
+    },
+    {
+      "id": "archive",
+      "type": "snaker:task",
+      "x": 950, "y": 300,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "perf-form",
+        "assignee": "userA",
+        "taskType": 0, "performType": 0
+      },
+      "text": {"value": "HR归档"}
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 1100, "y": 200,
+      "properties": {"width": 50, "height": 50},
+      "text": {"value": "结束"}
+    }
+  ],
+  "edges": [
+    {"id": "e1", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e2", "sourceNodeId": "apply", "targetNodeId": "self_review", "properties": {}},
+    {"id": "e3", "sourceNodeId": "self_review", "targetNodeId": "leader_review", "properties": {}},
+    {"id": "e4", "sourceNodeId": "leader_review", "targetNodeId": "hr_review", "properties": {}},
+    {"id": "e5", "sourceNodeId": "hr_review", "targetNodeId": "decision_grade", "properties": {}},
+    {"id": "e_to_director", "sourceNodeId": "decision_grade", "targetNodeId": "director_review", "properties": {"expr": "f_score>=90"}, "text": {"value": "≥90分"}},
+    {"id": "e_to_archive", "sourceNodeId": "decision_grade", "targetNodeId": "archive", "properties": {"expr": "f_score<90"}, "text": {"value": "<90分"}},
+    {"id": "e_director_archive", "sourceNodeId": "director_review", "targetNodeId": "archive", "properties": {}},
+    {"id": "e_archive_end", "sourceNodeId": "archive", "targetNodeId": "end", "properties": {}}
+  ]
+}

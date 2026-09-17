@@ -1,0 +1,102 @@
+{
+  "name": "bdd-recruit-tech",
+  "displayName": "BDD-技术招聘",
+  "type": "approval",
+  "instanceUrl": "/bdd/recruit-tech/detail",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 100, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 200, "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "resume-form",
+        "assignee": "userA",
+        "taskType": 0, "performType": 0,
+        "field": {
+          "PERMISSION_f_candidate": 1, "PERMISSION_f_position": 1, "PERMISSION_f_level": 1
+        }
+      },
+      "text": {"value": "HR提交简历"}
+    },
+    {
+      "id": "resume_screen",
+      "type": "snaker:task",
+      "x": 350, "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "resume-form",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$DeptLeaderAssignmentHandler",
+        "taskType": 0, "performType": 0,
+        "field": {"PERMISSION_f_candidate": 1, "PERMISSION_f_level": 1}
+      },
+      "text": {"value": "部门Leader筛选"}
+    },
+    {
+      "id": "decision_level",
+      "type": "snaker:decision",
+      "x": 500, "y": 200,
+      "properties": {"width": 100, "height": 50, "expr": "f_level<=3", "handleClass": ""},
+      "text": {"value": "职级≤3?"}
+    },
+    {
+      "id": "tech_interview",
+      "type": "snaker:task",
+      "x": 650, "y": 100,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "interview-form",
+        "assignee": "userB,userC",
+        "taskType": 0, "performType": 1,
+        "countersignType": "SEQUENTIAL",
+        "field": {"PERMISSION_f_candidate": 1, "PERMISSION_f_position": 1}
+      },
+      "text": {"value": "技术面试(初级)"}
+    },
+    {
+      "id": "tech_interview_senior",
+      "type": "snaker:task",
+      "x": 650, "y": 300,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "interview-form",
+        "assignee": "userB,userC,manager",
+        "taskType": 0, "performType": 1,
+        "countersignType": "SEQUENTIAL",
+        "field": {"PERMISSION_f_candidate": 1, "PERMISSION_f_position": 1}
+      },
+      "text": {"value": "技术面试(高级)"}
+    },
+    {
+      "id": "hr_final",
+      "type": "snaker:task",
+      "x": 800, "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "offer-form",
+        "assignee": "userA",
+        "taskType": 0, "performType": 0,
+        "field": {"PERMISSION_f_position": 1, "PERMISSION_f_level": 1}
+      },
+      "text": {"value": "HR确认offer"}
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 950, "y": 200,
+      "properties": {"width": 50, "height": 50},
+      "text": {"value": "结束"}
+    }
+  ],
+  "edges": [
+    {"id": "e1", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e2", "sourceNodeId": "apply", "targetNodeId": "resume_screen", "properties": {}},
+    {"id": "e3", "sourceNodeId": "resume_screen", "targetNodeId": "decision_level", "properties": {}},
+    {"id": "e_to_junior", "sourceNodeId": "decision_level", "targetNodeId": "tech_interview", "properties": {"expr": "f_level<=3"}, "text": {"value": "初级"}},
+    {"id": "e_to_senior", "sourceNodeId": "decision_level", "targetNodeId": "tech_interview_senior", "properties": {"expr": "f_level>3"}, "text": {"value": "高级"}},
+    {"id": "e_jr_hr", "sourceNodeId": "tech_interview", "targetNodeId": "hr_final", "properties": {}},
+    {"id": "e_sr_hr", "sourceNodeId": "tech_interview_senior", "targetNodeId": "hr_final", "properties": {}},
+    {"id": "e_hr_end", "sourceNodeId": "hr_final", "targetNodeId": "end", "properties": {}}
+  ]
+}

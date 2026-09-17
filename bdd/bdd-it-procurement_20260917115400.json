@@ -1,0 +1,96 @@
+{
+  "name": "bdd-it-procurement",
+  "displayName": "BDD-IT采购",
+  "type": "approval",
+  "instanceUrl": "/bdd/it-proc/detail",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 100, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 200, "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "it-proc-form",
+        "assignee": "user1",
+        "taskType": 0, "performType": 0,
+        "field": {
+          "PERMISSION_f_item": 1, "PERMISSION_f_qty": 1, "PERMISSION_f_unitPrice": 1, "PERMISSION_f_vendor": 1,
+          "f_applyUser": "user1"
+        }
+      },
+      "text": {"value": "提交采购单"}
+    },
+    {
+      "id": "fork",
+      "type": "snaker:fork",
+      "x": 350, "y": 200,
+      "properties": {"width": 50, "height": 50},
+      "text": {"value": "并行审批"}
+    },
+    {
+      "id": "dept_approval",
+      "type": "snaker:task",
+      "x": 500, "y": 50,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "it-proc-form",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$DeptLeaderAssignmentHandler",
+        "taskType": 0, "performType": 0,
+        "field": {"PERMISSION_f_item": 1, "PERMISSION_f_qty": 1, "PERMISSION_f_unitPrice": 1}
+      },
+      "text": {"value": "部门审批"}
+    },
+    {
+      "id": "it_dept_approval",
+      "type": "snaker:task",
+      "x": 500, "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "it-proc-form",
+        "assignee": "userA",
+        "taskType": 0, "performType": 0,
+        "field": {"PERMISSION_f_item": 1, "PERMISSION_f_vendor": 1}
+      },
+      "text": {"value": "IT部审批"}
+    },
+    {
+      "id": "finance",
+      "type": "snaker:task",
+      "x": 500, "y": 350,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "it-proc-form",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler",
+        "taskType": 0, "performType": 0,
+        "field": {"PERMISSION_f_qty": 1, "PERMISSION_f_unitPrice": 1}
+      },
+      "text": {"value": "财务审批"}
+    },
+    {
+      "id": "join",
+      "type": "snaker:join",
+      "x": 650, "y": 200,
+      "properties": {"width": 50, "height": 50},
+      "text": {"value": "汇合"}
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 800, "y": 200,
+      "properties": {"width": 50, "height": 50},
+      "text": {"value": "结束"}
+    }
+  ],
+  "edges": [
+    {"id": "e1", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e2", "sourceNodeId": "apply", "targetNodeId": "fork", "properties": {}},
+    {"id": "e_fork_dept", "sourceNodeId": "fork", "targetNodeId": "dept_approval", "properties": {}},
+    {"id": "e_fork_it", "sourceNodeId": "fork", "targetNodeId": "it_dept_approval", "properties": {}},
+    {"id": "e_fork_fin", "sourceNodeId": "fork", "targetNodeId": "finance", "properties": {}},
+    {"id": "e_dept_join", "sourceNodeId": "dept_approval", "targetNodeId": "join", "properties": {}},
+    {"id": "e_it_join", "sourceNodeId": "it_dept_approval", "targetNodeId": "join", "properties": {}},
+    {"id": "e_fin_join", "sourceNodeId": "finance", "targetNodeId": "join", "properties": {}},
+    {"id": "e_join_end", "sourceNodeId": "join", "targetNodeId": "end", "properties": {}}
+  ]
+}

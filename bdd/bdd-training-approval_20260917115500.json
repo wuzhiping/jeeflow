@@ -1,0 +1,91 @@
+{
+  "name": "bdd-training-approval",
+  "displayName": "BDD-培训申请",
+  "type": "approval",
+  "instanceUrl": "/bdd/training/detail",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 100, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 200, "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "training-form",
+        "assignee": "user1",
+        "taskType": 0, "performType": 0,
+        "field": {
+          "PERMISSION_f_course": 1, "PERMISSION_f_provider": 1,
+          "PERMISSION_f_budget": 1, "PERMISSION_f_days": 1,
+          "f_applyUser": "user1"
+        }
+      },
+      "text": {"value": "提交培训申请"}
+    },
+    {
+      "id": "pm_review",
+      "type": "snaker:task",
+      "x": 350, "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "training-form",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.FormFieldAssigneeHandler",
+        "taskType": 0, "performType": 0,
+        "field": {
+          "PERMISSION_f_course": 1, "PERMISSION_f_budget": 1,
+          "f_pm_review": "user1"
+        }
+      },
+      "text": {"value": "项目经理复核(FormField)"}
+    },
+    {
+      "id": "decision_budget",
+      "type": "snaker:decision",
+      "x": 500, "y": 200,
+      "properties": {"width": 100, "height": 50, "expr": "f_budget<10000", "handleClass": ""},
+      "text": {"value": "<1万?"}
+    },
+    {
+      "id": "dept_leader_approve",
+      "type": "snaker:task",
+      "x": 650, "y": 100,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "training-form",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$DeptLeaderAssignmentHandler",
+        "taskType": 0, "performType": 0,
+        "field": {"PERMISSION_f_budget": 1, "PERMISSION_f_days": 1}
+      },
+      "text": {"value": "部门负责人(小额)"}
+    },
+    {
+      "id": "director_approve",
+      "type": "snaker:task",
+      "x": 650, "y": 300,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "training-form",
+        "assignee": "director",
+        "taskType": 0, "performType": 0,
+        "field": {"PERMISSION_f_budget": 1, "PERMISSION_f_days": 1}
+      },
+      "text": {"value": "总监审批(大额)"}
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 800, "y": 200,
+      "properties": {"width": 50, "height": 50},
+      "text": {"value": "结束"}
+    }
+  ],
+  "edges": [
+    {"id": "e1", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e2", "sourceNodeId": "apply", "targetNodeId": "pm_review", "properties": {}},
+    {"id": "e3", "sourceNodeId": "pm_review", "targetNodeId": "decision_budget", "properties": {}},
+    {"id": "e_to_dept", "sourceNodeId": "decision_budget", "targetNodeId": "dept_leader_approve", "properties": {"expr": "f_budget<10000"}, "text": {"value": "<1万"}},
+    {"id": "e_to_dir", "sourceNodeId": "decision_budget", "targetNodeId": "director_approve", "properties": {"expr": "f_budget>=10000"}, "text": {"value": "≥1万"}},
+    {"id": "e_dept_end", "sourceNodeId": "dept_leader_approve", "targetNodeId": "end", "properties": {}},
+    {"id": "e_dir_end", "sourceNodeId": "director_approve", "targetNodeId": "end", "properties": {}}
+  ]
+}

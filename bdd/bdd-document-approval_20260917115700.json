@@ -1,0 +1,106 @@
+{
+  "name": "bdd-document-approval",
+  "displayName": "BDD-公文审批",
+  "type": "approval",
+  "instanceUrl": "/bdd/document/detail",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 100, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 200, "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "document-form",
+        "assignee": "user1",
+        "taskType": 0, "performType": 0,
+        "field": {
+          "PERMISSION_f_title": 1, "PERMISSION_f_type": 1, "PERMISSION_f_priority": 1, "PERMISSION_f_content": 1,
+          "f_applyUser": "user1"
+        }
+      },
+      "text": {"value": "起草公文"}
+    },
+    {
+      "id": "dept_review",
+      "type": "snaker:task",
+      "x": 350, "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "document-form",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$DeptLeaderAssignmentHandler",
+        "taskType": 0, "performType": 0,
+        "field": {"PERMISSION_f_title": 1, "PERMISSION_f_content": 1}
+      },
+      "text": {"value": "部门负责人初审"}
+    },
+    {
+      "id": "parallel_veto",
+      "type": "snaker:task",
+      "x": 500, "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "document-form",
+        "assignee": "userA,userB,userC",
+        "taskType": 0, "performType": 1,
+        "countersignType": "PARALLEL",
+        "countersignCompletionCondition": "ONE_VOTE_VETO",
+        "field": {
+          "candidateUsers": "userA,userB,userC",
+          "PERMISSION_f_title": 1, "PERMISSION_f_content": 1
+        }
+      },
+      "text": {"value": "会签(任一否决)"}
+    },
+    {
+      "id": "decision_priority",
+      "type": "snaker:decision",
+      "x": 650, "y": 200,
+      "properties": {"width": 100, "height": 50, "expr": "f_priority==2", "handleClass": ""},
+      "text": {"value": "紧急?"}
+    },
+    {
+      "id": "boss_sign",
+      "type": "snaker:task",
+      "x": 800, "y": 100,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "document-form",
+        "assignee": "boss",
+        "taskType": 0, "performType": 0,
+        "field": {"PERMISSION_f_title": 1, "PERMISSION_f_type": 1}
+      },
+      "text": {"value": "总经理签发"}
+    },
+    {
+      "id": "director_sign",
+      "type": "snaker:task",
+      "x": 800, "y": 300,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "document-form",
+        "assignee": "director",
+        "taskType": 0, "performType": 0,
+        "field": {"PERMISSION_f_title": 1, "PERMISSION_f_type": 1}
+      },
+      "text": {"value": "总监签发"}
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 950, "y": 200,
+      "properties": {"width": 50, "height": 50},
+      "text": {"value": "结束"}
+    }
+  ],
+  "edges": [
+    {"id": "e1", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e2", "sourceNodeId": "apply", "targetNodeId": "dept_review", "properties": {}},
+    {"id": "e3", "sourceNodeId": "dept_review", "targetNodeId": "parallel_veto", "properties": {}},
+    {"id": "e4", "sourceNodeId": "parallel_veto", "targetNodeId": "decision_priority", "properties": {}},
+    {"id": "e_to_boss", "sourceNodeId": "decision_priority", "targetNodeId": "boss_sign", "properties": {"expr": "f_priority==2"}, "text": {"value": "紧急"}},
+    {"id": "e_to_dir", "sourceNodeId": "decision_priority", "targetNodeId": "director_sign", "properties": {"expr": "f_priority==1"}, "text": {"value": "普通"}},
+    {"id": "e_boss_end", "sourceNodeId": "boss_sign", "targetNodeId": "end", "properties": {}},
+    {"id": "e_dir_end", "sourceNodeId": "director_sign", "targetNodeId": "end", "properties": {}}
+  ]
+}

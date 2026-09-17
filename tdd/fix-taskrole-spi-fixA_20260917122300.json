@@ -1,0 +1,41 @@
+{
+  "name": "fix-taskrole-spi-fixA",
+  "displayName": "FIX-TaskRole节点id不在SPI修复测试",
+  "type": "approval",
+  "instanceUrl": "/fix/taskrole-spi/detail",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 100, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 200, "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "f",
+        "assignee": "user1",
+        "taskType": 0, "performType": 0,
+        "field": {}
+      },
+      "text": {"value": "提交"}
+    },
+    {
+      "id": "finance",
+      "type": "snaker:task",
+      "x": 350, "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "f",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler",
+        "taskType": 0, "performType": 0,
+        "field": {}
+      },
+      "text": {"value": "TaskRole-错误id"}
+    },
+    {"id": "end", "type": "snaker:end", "x": 500, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e1", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e2", "sourceNodeId": "apply", "targetNodeId": "finance", "properties": {}},
+    {"id": "e3", "sourceNodeId": "finance", "targetNodeId": "end", "properties": {}}
+  ]
+}

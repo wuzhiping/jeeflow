@@ -1,0 +1,64 @@
+{
+  "name": "bdd-dept-transfer-fork",
+  "displayName": "BDD-部门调拨",
+  "type": "approval",
+  "instanceUrl": "/bdd/transfer/detail",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "text": {"value": "发起"}, "properties": {}},
+    {"id": "apply", "type": "snaker:task", "x": 200, "y": 200,
+     "text": {"value": "调拨申请"},
+     "properties": {
+       "form": "transfer-form",
+       "assignee": "applicant",
+       "taskType": 0,
+       "performType": 0,
+       "field": {
+         "PERMISSION_f_assetNo": 2,
+         "f_employeeId": "user1"
+       }
+     }},
+    {"id": "fork1", "type": "snaker:fork", "x": 400, "y": 200,
+     "text": {"value": "并行会审"}, "properties": {}},
+    {"id": "hr_review", "type": "snaker:task", "x": 600, "y": 100,
+     "text": {"value": "HR审批"},
+     "properties": {
+       "form": "hr-review-form",
+       "assignee": "userA",
+       "taskType": 0,
+       "performType": 0
+     }},
+    {"id": "dept_leader_review", "type": "snaker:task", "x": 600, "y": 300,
+     "text": {"value": "部门领导审批(DeptLeader handler)"},
+     "properties": {
+       "form": "dept-review-form",
+       "taskType": 0,
+       "performType": 0,
+       "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$DeptLeaderAssignmentHandler",
+       "field": {
+         "candidateGroups": "director"
+       }
+     }},
+    {"id": "join1", "type": "snaker:join", "x": 800, "y": 200,
+     "text": {"value": "汇合"}, "properties": {}},
+    {"id": "asset_handover", "type": "snaker:task", "x": 1000, "y": 200,
+     "text": {"value": "资产交接"},
+     "properties": {
+       "form": "handover-form",
+       "assignee": "boss",
+       "taskType": 0,
+       "performType": 0
+     }},
+    {"id": "end", "type": "snaker:end", "x": 1200, "y": 200,
+     "text": {"value": "结束"}, "properties": {}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {"expr": ""}},
+    {"id": "e_apply_fork", "sourceNodeId": "apply", "targetNodeId": "fork1", "properties": {"expr": ""}},
+    {"id": "e_fork_hr", "sourceNodeId": "fork1", "targetNodeId": "hr_review", "properties": {"expr": ""}},
+    {"id": "e_fork_dept", "sourceNodeId": "fork1", "targetNodeId": "dept_leader_review", "properties": {"expr": ""}},
+    {"id": "e_hr_join", "sourceNodeId": "hr_review", "targetNodeId": "join1", "properties": {"expr": ""}},
+    {"id": "e_dept_join", "sourceNodeId": "dept_leader_review", "targetNodeId": "join1", "properties": {"expr": ""}},
+    {"id": "e_join_handover", "sourceNodeId": "join1", "targetNodeId": "asset_handover", "properties": {"expr": ""}},
+    {"id": "e_handover_end", "sourceNodeId": "asset_handover", "targetNodeId": "end", "properties": {"expr": ""}}
+  ]
+}

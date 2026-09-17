@@ -1,0 +1,120 @@
+{
+  "name": "bdd-vehicle-request",
+  "displayName": "BDD-用车申请",
+  "type": "approval",
+  "instanceUrl": "/bdd/vehicle/detail",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 100, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 200, "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "vehicle-form",
+        "assignee": "user1",
+        "taskType": 0, "performType": 0,
+        "field": {
+          "PERMISSION_f_destination": 1, "PERMISSION_f_startTime": 1, "PERMISSION_f_endTime": 1,
+          "PERMISSION_f_passengers": 1, "PERMISSION_f_purpose": 1,
+          "f_applyUser": "user1"
+        }
+      },
+      "text": {"value": "提交用车申请"}
+    },
+    {
+      "id": "fork_resource",
+      "type": "snaker:fork",
+      "x": 350, "y": 200,
+      "properties": {"width": 50, "height": 50},
+      "text": {"value": "资源分配"}
+    },
+    {
+      "id": "dispatch_assign",
+      "type": "snaker:task",
+      "x": 500, "y": 50,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "vehicle-form",
+        "assignee": "userB",
+        "taskType": 0, "performType": 0,
+        "field": {"PERMISSION_f_destination": 1, "PERMISSION_f_passengers": 1}
+      },
+      "text": {"value": "车队派车"}
+    },
+    {
+      "id": "driver_assign",
+      "type": "snaker:task",
+      "x": 500, "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "vehicle-form",
+        "assignee": "userC",
+        "taskType": 0, "performType": 0,
+        "field": {"PERMISSION_f_startTime": 1, "PERMISSION_f_endTime": 1}
+      },
+      "text": {"value": "司机指派"}
+    },
+    {
+      "id": "dept_approve",
+      "type": "snaker:task",
+      "x": 500, "y": 350,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "vehicle-form",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$DeptLeaderAssignmentHandler",
+        "taskType": 0, "performType": 0,
+        "field": {"PERMISSION_f_destination": 1, "PERMISSION_f_purpose": 1}
+      },
+      "text": {"value": "部门审批"}
+    },
+    {
+      "id": "join_confirm",
+      "type": "snaker:join",
+      "x": 650, "y": 200,
+      "properties": {"width": 50, "height": 50},
+      "text": {"value": "汇合确认"}
+    },
+    {
+      "id": "decision_long",
+      "type": "snaker:decision",
+      "x": 800, "y": 200,
+      "properties": {"width": 100, "height": 50, "expr": "f_days>3", "handleClass": ""},
+      "text": {"value": ">3天?"}
+    },
+    {
+      "id": "manager_confirm",
+      "type": "snaker:task",
+      "x": 950, "y": 100,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "vehicle-form",
+        "assignee": "manager",
+        "taskType": 0, "performType": 0,
+        "field": {"PERMISSION_f_destination": 1, "PERMISSION_f_days": 1}
+      },
+      "text": {"value": "经理确认(长途)"}
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 1100, "y": 200,
+      "properties": {"width": 50, "height": 50},
+      "text": {"value": "结束"}
+    }
+  ],
+  "edges": [
+    {"id": "e1", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e2", "sourceNodeId": "apply", "targetNodeId": "fork_resource", "properties": {}},
+    {"id": "e_fk_dispatch", "sourceNodeId": "fork_resource", "targetNodeId": "dispatch_assign", "properties": {}},
+    {"id": "e_fk_driver", "sourceNodeId": "fork_resource", "targetNodeId": "driver_assign", "properties": {}},
+    {"id": "e_fk_dept", "sourceNodeId": "fork_resource", "targetNodeId": "dept_approve", "properties": {}},
+    {"id": "e_disp_join", "sourceNodeId": "dispatch_assign", "targetNodeId": "join_confirm", "properties": {}},
+    {"id": "e_drv_join", "sourceNodeId": "driver_assign", "targetNodeId": "join_confirm", "properties": {}},
+    {"id": "e_dept_join", "sourceNodeId": "dept_approve", "targetNodeId": "join_confirm", "properties": {}},
+    {"id": "e_join_dec", "sourceNodeId": "join_confirm", "targetNodeId": "decision_long", "properties": {}},
+    {"id": "e_to_mgr", "sourceNodeId": "decision_long", "targetNodeId": "manager_confirm", "properties": {"expr": "f_days>3"}, "text": {"value": ">3天"}},
+    {"id": "e_to_end", "sourceNodeId": "decision_long", "targetNodeId": "end", "properties": {"expr": "f_days<=3"}, "text": {"value": "≤3天"}},
+    {"id": "e_mgr_end", "sourceNodeId": "manager_confirm", "targetNodeId": "end", "properties": {}}
+  ]
+}

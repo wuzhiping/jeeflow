@@ -1,0 +1,64 @@
+{
+  "name": "bdd-expense-approval",
+  "displayName": "BDD-报销审批",
+  "type": "approval",
+  "instanceUrl": "/bdd/expense/detail",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "text": {"value": "发起"}, "properties": {}},
+    {"id": "apply", "type": "snaker:task", "x": 200, "y": 200,
+     "text": {"value": "提交报销"},
+     "properties": {
+       "form": "expense-form",
+       "assignee": "applicant",
+       "taskType": 0,
+       "performType": 0,
+       "field": {
+         "PERMISSION_f_amount": 2,
+         "PERMISSION_f_category": 1,
+         "PERMISSION_f_reason": 1
+       }
+     }},
+    {"id": "review", "type": "snaker:task", "x": 400, "y": 200,
+     "text": {"value": "直属主管审批"},
+     "properties": {
+       "form": "review-form",
+       "assignee": "leader",
+       "taskType": 0,
+       "performType": 0,
+       "field": {
+         "candidateGroups": "leader"
+       }
+     }},
+    {"id": "decision", "type": "snaker:decision", "x": 600, "y": 200,
+     "text": {"value": "金额决策"},
+     "properties": {}},
+    {"id": "manager_audit", "type": "snaker:task", "x": 800, "y": 100,
+     "text": {"value": "经理复核(>=3000)"},
+     "properties": {
+       "form": "manager-audit-form",
+       "assignee": "manager",
+       "taskType": 0,
+       "performType": 0
+     }},
+    {"id": "finance_audit", "type": "snaker:task", "x": 800, "y": 300,
+     "text": {"value": "财务审核(<3000)"},
+     "properties": {
+       "form": "finance-audit-form",
+       "assignee": "boss",
+       "taskType": 0,
+       "performType": 0
+     }},
+    {"id": "end", "type": "snaker:end", "x": 1000, "y": 200,
+     "text": {"value": "结束"}, "properties": {}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {"expr": ""}},
+    {"id": "e_apply_review", "sourceNodeId": "apply", "targetNodeId": "review", "properties": {"expr": ""}},
+    {"id": "e_review_dec", "sourceNodeId": "review", "targetNodeId": "decision", "properties": {"expr": ""}},
+    {"id": "e_review_reject", "sourceNodeId": "review", "targetNodeId": "apply", "properties": {"expr": "submitType==2"}},
+    {"id": "e_dec_manager", "sourceNodeId": "decision", "targetNodeId": "manager_audit", "properties": {"expr": "f_amount >= 3000"}},
+    {"id": "e_dec_finance", "sourceNodeId": "decision", "targetNodeId": "finance_audit", "properties": {"expr": "f_amount < 3000"}},
+    {"id": "e_manager_end", "sourceNodeId": "manager_audit", "targetNodeId": "end", "properties": {"expr": ""}},
+    {"id": "e_finance_end", "sourceNodeId": "finance_audit", "targetNodeId": "end", "properties": {"expr": ""}}
+  ]
+}

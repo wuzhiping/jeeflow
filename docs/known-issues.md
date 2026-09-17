@@ -757,3 +757,312 @@ if action in ("processDefine/startAndExecute", "processInstance/startAndExecute"
 ### 测试报告
 
 `./bdd/bdd-purchase-approval_20260917112722.md`
+
+## §23. FormFieldAssigneeHandler 在 apply 节点 + startAndExecute 不触发（BDD 发现 2026-09-17）
+
+### 现象
+
+`bdd-recruit-approval` v1 设计：apply 节点配 `assignmentHandler="FormFieldAssigneeHandler"` + `field.f_recruiter="user1"` + `assignees="user1"`。
+
+实测：
+- instanceId=91767123038821
+- `processInstance/detail`：`state=10 DOING, active=0, tasks=[]`
+- 流程卡死，无任何 task 创建
+
+### 已知对照
+
+| 流程 | apply 节点 | FormField handler 节点 | 结果 |
+|---|---|---|---|
+| `11-assignment-handler` | 无 apply | task1 (FormField) | ✅ task1 自动完成 |
+| `bdd-recruit-approval` v1 | apply (FormField) | — | ❌ 卡死 |
+
+### 根因推测
+
+- apply 节点在 `startAndExecute` 时由 engine 视为「发起人自动任务」，不通过 handler 路径
+- handler 解析 actor 后**绕过 task 创建**，但下一节点也未激活，状态卡死
+
+### 缓解措施
+
+- 短期：apply 节点不使用 FormFieldAssigneeHandler，用默认 `assignee="<operator>"` 即可
+- 引擎层：handler 解析失败时 fallback 到 inst.operator；或补 warning 日志
+
+### 测试报告
+
+`./bdd/bdd-recruit-approval_20260917113813.md`（含 patch-1）
+
+## §24. FormFieldAssigneeHandler 字段名必须是 `f_<node.id>` 而非任意字段名（BDD 发现 2026-09-17）
+
+### 现象
+
+`bdd-project-init` v1 设计：pm_form 节点配 `assignmentHandler="FormFieldAssigneeHandler"` + `field.f_pm_reviewer="user1"` + `assignees="user1"`。实测流程卡死。
+
+### 根因（`jeeflow/builtin.py:55`）
+
+```python
+def _find_field_value(self, variables, field_name):
+    if "f_" + field_name in variables:  # ← handler 用 node.id 查 f_<node.id>
+        return variables["f_" + field_name]
+    # 回落：去数字后缀、裸 key 等
+```
+
+**handler 强制字段名规则**：`f_<node.id>`（即 `f_<properties 中节点 id 字段>`）。
+
+| 设计 | node.id | 期望字段 | 实际查 | 结果 |
+|---|---|---|---|---|
+| `bdd-recruit-approval` v1（apply） | `apply` | `f_recruiter` | `f_apply` | ❌ |
+| `bdd-project-init` v1（pm_form） | `pm_form` | `f_pm_reviewer` | `f_pm_form` | ❌ |
+| `bdd-project-init` v2 patch-1（pm_form） | `pm_form` | `f_pm_form` | `f_pm_form` | ✅ |
+| `11-assignment-handler` task1 | `task1` | `f_task1` | `f_task1` | ✅ |
+
+### 缓解措施
+
+- **设计时**：FormField handler 节点的 `field` 字段名**必须 = `f_<node.id>`**
+- **运行时**：startAndExecute 顶层 `variables` 必须传 `f_<node.id>=<userId>`，否则 handler 返回 `[]`，流程卡死
+- **同 §18**：TaskRoleAssigneeHandler 同样用 `node.id` 查 SPI role_code（`DEMO_ROLE_TO_USERS.json` 需预定义）
+
+### 测试报告
+
+`./bdd/bdd-project-init_20260917114047.md`（含 patch-1）
+
+## §25. handler FQCN 拼错静默失败（BDD 发现 2026-09-17）
+
+### 现象
+
+`bdd-expense-by-category` 初版 `finance_review` 节点写：
+```json
+{
+  "assignmentHandler": "jeeflow.assignment.TaskRoleAssigneeHandler"
+}
+```
+
+期望：handler 调用 SPI `find_by_role("finance_review")` → 返回 [] → 流程卡死 state=10 active=0
+实际：无任何日志输出，handler 解析失败返回 `[]`，下一节点不创建
+
+### 根因（`engine.py:443-446`）
+
+```python
+handler_name = node.properties.get("assignmentHandler", "")
+if handler_name and self.ext and self.ext.registry:
+    h = self.ext.registry.resolve_assignment(handler_name)
+    if h: return await h.assign(node, inst, operator)  # ← 解析不到直接跳过
+# 后续 fallback 到 assignment_handler，再 fallback 到 []
+```
+
+**handler FQCN 拼错时静默失败**，没有 warning/error 日志，下游节点不创建。
+
+### 4 个内置 handler 完整 FQCN
+
+| handler | FQCN |
+|---|---|
+| Operator | `com.mldong.jeeflow.interceptor.impl.OperatorAssignmentHandler` |
+| FormField | `com.mldong.jeeflow.interceptor.impl.FormFieldAssigneeHandler` |
+| DeptLeader | `com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$DeptLeaderAssignmentHandler` |
+| DeptMainLeader | `com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$DeptMainLeaderAssignmentHandler` |
+| ApplicantDeptLeader | `com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$ApplicantDeptLeaderAssignmentHandler` |
+| ApplicantDeptMainLeader | `com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$ApplicantDeptMainLeaderAssignmentHandler` |
+| TaskRole | `com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler` |
+
+**注意 `$` 不是 `.`**：`OrgUserAssignmentHandlers$TaskRoleAssigneeHandler` 是内部类分隔符。
+
+### 缓解措施
+
+- **设计时**：严格对照 `flows/11-assignment-handler.json` 已用 FQCN 复制
+- **测试时**：执行 `wf/processInstance/detail` 检查 `activeTaskList` 是否创建；为空 + state=10 → handler FQCN 错误
+- **引擎层**：建议加 warning 日志 `handler_name not registered, fallback to default`
+
+### 测试报告
+
+`./bdd/bdd-expense-by-category_20260917115100.md`
+
+## §26. handler 失败导致 fork 分支静默通过（BDD 发现 2026-09-17）
+
+### 现象
+
+`bdd-it-procurement` 初版 finance_approval 节点用 TaskRoleAssigneeHandler + node.id="finance_approval"，SPI 无该 role。
+
+**实测**：
+- detail.activeTaskList **不包含** finance_approval task
+- highLight.historyNodeNames **包含** finance_approval（节点被遍历）
+- fork 其他分支（dept + it）完成后 join → end → state=20 DONE
+- 财务审批**实际从未发生**，流程非法通过
+
+### 根因（`engine.py:378-379` + `engine.py:334-335`）
+
+```python
+async def _create_task(self, node, inst, operator, vars_):
+    actors = await self._resolve_actors(node, inst, operator, vars_)
+    if not actors: return  # ← handler 返回 [] 直接 return，无 warning
+    ...
+
+elif node.type == TYPE_FORK:
+    for n in _follow_edges(flow, node.id):
+        await self._execute_node(flow, inst, n, operator, vars_)
+    # ← fork 触发所有分支，子节点 _create_task 失败不影响 fork 流转
+```
+
+**核心问题**：
+1. handler 失败（actor=[]）→ _create_task 静默 return
+2. fork 节点遍历所有分支，子分支失败不影响 fork 主流程
+3. join 检查 `find_doing_tasks` 只看 DOING 数（taskState=10），handler 失败节点根本没 task 创建
+4. 其他分支完成后 join 误判"全部完成" → 流转 end
+
+### 缓解措施
+
+- **设计时**：handler 节点 id 必须匹配 SPI `DEMO_ROLE_TO_USERS.json` 中的 role_code
+- **设计时**：关键审批节点用 `assignee="<user>"` 而非 handler，避免静默失败
+- **测试时**：每个 fork 分支检查 `processInstance/detail.activeTaskList` 包含预期 task，否则视为失败
+- **引擎层建议**：handler 返回 [] 时记 warning 日志；fork 应跟踪"未激活分支"，join 检查失败
+
+### 测试报告
+
+`./bdd/bdd-it-procurement_20260917115400.md`
+
+## §27. 多入边 task 节点重复创建 task（BDD 发现 2026-09-17）
+
+### 现象
+
+`bdd-position-transfer` 流程：
+- apply → from_dept_approve + to_dept_approve（双入边分别走）
+- from_dept_approve → hr_review
+- to_dept_approve → hr_review（**双入边汇合到 hr_review**）
+
+实测 hr_review 节点被创建了 **2 个独立 task**（state=10 each），需各执行一次才能流转。
+
+后续 parallel_final 节点（同 SEQUENTIAL 多 actor）也被双 hr_review 入边触发，初始创建 2 个 leader task，但 SEQUENTIAL 自动 advance 后只剩 1 个 doing。
+
+### 根因
+
+`_execute_node` 在每次节点被前驱激活时都创建新 task，多入边 → 多次 _execute_node → 多 task。
+
+### 影响
+
+- 同一节点执行 N 次（N=入边数），浪费用户操作
+- 业务上重复审批（用户A 需审批同一节点两次）
+
+### 缓解措施
+
+- **设计时**：避免多入边汇合到同一 task 节点；改用 join 节点
+- **设计时**：用 `01-simple` 风格的线性流，避免 fan-in
+- **引擎层**：节点首次创建 task 后，后续入边激活应跳过创建，仅检查已有 task 状态
+
+### 测试报告
+
+`./bdd/bdd-position-transfer_20260917115900.md`
+
+## §28. SimpleExprEvaluator 字符串值抛 ValueError 导致流程失败（FIX-T1 已修复 2026-09-17）
+
+### 现象
+
+`bdd/fix-decision-string_20260917122100` 测试发现：
+- expr 是数字（如 `f_category==1`），但 startAndExecute value 是字符串（如 `"travel"`）
+- startAndExecute 返回 `code=99999999, msg="could not convert string to float: 'travel'"`
+- **整个流程失败，未创建实例**
+
+### 根因（`main.py:54` 原版）
+
+```python
+actual = vars.get(key)
+if actual is None:
+    return False
+actual = float(actual)  # ← 字符串值抛 ValueError，未捕获
+```
+
+引擎调用 `_eval_decision_expr` 时异常向上抛，facade catch 后返回 99999999。
+
+### 修复（v1.5.1，FIX-T1）
+
+`main.py` SimpleExprEvaluator 增加 try/except：
+```python
+try:
+    actual = float(actual)
+except (ValueError, TypeError):
+    return False  # 与 regex 不匹配、value 为 None 行为一致：走兜底首边
+```
+
+### 验证
+
+- `./tdd/fix-decision-string_20260917122100.md` 测试报告
+- 修复后字符串值不抛错，走兜底首边（与 expr 字符串路径一致）
+- 修复涉及 main.py 修改（已授权范围内）
+
+### 改进建议
+
+- 文档化：`docs/flow.md §3.4` decision expr 章节明确"expr + value 类型须一致（数字）"
+- TDD 自检：startAndExecute 前可先 JSON schema 校验变量类型
+
+## §29. handler 解析失败静默无日志（FIX-T2 已修复 2026-09-17）
+
+### 现象
+
+`engine.py:443-446` `_resolve_actors` 中 handler 解析失败时静默跳过：
+- 错误 2（FQCN 拼错）：`if h: return await h.assign(...)` — h=None 直接跳过
+- 错误 3（节点 id 不在 SPI）：handler 调用返回 [] 静默
+- 两者症状相同（activeTaskList=[] + state=10），TDD 无法从结果区分
+
+### 修复（v1.5.2，FIX-T2）
+
+`main.py` monkey-patch `_resolve_actors`，两种错误各打一条 stderr warning：
+
+```python
+[FIX-T2 WARN] handler not registered: FQCN='jeeflow.assignment.TaskRoleAssigneeHandler' node_id='finance' (process=113)
+[FIX-T2 WARN] handler 'com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler' returned empty actors for node_id='nonexistent_role' (process=113); check SPI role_code
+```
+
+### 验证
+
+- uvicorn --reload 自动加载 main.py 修改
+- Case A 错误 FQCN → stderr 第 1 类 warning ✓
+- Case B 错误节点 id → stderr 第 2 类 warning ✓
+- 正确配置 → 无 warning，流程 PASS ✓
+
+### 修复方法（避免 §25/§18 卡死）
+
+TDD 排查步骤：
+1. `detail.activeTaskList` 为空 + state=10 → handler 失败
+2. 看 stderr 日志 `[FIX-T2 WARN]` 区分 FQCN 错 vs SPI role 不存在
+3. 对应修复：FQCN 改精确 / 节点 id 改 SPI 已 role_code / SPI JSON 加新 role + 重启
+
+### 关联
+
+- `./tdd/fix-handler-fqcn_20260917122200.md` 测试报告
+- §25 错误 2（FQCN 拼错）
+- §18 错误 3（节点 id 不在 SPI）
+
+## §30. join 后 end 节点可能未触发 — 流程图设计缺陷（FIX-T7 2026-09-17 已确认根因）
+
+### 现象
+
+`fix-multi-in-edge-join_20260917122700` 测试：
+- 流程：apply → fork → branch_A + branch_B → join → fanin_task → end
+- 走完所有 task 后，fanin_task state=20 但 instance state=10 DOING
+- highLight history 含 `[apply, branch_A, branch_B, fanin_task, fork1, fanin_join]`
+- **end 节点不在 history 中**
+
+### 根因（已确认 2026-09-17）
+
+**流程图设计缺陷**：fanin_task 缺指向 end 的边，end 节点成"孤儿"。
+
+修复版 `fix-multi-in-edge-join-fix_20260917130500.json`：
+- 新增边 `{"id": "e_fanin_end", "sourceNodeId": "fanin_task", "targetNodeId": "end"}`
+- 走完后 state=20 ✅，highLight 含 `end` ✅
+
+引擎行为符合 docs/flow.md §3.2 文档预期：
+- join 流转到 fanin_task ✓
+- fanin_task 创建 task ✓
+- fanin_task 完成时查下游边 = 空（缺边），state 不变 ✗（符合引擎语义"无下游即不推进"）
+
+### 影响
+
+- 流程卡死 state=10，需人工干预
+- 业务上视为流程未结束
+
+### 缓解措施
+
+- **设计**：流程图自检——所有 task / decision / fork / join 节点必须至少一条出边（终点 end 除外）；end 节点必须有入边
+- **设计**：详见 `docs/flow.md §3.2` 新增"流程图连通性约束"
+- **TDD 闭环**：部署前用 `python` 扫描 edges 中 sourceNodeId 集合 vs nodes 集合
+
+### 测试报告
+
+- `./tdd/fix-multi-in-edge_20260917122700.md`（原失败报告）
+- `./tdd/fix-multi-in-edge-join-fix_20260917130500.md`（修复报告）

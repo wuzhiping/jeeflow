@@ -1,0 +1,81 @@
+{
+  "name": "bdd-project-init-p1",
+  "displayName": "BDD-项目立项patch-1",
+  "type": "approval",
+  "instanceUrl": "/bdd/project/detail",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "text": {"value": "发起"}, "properties": {}},
+    {"id": "apply", "type": "snaker:task", "x": 200, "y": 200,
+     "text": {"value": "项目经理申请"},
+     "properties": {
+       "form": "project-apply-form",
+       "assignee": "user1",
+       "taskType": 0,
+       "performType": 0,
+       "field": {
+         "PERMISSION_f_budget": 2,
+         "PERMISSION_f_priority": 1,
+         "f_pm": "user1"
+       }
+     }},
+    {"id": "dept_leader", "type": "snaker:task", "x": 400, "y": 200,
+     "text": {"value": "部门领导审批(DeptLeader)"},
+     "properties": {
+       "form": "dept-form",
+       "taskType": 0,
+       "performType": 0,
+       "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$DeptLeaderAssignmentHandler"
+     }},
+    {"id": "pm_form", "type": "snaker:task", "x": 600, "y": 200,
+     "text": {"value": "PM填写预算(FormField 字段=f_pm_form)"},
+     "properties": {
+       "form": "pm-budget-form",
+       "taskType": 0,
+       "performType": 0,
+       "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.FormFieldAssigneeHandler",
+       "field": {
+         "f_pm_form": "user1",
+         "PERMISSION_f_detail_budget": 1
+       }
+     }},
+    {"id": "decision", "type": "snaker:decision", "x": 800, "y": 200,
+     "text": {"value": "金额决策"}, "properties": {}},
+    {"id": "mgr_audit", "type": "snaker:task", "x": 1000, "y": 100,
+     "text": {"value": "经理审核(<50000)"},
+     "properties": {
+       "form": "mgr-form",
+       "assignee": "manager",
+       "taskType": 0,
+       "performType": 0
+     }},
+    {"id": "boss_audit", "type": "snaker:task", "x": 1000, "y": 300,
+     "text": {"value": "总监审核(>=50000, TaskRole)"},
+     "properties": {
+       "form": "boss-form",
+       "taskType": 0,
+       "performType": 0,
+       "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+     }},
+    {"id": "final_sign", "type": "snaker:task", "x": 1200, "y": 200,
+     "text": {"value": "CTO签字(Operator)"},
+     "properties": {
+       "form": "cto-form",
+       "assignee": "director",
+       "taskType": 0,
+       "performType": 0
+     }},
+    {"id": "end", "type": "snaker:end", "x": 1400, "y": 200,
+     "text": {"value": "结束"}, "properties": {}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {"expr": ""}},
+    {"id": "e_apply_dept", "sourceNodeId": "apply", "targetNodeId": "dept_leader", "properties": {"expr": ""}},
+    {"id": "e_dept_pm", "sourceNodeId": "dept_leader", "targetNodeId": "pm_form", "properties": {"expr": ""}},
+    {"id": "e_pm_dec", "sourceNodeId": "pm_form", "targetNodeId": "decision", "properties": {"expr": ""}},
+    {"id": "e_dec_mgr", "sourceNodeId": "decision", "targetNodeId": "mgr_audit", "properties": {"expr": "f_budget < 50000"}},
+    {"id": "e_dec_boss", "sourceNodeId": "decision", "targetNodeId": "boss_audit", "properties": {"expr": "f_budget >= 50000"}},
+    {"id": "e_mgr_final", "sourceNodeId": "mgr_audit", "targetNodeId": "final_sign", "properties": {"expr": ""}},
+    {"id": "e_boss_final", "sourceNodeId": "boss_audit", "targetNodeId": "final_sign", "properties": {"expr": ""}},
+    {"id": "e_final_end", "sourceNodeId": "final_sign", "targetNodeId": "end", "properties": {"expr": ""}}
+  ]
+}

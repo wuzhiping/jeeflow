@@ -1,0 +1,90 @@
+{
+  "name": "bdd-expense-by-category",
+  "displayName": "BDD-报销按类别",
+  "type": "approval",
+  "instanceUrl": "/bdd/expense-cat/detail",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 100, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 200, "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "expense-form",
+        "assignee": "user1",
+        "taskType": 0, "performType": 0,
+        "field": {
+          "PERMISSION_f_category": 1,
+          "PERMISSION_f_amount": 1,
+          "PERMISSION_f_reason": 1,
+          "f_applyUser": "user1"
+        }
+      },
+      "text": {"value": "填写报销单"}
+    },
+    {
+      "id": "decision_cat",
+      "type": "snaker:decision",
+      "x": 350, "y": 200,
+      "properties": {"width": 100, "height": 50, "expr": "f_category==1", "handleClass": ""},
+      "text": {"value": "类别?(1差旅/2办公/3其他)"}
+    },
+    {
+      "id": "leader_review",
+      "type": "snaker:task",
+      "x": 550, "y": 50,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "expense-form",
+        "assignee": "leader",
+        "taskType": 0, "performType": 0,
+        "field": {"PERMISSION_f_amount": 1, "PERMISSION_f_reason": 1}
+      },
+      "text": {"value": "组长初审(差旅)"}
+    },
+    {
+      "id": "manager_review",
+      "type": "snaker:task",
+      "x": 550, "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "expense-form",
+        "assignee": "manager",
+        "taskType": 0, "performType": 0,
+        "field": {"PERMISSION_f_amount": 1, "PERMISSION_f_reason": 1}
+      },
+      "text": {"value": "经理审批(办公)"}
+    },
+    {
+      "id": "finance",
+      "type": "snaker:task",
+      "x": 550, "y": 350,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "expense-form",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler",
+        "taskType": 0, "performType": 0,
+        "field": {"PERMISSION_f_amount": 1, "PERMISSION_f_reason": 1}
+      },
+      "text": {"value": "财务复核(其他)"}
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 750, "y": 200,
+      "properties": {"width": 50, "height": 50},
+      "text": {"value": "结束"}
+    }
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "decision_cat", "properties": {}},
+    {"id": "e_travel", "sourceNodeId": "decision_cat", "targetNodeId": "leader_review", "properties": {"expr": "f_category==1"}, "text": {"value": "1差旅"}},
+    {"id": "e_office", "sourceNodeId": "decision_cat", "targetNodeId": "manager_review", "properties": {"expr": "f_category==2"}, "text": {"value": "2办公"}},
+    {"id": "e_other", "sourceNodeId": "decision_cat", "targetNodeId": "finance", "properties": {"expr": "f_category==3"}, "text": {"value": "3其他"}},
+    {"id": "e_leader_end", "sourceNodeId": "leader_review", "targetNodeId": "end", "properties": {}},
+    {"id": "e_mgr_end", "sourceNodeId": "manager_review", "targetNodeId": "end", "properties": {}},
+    {"id": "e_fin_end", "sourceNodeId": "finance", "targetNodeId": "end", "properties": {}}
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "name": "fix-handler-fqcn",
+  "displayName": "FIX-handler FQCN拼错修复测试",
+  "type": "approval",
+  "instanceUrl": "/fix/handler-fqcn/detail",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 100, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 200, "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "f",
+        "assignee": "user1",
+        "taskType": 0, "performType": 0,
+        "field": {}
+      },
+      "text": {"value": "提交"}
+    },
+    {
+      "id": "finance",
+      "type": "snaker:task",
+      "x": 350, "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "f",
+        "assignmentHandler": "jeeflow.assignment.TaskRoleAssigneeHandler",
+        "taskType": 0, "performType": 0,
+        "field": {}
+      },
+      "text": {"value": "审核节点"}
+    },
+    {"id": "end", "type": "snaker:end", "x": 500, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e1", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e2", "sourceNodeId": "apply", "targetNodeId": "finance", "properties": {}},
+    {"id": "e3", "sourceNodeId": "finance", "targetNodeId": "end", "properties": {}}
+  ]
+}

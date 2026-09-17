@@ -41,7 +41,13 @@ class SnowflakeIDGen(IDGenerator):
         return (ts << 10) | self._seq
 
 class SimpleExprEvaluator(ExpressionEvaluator):
-    """简易 SpEL 表达式：支持 amount >/>=/</<=/== number；OGNL 风格 #varname 同支持"""
+    """简易 SpEL 表达式：支持 amount >/>=/</<=/== number；OGNL 风格 #varname 同支持
+
+    v1.5.1 fix (FIX-T1 2026-09-17): expr 是数字但 value 是字符串时,原
+    `actual = float(actual)` 抛 ValueError 导致整个 startAndExecute 失败
+    (code=99999999)。修复:捕获 ValueError/TypeError 返回 False,与
+    regex 不匹配、value 为 None 行为一致(走兜底首边)。
+    """
     async def eval(self, expr: str, vars: dict):
         import re
         m = re.match(r"^\s*(#?\w+)\s*(>=|<=|!=|==|>|<)\s*(\d+(?:\.\d+)?)\s*$", expr)
@@ -51,7 +57,10 @@ class SimpleExprEvaluator(ExpressionEvaluator):
         actual = vars.get(key)
         if actual is None:
             return False
-        actual = float(actual)
+        try:
+            actual = float(actual)
+        except (ValueError, TypeError):
+            return False
         if op == ">": return actual > val
         if op == ">=": return actual >= val
         if op == "<": return actual < val
@@ -138,6 +147,36 @@ engine = RatioCapableEngine(repo, user_prov, idgen, SimpleExprEvaluator())
 _registry = HandlerRegistry()
 register_builtin_assignments(_registry, user_prov, org_prov)
 engine.set_extensions(EngineExtensions(registry=_registry))
+
+# v1.5.2 fix (FIX-T2 2026-09-17): handler 解析失败时记 warning 日志
+# 原 engine._resolve_actors handler 解析不到返回 [] 静默失败，TDD 难以区分
+# 错误 2 (FQCN 拼错 §25) 与 错误 3 (节点 id 不在 SPI) 都导致 activeTaskList=[]
+# 此 wrapper 在 handler 解析失败、SPI 返回空 role 时打 warning 到 stderr + /tmp/jee-fix.log
+# v1.5.3 (FIX-T2b 2026-09-17): 同时写文件 /tmp/jee-fix.log，避免 uv run 模式 stderr 丢失
+_FIX_LOG = "/tmp/jee-fix.log"
+def _fix_log(msg: str):
+    line = f"{msg}"
+    print(line, file=sys.stderr, flush=True)
+    try:
+        with open(_FIX_LOG, "a") as f:
+            f.write(line + "\n")
+    except Exception:
+        pass
+
+_orig_resolve_actors = engine._resolve_actors
+async def _logged_resolve_actors(node, inst, operator, vars_):
+    handler_name = node.properties.get("assignmentHandler", "")
+    if handler_name and engine.ext and engine.ext.registry:
+        h = engine.ext.registry.resolve_assignment(handler_name)
+        if not h:
+            _fix_log(f"[FIX-T2 WARN] handler not registered: FQCN='{handler_name}' node_id='{node.id}' (process={inst.defineId})")
+            return []  # 与原行为一致：解析不到返回 []
+    actors = await _orig_resolve_actors(node, inst, operator, vars_)
+    if handler_name and not actors:
+        # handler 已注册但返回 [] — 可能是 SPI role_code 不存在
+        _fix_log(f"[FIX-T2 WARN] handler '{handler_name}' returned empty actors for node_id='{node.id}' (process={inst.defineId}); check SPI role_code")
+    return actors
+engine._resolve_actors = _logged_resolve_actors
 facade = JeeflowFacade(engine, repo, ext_repo, user_search=spi_user_search, org_prov=org_prov)
 
 # Issue D：startAndExecute business variables 嵌套解包（与 main_pg.py 同步）

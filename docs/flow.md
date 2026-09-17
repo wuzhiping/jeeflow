@@ -69,6 +69,14 @@
 
 `properties` 通常仅 `{width, height}` 设计器尺寸字段，无业务属性。`start` 是 `engine.execute_process_task` 流程入口锚点；`end` 决定 `inst.finish()` 或 `inst.reject()`（依据 `KEY_SUBMIT_TYPE`，`engine.py:339-349`）。
 
+**流程图连通性约束（2026-09-17 §30 新增）**：
+
+| # | 约束 | 说明 |
+| --- | --- | --- |
+| 1 | 所有 task / decision / fork / join 节点必须至少有一条出边 | 终点 end 节点除外；无出边的中间节点永不被流转 |
+| 2 | end 节点必须至少有一条入边（来自 task / decision / join） | 禁止"孤立 end"——若无任何节点指向，永不触发，实例卡 state=10 |
+| 3 | 流程图自检：扫描 `edges` 中 `sourceNodeId` 集合，若某非 end 节点无出边 ⇒ 设计错误 | 见 `./tdd/fix-multi-in-edge-join-fix_20260917130500.md` 反例与修复 |
+
 ### 3.3 task 节点 properties
 
 来源：`engine.py:282-313, 377-413` + `flows/01-simple.json`、`flows/05-countersign-parallel.json`、`flows/06-countersign-sequential.json`。

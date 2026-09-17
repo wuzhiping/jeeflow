@@ -1,0 +1,37 @@
+{
+  "name": "fix-candidate-with-assignee",
+  "displayName": "FIX-candidateOnly-错误",
+  "type": "approval",
+  "instanceUrl": "/fix/candidate/detail",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 100, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 200, "y": 200,
+      "properties": {"width": 100, "height": 50, "form": "f", "assignee": "user1", "taskType": 0, "performType": 0, "field": {}},
+      "text": {"value": "提交"}
+    },
+    {
+      "id": "review_only_candidate",
+      "type": "snaker:task",
+      "x": 350, "y": 200,
+      "properties": {
+        "width": 120, "height": 50,
+        "form": "f",
+        "candidateUsers": "userB,userC",
+        "assignee": "userB,userC",
+        "candidateGroups": "leader",
+        "taskType": 0, "performType": 0,
+        "field": {}
+      },
+      "text": {"value": "仅candidate(无assignee)"}
+    },
+    {"id": "end", "type": "snaker:end", "x": 500, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e1", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e2", "sourceNodeId": "apply", "targetNodeId": "review_only_candidate", "properties": {}},
+    {"id": "e3", "sourceNodeId": "review_only_candidate", "targetNodeId": "end", "properties": {}}
+  ]
+}

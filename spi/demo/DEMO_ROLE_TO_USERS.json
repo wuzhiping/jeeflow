@@ -1,8 +1,27 @@
 {
-  "leader": ["leader"],
-  "manager": ["manager"],
-  "director": ["director"],
-  "boss": ["boss"],
-  "finance": ["leader", "manager"],
-  "task4": ["userC"]
+  "leader": [
+    "leader"
+  ],
+  "manager": [
+    "manager"
+  ],
+  "director": [
+    "director"
+  ],
+  "boss": [
+    "boss"
+  ],
+  "finance": [
+    "leader",
+    "manager"
+  ],
+  "task4": [
+    "userC"
+  ],
+  "boss_audit": [
+    "boss"
+  ],
+  "custom_role": [
+    "userA"
+  ]
 }

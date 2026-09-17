@@ -1,0 +1,104 @@
+{
+  "name": "bdd-leave-approval",
+  "displayName": "BDD-请假申请",
+  "type": "approval",
+  "instanceUrl": "/bdd/leave/detail",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 100, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 200,
+      "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "leave-form",
+        "assignee": "user1",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "PERMISSION_f_leaveType": 1,
+          "PERMISSION_f_days": 1,
+          "PERMISSION_f_reason": 1,
+          "PERMISSION_f_fromDate": 1,
+          "PERMISSION_f_toDate": 1,
+          "f_applyUser": "user1"
+        }
+      },
+      "text": {"value": "填写请假单"}
+    },
+    {
+      "id": "decision_short",
+      "type": "snaker:decision",
+      "x": 350,
+      "y": 100,
+      "properties": {"width": 100, "height": 50, "expr": "f_days<=3", "handleClass": ""},
+      "text": {"value": "≤3天?"}
+    },
+    {
+      "id": "decision_mid",
+      "type": "snaker:decision",
+      "x": 350,
+      "y": 300,
+      "properties": {"width": 100, "height": 50, "expr": "f_days<=7", "handleClass": ""},
+      "text": {"value": "4-7天?"}
+    },
+    {
+      "id": "leader_approve",
+      "type": "snaker:task",
+      "x": 550,
+      "y": 30,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "leave-form",
+        "assignee": "leader",
+        "taskType": 0,
+        "performType": 0,
+        "field": {"PERMISSION_f_days": 1, "PERMISSION_f_reason": 1}
+      },
+      "text": {"value": "组长审批"}
+    },
+    {
+      "id": "manager_approve",
+      "type": "snaker:task",
+      "x": 550,
+      "y": 220,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "leave-form",
+        "assignee": "manager",
+        "taskType": 0,
+        "performType": 0,
+        "field": {"PERMISSION_f_days": 1, "PERMISSION_f_reason": 1}
+      },
+      "text": {"value": "经理审批"}
+    },
+    {
+      "id": "director_approve",
+      "type": "snaker:task",
+      "x": 550,
+      "y": 380,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "leave-form",
+        "assignee": "director",
+        "taskType": 0,
+        "performType": 0,
+        "field": {"PERMISSION_f_days": 1, "PERMISSION_f_reason": 1}
+      },
+      "text": {"value": "总监审批"}
+    },
+    {"id": "end", "type": "snaker:end", "x": 750, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "decision_short", "properties": {}},
+    {"id": "e_short_leader", "sourceNodeId": "decision_short", "targetNodeId": "leader_approve", "properties": {"expr": "f_days<=3"}, "text": {"value": "≤3天"}},
+    {"id": "e_short_to_mid", "sourceNodeId": "decision_short", "targetNodeId": "decision_mid", "properties": {"expr": "f_days>3"}, "text": {"value": ">3天"}},
+    {"id": "e_mid_to_mgr", "sourceNodeId": "decision_mid", "targetNodeId": "manager_approve", "properties": {"expr": "f_days<=7"}, "text": {"value": "4-7天"}},
+    {"id": "e_mid_to_dir", "sourceNodeId": "decision_mid", "targetNodeId": "director_approve", "properties": {"expr": "f_days>7"}, "text": {"value": ">7天"}},
+    {"id": "e_leader_end", "sourceNodeId": "leader_approve", "targetNodeId": "end", "properties": {}},
+    {"id": "e_mgr_end", "sourceNodeId": "manager_approve", "targetNodeId": "end", "properties": {}},
+    {"id": "e_dir_end", "sourceNodeId": "director_approve", "targetNodeId": "end", "properties": {}}
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "name": "fix-decision-string",
+  "displayName": "FIX-decision字符串值修复测试",
+  "type": "approval",
+  "instanceUrl": "/fix/decision-string/detail",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 100, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 200, "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "f",
+        "assignee": "user1",
+        "taskType": 0, "performType": 0,
+        "field": {"f_category": 0}
+      },
+      "text": {"value": "传 category"}
+    },
+    {
+      "id": "decision_cat",
+      "type": "snaker:decision",
+      "x": 350, "y": 200,
+      "properties": {"width": 100, "height": 50, "expr": "f_category==1", "handleClass": ""},
+      "text": {"value": "category 路由"}
+    },
+    {
+      "id": "branch_travel",
+      "type": "snaker:task",
+      "x": 500, "y": 50,
+      "properties": {"width": 100, "height": 50, "form": "f", "assignee": "leader", "taskType": 0, "performType": 0},
+      "text": {"value": "差旅"}
+    },
+    {
+      "id": "branch_office",
+      "type": "snaker:task",
+      "x": 500, "y": 200,
+      "properties": {"width": 100, "height": 50, "form": "f", "assignee": "manager", "taskType": 0, "performType": 0},
+      "text": {"value": "办公"}
+    },
+    {
+      "id": "branch_other",
+      "type": "snaker:task",
+      "x": 500, "y": 350,
+      "properties": {"width": 100, "height": 50, "form": "f", "assignee": "director", "taskType": 0, "performType": 0},
+      "text": {"value": "其他"}
+    },
+    {"id": "end", "type": "snaker:end", "x": 650, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e1", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e2", "sourceNodeId": "apply", "targetNodeId": "decision_cat", "properties": {}},
+    {"id": "e_to_travel", "sourceNodeId": "decision_cat", "targetNodeId": "branch_travel", "properties": {"expr": "f_category==1"}, "text": {"value": "1差旅"}},
+    {"id": "e_to_office", "sourceNodeId": "decision_cat", "targetNodeId": "branch_office", "properties": {"expr": "f_category==2"}, "text": {"value": "2办公"}},
+    {"id": "e_to_other", "sourceNodeId": "decision_cat", "targetNodeId": "branch_other", "properties": {"expr": "f_category==3"}, "text": {"value": "3其他"}},
+    {"id": "e_t_end", "sourceNodeId": "branch_travel", "targetNodeId": "end", "properties": {}},
+    {"id": "e_o_end", "sourceNodeId": "branch_office", "targetNodeId": "end", "properties": {}},
+    {"id": "e_ot_end", "sourceNodeId": "branch_other", "targetNodeId": "end", "properties": {}}
+  ]
+}

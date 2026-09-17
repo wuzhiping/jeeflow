@@ -1,0 +1,98 @@
+{
+  "name": "bdd-position-transfer",
+  "displayName": "BDD-调岗申请",
+  "type": "approval",
+  "instanceUrl": "/bdd/transfer/detail",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 100, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 200, "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "transfer-form",
+        "assignee": "user1",
+        "taskType": 0, "performType": 0,
+        "field": {
+          "PERMISSION_f_fromDept": 1, "PERMISSION_f_toDept": 1,
+          "PERMISSION_f_fromPost": 1, "PERMISSION_f_toPost": 1, "PERMISSION_f_reason": 1,
+          "f_applyUser": "user1"
+        }
+      },
+      "text": {"value": "员工提交调岗"}
+    },
+    {
+      "id": "from_dept_approve",
+      "type": "snaker:task",
+      "x": 350, "y": 100,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "transfer-form",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$DeptLeaderAssignmentHandler",
+        "taskType": 0, "performType": 0,
+        "field": {"PERMISSION_f_fromDept": 1, "PERMISSION_f_reason": 1}
+      },
+      "text": {"value": "原部门负责人"}
+    },
+    {
+      "id": "to_dept_approve",
+      "type": "snaker:task",
+      "x": 350, "y": 300,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "transfer-form",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.FormFieldAssigneeHandler",
+        "taskType": 0, "performType": 0,
+        "field": {
+          "PERMISSION_f_toDept": 1, "PERMISSION_f_reason": 1,
+          "f_to_dept_approve": "manager"
+        }
+      },
+      "text": {"value": "接收部门(FormField)"}
+    },
+    {
+      "id": "hr_review",
+      "type": "snaker:task",
+      "x": 500, "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "transfer-form",
+        "assignee": "userA",
+        "taskType": 0, "performType": 0,
+        "field": {"PERMISSION_f_fromDept": 1, "PERMISSION_f_toDept": 1, "PERMISSION_f_toPost": 1}
+      },
+      "text": {"value": "HR审核"}
+    },
+    {
+      "id": "parallel_final",
+      "type": "snaker:task",
+      "x": 650, "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "transfer-form",
+        "assignee": "leader,manager,director",
+        "taskType": 0, "performType": 1,
+        "countersignType": "SEQUENTIAL",
+        "field": {"PERMISSION_f_toDept": 1, "PERMISSION_f_toPost": 1}
+      },
+      "text": {"value": "三级会签(串行)"}
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 800, "y": 200,
+      "properties": {"width": 50, "height": 50},
+      "text": {"value": "结束"}
+    }
+  ],
+  "edges": [
+    {"id": "e1", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e2", "sourceNodeId": "apply", "targetNodeId": "from_dept_approve", "properties": {}},
+    {"id": "e3", "sourceNodeId": "apply", "targetNodeId": "to_dept_approve", "properties": {}},
+    {"id": "e_from_hr", "sourceNodeId": "from_dept_approve", "targetNodeId": "hr_review", "properties": {}},
+    {"id": "e_to_hr", "sourceNodeId": "to_dept_approve", "targetNodeId": "hr_review", "properties": {}},
+    {"id": "e_hr_par", "sourceNodeId": "hr_review", "targetNodeId": "parallel_final", "properties": {}},
+    {"id": "e_par_end", "sourceNodeId": "parallel_final", "targetNodeId": "end", "properties": {}}
+  ]
+}

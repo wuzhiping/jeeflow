@@ -1,0 +1,53 @@
+{
+  "name": "bdd-contract-parallel-sign",
+  "displayName": "BDD-合同多人会签",
+  "type": "approval",
+  "instanceUrl": "/bdd/contract/detail",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "text": {"value": "发起"}, "properties": {}},
+    {"id": "apply", "type": "snaker:task", "x": 200, "y": 200,
+     "text": {"value": "起草合同"},
+     "properties": {
+       "form": "contract-form",
+       "assignee": "applicant",
+       "taskType": 0,
+       "performType": 0,
+       "field": {
+         "PERMISSION_f_contractNo": 2,
+         "PERMISSION_f_amount": 2,
+         "candidateUsers": "userA,userB,userC",
+         "candidateGroups": "finance"
+       }
+     }},
+    {"id": "legal_review", "type": "snaker:task", "x": 400, "y": 200,
+     "text": {"value": "法务初审"},
+     "properties": {
+       "form": "legal-review-form",
+       "assignee": "manager",
+       "taskType": 0,
+       "performType": 0
+     }},
+    {"id": "countersign", "type": "snaker:task", "x": 600, "y": 200,
+     "text": {"value": "多方会签(PARALLEL 3人)"},
+     "properties": {
+       "form": "countersign-form",
+       "assignee": "userA,userB,userC",
+       "taskType": 0,
+       "performType": 1,
+       "countersignType": "PARALLEL",
+       "countersignCompletionCondition": "ONE_VOTE_VETO",
+       "field": {
+         "candidateUsers": "userA,userB,userC",
+         "candidateGroups": "finance"
+       }
+     }},
+    {"id": "end", "type": "snaker:end", "x": 800, "y": 200,
+     "text": {"value": "结束"}, "properties": {}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {"expr": ""}},
+    {"id": "e_apply_legal", "sourceNodeId": "apply", "targetNodeId": "legal_review", "properties": {"expr": ""}},
+    {"id": "e_legal_cs", "sourceNodeId": "legal_review", "targetNodeId": "countersign", "properties": {"expr": ""}},
+    {"id": "e_cs_end", "sourceNodeId": "countersign", "targetNodeId": "end", "properties": {"expr": ""}}
+  ]
+}

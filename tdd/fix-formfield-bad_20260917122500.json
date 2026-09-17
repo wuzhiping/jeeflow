@@ -1,0 +1,35 @@
+{
+  "name": "fix-formfield-bad",
+  "displayName": "FIX-FormField字段名错配-错误",
+  "type": "approval",
+  "instanceUrl": "/fix/formfield/detail",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 100, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 200, "y": 200,
+      "properties": {"width": 100, "height": 50, "form": "f", "assignee": "user1", "taskType": 0, "performType": 0, "field": {}},
+      "text": {"value": "提交"}
+    },
+    {
+      "id": "pm_review",
+      "type": "snaker:task",
+      "x": 350, "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "f",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.FormFieldAssigneeHandler",
+        "taskType": 0, "performType": 0,
+        "field": {"f_pm_reviewer": "user1"}
+      },
+      "text": {"value": "项目经理(字段名错配)"}
+    },
+    {"id": "end", "type": "snaker:end", "x": 500, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e1", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e2", "sourceNodeId": "apply", "targetNodeId": "pm_review", "properties": {}},
+    {"id": "e3", "sourceNodeId": "pm_review", "targetNodeId": "end", "properties": {}}
+  ]
+}
