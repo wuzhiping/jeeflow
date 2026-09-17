@@ -1,0 +1,171 @@
+{
+  "name": "serial-approval",
+  "displayName": "串行多级审批 (经理→总监→总经理)",
+  "type": "approval",
+  "instanceUrl": "/fix/serial-approval/detail",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "apply-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_purpose": "",
+          "f_amount": 0
+        }
+      },
+      "text": {
+        "value": "发起申请"
+      }
+    },
+    {
+      "id": "manager_review",
+      "type": "snaker:task",
+      "x": 280,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "review-form",
+        "assignee": "manager",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_opinion": ""
+        }
+      },
+      "text": {
+        "value": "经理审批"
+      }
+    },
+    {
+      "id": "director_review",
+      "type": "snaker:task",
+      "x": 420,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "review-form",
+        "assignee": "director",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_opinion": ""
+        }
+      },
+      "text": {
+        "value": "总监审批"
+      }
+    },
+    {
+      "id": "boss_review",
+      "type": "snaker:task",
+      "x": 560,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "review-form",
+        "assignee": "boss",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_opinion": ""
+        }
+      },
+      "text": {
+        "value": "总经理审批"
+      }
+    },
+    {
+      "id": "notify",
+      "type": "snaker:task",
+      "x": 700,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "notify-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "通知发起人"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 850,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e1",
+      "sourceNodeId": "apply",
+      "targetNodeId": "manager_review",
+      "properties": {}
+    },
+    {
+      "id": "e2",
+      "sourceNodeId": "manager_review",
+      "targetNodeId": "director_review",
+      "properties": {}
+    },
+    {
+      "id": "e3",
+      "sourceNodeId": "director_review",
+      "targetNodeId": "boss_review",
+      "properties": {}
+    },
+    {
+      "id": "e4",
+      "sourceNodeId": "boss_review",
+      "targetNodeId": "notify",
+      "properties": {}
+    },
+    {
+      "id": "e5",
+      "sourceNodeId": "notify",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

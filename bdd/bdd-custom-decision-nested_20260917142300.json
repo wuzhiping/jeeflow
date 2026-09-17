@@ -1,0 +1,203 @@
+{
+  "name": "custom-decision-nested",
+  "displayName": "自定义决策（嵌套 decision 串接）",
+  "type": "approval",
+  "instanceUrl": "/fix/custom-decision-nested/detail",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "apply-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_role": "",
+          "f_amount": 0
+        }
+      },
+      "text": {
+        "value": "发起"
+      }
+    },
+    {
+      "id": "dec_role",
+      "type": "snaker:decision",
+      "x": 320,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50
+      },
+      "text": {
+        "value": "role 判断"
+      }
+    },
+    {
+      "id": "dec_amount",
+      "type": "snaker:decision",
+      "x": 480,
+      "y": 100,
+      "properties": {
+        "width": 100,
+        "height": 50
+      },
+      "text": {
+        "value": "金额判断"
+      }
+    },
+    {
+      "id": "manager_review",
+      "type": "snaker:task",
+      "x": 620,
+      "y": 50,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "review-form",
+        "assignee": "manager",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "经理审批"
+      }
+    },
+    {
+      "id": "director_review",
+      "type": "snaker:task",
+      "x": 620,
+      "y": 150,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "review-form",
+        "assignee": "director",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "总监审批"
+      }
+    },
+    {
+      "id": "boss_review",
+      "type": "snaker:task",
+      "x": 620,
+      "y": 300,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "review-form",
+        "assignee": "boss",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "总经理审批"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 800,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e1",
+      "sourceNodeId": "apply",
+      "targetNodeId": "dec_role",
+      "properties": {}
+    },
+    {
+      "id": "e2",
+      "sourceNodeId": "dec_role",
+      "targetNodeId": "dec_amount",
+      "properties": {
+        "expr": "#role==engineer"
+      }
+    },
+    {
+      "id": "e3",
+      "sourceNodeId": "dec_role",
+      "targetNodeId": "boss_review",
+      "properties": {}
+    },
+    {
+      "id": "e4",
+      "sourceNodeId": "dec_amount",
+      "targetNodeId": "manager_review",
+      "properties": {
+        "expr": "#amount<1000"
+      }
+    },
+    {
+      "id": "e5",
+      "sourceNodeId": "dec_amount",
+      "targetNodeId": "director_review",
+      "properties": {
+        "expr": "#amount>=1000"
+      }
+    },
+    {
+      "id": "e6",
+      "sourceNodeId": "dec_amount",
+      "targetNodeId": "director_review",
+      "properties": {}
+    },
+    {
+      "id": "e7",
+      "sourceNodeId": "manager_review",
+      "targetNodeId": "end",
+      "properties": {}
+    },
+    {
+      "id": "e8",
+      "sourceNodeId": "director_review",
+      "targetNodeId": "end",
+      "properties": {}
+    },
+    {
+      "id": "e9",
+      "sourceNodeId": "boss_review",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

@@ -49,32 +49,46 @@ class SnowflakeIDGen(IDGenerator):
         return (ts << 10) | self._seq
 
 class SimpleExprEvaluator(ExpressionEvaluator):
-    """简易 SpEL 表达式：支持 amount >/>=/</<=/== number；OGNL 风格 #varname 同支持
+    """简易 SpEL 表达式：支持 amount >/>=/</<=/== number 和 #var==str；OGNL 风格 #varname 同支持
 
     v1.5.1 fix (FIX-T1 2026-09-17): expr 是数字但 value 是字符串时,原
     `actual = float(actual)` 抛 ValueError 导致整个 startAndExecute 失败
     (code=99999999)。修复:捕获 ValueError/TypeError 返回 False,与
     regex 不匹配、value 为 None 行为一致(走兜底首边)。
+
+    v1.6.0 fix (FIX-T3 2026-09-17 BDD Task 32): 支持字符串相等比较
+    `#var==string` / `#var!=string`。原版只支持数字,字符串比较走兜底。
     """
     async def eval(self, expr: str, vars: dict):
         import re
-        m = re.match(r"^\s*(#?\w+)\s*(>=|<=|!=|==|>|<)\s*(\d+(?:\.\d+)?)\s*$", expr)
-        if not m:
+        # 数字比较: #var op number
+        m_num = re.match(r"^\s*(#?\w+)\s*(>=|<=|!=|==|>|<)\s*(\d+(?:\.\d+)?)\s*$", expr)
+        # 字符串比较: #var == "string" 或 #var == string
+        m_str = re.match(r'^\s*(#?\w+)\s*(==|!=)\s*"?([A-Za-z0-9_]+)"?\s*$', expr)
+        if m_num:
+            key, op, val = m_num.group(1).lstrip("#"), m_num.group(2), float(m_num.group(3))
+            actual = vars.get(key)
+            if actual is None:
+                return False
+            try:
+                actual = float(actual)
+            except (ValueError, TypeError):
+                return False
+            if op == ">": return actual > val
+            if op == ">=": return actual >= val
+            if op == "<": return actual < val
+            if op == "<=": return actual <= val
+            if op == "==": return actual == val
+            if op == "!=": return actual != val
             return False
-        key, op, val = m.group(1).lstrip("#"), m.group(2), float(m.group(3))
-        actual = vars.get(key)
-        if actual is None:
+        if m_str:
+            key, op, val = m_str.group(1).lstrip("#"), m_str.group(2), str(m_str.group(3))
+            actual = vars.get(key)
+            if actual is None:
+                return False
+            if op == "==": return str(actual) == val
+            if op == "!=": return str(actual) != val
             return False
-        try:
-            actual = float(actual)
-        except (ValueError, TypeError):
-            return False
-        if op == ">": return actual > val
-        if op == ">=": return actual >= val
-        if op == "<": return actual < val
-        if op == "<=": return actual <= val
-        if op == "==": return actual == val
-        if op == "!=": return actual != val
         return False
 
 

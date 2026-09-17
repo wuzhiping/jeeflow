@@ -1486,3 +1486,171 @@ def SPI(payload, token={}):
 ### 测试报告
 
 - `./bdd/bdd-empty-flow_20260917140800.md` (Task 27 修复过程)
+
+---
+
+## §43. submitType=2 REJECT → state=45（Task 28 发现 2026-09-17）
+
+### 现象
+
+submitType=2 (REJECT) 时，实例直接进入 **state=45 REJECT**，无后续 task 创建。
+
+### 实测
+
+3 级审批流程（manager→director→boss）：
+- manager agree → director review submitType=2 → 实例立即 state=45 REJECT
+- 不再创建 boss_review 或 notify task
+
+### 引擎行为
+
+- `engine.py:_processTask_execute` 路由 submitType=2 → reject 分支
+- 调 `inst.reject()` → state=45
+- 不推进后续节点
+
+### submitType 路由矩阵
+
+| submitType | 行为 | 实例 state |
+|---|---|---|
+| 0=APPLY | 提交 | 10 |
+| 1=AGREE | 推进下一节点 | 10/20 |
+| 2=REJECT | 驳回 | **45 REJECT** |
+| 3=ROLLBACK | 驳回到任意节点 | 10 |
+| 4=JUMP | 跳到指定节点 | 10 |
+| 5=RE_APPLY | 重新提交（驳回到发起人） | 10 |
+| 6=ROLLBACK_TO_OPERATOR | 驳回到发起人 | 10 |
+
+### 测试报告
+
+- `./bdd/bdd-serial-approval_20260917141500.md`
+
+---
+
+## §44. 汇聚节点必须用 snaker:join，不能用 snaker:custom（Task 29 发现 2026-09-17）
+
+### 现象
+
+设计 2 条并行审批 → 汇聚节点时：
+
+- ❌ `snaker:custom` 当作 task 节点创建（无 assignee → actors=[] → 不创建 task → 后继节点永远不推进）
+- ✅ `snaker:join` 真正 join 节点（TYPE_JOIN：所有前驱 DONE 才推进）
+
+### 引擎行为（engine.py:336-338）
+
+```python
+elif node.type == TYPE_JOIN:
+    if not await self.repo.find_doing_tasks(inst.id):
+        for n in _follow_edges(flow, node.id): 
+            await self._execute_node(flow, inst, n, operator, vars_)
+```
+
+`TYPE_JOIN` 检查 `find_doing_tasks(inst.id)` 为空才推进 — 即所有前驱任务都 DONE。
+
+### 节点类型对照
+
+| 节点类型 | type 常量 | 用途 |
+|---|---|---|
+| snaker:start | TYPE_START | 起始节点 |
+| snaker:end | TYPE_END | 结束节点 |
+| snaker:task | TYPE_TASK | 任务节点（创建 task） |
+| snaker:decision | TYPE_DECISION | 决策节点（expr 求值选边） |
+| snaker:fork | TYPE_FORK | 分叉节点（多出边） |
+| **snaker:join** | **TYPE_JOIN** | **汇聚节点（等所有前驱 DONE）** |
+| snaker:custom | TYPE_CUSTOM | 自定义（也创建 task，不能作 join） |
+
+### 测试报告
+
+- `./bdd/bdd-multi-branch-merge_20260917141700.md`
+
+---
+
+## §45. SEQUENTIAL 会签 PendingTask 状态（Task 30 发现 2026-09-17）
+
+### 现象
+
+countersignType=SEQUENTIAL 会签，3 个 actor 按顺序激活。**未激活的 task 处于 PENDING 状态**（不计入 activeTaskList）。
+
+### 实测
+
+3 人 SEQUENTIAL 会签 (leader→manager→director)：
+
+| 步骤 | active |
+|---|---|
+| startAndExecute | leader |
+| leader agree | manager |
+| manager agree | director |
+| director agree | 0 (state=20) |
+
+### 对照表
+
+| countersignType | 行为 | activeTaskList 数量 |
+|---|---|---|
+| PARALLEL | 所有 actor 同时 ACTIVE | N (所有 task DOING) |
+| SEQUENTIAL | 顺序激活，前序 DONE → 后继 DOING | 1 (当前 task) |
+
+### 测试报告
+
+- `./bdd/bdd-countersign-seq_20260917141900.md`
+
+---
+
+## §46. Python 引擎 decisionHandler 未实现（Task 32 发现 2026-09-17）
+
+### 现象
+
+`engine._evaluate_decision` 只用 expr 求值（每条出边的 expr），**不调用** `IDecisionHandler`：
+
+```python
+# engine.py:353-375 — _evaluate_decision
+# 不调用 self.ext.registry.resolve_decision(...)
+# 不调用 self.ext.decision_handler(...)
+```
+
+`register_decision(name, handler)` 注册的处理器**无效**。
+
+### 影响
+
+- 流程定义中 decision 节点的 `properties.decisionHandler` 字段**无作用**
+- `IDecisionHandler.decide(node, inst, vars) -> next_node_id` 接口在 Python 引擎**未调用**
+
+### 缓解措施
+
+- 用**嵌套 decision + expr** 实现多条件决策（见 Task 32 测试）
+- 自定义决策逻辑改在**节点 preHandle / postHandle 拦截器**实现
+- 等待 Python 引擎实现 `decision_handler` 调用
+
+### 测试报告
+
+- `./bdd/bdd-custom-decision-nested_20260917142300.md`
+
+---
+
+## §47. FIX-T3 SimpleExprEvaluator 支持字符串比较 v1.6.0（Task 32 修复 2026-09-17）
+
+### 修复前
+
+SimpleExprEvaluator 只支持数字比较（`#var op number`），字符串相等（`#role==engineer`）走兜底默认边。
+
+### 修复后
+
+增加字符串相等比较：
+
+```python
+m_str = re.match(r'^\s*(#?\w+)\s*(==|!=)\s*"?([A-Za-z0-9_]+)"?\s*$', expr)
+if m_str:
+    actual = vars.get(key)
+    if actual is None: return False
+    if op == "==": return str(actual) == val
+    if op == "!=": return str(actual) != val
+```
+
+### 测试验证
+
+| 场景 | expr | vars | 结果 |
+|---|---|---|---|
+| engineer 角色 | `#role==engineer` | role="engineer" | True |
+| 非 engineer | `#role==engineer` | role="manager" | False |
+| 不等 | `#role!=manager` | role="engineer" | True |
+
+### 测试报告
+
+- `./bdd/bdd-custom-decision-nested_20260917142300.md`

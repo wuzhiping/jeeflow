@@ -1,0 +1,178 @@
+{
+  "name": "custom-decision-expr",
+  "displayName": "自定义决策（expr 模拟 handler）",
+  "type": "approval",
+  "instanceUrl": "/fix/custom-decision-expr/detail",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "apply-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_role": "",
+          "f_amount": 0
+        }
+      },
+      "text": {
+        "value": "发起"
+      }
+    },
+    {
+      "id": "decision_route",
+      "type": "snaker:decision",
+      "x": 320,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50
+      },
+      "text": {
+        "value": "角色+金额决策"
+      }
+    },
+    {
+      "id": "manager_review",
+      "type": "snaker:task",
+      "x": 480,
+      "y": 100,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "review-form",
+        "assignee": "manager",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "经理审批"
+      }
+    },
+    {
+      "id": "director_review",
+      "type": "snaker:task",
+      "x": 480,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "review-form",
+        "assignee": "director",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "总监审批"
+      }
+    },
+    {
+      "id": "boss_review",
+      "type": "snaker:task",
+      "x": 480,
+      "y": 300,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "review-form",
+        "assignee": "boss",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "总经理审批"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 640,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e1",
+      "sourceNodeId": "apply",
+      "targetNodeId": "decision_route",
+      "properties": {}
+    },
+    {
+      "id": "e_manager",
+      "sourceNodeId": "decision_route",
+      "targetNodeId": "manager_review",
+      "properties": {
+        "expr": "#role==engineer and #amount<1000"
+      }
+    },
+    {
+      "id": "e_director",
+      "sourceNodeId": "decision_route",
+      "targetNodeId": "director_review",
+      "properties": {
+        "expr": "#role==engineer and #amount>=1000"
+      }
+    },
+    {
+      "id": "e_boss",
+      "sourceNodeId": "decision_route",
+      "targetNodeId": "boss_review",
+      "properties": {
+        "expr": "#role==manager or #role==director or #amount>=5000"
+      }
+    },
+    {
+      "id": "e5",
+      "sourceNodeId": "manager_review",
+      "targetNodeId": "end",
+      "properties": {}
+    },
+    {
+      "id": "e6",
+      "sourceNodeId": "director_review",
+      "targetNodeId": "end",
+      "properties": {}
+    },
+    {
+      "id": "e7",
+      "sourceNodeId": "boss_review",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

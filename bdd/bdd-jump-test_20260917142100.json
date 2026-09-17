@@ -1,0 +1,138 @@
+{
+  "name": "jump-test",
+  "displayName": "JUMP 跳节点测试",
+  "type": "approval",
+  "instanceUrl": "/fix/jump-test/detail",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "apply-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "发起"
+      }
+    },
+    {
+      "id": "leader_review",
+      "type": "snaker:task",
+      "x": 300,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "review-form",
+        "assignee": "leader",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "领导审批"
+      }
+    },
+    {
+      "id": "manager_review",
+      "type": "snaker:task",
+      "x": 450,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "review-form",
+        "assignee": "manager",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "经理审批"
+      }
+    },
+    {
+      "id": "boss_review",
+      "type": "snaker:task",
+      "x": 600,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "review-form",
+        "assignee": "boss",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "总经理审批"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 750,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e1",
+      "sourceNodeId": "apply",
+      "targetNodeId": "leader_review",
+      "properties": {}
+    },
+    {
+      "id": "e2",
+      "sourceNodeId": "leader_review",
+      "targetNodeId": "manager_review",
+      "properties": {}
+    },
+    {
+      "id": "e3",
+      "sourceNodeId": "manager_review",
+      "targetNodeId": "boss_review",
+      "properties": {}
+    },
+    {
+      "id": "e4",
+      "sourceNodeId": "boss_review",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

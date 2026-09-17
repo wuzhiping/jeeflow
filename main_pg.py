@@ -29,6 +29,7 @@ from datetime import datetime
 import asyncpg
 from jeeflow import EngineImpl, EventType, ProcessEvent, JeeflowFacade, \
     EngineExtensions, HandlerRegistry, register_builtin_assignments, JdbcRepository
+from jeeflow.extensions import FlowInterceptor
 from jeeflow.engine import _find_node, _follow_edges, _sync_task_to_aggregate
 from jeeflow.repository.postgres import PostgresAdapter
 from jeeflow.repository.ext import JdbcProcessExtRepository
@@ -76,33 +77,48 @@ class SnowflakeIDGen(IDGenerator):
 
 
 class SimpleExprEvaluator(ExpressionEvaluator):
-    """简易 SpEL 表达式：支持 amount >/>=/</<=/== number；OGNL 风格 #varname 同支持
+    """简易 SpEL 表达式：支持 amount >/>=/</<=/== number 和 #var==str；OGNL 风格 #varname 同支持
 
     v1.5.1-PG fix (FIX-T1 2026-09-17)：与 main.py 同步
     expr 是数字但 value 是字符串时，原 `actual = float(actual)` 抛 ValueError
     导致整个 startAndExecute 失败（code=99999999）。
     修复：捕获 ValueError/TypeError 返回 False，与 regex 不匹配、value 为 None 行为一致
     （走兜底首边）。
+
+    v1.6.0-PG fix (FIX-T3 2026-09-17)：与 main.py 同步
+    支持字符串相等比较 `#var==string` / `#var!=string`。
+    原版只支持数字，字符串比较走兜底。
     """
     async def eval(self, expr: str, vars: dict):
         import re
-        m = re.match(r"^\s*(#?\w+)\s*(>=|<=|!=|==|>|<)\s*(\d+(?:\.\d+)?)\s*$", expr)
-        if not m:
+        # 数字比较: #var op number
+        m_num = re.match(r"^\s*(#?\w+)\s*(>=|<=|!=|==|>|<)\s*(\d+(?:\.\d+)?)\s*$", expr)
+        # 字符串比较: #var == "string" 或 #var == string
+        m_str = re.match(r'^\s*(#?\w+)\s*(==|!=)\s*"?([A-Za-z0-9_]+)"?\s*$', expr)
+        if m_num:
+            key, op, val = m_num.group(1).lstrip("#"), m_num.group(2), float(m_num.group(3))
+            actual = vars.get(key)
+            if actual is None:
+                return False
+            try:
+                actual = float(actual)
+            except (ValueError, TypeError):
+                return False
+            if op == ">": return actual > val
+            if op == ">=": return actual >= val
+            if op == "<": return actual < val
+            if op == "<=": return actual <= val
+            if op == "==": return actual == val
+            if op == "!=": return actual != val
             return False
-        key, op, val = m.group(1).lstrip("#"), m.group(2), float(m.group(3))
-        actual = vars.get(key)
-        if actual is None:
+        if m_str:
+            key, op, val = m_str.group(1).lstrip("#"), m_str.group(2), str(m_str.group(3))
+            actual = vars.get(key)
+            if actual is None:
+                return False
+            if op == "==": return str(actual) == val
+            if op == "!=": return str(actual) != val
             return False
-        try:
-            actual = float(actual)
-        except (ValueError, TypeError):
-            return False
-        if op == ">": return actual > val
-        if op == ">=": return actual >= val
-        if op == "<": return actual < val
-        if op == "<=": return actual <= val
-        if op == "==": return actual == val
-        if op == "!=": return actual != val
         return False
 
 
@@ -489,7 +505,33 @@ async def lifespan(app: FastAPI):
     engine = RatioCapableEngine(repo, user_prov, idgen, SimpleExprEvaluator())
     _registry = HandlerRegistry()
     register_builtin_assignments(_registry, user_prov, org_prov)
-    engine.set_extensions(EngineExtensions(registry=_registry))
+
+    # 与 main.py 同步（BDD Task 24 2026-09-17）：注册 mock 拦截器，验证 _fire_post 调用链
+    class MockAuditInterceptor(FlowInterceptor):
+        """定义级拦截器：每次 pre/post_handle 写一条到 /tmp/jee-mock-audit.log"""
+        _audit_log = "/tmp/jee-mock-audit.log"
+        def __init__(self, name: str = "com.example.MockAuditInterceptor"):
+            self._name = name
+            try:
+                with open(self._audit_log, "a") as f:
+                    f.write(f"# init {self._name} pid={os.getpid()}\n")
+            except Exception:
+                pass
+        @property
+        def order(self) -> int:
+            return 0
+        async def pre_handle(self, node, instance) -> bool:
+            with open(self._audit_log, "a") as f:
+                f.write(f"PRE  {self._name} node={node.id} inst={instance.id}\n")
+            return True
+        async def post_handle(self, node, instance) -> None:
+            with open(self._audit_log, "a") as f:
+                f.write(f"POST {self._name} node={node.id} inst={instance.id} state={instance.state}\n")
+
+    _ic_registry = {
+        "com.example.MockAuditInterceptor": MockAuditInterceptor(),
+    }
+    engine.set_extensions(EngineExtensions(registry=_registry, interceptor_registry=_ic_registry))
     facade = JeeflowFacade(engine, repo, ext_repo, user_search=spi_user_search, org_prov=org_prov)
 
     state["pool"] = pool
