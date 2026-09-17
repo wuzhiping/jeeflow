@@ -1,0 +1,581 @@
+{
+  "updated": "2026-09-17T14:50:00",
+  "tasks": [
+    {
+      "id": "Task 16",
+      "name": "expense-ratio-tiered",
+      "time": "20260917132000",
+      "node_types": [
+        "decision",
+        "task"
+      ],
+      "features": [
+        "countersign RATIO",
+        "multi-decision"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 17",
+      "name": "reject-rollback",
+      "time": "20260917132200",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "submitType=6 ROLLBACK_TO_OPERATOR",
+        "RE_APPLY"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 18",
+      "name": "candidate-multi-route",
+      "time": "20260917132500",
+      "node_types": [
+        "task",
+        "decision"
+      ],
+      "features": [
+        "candidateUsers/Groups",
+        "decision fallback"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 19",
+      "name": "business-interceptor",
+      "time": "20260917132800",
+      "node_types": [
+        "task"
+      ],
+      "features": [
+        "postInterceptors",
+        "main_pg 抛错"
+      ],
+      "errors": [
+        "§36 main.py vs main_pg.py"
+      ]
+    },
+    {
+      "id": "Task 20",
+      "name": "multi-task-6",
+      "time": "20260917133200",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "6 task 串行"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 21",
+      "name": "candidate-pool-take",
+      "time": "20260917135000",
+      "node_types": [
+        "task",
+        "decision"
+      ],
+      "features": [
+        "candidatePage API"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 22",
+      "name": "handler-chain",
+      "time": "20260917135400",
+      "node_types": [
+        "task"
+      ],
+      "features": [
+        "TaskRole + FormField + DeptLeader"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 23",
+      "name": "sign-parallel-5",
+      "time": "20260917140000",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "PARALLEL ALL + ONE_VOTE_VETO"
+      ],
+      "errors": [
+        "§39 state=99 ABANDON"
+      ]
+    },
+    {
+      "id": "Task 24",
+      "name": "interceptor-mock",
+      "time": "20260917140200",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "MockAuditInterceptor 注册"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 25",
+      "name": "nested-decision",
+      "time": "20260917140400",
+      "node_types": [
+        "decision",
+        "task",
+        "end"
+      ],
+      "features": [
+        "嵌套 3 层 decision",
+        "amount 变量"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 26",
+      "name": "delegate-test",
+      "time": "20260917140600",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "surrogate 委托"
+      ],
+      "errors": [
+        "§40 surrogate 仅记录不生效"
+      ]
+    },
+    {
+      "id": "Task 27",
+      "name": "empty-flow + SPI fix",
+      "time": "20260917140800",
+      "node_types": [
+        "start",
+        "end",
+        "task"
+      ],
+      "features": [
+        "空流程",
+        "中文 id",
+        "SPI deptId 映射"
+      ],
+      "errors": [
+        "§41 deptId 修复",
+        "§42 SPI 函数签名"
+      ]
+    },
+    {
+      "id": "Task 28",
+      "name": "serial-approval",
+      "time": "20260917141500",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "4 级串行审批",
+        "submitType=2 REJECT"
+      ],
+      "errors": [
+        "§43 state=45 REJECT"
+      ]
+    },
+    {
+      "id": "Task 29",
+      "name": "multi-branch-merge",
+      "time": "20260917141700",
+      "node_types": [
+        "task",
+        "join",
+        "end"
+      ],
+      "features": [
+        "snaker:join 汇聚"
+      ],
+      "errors": [
+        "§44 custom vs join 区别"
+      ]
+    },
+    {
+      "id": "Task 30",
+      "name": "countersign-seq",
+      "time": "20260917141900",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "SEQUENTIAL 会签"
+      ],
+      "errors": [
+        "§45 PendingTask 状态"
+      ]
+    },
+    {
+      "id": "Task 31",
+      "name": "jump-test",
+      "time": "20260917142100",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "submitType=4 JUMP",
+        "taskName 参数"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 32",
+      "name": "custom-decision-nested",
+      "time": "20260917142300",
+      "node_types": [
+        "decision",
+        "task"
+      ],
+      "features": [
+        "嵌套 decision 字符串 expr"
+      ],
+      "errors": [
+        "§46 decisionHandler 未实现",
+        "§47 FIX-T3 字符串比较"
+      ]
+    },
+    {
+      "id": "Task 33",
+      "name": "leave-form-permission",
+      "time": "20260917143000",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "PERMISSION_* 字段权限"
+      ],
+      "errors": [
+        "§49 字段权限元数据"
+      ]
+    },
+    {
+      "id": "Task 34",
+      "name": "cc-test",
+      "time": "20260917143200",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "f_ccActors 自动抄送",
+        "createCCInstance"
+      ],
+      "errors": [
+        "§50 CC state 跟随"
+      ]
+    },
+    {
+      "id": "Task 35",
+      "name": "multi-deploy",
+      "time": "20260917143400",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "同设计多版本部署"
+      ],
+      "errors": [
+        "§51 版本自增"
+      ]
+    },
+    {
+      "id": "Task 36",
+      "name": "rollback-multi",
+      "time": "20260917143600",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "submitType=3 ROLLBACK 重审"
+      ],
+      "errors": [
+        "§52 ROLLBACK 重审机制"
+      ]
+    },
+    {
+      "id": "Task 37",
+      "name": "dict-usage",
+      "time": "20260917143800",
+      "node_types": [
+        "task",
+        "decision",
+        "end"
+      ],
+      "features": [
+        "wf_leave_type 字典值路由"
+      ],
+      "errors": [
+        "§53 字典与 expr 集成"
+      ]
+    },
+    {
+      "id": "Task 38",
+      "name": "task-vs-instance-var",
+      "time": "20260917144000",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "formData + taskVariables"
+      ],
+      "errors": [
+        "§54 taskVariables 不注入 instance"
+      ]
+    },
+    {
+      "id": "Task 39",
+      "name": "todo-done-cc",
+      "time": "20260917144200",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "todoList/doneList/ccList 三页"
+      ],
+      "errors": [
+        "§55 doneList actorIdList=None"
+      ]
+    },
+    {
+      "id": "Task 40",
+      "name": "parent-child-flow",
+      "time": "20260917144400",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "parentId 父子关联"
+      ],
+      "errors": [
+        "§56 parentId 参数未生效"
+      ]
+    },
+    {
+      "id": "Task 41",
+      "name": "candidate-groups",
+      "time": "20260917144600",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "candidateUsers/candidateGroups"
+      ],
+      "errors": [
+        "§37 candidatePage 回落行为"
+      ]
+    },
+    {
+      "id": "Task 42",
+      "name": "assignee-multi-applicant",
+      "time": "20260917144800",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "applicant=发起人",
+        "多 actor"
+      ],
+      "errors": []
+    }
+  ],
+  "summary": {
+    "total_tasks": 27,
+    "node_types_used": [
+      "start",
+      "end",
+      "task",
+      "decision",
+      "join",
+      "custom"
+    ],
+    "features_used": [
+      "countersign (PARALLEL/SEQUENTIAL/RATIO/ALL/ONE_VOTE_VETO)",
+      "submitType 路由 (0/1/2/3/4/5/6/20)",
+      "candidateUsers/Groups",
+      "PERMISSION_* 字段权限",
+      "f_ccActors 抄送",
+      "postInterceptors",
+      "FormFieldAssigneeHandler + TaskRoleAssigneeHandler + DeptLeaderAssignmentHandler",
+      "嵌套 decision + 自定义变量",
+      "JUMP + ROLLBACK + REJECT",
+      "candidatePage API",
+      "字典 wf_* 路由",
+      "多版本部署"
+    ],
+    "fixes_applied": [
+      "FIX-T1 v1.5.1 SimpleExprEvaluator 字符串容错",
+      "FIX-T2 v1.5.2 handler 解析 warning 日志",
+      "FIX-T3 v1.6.0 SimpleExprEvaluator 字符串相等",
+      "v1.5.3 _fix_log 文件日志",
+      "SPI deptId 映射",
+      "MockAuditInterceptor 注册"
+    ],
+    "all_known_issues": [
+      "§1-§10 已知引擎约束",
+      "§11-§21 早期发现",
+      "§22-§27 引擎行为",
+      "§28 v1.5.1 fix",
+      "§29 v1.5.2 fix",
+      "§30 join 后 end 未触发",
+      "§31 highLight historyNodeNames",
+      "§32 re_apply 冗余",
+      "§33 decision 兜底边",
+      "§34 preInterceptors 未生效",
+      "§35 assignee 字符串当 userId",
+      "§36 main.py vs main_pg.py 后端行为差异",
+      "§37 candidatePage 实际语义",
+      "§38 handler 链路串联",
+      "§39 state=99 ABANDON",
+      "§40 surrogate 仅记录",
+      "§41 SPI deptId 映射 (修复)",
+      "§42 SPI 函数签名",
+      "§43 submitType=2 REJECT → state=45",
+      "§44 snaker:join vs custom",
+      "§45 SEQUENTIAL PendingTask",
+      "§46 Python decisionHandler 未实现",
+      "§47 FIX-T3 字符串比较 (修复)",
+      "§49 PERMISSION 字段权限",
+      "§50 CC state 跟随",
+      "§51 多版本部署",
+      "§52 ROLLBACK 重审机制",
+      "§53 字典值 expr 集成",
+      "§54 taskVariables vs instance.variables",
+      "§55 doneList actorIdList=None",
+      "§56 parentId 参数未生效"
+    ]
+  },
+  "statistics": {
+    "by_node_type": {
+      "decision": 6,
+      "task": 27,
+      "end": 21,
+      "start": 1,
+      "join": 1
+    },
+    "by_feature_category": {
+      "countersign": 1,
+      "decision_expr": 4,
+      "submitType_routing": 4,
+      "candidate": 3,
+      "interceptor": 2,
+      "field_permission": 1,
+      "cc": 1,
+      "multi_version": 1,
+      "dict_routing": 1,
+      "applicant_substitution": 1
+    },
+    "by_error_chapter": {
+      "§36": 1,
+      "§39": 1,
+      "§40": 1,
+      "§41": 1,
+      "§42": 1,
+      "§43": 1,
+      "§44": 1,
+      "§45": 1,
+      "§46": 1,
+      "§47": 1,
+      "§49": 1,
+      "§50": 1,
+      "§51": 1,
+      "§52": 1,
+      "§53": 1,
+      "§54": 1,
+      "§55": 1,
+      "§56": 1,
+      "§37": 1
+    },
+    "by_severity": {
+      "critical": [
+        "§36",
+        "§40",
+        "§46",
+        "§47",
+        "§56"
+      ],
+      "warning": [
+        "§39",
+        "§43",
+        "§50",
+        "§52",
+        "§54",
+        "§55"
+      ]
+    },
+    "by_fix_status": {
+      "fixed": [
+        "§47",
+        "§41",
+        "§28",
+        "§29"
+      ],
+      "documented_only": [
+        "§34",
+        "§40",
+        "§46",
+        "§56",
+        "§30",
+        "§33",
+        "§39",
+        "§43",
+        "§52",
+        "§45"
+      ]
+    },
+    "tasks_with_errors": [
+      "Task 19",
+      "Task 23",
+      "Task 26",
+      "Task 27",
+      "Task 28",
+      "Task 29",
+      "Task 30",
+      "Task 32",
+      "Task 33",
+      "Task 34",
+      "Task 35",
+      "Task 36",
+      "Task 37",
+      "Task 38",
+      "Task 39",
+      "Task 40",
+      "Task 41"
+    ],
+    "tasks_all_pass": [
+      "Task 16",
+      "Task 17",
+      "Task 18",
+      "Task 20",
+      "Task 21",
+      "Task 22",
+      "Task 24",
+      "Task 25",
+      "Task 31",
+      "Task 42"
+    ]
+  }
+}

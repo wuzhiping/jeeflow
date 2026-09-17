@@ -172,6 +172,8 @@
 
 `engine._evaluate_decision`（`engine.py:353-375`）按出边 `properties.expr` 依次求值，第一个真值即沿该边。`properties.expr` 可空（默认边），`handleClass` 兼容 Java 扩展点（样例 03-decision-expr.json 与 10-mixed-mode.json 均保留 `"handleClass": ""` 占位，当前未触发，留作后续扩展）。
 
+> 已知：Python 引擎 `_evaluate_decision` **不调用 `IDecisionHandler`**（register_decision 无效）。详见 `./known-issues.md §46`。要实现多条件路由请用嵌套 decision + expr。
+
 **decision 兜底边（实测 2026-09-17 §33）**：
 - 决策节点按 edge 顺序评估 expr，首个 true 即流转
 - 所有 expr 都不匹配 → **fallback 到第一条出边**（即使 `expr=""`）
@@ -233,6 +235,8 @@
 
 `expr` 仅对 `snaker:decision` 出边生效，引擎按顺序求值。`engine._evaluate_decision` 兜底：无 expr 边 → 默认路径；全失败 → 首条边。
 
+> SimpleExprEvaluator 仅支持 `#var <op> number`（FIX-T1 v1.5.1）和 `#var==str`/`#var!=str`（FIX-T3 v1.6.0）。多条件须嵌套 decision 串联，详见 `./known-issues.md §33 / §47`。
+
 `properties` 可省略或置 `{}`（`flows/10-mixed-mode.json` 多条非 decision 边）；`text` 可省略。
 
 ---
@@ -267,6 +271,8 @@
 ## 5. 字段权限（field.PERMISSION_）
 
 任务节点 `properties.field.PERMISSION_<fkey>` 控制办理界面字段读写，参考 `flows/01-simple.json:49-52`：
+
+> PERMISSION_* 字段仅作元数据透传，引擎不做强制校验（前端控制）。详见 `./known-issues.md §49`。
 
 ```json
 "field": {
@@ -332,6 +338,8 @@
 ## 7a. SubmitType 路由矩阵
 
 `SubmitType` 是实例变量 `submitType` 的枚举值（`jeeflow/model.py:45-52`，仅文档记录，不可改），决定任务节点执行后路由走向。
+
+> ROLLBACK 重审机制详见 `./known-issues.md §52`，submitType=2 REJECT → state=45 详见 §43。
 
 | submitType | 字面含义 | 引擎行为 | 实测终态（`processInstance/detail.state`） | 备注 |
 | --- | --- | --- | --- | --- |

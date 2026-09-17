@@ -1,0 +1,153 @@
+{
+  "name": "leave-form-permission",
+  "displayName": "请假流程 + 字段权限",
+  "type": "hr",
+  "instanceUrl": "/fix/leave-form-permission/detail",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "leave-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_leave_type": "",
+          "f_days": 0,
+          "f_reason": "",
+          "f_total": 0,
+          "PERMISSION_f_days": 2,
+          "PERMISSION_f_total": 1
+        }
+      },
+      "text": {
+        "value": "提交请假"
+      }
+    },
+    {
+      "id": "leader_review",
+      "type": "snaker:task",
+      "x": 300,
+      "y": 200,
+      "properties": {
+        "width": 120,
+        "height": 50,
+        "form": "leave-form",
+        "assignee": "leader",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "PERMISSION_f_days": 1,
+          "PERMISSION_f_reason": 1,
+          "PERMISSION_f_opinion": 2
+        }
+      },
+      "text": {
+        "value": "直属领导审批"
+      }
+    },
+    {
+      "id": "manager_review",
+      "type": "snaker:task",
+      "x": 450,
+      "y": 200,
+      "properties": {
+        "width": 120,
+        "height": 50,
+        "form": "leave-form",
+        "assignee": "manager",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "PERMISSION_f_days": 1,
+          "PERMISSION_f_reason": 1,
+          "PERMISSION_f_opinion": 2
+        }
+      },
+      "text": {
+        "value": "部门经理审批"
+      }
+    },
+    {
+      "id": "notify",
+      "type": "snaker:task",
+      "x": 600,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "leave-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "通知发起人"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 750,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e1",
+      "sourceNodeId": "apply",
+      "targetNodeId": "leader_review",
+      "properties": {}
+    },
+    {
+      "id": "e2",
+      "sourceNodeId": "leader_review",
+      "targetNodeId": "manager_review",
+      "properties": {}
+    },
+    {
+      "id": "e3",
+      "sourceNodeId": "manager_review",
+      "targetNodeId": "notify",
+      "properties": {}
+    },
+    {
+      "id": "e4",
+      "sourceNodeId": "notify",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

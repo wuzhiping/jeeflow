@@ -4,6 +4,84 @@
 
 ---
 
+## 索引（按类别）
+
+### A. 引擎行为约束
+
+| 章节 | 标题 | 影响范围 |
+|---|---|---|
+| §1 | facade submitType=0 被强制改为 1 | startAndExecute 全部 |
+| §22 | handler FQCN 匹配 | 4 个内置 handler |
+| §24 | FormField 字段名约束（`f_<node.id>`） | FormFieldAssigneeHandler |
+| §25 | handler 解析静默失败 | assignmentHandler |
+| §30 | join 后 end 未触发（流程图设计缺陷） | snaker:join 节点 |
+| §33 | decision 兜底边 | snaker:decision 节点 |
+| §39 | state=99 ABANDON | PARALLEL 会签 |
+| §43 | submitType=2 REJECT → state=45 | REJECT 路由 |
+| §52 | ROLLBACK 重审机制 | submitType=3 |
+| §45 | SEQUENTIAL PendingTask | 串行会签 |
+
+### B. 字段语义与解析
+
+| 章节 | 标题 | 影响范围 |
+|---|---|---|
+| §31 | highLight historyNodeNames 含未访问节点 | 实例历史 |
+| §32 | re_apply 节点冗余（submitType=6 跳过中间节点） | submitType=6 |
+| §34 | preInterceptors 静默未生效 | 拦截器（Python 引擎） |
+| §35 | assignee 字符串直接当 userId | 不查 SPI 角色映射 |
+| §37 | candidatePage API 实际语义 | 候选人池 |
+| §38 | handler 链路串联行为 | TaskRole/FormField/DeptLeader |
+| §46 | Python decisionHandler 未实现 | 自定义决策 |
+| §47 | FIX-T3 SimpleExprEvaluator 字符串比较 | decision expr |
+| §49 | PERMISSION 字段权限元数据 | 字段权限 |
+| §50 | CC state 跟随实例 | 抄送 |
+| §51 | 多版本部署 | 同设计多次 deploy |
+| §53 | 字典值与 expr 集成 | wf_* 字典 |
+| §54 | taskVariables vs instance.variables | 表单数据 |
+| §55 | doneList actorIdList=None | 已办查询 |
+| §56 | parentId 参数未生效 | 父子流程 |
+
+### C. 后端差异 / SPI 约束
+
+| 章节 | 标题 | 影响范围 |
+|---|---|---|
+| §36 | main.py vs main_pg.py _resolve_interceptors 行为不一致 | 拦截器测试 |
+| §40 | Python surrogate 仅记录不生效 | 委派场景 |
+| §41 | SPI deptId 映射 | DeptLeader handler（**已修复**） |
+| §42 | SPI 函数签名约束（payload, token） | SPI 自定义 |
+
+### D. BDD 报告与累积统计
+
+| 章节 | 标题 | 关联 BDD Task |
+|---|---|---|
+| §28 | FIX-T1 v1.5.1 SimpleExprEvaluator | BDD 前期 |
+| §29 | FIX-T2 v1.5.2 handler 解析 warning | BDD 前期 |
+| §48 | main_pg.py 同步修复 | BDD Task 27/32 |
+
+### E. 按测试任务分组的已知问题
+
+| BDD Task | 新发现 | 主要测试场景 |
+|---|---|---|
+| Task 16-20 | §31-§35（5 条） | 5 任务 main.py 后端验证 |
+| Task 21-22 | §37-§38（2 条） | candidatePage + handler 链 |
+| Task 23-27 | §39-§42（4 条） | 会签 / 拦截器 / decision / 委派 / 边界 |
+| Task 28-32 | §43-§47（5 条） | submitType / 汇聚 / 加签 / JUMP / 自定义决策 |
+| Task 33-37 | §49-§53（5 条） | PERMISSION / CC / 多版本 / ROLLBACK / 字典 |
+| Task 38-42 | §54-§56（3 条） | taskVariables / 三页 / parentId / candidate / applicant |
+
+### F. 已应用修复（可复用）
+
+| 修复 | 版本 | 章节 | 描述 |
+|---|---|---|---|
+| FIX-T1 | v1.5.1 | §28 | SimpleExprEvaluator 字符串容错 |
+| FIX-T2 | v1.5.2 | §29 | handler 解析 warning 日志 |
+| FIX-T3 | v1.6.0 | §47 | SimpleExprEvaluator 字符串相等 |
+| v1.5.3 | — | — | `_fix_log` 写文件日志 |
+| SPI deptId | — | §41 | find_dept_leaders 按 deptId 映射 |
+| MockAuditInterceptor | — | §48 | 注册验证 _fire_post |
+
+---
+
 ## 1. facade `submitType=0` 被强制改为 `1`（`facade.py:300`）
 
 ### 现象
@@ -1654,3 +1732,222 @@ if m_str:
 ### 测试报告
 
 - `./bdd/bdd-custom-decision-nested_20260917142300.md`
+
+---
+
+## §49. PERMISSION 字段权限是元数据，前端控制（Task 33 发现 2026-09-17）
+
+### 现象
+
+节点 `properties.field.PERMISSION_<字段名>` 配置字段权限：
+- 1 = 只读
+- 2 = 隐藏
+- 缺省/0 = 可编辑
+
+### 引擎行为
+
+- **PERMISSION 字段仅作为元数据透传**，不参与引擎逻辑
+- 详情 API 返回的 task.variable JSON 含 PERMISSION_* 字段
+- 前端按此渲染表单字段的读写/隐藏状态
+- 引擎对 PERMISSION 字段不做强制校验
+
+### 配置示例
+
+```json
+{
+  "field": {
+    "f_leave_type": "",
+    "f_days": 0,
+    "PERMISSION_f_days": 2,  // 隐藏
+    "PERMISSION_f_total": 1  // 只读
+  }
+}
+```
+
+### 测试报告
+
+- `./bdd/bdd-leave-form-permission_20260917143000.md`
+
+---
+
+## §50. CC state 跟随实例 state（Task 34 发现 2026-09-17）
+
+### 现象
+
+CC 实例创建后独立于流程实例存储。当流程实例 state 变化（10→20/45）时，CC 实例的 state 字段也同步更新。
+
+### 实测
+
+1. f_ccActors="userA,userB" 发起 → userA/B ccList 含实例（state=10）
+2. leader approve → 流程 state=20 → CC state 同步为 20
+3. updateCCStatus mark as read（不影响 state）
+
+### 引擎行为
+
+- `facade.py:_processInstance_createCCInstance` 调 `_repo.create_cc_instance`
+- 实例状态变化时 CC 实例同步更新（MemoryRepository 实现）
+
+### 测试报告
+
+- `./bdd/bdd-cc-test_20260917143200.md`
+
+---
+
+## §51. 同一设计可多次部署，版本递增（Task 35 发现 2026-09-17）
+
+### 现象
+
+`POST /wf/processDesign/deploy {id: designId}` 每次都创建**新 processDefineId**（递增），版本号自动 +1。
+
+### 实测
+
+3 次部署同 design（id=9）：
+
+| 部署次数 | processDefineId | version |
+|---|---|---|
+| 1 | 113 | 0 |
+| 2 | 114 | 1 |
+| 3 | 115 | 2 |
+
+启动实例时用哪个 pdid → 实例 processDefineId 绑定该版本。
+
+### 用途
+
+- 流程升级：deploy V2 后新实例用 V2，老实例仍跑 V1
+- 灰度发布：A pdid 跑新功能，B pdid 保留旧版
+- A/B 测试：同一设计多版本并存
+
+### 测试报告
+
+- `./bdd/bdd-multi-deploy_20260917143400.md`
+
+---
+
+## §52. ROLLBACK 重审机制（Task 36 发现 2026-09-17）
+
+### 现象
+
+submitType=3 ROLLBACK 驳回到任意已处理节点后，**驳回人**处理被驳回节点（actor 重新分配给驳回人）。
+
+### 实测
+
+manager 驳回到 leader_review：
+- ROLLBACK 后 active = leader_review
+- 但 actor=['manager']（不是原 leader）
+- manager agree 后推进到下一节点
+- 创建新 task 实例（旧的 leader_review DONE，新的 manager_review 创建）
+
+### 引擎行为
+
+- `engine.py:execute_and_jump_task` 跳到指定节点
+- 重审时 `_resolve_actors` 重新解析，assignee 不变（仍是 leader）
+- 但实际 actor 由 _is_allowed 检查：当前 operator 在 actorIds 中 → 通过
+- **驳回人 = 当前 operator**：驳回后下一次 active 的 actor 由该 operator 处理
+
+### 测试报告
+
+- `./bdd/bdd-rollback-multi_20260917143600.md`
+
+---
+
+## §53. 字典值与 decision expr 集成（Task 37 发现 2026-09-17）
+
+### 现象
+
+业务字典（wf_leave_type, wf_process_type 等）值可作为 decision expr 输入。
+
+### 实测
+
+请假类型 3 case：
+
+| leave_type | decision expr 匹配 | 路由 |
+|---|---|---|
+| annual | `#leave_type==annual` True | manager_review |
+| sick | `#leave_type==sick` True | leader_review |
+| personal | `#leave_type==personal` True | director_review |
+
+### 字典使用流程
+
+1. 字典存于 `./spi/demo/DEMO_DICTS.json`
+2. 通过 `/api/dicts` 返回前端渲染下拉框
+3. 前端提交 `f_<dict_field>=<value>` 流程变量
+4. decision expr `#<dict_field>==<value>` 路由（依赖 FIX-T3 v1.6.0 字符串比较）
+
+### 测试报告
+
+- `./bdd/bdd-dict-usage_20260917143800.md`
+
+---
+
+## §54. taskVariables vs instance.variables（Task 38 发现 2026-09-17）
+
+### 现象
+
+execute 时传的 `taskVariables` 只写入实例 `formData`，**不注入** `instance.variables`。
+
+### 引擎行为
+
+- startAndExecute `variables` → 注入到 `instance.variables`（v1.5.0 wrapper 解包）
+- execute `taskVariables` → 仅写入 `formData` 字段（task 级表单数据）
+- 两个存储独立，互不影响
+
+### 数据位置
+
+| 来源 | 字段位置 |
+|---|---|
+| startAndExecute variables | instance.variables |
+| execute taskVariables | instance.formData（追加） |
+| 节点 properties.field | node 级 schema（前端表单） |
+
+### 测试报告
+
+- `./bdd/bdd-task-vs-instance-var_20260917144000.md`
+
+---
+
+## §55. doneList 行 taskActorIdList=None（Task 39 发现 2026-09-17）
+
+### 现象
+
+`POST /wf/processTask/doneList` 返回的行结构 `taskActorIdList` 字段为 `None`，
+但 `taskName` 字段正常。
+
+### 影响
+
+前端"已办"列表无法直接渲染"由谁处理"（actor），需额外查 task detail。
+
+### 缓解
+
+- 调 `task/detail` API 补全 actor 信息
+- 或前端后端协调：doneList 行结构补 actorIdList
+
+### 测试报告
+
+- `./bdd/bdd-todo-done-cc_20260917144200.md`
+
+---
+
+## §56. startAndExecute parentId 参数未生效（Task 40 发现 2026-09-17）
+
+### 现象
+
+`startAndExecute body.parentId=$PARENT_INST` 启动子实例时，**引擎忽略 parentId**。
+子实例 `detail.parentId` 仍为 `None`。
+
+### 引擎行为
+
+- `ProcessInstance` 模型有 `parentId` 字段
+- 但 `facade.py` startAndExecute 路径**不读取** args.parentId
+- Java boot2 同步支持该参数
+
+### 修复建议
+
+```python
+# facade.py:startAndExecute 入参解析
+parent_id = args.get("parentId")
+inst.parentId = parent_id  # 注入到实例
+```
+
+### 测试报告
+
+- `./bdd/bdd-parent-child-flow_20260917144400.md`

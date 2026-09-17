@@ -1,0 +1,185 @@
+{
+  "name": "dict-usage",
+  "displayName": "业务字典使用 (wf_leave_type/wf_process_type)",
+  "type": "hr",
+  "instanceUrl": "/fix/dict-usage/detail",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "leave-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_leave_type": "",
+          "f_process_type": "",
+          "f_days": 0
+        }
+      },
+      "text": {
+        "value": "发起请假"
+      }
+    },
+    {
+      "id": "dec_type",
+      "type": "snaker:decision",
+      "x": 320,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50
+      },
+      "text": {
+        "value": "按请假类型分流"
+      }
+    },
+    {
+      "id": "manager_review",
+      "type": "snaker:task",
+      "x": 480,
+      "y": 100,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "review-form",
+        "assignee": "manager",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "经理审批 (annual)"
+      }
+    },
+    {
+      "id": "leader_review",
+      "type": "snaker:task",
+      "x": 480,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "review-form",
+        "assignee": "leader",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "领导审批 (sick)"
+      }
+    },
+    {
+      "id": "director_review",
+      "type": "snaker:task",
+      "x": 480,
+      "y": 300,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "review-form",
+        "assignee": "director",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "总监审批 (personal/其他)"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 640,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e1",
+      "sourceNodeId": "apply",
+      "targetNodeId": "dec_type",
+      "properties": {}
+    },
+    {
+      "id": "e_annual",
+      "sourceNodeId": "dec_type",
+      "targetNodeId": "manager_review",
+      "properties": {
+        "expr": "#leave_type==annual"
+      }
+    },
+    {
+      "id": "e_sick",
+      "sourceNodeId": "dec_type",
+      "targetNodeId": "leader_review",
+      "properties": {
+        "expr": "#leave_type==sick"
+      }
+    },
+    {
+      "id": "e_personal",
+      "sourceNodeId": "dec_type",
+      "targetNodeId": "director_review",
+      "properties": {
+        "expr": "#leave_type==personal"
+      }
+    },
+    {
+      "id": "e_default",
+      "sourceNodeId": "dec_type",
+      "targetNodeId": "director_review",
+      "properties": {}
+    },
+    {
+      "id": "e5",
+      "sourceNodeId": "manager_review",
+      "targetNodeId": "end",
+      "properties": {}
+    },
+    {
+      "id": "e6",
+      "sourceNodeId": "leader_review",
+      "targetNodeId": "end",
+      "properties": {}
+    },
+    {
+      "id": "e7",
+      "sourceNodeId": "director_review",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}
