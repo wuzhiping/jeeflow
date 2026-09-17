@@ -978,6 +978,119 @@
         "100%"
       ],
       "errors": []
+    },
+    {
+      "id": 69,
+      "name": "项目立项审批 V2 (bdd-project-init-v2)",
+      "ts": "20260917184000",
+      "flows": [
+        "bdd-project-init-v2_20260917184000.json"
+      ],
+      "scenario": "apply→dept_approve→amount_decision(≤50万)→manager_approve→finance_sign(PARALLEL)→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager"
+      ],
+      "key_nodes": [
+        "finance_sign",
+        "amount_decision",
+        "assignmentHandler=TaskRoleAssigneeHandler"
+      ]
+    },
+    {
+      "id": 70,
+      "name": "差旅报销审批 (bdd-travel-reimbursement)",
+      "ts": "20260917200000",
+      "flows": [
+        "bdd-travel-reimbursement_20260917200000.json"
+      ],
+      "scenario": "apply→dept_approve→finance_check(PARALLEL)→category_decision→manager_approve→finance_final(PARALLEL)→cashier_pay→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager",
+        "cashier"
+      ],
+      "key_nodes": [
+        "finance_check",
+        "category_decision",
+        "manager_approve",
+        "finance_final",
+        "cashier_pay"
+      ]
+    },
+    {
+      "id": 71,
+      "name": "用车申请审批 (bdd-vehicle-request)",
+      "ts": "20260917210000",
+      "flows": [
+        "bdd-vehicle-request_20260917210000.json"
+      ],
+      "scenario": "apply→fleet_dispatch→FORK(driver_confirm+user_confirm)→JOIN→trip_finish→rate→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "manager",
+        "userA",
+        "userC"
+      ],
+      "key_nodes": [
+        "fork",
+        "join",
+        "driver_confirm",
+        "user_confirm"
+      ]
+    },
+    {
+      "id": 72,
+      "name": "合同审批 (bdd-contract-approval)",
+      "ts": "20260917220000",
+      "flows": [
+        "bdd-contract-approval_20260917220000.json"
+      ],
+      "scenario": "apply→legal_review→amount_decision(>=50万)→board_approve→sign_contract(PARALLEL)→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "director",
+        "boss"
+      ],
+      "key_nodes": [
+        "legal_review",
+        "amount_decision",
+        "board_approve",
+        "sign_contract"
+      ]
+    },
+    {
+      "id": 73,
+      "name": "请假申请 (bdd-leave-application)",
+      "ts": "20260917230000",
+      "flows": [
+        "bdd-leave-application_20260917230000.json"
+      ],
+      "scenario": "apply→direct_leader→days_decision(>=7)→boss_approve→hr_record→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "boss",
+        "director"
+      ],
+      "key_nodes": [
+        "direct_leader",
+        "days_decision",
+        "boss_approve",
+        "hr_record"
+      ]
     }
   ],
   "summary": {

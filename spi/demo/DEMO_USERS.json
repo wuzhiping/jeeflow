@@ -1,10 +1,41 @@
 {
-  "user1": {"name": "张三", "post": "工程师"},
-  "userA": {"name": "孙倩", "post": "工程师"},
-  "userB": {"name": "周明", "post": "工程师"},
-  "userC": {"name": "吴婷", "post": "工程师"},
-  "leader": {"name": "李四", "post": "组长"},
-  "manager": {"name": "王五", "post": "经理"},
-  "director": {"name": "赵六", "post": "总监"},
-  "boss": {"name": "钱七", "post": "总经理"}
+  "user1": {
+    "name": "张三",
+    "post": "工程师"
+  },
+  "userA": {
+    "name": "孙倩",
+    "post": "工程师"
+  },
+  "userB": {
+    "name": "周明",
+    "post": "工程师"
+  },
+  "userC": {
+    "name": "吴婷",
+    "post": "工程师"
+  },
+  "leader": {
+    "name": "李四",
+    "post": "组长"
+  },
+  "manager": {
+    "name": "王五",
+    "post": "经理"
+  },
+  "director": {
+    "name": "赵六",
+    "post": "总监"
+  },
+  "boss": {
+    "name": "钱七",
+    "post": "总经理"
+  },
+  "cashier": {
+    "id": "cashier",
+    "name": "出纳员",
+    "deptId": "D02",
+    "leader": "manager",
+    "post": "出纳"
+  }
 }

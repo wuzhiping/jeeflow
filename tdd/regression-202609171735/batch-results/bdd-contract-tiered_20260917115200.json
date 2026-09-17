@@ -1,13 +1,13 @@
 === memory bdd/bdd-contract-tiered_20260917115200.json ===
 {
   "ok": true,
-  "pdid": "338",
-  "inst_id": "91814753309972",
+  "pdid": "246",
+  "inst_id": "91815586368210",
   "log": [
     {
       "step": "start",
       "ok": true,
-      "inst_id": "91814753309972"
+      "inst_id": "91815586368210"
     },
     {
       "step": "execute-leader",

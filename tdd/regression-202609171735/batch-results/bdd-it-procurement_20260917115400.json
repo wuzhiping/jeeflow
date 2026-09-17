@@ -1,13 +1,13 @@
 === memory bdd/bdd-it-procurement_20260917115400.json ===
 {
   "ok": true,
-  "pdid": "444",
-  "inst_id": "91814756394343",
+  "pdid": "352",
+  "inst_id": "91815589484325",
   "log": [
     {
       "step": "start",
       "ok": true,
-      "inst_id": "91814756394343"
+      "inst_id": "91815589484325"
     },
     {
       "step": "execute-leader",

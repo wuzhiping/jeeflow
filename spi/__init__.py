@@ -21,6 +21,11 @@ SPI_DICTS = _data_mod.SPI_DICTS
 def SPI(func,payload,token= {}) -> dict:
     sopfile = "spi."+ SPI_FOLDER +"."+func
 
+    # FIX-BDD-T1 (2026-09-17)：reload data 模块保证 JSON 热更新生效
+    # 原版只 reload func 模块，但 SPI_ROLE_TO_USERS / SPI_USERS / SPI_DICTS
+    # 在 spi.demo.data 顶层 import 时一次性绑定，修改 JSON 后内存值不刷新
+    reload(_data_mod)
+    # func 模块依赖 data 顶层常量；同步 reload 让 pocketflow 重新拿 data 引用
     agt = import_module(sopfile)
     reload(agt)
 

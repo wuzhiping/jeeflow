@@ -2,13 +2,13 @@
 [reset] ok
 {
   "ok": true,
-  "pdid": "1789662854074000",
-  "inst_id": "91814762579032",
+  "pdid": "1789663667569000",
+  "inst_id": "91815595597239",
   "log": [
     {
       "step": "start",
       "ok": true,
-      "inst_id": "91814762579032"
+      "inst_id": "91815595597239"
     },
     {
       "step": "execute-leader",

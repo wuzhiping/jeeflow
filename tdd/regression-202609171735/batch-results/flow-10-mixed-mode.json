@@ -1,13 +1,13 @@
 === memory flows/10-mixed-mode.json ===
 {
   "ok": true,
-  "pdid": "258",
-  "inst_id": "91814742546645",
+  "pdid": "166",
+  "inst_id": "91815579421331",
   "log": [
     {
       "step": "start",
       "ok": true,
-      "inst_id": "91814742546645"
+      "inst_id": "91815579421331"
     },
     {
       "step": "execute-checker",

@@ -1,13 +1,13 @@
 === memory bdd/bdd-position-transfer_20260917115900.json ===
 {
   "ok": true,
-  "pdid": "530",
-  "inst_id": "91814758577581",
+  "pdid": "438",
+  "inst_id": "91815591594859",
   "log": [
     {
       "step": "start",
       "ok": true,
-      "inst_id": "91814758577581"
+      "inst_id": "91815591594859"
     },
     {
       "step": "execute-leader",

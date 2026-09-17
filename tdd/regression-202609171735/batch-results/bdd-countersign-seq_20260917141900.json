@@ -1,13 +1,13 @@
 === memory bdd/bdd-countersign-seq_20260917141900.json ===
 {
   "ok": true,
-  "pdid": "344",
-  "inst_id": "91814753446169",
+  "pdid": "252",
+  "inst_id": "91815586503383",
   "log": [
     {
       "step": "start",
       "ok": true,
-      "inst_id": "91814753446169"
+      "inst_id": "91815586503383"
     },
     {
       "step": "execute-leader",

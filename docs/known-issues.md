@@ -579,6 +579,76 @@ cs_veto = ct != "" and cs_cond.upper() == "ONE_VOTE_VETO" and \
 - 引擎未实现 Java 风格的「class.forName(clazz).getMethod(methodName).invoke(...)」逻辑
 - `docs/flow.md §3.5` 描述的「custom 不建任务，触发外部处理器」与实测不符
 
+
+### §77 FIX-BDD-T1 SPI 热更新 + Task 1 完成（2026-09-18）
+
+**问题**：vendor 进程重启后场景跑通，但 finance_sign (assignmentHandler) handler.assign → SPI 仍 raise "handler returned empty actors"。
+
+**根因**：`spi/__init__.py:SPI()` 函数 reload 模块有缺陷：
+- 原代码只 reload func 模块（如 `spi.demo.find_by_role`）
+- `spi.demo.find_by_role.pocketflow()` 函数内 `from spi.demo.data import SPI_ROLE_TO_USERS` 在模块加载时绑定
+- 修改 JSON 后，`SPI_ROLE_TO_USERS` 在 `spi.demo.data` 顶层重新加载，但 `spi.demo.find_by_role` 仍引用旧 dict
+
+**测试验证**：
+```python
+import spi.demo.data as data
+import spi.demo.find_by_role as fbr
+print(data.SPI_ROLE_TO_USERS is fbr.SPI_ROLE_TO_USERS)  # True（同 dict）
+from importlib import reload; reload(data)
+print(data.SPI_ROLE_TO_USERS is fbr.SPI_ROLE_TO_USERS)  # False（fbr 仍引用旧）
+```
+
+**修复（FIX-BDD-T1 2026-09-18）**：在 `spi/__init__.py:SPI()` 函数内加 `reload(_data_mod)`，确保每次调用时 `SPI_ROLE_TO_USERS / SPI_USERS / SPI_DICTS` 都重新加载 JSON：
+
+```python
+def SPI(func, payload, token={}) -> dict:
+    sopfile = "spi." + SPI_FOLDER + "." + func
+    # FIX-BDD-T1 (2026-09-18)：reload data 模块保证 JSON 热更新生效
+    reload(_data_mod)
+    agt = import_module(sopfile)
+    reload(agt)
+    ...
+```
+
+**Task 1 流程**：bdd-project-init-v2_20260917184000（项目立项审批 V2）
+- apply → dept_approve (leader) → amount_decision → manager_approve (manager) → finance_sign (PARALLEL, actors=['leader', 'manager']) → end
+- 双端 memory+PG 全部 PASS：leader→manager→leader→manager ✅ state=20
+
+**关键教训**：
+- vendor 进程修改 vendor 源码或 spi 源码后必须**重启 vendor 进程**才能生效（reload worker 缓存旧模块）
+- `kill -9 <pid>` 真正重启（不能用 reload 模式）
+- 双端需分别重启（memory 8101 + PG 8102）
+
+
+### §78 5 个独立 BDD 任务全部完成（2026-09-18）
+
+**目标**：验证 vendor engine 在 5 个独立业务场景（项目立项、差旅、用车、合同、请假）下都能正常工作。
+
+**5 个任务汇总**：
+
+| # | 任务 | 场景 | 关键节点 |
+|---|------|------|---------|
+| 69 | 项目立项审批 V2 | apply→dept_approve→amount_decision→(manager/boss)→finance_sign→end | assignmentHandler (TaskRoleAssigneeHandler) + 会签 PARALLEL |
+| 70 | 差旅报销审批 | apply→dept_approve→finance_check→category_decision→(manager/boss)→finance_final→cashier_pay→end | 双会签 + 多决策分支 |
+| 71 | 用车申请审批 | apply→fleet_dispatch→FORK(driver_confirm+user_confirm)→JOIN→trip_finish→rate→end | fork/join 并行 |
+| 72 | 合同审批 | apply→legal_review→amount_decision(三分支)→(dept/company/board)→sign_contract→end | 三决策分支 + 会签 |
+| 73 | 请假申请 | apply→direct_leader→days_decision(二分支)→(manager/boss)→hr_record→end | 二决策分支 |
+
+**双端全部 PASS**：8101 memory + 8102 PG，10/10 任务 = 5 tasks × 2 backends。
+
+**关键经验**：
+
+1. **vendor 进程必须完全重启**：reload worker 缓存旧模块，每次修改 vendor 源码/spi 源码后必须 `kill -9 <pid>` 再启动
+2. **JSON key 与 node.id 一致**：handler 节点 properties.roleCode 未显式设置时 fallback 用 node.id — JSON SPI_ROLE_TO_USERS 的 key 必须等于 node.id
+3. **新增用户字段完整性**：DEMO_USERS.json 的 user 必须含 `id, name, deptId, leader, post`（get_user SPI 依赖 `info['post']`）
+4. **FIX-BDD-T1 关键修复**：`spi/__init__.py:SPI()` 函数加 `reload(_data_mod)` 让 SPI_ROLE_TO_USERS 在 JSON 热更新后生效
+5. **cashier 是新用户**：5 个任务中只 Task 2 用了 cashier，需要 SPI 角色 + DEMO_USERS + DEMO_ROLE_TO_USERS 三者一致
+
+**statics.json 累积**：68 → 73 tasks（+5 个 BDD 任务）。
+
+**8 个新 SPI 角色**：finance_sign, travel_dept, travel_finance, travel_manager, travel_boss, travel_cashier, fleet_dispatch, driver_confirm, user_confirm, trip_finish, rate, legal_review, company_approve, board_approve, sign_contract, direct_leader, hr_record, finance_check, finance_final, manager_approve, boss_approve, cashier_pay, dept_approve
+
+**vendor 进程清理**：任务完成后 8101 + 8102 已 kill -9 关闭。
 ### 测试报告
 
 `./tdd/test_08-custom-node_20260917101500.md` ❌ FAIL
@@ -2706,6 +2776,37 @@ nohup ./venv/bin/python3 main.py > /tmp/jee-main.log 2>&1 &
 | 合计 84 | 84 | 0 | 100% |
 
 **双端一致性**：8101 memory + 8102 PG 完全一致
+
+### §76 main.py + main_pg.py 公共代码重构 (2026-09-09)
+
+**问题**：main.py (432 行) 和 main_pg.py (672 行) 大量重复代码：
+- SnowflakeIDGen、SimpleExprEvaluator、RatioCapableEngine、MockAuditInterceptor 几乎一字不差
+- _ok / _inst_vo / _task_vo / _load_graph / 路由 handler 完全重复
+- 维护时一处改动需复制到另一处；之前 FIX-T2/T13/T14/T16 等多次同步两个文件
+- 双端注释/log 略微不一致（main.py "静默通过" vs main_pg.py "严格抛错"）
+
+**重构方案**：创建 main_common.py (454 行) 收纳公共代码；main.py 和 main_pg.py 只保留差异部分（repo 创建、lifespan、reset 行为、端口）。
+
+**main_common.py 公共 API**：
+- SnowflakeIDGen / SimpleExprEvaluator / RatioCapableEngine
+- build_ic_registry() / apply_extensions() / install_resolve_actors_wrapper()
+- _ok / _err / _page / _fmt_time / _inst_vo / _task_vo / _load_graph_*
+- APPLY/AGREE/REJECT/ROLLBACK/JUMP/RE_APPLY 枚举
+- build_seed_defines() / run_seed_business()
+- **register_routes(app, get_facade, get_repo, get_pool, reset_fn)** — 核心
+
+**register_routes 设计**：7 个 HTTP 端点（/wf/{action}、/api/reset、/healthz、/api/stats、/api/users、/api/roles、/api/dicts）通过 4 个 callback 参数注入双端差异，避免双端路由代码重复。
+
+**重构效果**：
+
+| 文件 | 重构前 | 重构后 | 减少 |
+|------|--------|--------|------|
+| main.py | 432 | 116 | -73.1% |
+| main_pg.py | 672 | 163 | -75.7% |
+| main_common.py (新) | — | 454 | — |
+| **合计** | 1104 | 733 | **-33.6%** |
+
+**回归验证**：8101 memory + 8102 PG 双端 168/168 PASS（flows/ 17/17 + bdd/ 67/67 + flows/ 17/17 + bdd/ 67/67）。
 
 ### 测试报告
 

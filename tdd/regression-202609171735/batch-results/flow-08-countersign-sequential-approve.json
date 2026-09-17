@@ -1,13 +1,13 @@
 === memory flows/08-countersign-sequential-approve.json ===
 {
   "ok": true,
-  "pdid": "243",
-  "inst_id": "91814742157513",
+  "pdid": "151",
+  "inst_id": "91815579049607",
   "log": [
     {
       "step": "start",
       "ok": true,
-      "inst_id": "91814742157513"
+      "inst_id": "91815579049607"
     },
     {
       "step": "execute-userA",

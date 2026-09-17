@@ -1,13 +1,13 @@
 === memory bdd/bdd-candidate-pool-take_20260917135000.json ===
 {
   "ok": true,
-  "pdid": "318",
-  "inst_id": "91814752823556",
+  "pdid": "226",
+  "inst_id": "91815585881794",
   "log": [
     {
       "step": "start",
       "ok": true,
-      "inst_id": "91814752823556"
+      "inst_id": "91815585881794"
     },
     {
       "step": "execute-userA",

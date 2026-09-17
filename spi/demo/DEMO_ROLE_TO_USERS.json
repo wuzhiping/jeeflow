@@ -35,5 +35,80 @@
   ],
   "task1": [
     "leader"
+  ],
+  "finance_sign": [
+    "leader",
+    "manager"
+  ],
+  "travel_dept": [
+    "leader"
+  ],
+  "travel_finance": [
+    "leader",
+    "manager"
+  ],
+  "travel_manager": [
+    "manager"
+  ],
+  "travel_boss": [
+    "boss"
+  ],
+  "travel_cashier": [
+    "cashier"
+  ],
+  "finance_check": [
+    "leader",
+    "manager"
+  ],
+  "finance_final": [
+    "leader",
+    "manager"
+  ],
+  "manager_approve": [
+    "manager"
+  ],
+  "boss_approve": [
+    "boss"
+  ],
+  "cashier_pay": [
+    "cashier"
+  ],
+  "fleet_dispatch": [
+    "manager"
+  ],
+  "driver_confirm": [
+    "userA",
+    "userB"
+  ],
+  "user_confirm": [
+    "userC"
+  ],
+  "trip_finish": [
+    "user1"
+  ],
+  "rate": [
+    "user1"
+  ],
+  "legal_review": [
+    "director"
+  ],
+  "dept_approve": [
+    "leader"
+  ],
+  "company_approve": [
+    "manager"
+  ],
+  "board_approve": [
+    "boss"
+  ],
+  "sign_contract": [
+    "director",
+    "boss"
+  ],
+  "direct_leader": [
+    "leader"
+  ],
+  "hr_record": [
+    "director"
   ]
 }

@@ -1,13 +1,13 @@
 === memory flows/09-with-reject.json ===
 {
   "ok": true,
-  "pdid": "253",
-  "inst_id": "91814742420689",
+  "pdid": "161",
+  "inst_id": "91815579298447",
   "log": [
     {
       "step": "start",
       "ok": true,
-      "inst_id": "91814742420689"
+      "inst_id": "91815579298447"
     },
     {
       "step": "execute-leader",

@@ -1,0 +1,220 @@
+{
+  "name": "vehicle-request",
+  "displayName": "用车申请审批",
+  "type": "request",
+  "instanceUrl": "/vehicle/request",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "vehicle-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_destination": "",
+          "f_departTime": "",
+          "f_passengers": "",
+          "f_driver": ""
+        }
+      },
+      "text": {
+        "value": "提交用车申请"
+      }
+    },
+    {
+      "id": "fleet_dispatch",
+      "type": "snaker:task",
+      "x": 300,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "vehicle-form",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "车队派车"
+      }
+    },
+    {
+      "id": "fork",
+      "type": "snaker:fork",
+      "x": 450,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "并行"
+      }
+    },
+    {
+      "id": "driver_confirm",
+      "type": "snaker:task",
+      "x": 600,
+      "y": 100,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "vehicle-form",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "司机确认"
+      }
+    },
+    {
+      "id": "user_confirm",
+      "type": "snaker:task",
+      "x": 600,
+      "y": 300,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "vehicle-form",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "用车人确认"
+      }
+    },
+    {
+      "id": "join",
+      "type": "snaker:join",
+      "x": 750,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "汇合"
+      }
+    },
+    {
+      "id": "trip_finish",
+      "type": "snaker:task",
+      "x": 900,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "vehicle-form",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "行程结束"
+      }
+    },
+    {
+      "id": "rate",
+      "type": "snaker:task",
+      "x": 1050,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "vehicle-form",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "用车评价"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 1200,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e1",
+      "sourceNodeId": "apply",
+      "targetNodeId": "fleet_dispatch",
+      "properties": {}
+    },
+    {
+      "id": "e2",
+      "sourceNodeId": "fleet_dispatch",
+      "targetNodeId": "fork",
+      "properties": {}
+    },
+    {
+      "id": "e3",
+      "sourceNodeId": "fork",
+      "targetNodeId": "driver_confirm",
+      "properties": {}
+    },
+    {
+      "id": "e4",
+      "sourceNodeId": "fork",
+      "targetNodeId": "user_confirm",
+      "properties": {}
+    },
+    {
+      "id": "e5",
+      "sourceNodeId": "driver_confirm",
+      "targetNodeId": "join",
+      "properties": {}
+    },
+    {
+      "id": "e6",
+      "sourceNodeId": "user_confirm",
+      "targetNodeId": "join",
+      "properties": {}
+    },
+    {
+      "id": "e7",
+      "sourceNodeId": "join",
+      "targetNodeId": "trip_finish",
+      "properties": {}
+    },
+    {
+      "id": "e8",
+      "sourceNodeId": "trip_finish",
+      "targetNodeId": "rate",
+      "properties": {}
+    },
+    {
+      "id": "e9",
+      "sourceNodeId": "rate",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

@@ -1,13 +1,13 @@
 === memory flows/11-assignment-handler.json ===
 {
   "ok": true,
-  "pdid": "269",
-  "inst_id": "91814742796510",
+  "pdid": "177",
+  "inst_id": "91815579672220",
   "log": [
     {
       "step": "start",
       "ok": true,
-      "inst_id": "91814742796510"
+      "inst_id": "91815579672220"
     },
     {
       "step": "execute-user1",

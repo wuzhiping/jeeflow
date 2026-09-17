@@ -1,0 +1,184 @@
+{
+  "name": "leave-application",
+  "displayName": "请假申请",
+  "type": "request",
+  "instanceUrl": "/leave/apply",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "leave-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_leaveType": "",
+          "f_days": "",
+          "f_startDate": "",
+          "f_reason": ""
+        }
+      },
+      "text": {
+        "value": "提交请假"
+      }
+    },
+    {
+      "id": "direct_leader",
+      "type": "snaker:task",
+      "x": 300,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "leave-form",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "直接主管审批"
+      }
+    },
+    {
+      "id": "days_decision",
+      "type": "snaker:decision",
+      "x": 450,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "天数决策"
+      }
+    },
+    {
+      "id": "manager_approve",
+      "type": "snaker:task",
+      "x": 600,
+      "y": 100,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "leave-form",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "经理审批(>=3天)"
+      }
+    },
+    {
+      "id": "boss_approve",
+      "type": "snaker:task",
+      "x": 600,
+      "y": 300,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "leave-form",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "总经理审批(>=7天)"
+      }
+    },
+    {
+      "id": "hr_record",
+      "type": "snaker:task",
+      "x": 750,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "leave-form",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "HR备案"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 900,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e1",
+      "sourceNodeId": "apply",
+      "targetNodeId": "direct_leader",
+      "properties": {}
+    },
+    {
+      "id": "e2",
+      "sourceNodeId": "direct_leader",
+      "targetNodeId": "days_decision",
+      "properties": {}
+    },
+    {
+      "id": "e3",
+      "sourceNodeId": "days_decision",
+      "targetNodeId": "manager_approve",
+      "properties": {
+        "expr": "f_days>=3 && f_days<7"
+      }
+    },
+    {
+      "id": "e4",
+      "sourceNodeId": "days_decision",
+      "targetNodeId": "boss_approve",
+      "properties": {
+        "expr": "f_days>=7"
+      }
+    },
+    {
+      "id": "e5",
+      "sourceNodeId": "manager_approve",
+      "targetNodeId": "hr_record",
+      "properties": {}
+    },
+    {
+      "id": "e6",
+      "sourceNodeId": "boss_approve",
+      "targetNodeId": "hr_record",
+      "properties": {}
+    },
+    {
+      "id": "e7",
+      "sourceNodeId": "hr_record",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

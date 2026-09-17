@@ -1,0 +1,214 @@
+{
+  "name": "contract-approval",
+  "displayName": "合同审批",
+  "type": "approval",
+  "instanceUrl": "/contract/approval",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "contract-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_contractName": "",
+          "f_amount": "",
+          "f_partyB": ""
+        }
+      },
+      "text": {
+        "value": "提交合同"
+      }
+    },
+    {
+      "id": "legal_review",
+      "type": "snaker:task",
+      "x": 300,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "contract-form",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "法务初审"
+      }
+    },
+    {
+      "id": "amount_decision",
+      "type": "snaker:decision",
+      "x": 450,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "金额决策"
+      }
+    },
+    {
+      "id": "dept_approve",
+      "type": "snaker:task",
+      "x": 600,
+      "y": 50,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "contract-form",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "部门审批(<5万)"
+      }
+    },
+    {
+      "id": "company_approve",
+      "type": "snaker:task",
+      "x": 600,
+      "y": 175,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "contract-form",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "公司审批(5-50万)"
+      }
+    },
+    {
+      "id": "board_approve",
+      "type": "snaker:task",
+      "x": 600,
+      "y": 300,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "contract-form",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "董事会审批(>=50万)"
+      }
+    },
+    {
+      "id": "sign_contract",
+      "type": "snaker:task",
+      "x": 750,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "contract-form",
+        "performType": 1,
+        "countersignType": "PARALLEL",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "合同签订会签"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 900,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e1",
+      "sourceNodeId": "apply",
+      "targetNodeId": "legal_review",
+      "properties": {}
+    },
+    {
+      "id": "e2",
+      "sourceNodeId": "legal_review",
+      "targetNodeId": "amount_decision",
+      "properties": {}
+    },
+    {
+      "id": "e3",
+      "sourceNodeId": "amount_decision",
+      "targetNodeId": "dept_approve",
+      "properties": {
+        "expr": "f_amount<50000"
+      }
+    },
+    {
+      "id": "e4",
+      "sourceNodeId": "amount_decision",
+      "targetNodeId": "company_approve",
+      "properties": {
+        "expr": "f_amount>=50000 && f_amount<500000"
+      }
+    },
+    {
+      "id": "e5",
+      "sourceNodeId": "amount_decision",
+      "targetNodeId": "board_approve",
+      "properties": {
+        "expr": "f_amount>=500000"
+      }
+    },
+    {
+      "id": "e6",
+      "sourceNodeId": "dept_approve",
+      "targetNodeId": "sign_contract",
+      "properties": {}
+    },
+    {
+      "id": "e7",
+      "sourceNodeId": "company_approve",
+      "targetNodeId": "sign_contract",
+      "properties": {}
+    },
+    {
+      "id": "e8",
+      "sourceNodeId": "board_approve",
+      "targetNodeId": "sign_contract",
+      "properties": {}
+    },
+    {
+      "id": "e9",
+      "sourceNodeId": "sign_contract",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

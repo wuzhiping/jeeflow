@@ -1,13 +1,13 @@
 === memory flows/06-countersign-sequential.json ===
 {
   "ok": true,
-  "pdid": "231",
-  "inst_id": "91814741893311",
+  "pdid": "139",
+  "inst_id": "91815578799741",
   "log": [
     {
       "step": "start",
       "ok": true,
-      "inst_id": "91814741893311"
+      "inst_id": "91815578799741"
     },
     {
       "step": "execute-userA",

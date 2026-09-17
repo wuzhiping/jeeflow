@@ -1,13 +1,13 @@
 === memory bdd/bdd-candidate-groups_20260917144600.json ===
 {
   "ok": true,
-  "pdid": "310",
-  "inst_id": "91814752597246",
+  "pdid": "218",
+  "inst_id": "91815585647292",
   "log": [
     {
       "step": "start",
       "ok": true,
-      "inst_id": "91814752597246"
+      "inst_id": "91815585647292"
     },
     {
       "step": "execute-leader",

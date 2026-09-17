@@ -1,13 +1,13 @@
 === memory bdd/bdd-multi-actor-v3_20260917151800.json ===
 {
   "ok": true,
-  "pdid": "474",
-  "inst_id": "91814757155199",
+  "pdid": "382",
+  "inst_id": "91815590232893",
   "log": [
     {
       "step": "start",
       "ok": true,
-      "inst_id": "91814757155199"
+      "inst_id": "91815590232893"
     },
     {
       "step": "execute-finance",

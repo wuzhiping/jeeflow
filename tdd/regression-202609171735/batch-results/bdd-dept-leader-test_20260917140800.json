@@ -1,13 +1,13 @@
 === memory bdd/bdd-dept-leader-test_20260917140800.json ===
 {
   "ok": true,
-  "pdid": "366",
-  "inst_id": "91814754062634",
+  "pdid": "274",
+  "inst_id": "91815587134184",
   "log": [
     {
       "step": "start",
       "ok": true,
-      "inst_id": "91814754062634"
+      "inst_id": "91815587134184"
     },
     {
       "step": "execute-leader",

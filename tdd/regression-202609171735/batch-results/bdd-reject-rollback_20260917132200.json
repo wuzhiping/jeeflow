@@ -1,13 +1,13 @@
 === memory bdd/bdd-reject-rollback_20260917132200.json ===
 {
   "ok": true,
-  "pdid": "572",
-  "inst_id": "91814759472593",
+  "pdid": "480",
+  "inst_id": "91815592553359",
   "log": [
     {
       "step": "start",
       "ok": true,
-      "inst_id": "91814759472593"
+      "inst_id": "91815592553359"
     },
     {
       "step": "execute-leader",
