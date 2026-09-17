@@ -73,7 +73,7 @@ class SimpleExprEvaluator(ExpressionEvaluator):
         # 数字比较: #var op number
         m_num = re.match(r"^\s*(#?\w+)\s*(>=|<=|!=|==|>|<)\s*(\d+(?:\.\d+)?)\s*$", expr)
         # 字符串比较: #var == "string" 或 #var == string
-        m_str = re.match(r'^\s*(#?\w+)\s*(==|!=)\s*"?([A-Za-z0-9_]+)"?\s*$', expr)
+        m_str = re.match(r"""^\s*(#?\w+)\s*(==|!=)\s*['"]?([A-Za-z0-9_]+)['"]?\s*$""", expr)
         if m_num:
             key, op, val = m_num.group(1).lstrip("#"), m_num.group(2), float(m_num.group(3))
             actual = vars.get(key)
@@ -419,7 +419,7 @@ def register_routes(app: FastAPI, *, get_facade: Callable, get_repo: Callable,
 
     @app.post("/api/users")
     async def api_users(request: Request):
-        from spi import SPI_USERS
+        from spi import SPI_USERS, SPI
         body = await request.json() if await request.body() else {}
         keyword = str(body.get("keyword") or "").strip().lower()
         rows = []
@@ -428,10 +428,13 @@ def register_routes(app: FastAPI, *, get_facade: Callable, get_repo: Callable,
             post_name = info["post"]
             if keyword and keyword not in uid.lower() and keyword not in real_name.lower():
                 continue
+            info_full = SPI(func="get_user", payload={"uid": uid})
             rows.append({
                 "userId": uid, "realName": real_name,
-                "deptId": "D01", "deptName": "研发部",
-                "postId": "P01", "postName": post_name,
+                "deptId": info_full.get("deptId", "D01"),
+                "deptName": info_full.get("deptName", "研发部"),
+                "postId": info_full.get("postId", "P01"),
+                "postName": post_name,
             })
         return _ok(rows)
 

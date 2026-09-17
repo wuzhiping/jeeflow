@@ -19,8 +19,8 @@
         <button class="demo-usercard" @click="userOpen = !userOpen">
           <span class="demo-avatar" :style="{ background: avatarColor(currentUser) }">{{ avatarChar(currentUser) }}</span>
           <span class="demo-usercard__meta">
-            <span class="demo-usercard__name">{{ userOf(currentUser).realName }}</span>
-            <span class="demo-usercard__post">{{ userOf(currentUser).postName }}</span>
+            <span class="demo-usercard__name">{{ currentUser?.realName || '?' }}</span>
+            <span class="demo-usercard__post">{{ currentUser?.postName || '-' }}</span>
           </span>
           <span class="demo-usercard__caret">▾</span>
         </button>
@@ -29,8 +29,8 @@
             v-for="u in DEMO_USERS"
             :key="u.userId"
             class="demo-usermenu__item"
-            :class="{ active: currentUser === u.userId }"
-            @click="switchUser(u.userId)"
+            :class="{ active: currentUser?.userId === u.userId }"
+            @click="switchUser(u)"
           >
             <span class="demo-avatar" :style="{ background: avatarColor(u.userId) }">{{ u.realName[0] }}</span>
             <span class="demo-usermenu__meta">
@@ -78,23 +78,36 @@ const backend = ref(
 if (langBackend && backends.some(b => b.value === langBackend && !b.disabled)) {
   localStorage.setItem('jeeflow_backend', langBackend)
 }
-const currentUser = ref(localStorage.getItem('jeeflow_user') || 'user1')
+// FIX-UI-1 (2026-09-18)：currentUser 重构为对象（含 userId/realName/postName/deptName 等）
+// 默认值由 main.js 的 fetchUsers 完成后写入第一个用户，SPI_FOLDER 切换后自动适配
+// localStorage 仍只存 userId（避免后端用户属性变化时脏数据），对象从 DEMO_USERS 实时查找
+const currentUserId = ref(localStorage.getItem('jeeflow_user') || null)
+const currentUser = computed(() =>
+  DEMO_USERS.find((u) => u.userId === currentUserId.value) || null
+)
 const userOpen = ref(false)
 const refreshTick = ref(0)
 
-function userOf(userId) {
-  return DEMO_USERS.find((u) => u.userId === userId) || { realName: userId, postName: '-', deptName: '-' }
+// 监听 main.js 写入的 jeeflow_user_changed 事件，同步到组件 ref
+// e.detail 是完整 user 对象（来自 /api/users），取 userId 写 currentUserId
+// 兼容历史调用：e.detail 可能是 string（旧的 userId）
+if (typeof window !== 'undefined') {
+  window.addEventListener('jeeflow_user_changed', (e) => {
+    currentUserId.value = (e.detail && e.detail.userId) || e.detail
+  })
 }
 
 // 头像：姓名首字 + 按 userId 稳定取色
 const AVATAR_COLORS = ['#1677ff', '#722ed1', '#13c2c2', '#52c41a', '#fa8c16', '#eb2f96', '#2f54eb', '#faad14']
 function avatarColor(userId) {
+  if (!userId) return AVATAR_COLORS[0]
   let h = 0
   for (const c of userId) h = (h * 31 + c.codePointAt(0)) % 997
   return AVATAR_COLORS[h % AVATAR_COLORS.length]
 }
-function avatarChar(userId) {
-  return userOf(userId).realName[0] || userId[0]
+function avatarChar(u) {
+  const name = (u && u.realName) || ''
+  return (name && name[0]) || '?'
 }
 
 // 热切换：只改 localStorage + 重挂载当前页（api baseUrl/operator 懒求值，无需 reload）
@@ -109,9 +122,9 @@ function switchBackend(v) {
   history.replaceState(null, '', url.toString())
   refreshTick.value++
 }
-function switchUser(userId) {
-  currentUser.value = userId
-  localStorage.setItem('jeeflow_user', userId)
+function switchUser(user) {
+  currentUserId.value = user.userId
+  localStorage.setItem('jeeflow_user', user.userId)
   userOpen.value = false
   refreshTick.value++
 }

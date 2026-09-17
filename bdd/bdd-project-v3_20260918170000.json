@@ -1,0 +1,229 @@
+{
+  "name": "project-v3",
+  "displayName": "立项审批v3",
+  "type": "approval",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "p-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_amount": ""
+        }
+      },
+      "text": {
+        "value": "提交立项"
+      }
+    },
+    {
+      "id": "dept_approve",
+      "type": "snaker:task",
+      "x": 300,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "assignee": "leader",
+        "taskType": 0,
+        "performType": 0
+      },
+      "text": {
+        "value": "部门审批"
+      }
+    },
+    {
+      "id": "amount_decision",
+      "type": "snaker:decision",
+      "x": 450,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "金额决策"
+      }
+    },
+    {
+      "id": "company_approve",
+      "type": "snaker:task",
+      "x": 600,
+      "y": 100,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "公司审批(<100万)"
+      }
+    },
+    {
+      "id": "board_approve",
+      "type": "snaker:task",
+      "x": 600,
+      "y": 300,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "董事会审批(>=100万)"
+      }
+    },
+    {
+      "id": "type_decision",
+      "type": "snaker:decision",
+      "x": 750,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "类型决策"
+      }
+    },
+    {
+      "id": "finance_sign",
+      "type": "snaker:task",
+      "x": 900,
+      "y": 100,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "performType": 1,
+        "countersignType": "PARALLEL",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "财务会签"
+      }
+    },
+    {
+      "id": "manager_approve",
+      "type": "snaker:task",
+      "x": 900,
+      "y": 300,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "经理审批"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 1050,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e1",
+      "sourceNodeId": "apply",
+      "targetNodeId": "dept_approve",
+      "properties": {}
+    },
+    {
+      "id": "e2",
+      "sourceNodeId": "dept_approve",
+      "targetNodeId": "amount_decision",
+      "properties": {}
+    },
+    {
+      "id": "e3",
+      "sourceNodeId": "amount_decision",
+      "targetNodeId": "company_approve",
+      "properties": {
+        "expr": "f_amount<1000000"
+      }
+    },
+    {
+      "id": "e4",
+      "sourceNodeId": "amount_decision",
+      "targetNodeId": "board_approve",
+      "properties": {
+        "expr": "f_amount>=1000000"
+      }
+    },
+    {
+      "id": "e5",
+      "sourceNodeId": "company_approve",
+      "targetNodeId": "type_decision",
+      "properties": {}
+    },
+    {
+      "id": "e6",
+      "sourceNodeId": "board_approve",
+      "targetNodeId": "type_decision",
+      "properties": {}
+    },
+    {
+      "id": "e7",
+      "sourceNodeId": "type_decision",
+      "targetNodeId": "finance_sign",
+      "properties": {
+        "expr": "f_amount>=500000"
+      }
+    },
+    {
+      "id": "e8",
+      "sourceNodeId": "type_decision",
+      "targetNodeId": "manager_approve",
+      "properties": {
+        "expr": "f_amount<500000"
+      }
+    },
+    {
+      "id": "e9",
+      "sourceNodeId": "finance_sign",
+      "targetNodeId": "end",
+      "properties": {}
+    },
+    {
+      "id": "e10",
+      "sourceNodeId": "manager_approve",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

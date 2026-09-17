@@ -1,0 +1,157 @@
+{
+  "name": "feature-dev-flow",
+  "displayName": "新功能开发",
+  "type": "approval",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "submit",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "fd-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_feature_name": "",
+          "f_complexity": ""
+        }
+      },
+      "text": {
+        "value": "提交需求"
+      }
+    },
+    {
+      "id": "complexity_decision",
+      "type": "snaker:decision",
+      "x": 300,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "复杂度"
+      }
+    },
+    {
+      "id": "simple_dev",
+      "type": "snaker:task",
+      "x": 450,
+      "y": 100,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "简单开发"
+      }
+    },
+    {
+      "id": "complex_dev",
+      "type": "snaker:task",
+      "x": 450,
+      "y": 300,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "复杂开发"
+      }
+    },
+    {
+      "id": "tech_lead_review",
+      "type": "snaker:task",
+      "x": 600,
+      "y": 300,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "技术负责人审核"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 750,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "submit",
+      "properties": {}
+    },
+    {
+      "id": "e1",
+      "sourceNodeId": "submit",
+      "targetNodeId": "complexity_decision",
+      "properties": {}
+    },
+    {
+      "id": "e2",
+      "sourceNodeId": "complexity_decision",
+      "targetNodeId": "simple_dev",
+      "properties": {
+        "expr": "f_complexity<3"
+      }
+    },
+    {
+      "id": "e3",
+      "sourceNodeId": "complexity_decision",
+      "targetNodeId": "complex_dev",
+      "properties": {
+        "expr": "f_complexity>=3"
+      }
+    },
+    {
+      "id": "e4",
+      "sourceNodeId": "simple_dev",
+      "targetNodeId": "end",
+      "properties": {}
+    },
+    {
+      "id": "e5",
+      "sourceNodeId": "complex_dev",
+      "targetNodeId": "tech_lead_review",
+      "properties": {}
+    },
+    {
+      "id": "e6",
+      "sourceNodeId": "tech_lead_review",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

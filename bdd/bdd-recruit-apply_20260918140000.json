@@ -1,0 +1,128 @@
+{
+  "name": "recruit-apply",
+  "displayName": "招聘申请",
+  "type": "request",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "rec-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_position": "",
+          "f_count": ""
+        }
+      },
+      "text": {
+        "value": "提交招聘"
+      }
+    },
+    {
+      "id": "recruit_leader",
+      "type": "snaker:task",
+      "x": 300,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "直属"
+      }
+    },
+    {
+      "id": "recruit_hr",
+      "type": "snaker:task",
+      "x": 450,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "HR"
+      }
+    },
+    {
+      "id": "recruit_boss",
+      "type": "snaker:task",
+      "x": 600,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "总经理"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 750,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e1",
+      "sourceNodeId": "apply",
+      "targetNodeId": "recruit_leader",
+      "properties": {}
+    },
+    {
+      "id": "e2",
+      "sourceNodeId": "recruit_leader",
+      "targetNodeId": "recruit_hr",
+      "properties": {}
+    },
+    {
+      "id": "e3",
+      "sourceNodeId": "recruit_hr",
+      "targetNodeId": "recruit_boss",
+      "properties": {}
+    },
+    {
+      "id": "e4",
+      "sourceNodeId": "recruit_boss",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

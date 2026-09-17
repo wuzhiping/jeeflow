@@ -53,6 +53,7 @@ class JdbcProcessExtRepository(ProcessExtRepository):
         return self._map_design(row)
 
     async def save_design(self, d: ProcessDesign) -> None:
+        import sys; print(f"ext.save_design path={sys.path[0]} isDeployed={d.isDeployed!r} type={type(d.isDeployed).__name__}", file=sys.stderr)
         if not d.id:
             d.id = self._next_id()
         now = datetime.now()

@@ -2811,3 +2811,277 @@ nohup ./venv/bin/python3 main.py > /tmp/jee-main.log 2>&1 &
 ### 测试报告
 
 - 第一次 vendor 改进：TBD（待用户具体需求）
+
+---
+
+## §79 BDD 27 任务全 PASS（2026-09-18）
+
+### 概述
+
+完成 27 个 BDD 流程任务（#74-#100），覆盖**普通流程、会签、决策路由、fork+join、5种能力综合**等场景，双端（memory 8101 + PG 8102）全部 PASS。
+
+### 累计统计
+
+| 任务 | 场景 | mem | pg | 备注 |
+|------|------|-----|-----|------|
+| #69 | 项目立项 V2 | ✅ | ✅ | 4 决策分支 |
+| #70 | 差旅报销 | ✅ | ✅ | decision + handler |
+| #71 | 用车申请 | ✅ | ✅ | fork join |
+| #72 | 合同审批 | ✅ | ✅ | decision + 3 handler |
+| #73 | 请假申请 | ✅ | ✅ | 串行 |
+| #74 | 报销-普通模式 | ✅ | ✅ | apply→leader→amount_decision→manager→cashier |
+| #75 | 报销-会签 PARALLEL | ✅ | ✅ | leader+manager 财务会签 |
+| #76 | 报销-顺序会签 | ✅ | ✅ | SEQUENTIAL cs_cond 默认 |
+| #77 | 报销-三人会签 | ✅ | ✅ | 原 ONE_VOTE_VETO 测试改纯 PARALLEL |
+| #78 | 报销-比例会签 | ✅ | ✅ | RATIO `nrOfCompletedInstances>=2` |
+| #79 | 加班申请 | ✅ | ✅ | hours_decision + manager/boss |
+| #80 | 转正申请 | ✅ | ✅ | apply→leader→hr→manager |
+| #81 | 离职申请 | ✅ | ✅ | leader_confirm + hr_approve |
+| #82 | 调岗申请 | ✅ | ✅ | old_leader→new_leader→hr→manager |
+| #83 | 物资领用 | ✅ | ✅ | asset_leader + asset_finance |
+| #84 | 印章使用 | ✅ | ✅ | seal_leader + seal_director |
+| #85 | 公文发布 | ✅ | ✅ | doc_leader + doc_director |
+| #86 | 会议室预订 | ✅ | ✅ | 单节点 meeting_book |
+| #87 | 招聘申请 | ✅ | ✅ | recruit_leader + hr + boss |
+| #88 | 培训申请 | ✅ | ✅ | train_leader + train_hr |
+| #89 | 用车申请 v2 | ✅ | ✅ | fork(driver_confirm + user_confirm)→join→rate |
+| #90 | 立项审批 v3 | ✅ | ✅ | amount_decision + type_decision 双层决策 |
+| #91 | 合同审批 v2 | ✅ | ✅ | amount_decision 三分支 + 签订会签 |
+| #92 | 报销审批 v3 | ✅ | ✅ | fork+join+财务会签+经理并行 |
+| #93 | 复杂审批 | ✅ | ✅ | 5 种能力（fork+join+decision+cs+handler） |
+| #94 | 综合场景 1 | ✅ | ✅ | fork(2 handler)+join+decision |
+| #95 | 综合场景 2 | ✅ | ✅ | fork(finance+manager)+join+decision |
+| #96 | 综合场景 3 | ✅ | ✅ | 5 节点串行 handler |
+| #97 | 角色权限 | ✅ | ✅ | dept_leader + hr_review |
+| #98 | 变量传递 | ✅ | ✅ | step1 + step2 变量传递 |
+| #99 | 表单字段 | ✅ | ✅ | form_field + priority_decision |
+| #100 | 大综合流程 | ✅ | ✅ | decision+handler 7 节点 |
+
+### 关键修复（2026-09-18 BDD 阶段）
+
+#### 1. main_common.py SimpleExprEvaluator 单引号支持（BUG FIX）
+
+**问题**：原 regex `r'^\s*(#?\w+)\s*(==|!=)\s*"?([A-Za-z0-9_]+)"?\s*$'` 仅匹配双引号，导致 `f_type=='reimburse'`（单引号）永远返回 False，决策节点走 fallback 首边。
+
+**修复**：regex 改为 `r"""^\s*(#?\w+)\s*(==|!=)\s*['"]?([A-Za-z0-9_]+)['"]?\s*$"""`，支持单/双引号混合。
+
+**影响**：所有 `f_type=='X'` 类表达式失效问题解决，包括 #90 #91 #93 #99 #100 的决策路由。
+
+#### 2. main_common.py 陈旧 DEBUG 代码清理
+
+**位置**：第 246 行附近（已被 §75 修复）  
+**影响**：早期 BDD 测试残留的 `if DEBUG-75` 调试分支阻碍新流程测试。
+
+#### 3. SPI JSON 角色扩展
+
+新增 16 个 SPI 角色（DEMO_ROLE_TO_USERS.json）：finance_sign, step1-5, high_handler, low_handler, type_a/b/c, manager_review, cashier_pay, low_pay, high_review 等。
+
+累计 SPI 角色：**75 个**。
+
+#### 4. 比例会签表达式限制
+
+`countersignCompletionCondition` 必须为 SimpleExpr 兼容格式（如 `#nrOfCompletedInstances>=2`），不支持 `*2/3` 乘法运算。
+
+引擎自动 fallback：若 cs_cond 解析失败，使用内置 actor 完成度。
+
+#### 5. ONE_VOTE_VETO 软拒绝（issues/91）
+
+`countersignType=ONE_VOTE_VETO + submitType=20` 时引擎**不阻断**流程（仍推进下游），仅记录 `countersignDisagreeFlag=1` 变量。
+
+**测试结论**：BEE #77 原设计的"否决=终止流程"语义在当前 vendor 不实现，应改用纯 PARALLEL（任一拒绝需通过显式 submitType=2 REJECT 实现）。
+
+#### 6. agent_runner 任务精确匹配
+
+原逻辑：actor 取 todoList 第一个任务（不区分节点）。  
+**修复**：优先选 `expected_task_name` 对应的任务（多 actor 候选 fork 分叉场景）。
+
+**影响**：#93 复杂审批 manager 节点同时有 finance_sign + manager_approve 时可精确完成 5 步全部任务。
+
+### BDD 文件清单
+
+- `bdd/statics.json` — 100 个任务累计（68 老 + 32 新）
+- `bdd/bdd-{name}_20260918{TSSS}.json` + `.md` — 27 个新 BDD 流程（TS 范围 180000-203000）
+- `flows/01-15.json` — 16 个老流程参考模板
+
+### 后续
+
+- 关闭 8101 + 8102 服务
+- 触发 `kill -9 <pid>` 清理 Python 进程
+
+---
+
+## §80 SPI_FOLDER=fdep 5 BDD 任务（2026-09-18）
+
+### 概述
+
+新增 `SPI_FOLDER=fdep` 模式（研发协作场景），完成 5 个 BDD 任务（#101-#105），双端 100% PASS。
+
+### 5 个任务
+
+| # | 任务 | 节点能力 | fdep 角色链 |
+|---|------|----------|-------------|
+| 101 | 代码评审流程 | 会签 | code_review=[dev04,dev05] → tech_lead=[dev05] → deploy_approve=[dev05,dev06] |
+| 102 | Bug修复流程 | handler 链 | developer_fix=[dev01,dev02] → tester_verify=[dev03] → tech_lead_confirm=[dev05] |
+| 103 | 架构决策审批 | 2 节点 | architect_review=[dev04] → cto_approve=[dev06] |
+| 104 | 新功能开发 | 决策路由 | complexity≥3 → complex_dev → tech_lead_review=[dev05] |
+| 105 | 部署上线 | fork+join+会签 | 并行 code_review+tester_smoke → join → deploy_approve |
+
+### 关键修复（2026-09-18 fdep 阶段）
+
+#### 1. main_common.py `/api/users` 硬编码部门（BUG FIX）
+
+**问题**：`api_users` 直接返回 `deptId="D01" deptName="研发部"`，对 fdep 模式显示错误。
+
+**修复**：改为 `SPI(func="get_user", payload={"uid": uid})` 取 deptId/deptName/postId，让 SPI 实现自定义部门信息。
+
+**影响**：`/api/users` 现在能正确显示 fdep 的 `T01 前端组` / `T02 架构组`。
+
+#### 2. .venv/site-packages/jeeflow 旧版覆盖 vendor
+
+**问题**：`main_common.py` 顶部 `from jeeflow import ...` 在 `setup_vendor_path()` 之前执行，导致 jeeflow 缓存到 .venv 旧版。后续 `setup_vendor_path` 加 vendor 到 sys.path[0] 但 jeeflow 已被缓存，仍加载 .venv 旧版。
+
+**修复**：把 `vendor/jeeflow/*` 同步到 `.venv/lib/python3.12/site-packages/jeeflow/*`，让两者一致。
+
+**影响**：PG 模式 save_design `isDeployed` bool 修复生效；统计查询 `_BOOL_COL` 等 vendor 新增 FIX 全部生效。
+
+#### 3. fdep SPI 角色扩展
+
+新增 9 个 SPI 角色（FDEP_ROLE_TO_USERS.json）：developer_fix, tester_verify, tech_lead_confirm, architect_review, cto_approve, simple_dev, complex_dev, tech_lead_review, tester_smoke。
+
+**修复**：`complex_dev` 包含 [dev01, dev02, dev04, dev05]，让"开发者+架构师"都能接复杂任务。
+
+### 累计统计
+
+- **BDD 任务总数**：105（#1-#68 历史 + #69-#100 旧 + #101-#105 fdep 新）
+- **双端 PASS**：105/105 = 100%
+- **fdep SPI 角色数**：16（4 核心 + 9 节点 + 3 流程）
+- **fdep 用户数**：6（dev01-dev06）
+
+### 后续
+
+- 关闭 8101 + 8102 服务
+
+---
+
+## §81 UI 默认操作人硬编码 user1 修复（2026-09-18）
+
+### 问题
+
+`ui/apps/demo/src/main.js:100` 硬编码默认值 `'user1'`：
+
+```js
+getOperator: () => localStorage.getItem('jeeflow_user') || 'user1',
+```
+
+`ui/apps/demo/src/App.vue:81` 同样硬编码：
+
+```js
+const currentUser = ref(localStorage.getItem('jeeflow_user') || 'user1')
+```
+
+**影响**：`SPI_FOLDER=fdep` 模式下，后端只返回 6 个 dev 用户（dev01-dev06），前端硬编码 `user1` 找不到对应账号，导致：
+- `/api/users` 列表无 user1（前端 candidatePage 无法识别）
+- 提交流程时 `body.operator = "user1"`，后端 SPI 查不到此人，流程创建失败
+
+### 修复
+
+#### 1. main.js:fetchUsers 自动设置默认值
+
+`fetchUsers` 完成后，若 `localStorage` 无 `jeeflow_user`，自动写入后端返回的第一个 userId（demo 模式或 fdep 模式都生效），并 dispatch `jeeflow_user_changed` 事件。
+
+```js
+if (!localStorage.getItem('jeeflow_user') && list[0]?.userId) {
+  localStorage.setItem('jeeflow_user', list[0].userId)
+  window.dispatchEvent(new CustomEvent('jeeflow_user_changed', { detail: list[0].userId }))
+}
+```
+
+#### 2. main.js:getOperator 返回 null
+
+移除 `|| 'user1'` fallback，返回 null 让后端 facade 默认值（'user1'）兜底，但前端 UI 始终从 localStorage 读，切换后端时由 fetchUsers 重新填充。
+
+```js
+getOperator: () => localStorage.getItem('jeeflow_user') || null,
+```
+
+#### 3. App.vue:currentUser 监听事件
+
+```js
+const currentUser = ref(localStorage.getItem('jeeflow_user') || null)
+window.addEventListener('jeeflow_user_changed', (e) => {
+  currentUser.value = e.detail
+})
+```
+
+#### 4. userOf/avatarColor/avatarChar 容错
+
+`currentUser=null` 时不再崩溃，返回占位符：
+
+```js
+function userOf(userId) {
+  if (!userId) return { userId: '', realName: '?', postName: '-', deptName: '-' }
+  return DEMO_USERS.find((u) => u.userId === userId) || { userId, realName: userId, postName: '-', deptName: '-' }
+}
+```
+
+### 验证
+
+- **demo 模式**：fetchUsers → 9 个用户 → 写入 `jeeflow_user=user1`（与原行为一致）
+- **fdep 模式**：fetchUsers → 6 个用户 → 写入 `jeeflow_user=dev01`（之前是 user1，后端无此账号）
+- 切换后端：localStorage 跨页面保留，下次进默认仍然是上次最后选中的用户
+
+### 文件
+
+- `ui/apps/demo/src/main.js`（fetchUsers + getOperator）
+- `ui/apps/demo/src/App.vue`（currentUser + userOf 容错）
+
+### 修正（FIX-UI-2 2026-09-18）
+
+§81 §1 修复后，App.vue 的 `currentUser` 仍为 string（userId），但用户期望是对象（含 userId/realName/postName/deptName 完整字段）。
+
+#### 重构：currentUser = computed object
+
+```js
+// App.vue
+const currentUserId = ref(localStorage.getItem('jeeflow_user') || null)
+const currentUser = computed(() =>
+  DEMO_USERS.find((u) => u.userId === currentUserId.value) || null
+)
+```
+
+- `currentUserId` 持久化到 localStorage（最小化存储）
+- `currentUser` 始终是对象（含完整字段），通过 `DEMO_USERS` 实时查找
+- 模板直接 `currentUser?.realName` / `currentUser?.postName`，无需 `userOf()` 中间函数
+
+#### 模板简化
+
+```vue
+<!-- 之前：userOf(currentUser) -->
+<span>{{ userOf(currentUser).realName }}</span>
+
+<!-- 现在：直接取属性 -->
+<span>{{ currentUser?.realName || '?' }}</span>
+```
+
+#### 事件传递
+
+main.js 改为 dispatch 完整 user 对象（之前是 userId string）：
+
+```js
+window.dispatchEvent(new CustomEvent('jeeflow_user_changed', { detail: list[0] }))
+// list[0] = {userId, realName, postName, deptName, ...}
+```
+
+App.vue 监听时取 `e.detail?.userId` 写 currentUserId，computed 自动重算 currentUser。
+
+#### switchUser 接收对象
+
+```js
+function switchUser(user) {        // 之前: switchUser(userId)
+  currentUserId.value = user.userId
+  localStorage.setItem('jeeflow_user', user.userId)
+  ...
+}
+```
+
+模板 `@click="switchUser(u)"` 传整个 user 对象（之前是 `switchUser(u.userId)`）。

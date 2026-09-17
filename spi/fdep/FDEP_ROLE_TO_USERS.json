@@ -1,0 +1,58 @@
+{
+  "developer": [
+    "dev01",
+    "dev02"
+  ],
+  "tester": [
+    "dev03"
+  ],
+  "architect": [
+    "dev04"
+  ],
+  "tech_lead": [
+    "dev05"
+  ],
+  "cto": [
+    "dev06"
+  ],
+  "code_review": [
+    "dev04",
+    "dev05"
+  ],
+  "deploy_approve": [
+    "dev05",
+    "dev06"
+  ],
+  "developer_fix": [
+    "dev01",
+    "dev02"
+  ],
+  "tester_verify": [
+    "dev03"
+  ],
+  "tech_lead_confirm": [
+    "dev05"
+  ],
+  "architect_review": [
+    "dev04"
+  ],
+  "cto_approve": [
+    "dev06"
+  ],
+  "simple_dev": [
+    "dev01",
+    "dev02"
+  ],
+  "complex_dev": [
+    "dev01",
+    "dev02",
+    "dev04",
+    "dev05"
+  ],
+  "tech_lead_review": [
+    "dev05"
+  ],
+  "tester_smoke": [
+    "dev03"
+  ]
+}

@@ -13,6 +13,11 @@ COPY . .
 # 安装 Python 依赖
 RUN uv sync --frozen
 RUN uv pip install jeeflow[postgres]
+
+ENV SPI_FOLDER=demo
+ENV JEEFLOW_PG_DSN=postgresql://uid:pwd@127.0.0.1:5432/jeeflow
+ENV PORT=8101
+
 # 服务端口
 EXPOSE 8101
 

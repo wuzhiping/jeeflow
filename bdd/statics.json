@@ -1091,6 +1091,672 @@
         "boss_approve",
         "hr_record"
       ]
+    },
+    {
+      "id": 74,
+      "name": "报销审批-普通模式 (bdd-reimburse-normal)",
+      "ts": "20260918010000",
+      "flows": [
+        "bdd-reimburse-normal_20260918010000.json"
+      ],
+      "scenario": "apply→leader_review→amount_decision→manager_review→cashier_pay→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager",
+        "cashier"
+      ],
+      "key_nodes": [
+        "amount_decision",
+        "manager_review",
+        "cashier_pay"
+      ]
+    },
+    {
+      "id": 75,
+      "name": "报销审批-会签PARALLEL",
+      "ts": "20260918020000",
+      "flows": [
+        "bdd-reimburse-cs-parallel_20260918020000.json"
+      ],
+      "scenario": "apply→leader_review→finance_sign(PARALLEL)→manager_review→cashier_pay→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager",
+        "cashier"
+      ],
+      "key_nodes": [
+        "finance_sign",
+        "PARALLEL",
+        "countersign"
+      ]
+    },
+    {
+      "id": 76,
+      "name": "报销-顺序会签",
+      "ts": "20260918030000",
+      "flows": [
+        "bdd-reimburse-cs-sequential_20260918030000.json"
+      ],
+      "scenario": "apply→leader_review→finance_seq(SEQUENTIAL)→manager_review→cashier_pay→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager",
+        "cashier"
+      ],
+      "key_nodes": [
+        "SEQUENTIAL",
+        "finance_seq"
+      ]
+    },
+    {
+      "id": 77,
+      "name": "报销-三人会签PARALLEL",
+      "ts": "20260918040000",
+      "flows": [
+        "bdd-reimburse-cs-parallel-3_20260918040000.json"
+      ],
+      "scenario": "apply→finance_veto(3人PARALLEL)→cashier_pay→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager",
+        "boss",
+        "cashier"
+      ],
+      "key_nodes": [
+        "PARALLEL",
+        "finance_veto",
+        "3人会签"
+      ]
+    },
+    {
+      "id": 78,
+      "name": "报销-比例会签",
+      "ts": "20260918050000",
+      "flows": [
+        "bdd-报销-比例会签_20260918050000.json"
+      ],
+      "scenario": "apply→finance_ratio(RATIO 2/3)→cashier_pay→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager",
+        "cashier"
+      ],
+      "key_nodes": [
+        "RATIO",
+        "finance_ratio"
+      ]
+    },
+    {
+      "id": 79,
+      "name": "加班申请",
+      "ts": "20260918060000",
+      "flows": [
+        "bdd-加班申请_20260918060000.json"
+      ],
+      "scenario": "apply→leader_approve→decision→manager/boss→hr_record→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager",
+        "director"
+      ],
+      "key_nodes": [
+        "decision",
+        "hours_decision"
+      ]
+    },
+    {
+      "id": 80,
+      "name": "转正申请",
+      "ts": "20260918070000",
+      "flows": [
+        "bdd-转正申请_20260918070000.json"
+      ],
+      "scenario": "apply→leader_review→hr_review→manager_approve→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "userA",
+        "leader",
+        "director",
+        "manager"
+      ],
+      "key_nodes": [
+        "hr_review",
+        "leader_review"
+      ]
+    },
+    {
+      "id": 81,
+      "name": "离职申请",
+      "ts": "20260918080000",
+      "flows": [
+        "bdd-离职申请_20260918080000.json"
+      ],
+      "scenario": "apply→leader_confirm→hr_approve→manager_approve→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "userA",
+        "leader",
+        "director",
+        "manager"
+      ],
+      "key_nodes": [
+        "leader_confirm",
+        "hr_approve"
+      ]
+    },
+    {
+      "id": 82,
+      "name": "调岗申请",
+      "ts": "20260918090000",
+      "flows": [
+        "bdd-transfer-apply_20260918090000.json"
+      ],
+      "scenario": "apply→old_leader→new_leader→hr_review→manager→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "userB",
+        "leader",
+        "director",
+        "manager"
+      ],
+      "key_nodes": [
+        "old_leader",
+        "new_leader",
+        "hr_review"
+      ]
+    },
+    {
+      "id": 83,
+      "name": "物资领用",
+      "ts": "20260918100000",
+      "flows": [
+        "bdd-物资领用_20260918100000.json"
+      ],
+      "scenario": "apply→asset_leader→asset_finance→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "userA",
+        "leader",
+        "manager"
+      ],
+      "key_nodes": [
+        "asset_leader",
+        "asset_finance"
+      ]
+    },
+    {
+      "id": 84,
+      "name": "印章使用",
+      "ts": "20260918110000",
+      "flows": [
+        "bdd-印章使用_20260918110000.json"
+      ],
+      "scenario": "apply→seal_leader→seal_director→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "userA",
+        "leader",
+        "director"
+      ],
+      "key_nodes": [
+        "seal_leader",
+        "seal_director"
+      ]
+    },
+    {
+      "id": 85,
+      "name": "公文发布",
+      "ts": "20260918120000",
+      "flows": [
+        "bdd-公文发布_20260918120000.json"
+      ],
+      "scenario": "apply→doc_leader→doc_director→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "userA",
+        "leader",
+        "director"
+      ],
+      "key_nodes": [
+        "doc_leader",
+        "doc_director"
+      ]
+    },
+    {
+      "id": 86,
+      "name": "会议室预订",
+      "ts": "20260918130000",
+      "flows": [
+        "bdd-会议室预订_20260918130000.json"
+      ],
+      "scenario": "apply→meeting_book→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "userA"
+      ],
+      "key_nodes": [
+        "meeting_book"
+      ]
+    },
+    {
+      "id": 87,
+      "name": "招聘申请",
+      "ts": "20260918140000",
+      "flows": [
+        "bdd-招聘申请_20260918140000.json"
+      ],
+      "scenario": "apply→recruit_leader→recruit_hr→recruit_boss→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "director",
+        "boss"
+      ],
+      "key_nodes": [
+        "recruit_leader",
+        "recruit_hr",
+        "recruit_boss"
+      ]
+    },
+    {
+      "id": 88,
+      "name": "培训申请",
+      "ts": "20260918150000",
+      "flows": [
+        "bdd-培训申请_20260918150000.json"
+      ],
+      "scenario": "apply→train_leader→train_hr→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "userA",
+        "leader",
+        "director"
+      ],
+      "key_nodes": [
+        "train_leader",
+        "train_hr"
+      ]
+    },
+    {
+      "id": 89,
+      "name": "用车申请v2",
+      "ts": "20260918160000",
+      "flows": [
+        "bdd-用车申请v2_20260918160000.json"
+      ],
+      "scenario": "apply→fleet→fork(driver+user)→join→rate→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "manager",
+        "userA",
+        "userC"
+      ],
+      "key_nodes": [
+        "fork",
+        "join"
+      ]
+    },
+    {
+      "id": 90,
+      "name": "立项审批v3",
+      "ts": "20260918170000",
+      "flows": [
+        "bdd-立项审批v3_20260918170000.json"
+      ],
+      "scenario": "apply→dept→amount_decision→company/board→type→finance_sign/manager→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager"
+      ],
+      "key_nodes": [
+        "amount_decision",
+        "type_decision",
+        "multi-decision"
+      ]
+    },
+    {
+      "id": 91,
+      "name": "合同审批v2",
+      "ts": "20260918180000",
+      "flows": [
+        "bdd-合同审批v2_20260918180000.json"
+      ],
+      "scenario": "apply→legal→amount_decision(3分支)→sign_contract→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "director",
+        "leader",
+        "boss"
+      ],
+      "key_nodes": [
+        "legal_review",
+        "amount_decision",
+        "sign_contract"
+      ]
+    },
+    {
+      "id": 92,
+      "name": "报销审批v3",
+      "ts": "20260918190000",
+      "flows": [
+        "bdd-报销审批v3_20260918190000.json"
+      ],
+      "scenario": "apply→leader→fork(finance+manager)→join→cashier→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager",
+        "cashier"
+      ],
+      "key_nodes": [
+        "fork",
+        "join",
+        "finance_check"
+      ]
+    },
+    {
+      "id": 93,
+      "name": "复杂审批",
+      "ts": "20260918200000",
+      "flows": [
+        "bdd-complex-approval_20260918200000.json"
+      ],
+      "scenario": "apply→leader→fork→join→decision→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager",
+        "cashier"
+      ],
+      "key_nodes": [
+        "fork",
+        "join",
+        "decision",
+        "countersign"
+      ]
+    },
+    {
+      "id": 94,
+      "name": "综合场景1",
+      "ts": "20260918210000",
+      "flows": [
+        "bdd-综合场景1_20260918210000.json"
+      ],
+      "scenario": "apply→level_decision(3分支)→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader"
+      ],
+      "key_nodes": [
+        "level_decision",
+        "multi-decision"
+      ]
+    },
+    {
+      "id": 95,
+      "name": "综合场景2",
+      "ts": "20260918220000",
+      "flows": [
+        "bdd-综合场景2_20260918220000.json"
+      ],
+      "scenario": "fork+join+decision",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "cashier",
+        "manager"
+      ],
+      "key_nodes": [
+        "fork",
+        "join",
+        "decision"
+      ]
+    },
+    {
+      "id": 96,
+      "name": "综合场景3",
+      "ts": "20260918230000",
+      "flows": [
+        "bdd-综合场景3_20260918230000.json"
+      ],
+      "scenario": "5 节点串行 handler",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager",
+        "director",
+        "boss",
+        "cashier"
+      ],
+      "key_nodes": [
+        "multi-handler"
+      ]
+    },
+    {
+      "id": 97,
+      "name": "角色权限",
+      "ts": "20260919000000",
+      "flows": [
+        "bdd-角色权限_20260919000000.json"
+      ],
+      "scenario": "apply→dept_leader→hr_review→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "userA",
+        "leader",
+        "director"
+      ],
+      "key_nodes": [
+        "dept_leader",
+        "hr_review"
+      ]
+    },
+    {
+      "id": 98,
+      "name": "变量传递",
+      "ts": "20260919010000",
+      "flows": [
+        "bdd-变量传递_20260919010000.json"
+      ],
+      "scenario": "变量在节点间传递",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager"
+      ],
+      "key_nodes": [
+        "variable",
+        "pass"
+      ]
+    },
+    {
+      "id": 99,
+      "name": "表单字段",
+      "ts": "20260919020000",
+      "flows": [
+        "bdd-表单字段_20260919020000.json"
+      ],
+      "scenario": "表单字段+优先级决策",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager",
+        "director"
+      ],
+      "key_nodes": [
+        "form_field",
+        "priority_decision"
+      ]
+    },
+    {
+      "id": 100,
+      "name": "大综合流程",
+      "ts": "20260919030000",
+      "flows": [
+        "bdd-大综合流程_20260919030000.json"
+      ],
+      "scenario": "决策+handler 7 节点",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager",
+        "cashier"
+      ],
+      "key_nodes": [
+        "decision",
+        "handler"
+      ]
+    },
+    {
+      "id": 101,
+      "name": "代码评审流程",
+      "ts": "20260919050000",
+      "flows": [
+        "bdd-代码评审流程_20260919050000.json"
+      ],
+      "scenario": "code_review 角色会签",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "dev01",
+        "dev04",
+        "dev05"
+      ],
+      "key_nodes": [
+        "countersign",
+        "handler"
+      ]
+    },
+    {
+      "id": 102,
+      "name": "Bug修复流程",
+      "ts": "20260919050100",
+      "flows": [
+        "bdd-Bug修复流程_20260919050100.json"
+      ],
+      "scenario": "developer/tester/tech_lead 角色链",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "dev01",
+        "dev03",
+        "dev05"
+      ],
+      "key_nodes": [
+        "handler",
+        "role_chain"
+      ]
+    },
+    {
+      "id": 103,
+      "name": "架构决策审批",
+      "ts": "20260919050200",
+      "flows": [
+        "bdd-架构决策审批_20260919050200.json"
+      ],
+      "scenario": "architect→cto 角色链",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "dev04",
+        "dev06"
+      ],
+      "key_nodes": [
+        "handler",
+        "cto_role"
+      ]
+    },
+    {
+      "id": 104,
+      "name": "新功能开发",
+      "ts": "20260919050300",
+      "flows": [
+        "bdd-新功能开发_20260919050300.json"
+      ],
+      "scenario": "复杂度决策+两条路径",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "dev01",
+        "dev05"
+      ],
+      "key_nodes": [
+        "decision",
+        "handler"
+      ]
+    },
+    {
+      "id": 105,
+      "name": "部署上线",
+      "ts": "20260919050400",
+      "flows": [
+        "bdd-部署上线_20260919050400.json"
+      ],
+      "scenario": "fork+join+会签 5 节点",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "dev01",
+        "dev03",
+        "dev04",
+        "dev05"
+      ],
+      "key_nodes": [
+        "fork",
+        "join",
+        "countersign"
+      ]
     }
   ],
   "summary": {
@@ -1315,5 +1981,11 @@
       "Task 54",
       "Task 55"
     ]
+  },
+  "nodeType_stats": {
+    "snaker:task": 1,
+    "snaker:start": 1,
+    "snaker:end": 1,
+    "snaker:decision": 1
   }
 }
