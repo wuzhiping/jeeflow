@@ -1,9 +1,15 @@
+import os
+import sys
+# 优先使用本地 vendor/jeeflow（项目内嵌）
+_VENDOR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "vendor")
+if _VENDOR not in sys.path:
+    sys.path.insert(0, _VENDOR)
+
 from typing import Optional
 from jeeflow.model import UserInfo
 from jeeflow.spi import OrgUserProvider
 
 from importlib import reload , import_module
-import os
 
 SPI_FOLDER = os.environ.get("SPI_FOLDER", "demo")  # SPI 数据子包名；envvar SPI_FOLDER 可在 import spi 之前覆盖
 

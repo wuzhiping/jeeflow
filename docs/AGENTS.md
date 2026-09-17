@@ -15,12 +15,30 @@
 
 **硬约束**：
 
-- 流程开发**不修改任何代码文件**（`main_pg.py`、jeeflow 包、其它 Python 源码均只读）
+- 流程开发**不修改** `main.py` / `main_pg.py` 之外的业务代码；`vendor/jeeflow/` 在**用户授权下可修改并改进**（2026-09-17 起开放）
 - 不得安装依赖；不得访问项目目录外
-- 进度仅在当前会话维护，不得落盘
+- 进度仅在当前会话维护不得落盘
 - 所有 action 调用必须来自 `./docs/actions.md` 已登记的清单（参见 §5 速查表），**禁止**臆造 action 名
-- 禁止阅读 jeeflow 源码（`engine.py` / `facade.py` / `builtin.py`）；字段语义疑问回查 `./docs/flow.md` / `./docs/actions.md`
+- `vendor/jeeflow/` 修改前必须：
+  1. 同步修改 `docs/known-issues.md` 相关章节（标记 FIX 编号）
+  2. 在 `bdd/` 或 `tdd/` 写测试报告验证
+  3. 同步 `main.py` / `main_pg.py`（如有兼容性问题）
 - 所有文件路径引用一律使用 `./` 开头的相对路径，**禁止**使用绝对路径 `/opt/jupyter/...`
+
+### vendor/jeeflow 改进工作流
+
+```bash
+# 1. 直接编辑 vendor/jeeflow/*.py
+# 2. 记录到 docs/known-issues.md §XX（FIX-Tn + 实测）
+# 3. 重启 main.py 验证（无需重装依赖，sys.path 优先用 vendor）
+# 4. 同步到 main_pg.py 兼容（如 PG 后端）
+```
+
+**vendor/jeeflow 优先级**：main.py + main_pg.py + spi/__init__.py 顶部已加
+`sys.path.insert(0, os.path.join(os.path.dirname(__file__), "vendor"))`，
+启动时**优先使用 vendor/jeeflow**，不依赖 `.venv/site-packages/jeeflow`。
+
+`.venv/site-packages/jeeflow` 保留作为参考对照（不删除），但实际运行用 vendor。
 
 ---
 
@@ -310,7 +328,7 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 2. **对照预期** — `approvalRecord` 期望节点顺序 vs 实际
 3. **看 `highLight`** — 当前节点是否预期
 4. **查 `bizData`** — 实例变量是否注入；`u_*` 是否非持久化
-5. **回查文档** — `./docs/flow.md §3.3-§3.5` 节点字段语义、`./docs/actions.md §X` action 行为；**禁止**回查 jeeflow 源码
+5. **回查文档** — `./docs/flow.md §3.3-§3.5` 节点字段语义、`./docs/actions.md §X` action 行为；如需查 jeeflow 内部行为，可读 `vendor/jeeflow/*.py`（项目内嵌，**可修改**）
 
 必要时重启 uvicorn（不改代码）：
 

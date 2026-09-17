@@ -1,4 +1,4 @@
--- jeeflow PostgreSQL schema (reverse-engineered from .venv/lib/python3.12/site-packages/jeeflow/repository/{base,ext}.py INSERT/UPDATE 列清单).
+-- jeeflow PostgreSQL schema (reverse-engineered from vendor/jeeflow/repository/{base,ext}.py INSERT/UPDATE 列清单).
 -- Apply once:
 --   psql "postgresql://postgres:postgres@127.0.0.1:5432/jeeflow" -f docs/pg_schema.sql
 -- Idempotent: 用 IF NOT EXISTS，可重复执行。

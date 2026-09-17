@@ -118,7 +118,7 @@
 
 ### 来源
 
-`./venv/lib/python3.12/site-packages/jeeflow/facade.py:300`（仅记录）
+`vendor/jeeflow/facade.py:300`（仅记录）
 
 ---
 
@@ -140,7 +140,7 @@
 
 ### 来源
 
-`./venv/lib/python3.12/site-packages/jeeflow/engine.py:557-558`（仅记录）
+`vendor/jeeflow/engine.py:557-558`（仅记录）
 
 ---
 
@@ -158,7 +158,7 @@
 
 ### 来源
 
-`./venv/lib/python3.12/site-packages/jeeflow/engine.py:8-40` 引擎变量合并（仅记录）
+`vendor/jeeflow/engine.py:8-40` 引擎变量合并（仅记录）
 
 ---
 
@@ -218,7 +218,7 @@
 
 ### 来源
 
-`./venv/lib/python3.12/site-packages/jeeflow/model.py:45-52`（仅记录）
+`vendor/jeeflow/model.py:45-52`（仅记录）
 
 ---
 
@@ -237,7 +237,7 @@
 
 ### 来源
 
-`./venv/lib/python3.12/site-packages/jeeflow/engine.py:353-369` `_evaluate_decision`（仅记录）
+`vendor/jeeflow/engine.py:353-369` `_evaluate_decision`（仅记录）
 
 ---
 
@@ -499,7 +499,7 @@ cs_veto = ct != "" and cs_cond.upper() == "ONE_VOTE_VETO" and \
 
 ### 修复方案（main.py + main_pg.py）
 
-不动 jeeflow 包（site-packages 不可改），在项目自有源码加 `RatioCapableEngine(EngineImpl)` 子类，覆盖 `execute_process_task`：
+不动 jeeflow 包（`vendor/jeeflow/` 可改，2026-09-17 起开放，需测后），如需扩展在项目自有源码加 `RatioCapableEngine(EngineImpl)` 子类，覆盖 `execute_process_task`：
 
 1. **先调 `EngineImpl.execute_process_task` 原版**完成当前 task（避免重复 `_prepare_execute_task` 导致 "task not doing"）
 2. **重新查实例**，统计 cur_node 的 `nrOfCompletedInstances` / `nrOfInstances`
@@ -2547,3 +2547,61 @@ else:  # 0 APPLY / 1 AGREE / 5 RE_APPLY
 ### 测试报告
 
 - `./tdd/tdd-14-decision-submitType_20260917153400.md`
+
+---
+
+## §74. vendor/jeeflow 改进工作流（2026-09-17 起开放）
+
+### 背景
+
+项目从 `.venv/site-packages/jeeflow` 复制完整包到 `vendor/jeeflow/`。
+`main.py` / `main_pg.py` / `spi/__init__.py` 顶部加 `sys.path.insert(0, _VENDOR)`，
+启动时**优先使用 vendor**，不依赖 site-packages。
+
+### 改进工作流
+
+```bash
+# 1. 直接编辑 vendor/jeeflow/*.py（任意文件可改）
+$EDITOR vendor/jeeflow/engine.py
+
+# 2. 写测试报告（bdd/ 或 tdd/）
+$EDITOR bdd/bdd-fix-t6-xxx_<TS>.md
+
+# 3. 在 known-issues.md 加 §XX FIX-Tn
+#    标记：vendor/jeeflow/<file>:<line> 修改 + 实测结果
+
+# 4. 重启 main.py 验证（无需重装依赖）
+kill $(ps aux | grep main.py | grep -v grep | awk '{print $2}')
+nohup ./venv/bin/python3 main.py > /tmp/jee-main.log 2>&1 &
+
+# 5. 同步 main_pg.py 兼容（如 PG 后端）
+#    facade/engine 类相同，main_pg.py 直接受益
+
+# 6. .venv/site-packages/jeeflow 不动（保留作对比）
+```
+
+### 优先级
+
+| 来源 | 优先级 |
+|---|---|
+| `vendor/jeeflow/` | 高（项目代码） |
+| `.venv/site-packages/jeeflow` | 低（参考 / 上游） |
+
+### 已知限制
+
+- vendor 包修改后**不自动同步**到 .venv（独立维护）
+- 上游 jeeflow 升级时 vendor **不会自动跟随**（需手动重新 copy + 修改）
+- vendor 与 .venv **可能版本不一致**（如 .venv 升 1.9.x 而 vendor 仍 1.8.28）
+
+### 适用场景
+
+| 场景 | vendor/jeeflow 可改 | .venv site-packages 不可改 |
+|---|---|---|
+| 修复已知 bug（§XX FIX-Tn） | ✅ | ❌（保留对比） |
+| 添加新 handler / 拦截器 | ✅ | ❌ |
+| 改 SimpleExprEvaluator 等 | ✅ | ❌ |
+| 引擎核心算法优化 | ✅ | ❌ |
+
+### 测试报告
+
+- 第一次 vendor 改进：TBD（待用户具体需求）

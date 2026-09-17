@@ -337,7 +337,7 @@
 
 ## 7a. SubmitType 路由矩阵
 
-`SubmitType` 是实例变量 `submitType` 的枚举值（`jeeflow/model.py:45-52`，仅文档记录，不可改），决定任务节点执行后路由走向。
+`SubmitType` 是实例变量 `submitType` 的枚举值（`vendor/jeeflow/model.py:69-78`，**可修改但需测后**），决定任务节点执行后路由走向。
 
 > ROLLBACK 重审机制详见 `./known-issues.md §52`，submitType=2 REJECT → state=45 详见 §43。
 

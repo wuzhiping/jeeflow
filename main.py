@@ -14,7 +14,10 @@ import sys
 
 mimetypes.add_type("application/javascript", ".cjs")
 
-# sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+# 优先使用本地 vendor/jeeflow（项目内嵌），避免依赖 .venv site-packages
+_VENDOR = os.path.join(os.path.dirname(__file__), "vendor")
+if _VENDOR not in sys.path:
+    sys.path.insert(0, _VENDOR)
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware

@@ -4,7 +4,7 @@
 由 `state["facade"].flow(action, body)` 转发到 `Facade._<action.replace("/", "_")>` 方法。
 action 命名约定：`{实体}/{动作}`，统一驼峰、不带前缀下划线。
 
-源：`.venv/lib/python3.12/site-packages/jeeflow/facade.py`（grep `^\s+async def _\w+\(self`）。
+源：`vendor/jeeflow/facade.py`（grep `^\s+async def _\w+\(self`）。`.venv/site-packages/jeeflow/` 保留作参考。
 
 ---
 
