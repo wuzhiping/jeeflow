@@ -1,0 +1,37 @@
+=== pg bdd/bdd-cc-test_20260917143200.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789662855056000",
+  "inst_id": "91814763583589",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814763583589"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "leader_review"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

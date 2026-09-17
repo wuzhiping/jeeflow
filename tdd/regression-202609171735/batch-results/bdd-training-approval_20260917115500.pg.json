@@ -1,0 +1,44 @@
+=== pg bdd/bdd-training-approval_20260917115500.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789662871484000",
+  "inst_id": "91814780407129",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814780407129"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "pm_review",
+        "dept_leader_approve"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

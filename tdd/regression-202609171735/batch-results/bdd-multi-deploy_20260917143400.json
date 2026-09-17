@@ -1,0 +1,36 @@
+=== memory bdd/bdd-multi-deploy_20260917143400.json ===
+{
+  "ok": true,
+  "pdid": "498",
+  "inst_id": "91814757681555",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814757681555"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "leader_review"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

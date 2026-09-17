@@ -1,0 +1,36 @@
+=== memory bdd/bdd-interceptor-mock_20260917140200.json ===
+{
+  "ok": true,
+  "pdid": "440",
+  "inst_id": "91814756283748",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814756283748"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "leader_review"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

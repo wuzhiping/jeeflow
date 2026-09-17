@@ -1,0 +1,37 @@
+=== pg bdd/bdd-multi-deploy_20260917143400.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789662864722000",
+  "inst_id": "91814773483757",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814773483757"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "leader_review"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

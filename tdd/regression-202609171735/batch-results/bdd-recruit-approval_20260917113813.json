@@ -1,0 +1,64 @@
+=== memory bdd/bdd-recruit-approval_20260917113813.json ===
+{
+  "ok": true,
+  "pdid": "557",
+  "inst_id": "91814759155140",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814759155140"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-user1",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-manager",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-director",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-boss",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "dept_leader",
+        "hr_review",
+        "countersign",
+        "countersign",
+        "countersign"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

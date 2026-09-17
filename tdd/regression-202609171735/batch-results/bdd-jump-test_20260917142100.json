@@ -1,0 +1,50 @@
+=== memory bdd/bdd-jump-test_20260917142100.json ===
+{
+  "ok": true,
+  "pdid": "450",
+  "inst_id": "91814756522348",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814756522348"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-manager",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-boss",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "leader_review",
+        "manager_review",
+        "boss_review"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+=== pg bdd/bdd-dept-transfer-fork_20260917113649.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789662857482000",
+  "inst_id": "91814766067849",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814766067849"
+    },
+    {
+      "step": "execute-userA",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-boss",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "hr_review",
+        "dept_leader_review",
+        "asset_handover"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

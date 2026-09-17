@@ -1,0 +1,57 @@
+=== memory bdd/bdd-recruit-tech_20260917115300.json ===
+{
+  "ok": true,
+  "pdid": "565",
+  "inst_id": "91814759326155",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814759326155"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userB",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userC",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userA",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "resume_screen",
+        "tech_interview",
+        "tech_interview",
+        "hr_final"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

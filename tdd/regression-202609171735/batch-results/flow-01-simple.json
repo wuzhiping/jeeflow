@@ -1,0 +1,36 @@
+=== memory flows/01-simple.json ===
+{
+  "ok": true,
+  "pdid": "205",
+  "inst_id": "91814741254314",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814741254314"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "task1"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

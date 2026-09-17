@@ -1,0 +1,36 @@
+=== memory bdd/bdd-custom-decision-nested_20260917142300.json ===
+{
+  "ok": true,
+  "pdid": "358",
+  "inst_id": "91814753826084",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814753826084"
+    },
+    {
+      "step": "execute-boss",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "boss_review"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

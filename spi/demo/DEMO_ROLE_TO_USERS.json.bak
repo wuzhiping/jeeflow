@@ -1,9 +1,39 @@
 {
-  "leader": ["leader"],
-  "manager": ["manager"],
-  "director": ["director"],
-  "boss": ["boss"],
-  "finance": ["leader", "manager"],
-  "task4": ["userC"],
-  "boss_audit": ["boss"]
+  "leader": [
+    "leader"
+  ],
+  "manager": [
+    "manager"
+  ],
+  "director": [
+    "director"
+  ],
+  "boss": [
+    "boss"
+  ],
+  "finance": [
+    "leader",
+    "manager"
+  ],
+  "task4": [
+    "userC"
+  ],
+  "boss_audit": [
+    "boss"
+  ],
+  "custom_role": [
+    "userA"
+  ],
+  "to_dept_approve": [
+    "leader"
+  ],
+  "apply": [
+    "user1"
+  ],
+  "pm_review": [
+    "leader"
+  ],
+  "task1": [
+    "leader"
+  ]
 }

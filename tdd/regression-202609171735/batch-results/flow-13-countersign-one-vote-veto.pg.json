@@ -1,0 +1,51 @@
+=== pg flows/13-countersign-one-vote-veto.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789662839359000",
+  "inst_id": "91814747511872",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814747511872"
+    },
+    {
+      "step": "execute-userA",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userB",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userC",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "task1",
+        "task1",
+        "task1"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

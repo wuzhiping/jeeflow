@@ -1,0 +1,36 @@
+=== memory bdd/bdd-reapply_20260917150800.json ===
+{
+  "ok": true,
+  "pdid": "553",
+  "inst_id": "91814759035329",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814759035329"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "leader"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

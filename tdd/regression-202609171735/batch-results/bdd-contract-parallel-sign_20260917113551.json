@@ -1,0 +1,57 @@
+=== memory bdd/bdd-contract-parallel-sign_20260917113551.json ===
+{
+  "ok": true,
+  "pdid": "331",
+  "inst_id": "91814753170702",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814753170702"
+    },
+    {
+      "step": "execute-manager",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userA",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userB",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userC",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "legal_review",
+        "countersign",
+        "countersign",
+        "countersign"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

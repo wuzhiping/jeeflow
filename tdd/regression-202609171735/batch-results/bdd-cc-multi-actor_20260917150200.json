@@ -1,0 +1,36 @@
+=== memory bdd/bdd-cc-multi-actor_20260917150200.json ===
+{
+  "ok": true,
+  "pdid": "323",
+  "inst_id": "91814752944392",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814752944392"
+    },
+    {
+      "step": "execute-manager",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "manager"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

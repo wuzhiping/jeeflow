@@ -1,0 +1,44 @@
+=== memory bdd/bdd-expense-ratio-tiered_20260917132000.json ===
+{
+  "ok": true,
+  "pdid": "406",
+  "inst_id": "91814755072330",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814755072330"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-manager",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "finance_mgr_dir",
+        "finance_mgr_dir",
+        "finance_mgr_dir"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

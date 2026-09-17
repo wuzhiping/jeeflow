@@ -1,0 +1,47 @@
+=== pg bdd/bdd-multi-task-6_20260917133200.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789662864946000",
+  "inst_id": "91814773712112",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814773712112"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-manager",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-director",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "team_lead",
+        "dept_manager",
+        "director",
+        "hr_review"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 10
+    }
+  ]
+}

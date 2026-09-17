@@ -1,0 +1,36 @@
+=== memory flows/15-decision-amount.json ===
+{
+  "ok": true,
+  "pdid": "289",
+  "inst_id": "91814743427310",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814743427310"
+    },
+    {
+      "step": "execute-user2",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "task1"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

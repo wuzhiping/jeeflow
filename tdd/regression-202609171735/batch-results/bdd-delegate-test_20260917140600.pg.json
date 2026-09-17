@@ -1,0 +1,37 @@
+=== pg bdd/bdd-delegate-test_20260917140600.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789662856927000",
+  "inst_id": "91814765501569",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814765501569"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "leader_review"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

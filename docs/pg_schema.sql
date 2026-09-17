@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS wf_process_instance (
     parent_node_name    VARCHAR(255),
     business_no         VARCHAR(128),
     operator            VARCHAR(64),
+    owner_id            VARCHAR(64),  -- FIX-T9 (2026-09-17) §66 实例所有者（流程发起人 userId）
     expire_time         TIMESTAMP,
     variable            TEXT,
     create_time         TIMESTAMP,
@@ -32,6 +33,7 @@ CREATE TABLE IF NOT EXISTS wf_process_instance (
     update_time         TIMESTAMP,
     update_user         VARCHAR(64)
 );
+CREATE INDEX IF NOT EXISTS idx_wf_process_instance_owner  ON wf_process_instance(owner_id);
 
 CREATE TABLE IF NOT EXISTS wf_process_task (
     id                  BIGINT PRIMARY KEY,

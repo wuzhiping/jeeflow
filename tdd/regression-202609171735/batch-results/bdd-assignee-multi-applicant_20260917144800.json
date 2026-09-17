@@ -1,0 +1,43 @@
+=== memory bdd/bdd-assignee-multi-applicant_20260917144800.json ===
+{
+  "ok": true,
+  "pdid": "293",
+  "inst_id": "91814752125169",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814752125169"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-user1",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "multi_review",
+        "notify"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

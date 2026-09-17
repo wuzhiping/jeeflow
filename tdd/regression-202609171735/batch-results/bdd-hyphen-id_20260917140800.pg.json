@@ -1,0 +1,30 @@
+=== pg bdd/bdd-hyphen-id_20260917140800.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789662861103000",
+  "inst_id": "91814769775801",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814769775801"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "review-task-1"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

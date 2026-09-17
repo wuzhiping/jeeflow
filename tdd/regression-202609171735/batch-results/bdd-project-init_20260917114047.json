@@ -1,0 +1,57 @@
+=== memory bdd/bdd-project-init_20260917114047.json ===
+{
+  "ok": true,
+  "pdid": "539",
+  "inst_id": "91814758749621",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814758749621"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-manager",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-director",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "dept_leader",
+        "pm_form",
+        "mgr_audit",
+        "final_sign"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

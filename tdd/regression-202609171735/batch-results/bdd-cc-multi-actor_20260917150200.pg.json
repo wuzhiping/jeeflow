@@ -1,0 +1,37 @@
+=== pg bdd/bdd-cc-multi-actor_20260917150200.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789662854821000",
+  "inst_id": "91814763342946",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814763342946"
+    },
+    {
+      "step": "execute-manager",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "manager"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

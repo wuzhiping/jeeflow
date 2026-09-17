@@ -1,0 +1,43 @@
+=== memory bdd/bdd-todo-done-cc_20260917144200.json ===
+{
+  "ok": true,
+  "pdid": "623",
+  "inst_id": "91814760674811",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814760674811"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-manager",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "leader_review",
+        "manager_review"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

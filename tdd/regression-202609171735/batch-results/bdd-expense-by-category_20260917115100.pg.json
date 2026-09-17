@@ -1,0 +1,37 @@
+=== pg bdd/bdd-expense-by-category_20260917115100.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789662859384000",
+  "inst_id": "91814768016545",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814768016545"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "leader_review"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

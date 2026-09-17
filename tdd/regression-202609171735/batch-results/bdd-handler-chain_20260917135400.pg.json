@@ -1,0 +1,40 @@
+=== pg bdd/bdd-handler-chain_20260917135400.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789662860768000",
+  "inst_id": "91814769433780",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814769433780"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "finance",
+        "approver",
+        "deptleader"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 10
+    }
+  ]
+}

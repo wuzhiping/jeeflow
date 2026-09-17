@@ -196,6 +196,8 @@ class MockAuditInterceptor(FlowInterceptor):
 
 _ic_registry = {
     "com.example.MockAuditInterceptor": MockAuditInterceptor(),
+    # FIX-ALL (2026-09-17)：注册 bdd 测试用 POST_ONE 拦截器
+    "POST_ONE": MockAuditInterceptor(name="POST_ONE"),
 }
 engine.set_extensions(EngineExtensions(registry=_registry, interceptor_registry=_ic_registry))
 
@@ -221,84 +223,30 @@ async def _logged_resolve_actors(node, inst, operator, vars_):
         h = engine.ext.registry.resolve_assignment(handler_name)
         if not h:
             _fix_log(f"[FIX-T2 WARN] handler not registered: FQCN='{handler_name}' node_id='{node.id}' (process={inst.defineId})")
-            return []  # 与原行为一致：解析不到返回 []
+            # FIX-T17 (2026-09-17)：handler 未注册不再静默 return []
+            # 改为 raise 让上游 facade 报清晰错误（实例转 ABANDON）
+            raise ValueError(f"节点[{node.id}] handler FQCN='{handler_name}' 未注册")
     actors = await _orig_resolve_actors(node, inst, operator, vars_)
     if handler_name and not actors:
         # handler 已注册但返回 [] — 可能是 SPI role_code 不存在
         _fix_log(f"[FIX-T2 WARN] handler '{handler_name}' returned empty actors for node_id='{node.id}' (process={inst.defineId}); check SPI role_code")
+        # FIX-T17：handler 已注册但 SPI 无匹配 → raise 让 facade 报错
+        raise ValueError(f"节点[{node.id}] handler '{handler_name}' SPI 角色匹配为空（检查 role_code）")
     return actors
 engine._resolve_actors = _logged_resolve_actors
 facade = JeeflowFacade(engine, repo, ext_repo, user_search=spi_user_search, org_prov=org_prov)
 
 # Issue D：startAndExecute business variables 嵌套解包（与 main_pg.py 同步）
-# jeeflow engine.start_process_instance_by_id 把 args 整体塞到 inst.variables，
-# 调用方传 {variables: {amount: 5000}} 时 amount 被嵌到 inst.variables.variables.amount，
-# decision expr vars_.get("amount") 永远拿不到，expr 永远 False → fallback edges[0]。
-# 此处 monkey-patch facade.flow：startAndExecute 前把 nested variables 展开到 args 顶层。
-_orig_flow = facade.flow
-async def _safe_flow(action, args=None):
-    args = dict(args or {})
-    if action in ("processDefine/startAndExecute", "processInstance/startAndExecute"):
-        nested = args.get("variables")
-        if isinstance(nested, dict):
-            for k, val in nested.items():
-                if k not in args:
-                    args[k] = val
-    return await _orig_flow(action, args)
-facade.flow = _safe_flow
+# FIX-T10 (2026-09-17)：vendor/jeeflow/facade.py:_startAndExecute 已上移嵌套解包逻辑
+# 此处不再需要 monkey patch（vendor 是项目内嵌，优先级高于 site-packages）
 
-# Issue E (FIX-T4 2026-09-17): submitType=5 RE_APPLY 路由缺失
-# jeeflow facade.py L295-318 默认 else 分支把 5 当 AGREE 处理，
-# 导致 RE_APPLY = "重新申请" 语义丢失（apply→leader 链中 leader RE_APPLY 直接流转到 end）
-# 注意：facade.flow 已经被 _safe_flow（startAndExecute 变量展开）包装，
-# 此处必须包装在 _safe_flow 之上才能保留变量展开行为。
-from jeeflow.model import SubmitType
-async def _reapply_flow(action, args=None):
-    args = dict(args or {})
-    if action == "processTask/execute" and int(args.get("submitType") or 1) == int(SubmitType.RE_APPLY):
-        args["submitType"] = int(SubmitType.ROLLBACK_TO_OPERATOR)
-    return await _safe_flow(action, args)
-facade.flow = _reapply_flow
+# FIX-T6 (2026-09-17): submitType=5 RE_APPLY 路由已上移到 vendor/jeeflow/facade.py
+# vendor/jeeflow/facade.py:312 新增 elif submit_type == 5 分支 → execute_and_jump_to_first_task_node
+# 此处不再需要 monkey patch（vendor 是项目内嵌，优先级高于 site-packages）
 
-# Issue F (FIX-T5 2026-09-17): processDesignHis/page action 未注册（facade 缺 _processDesignHis_*）
-# jeeflow facade.py 没有 _processDesignHis_page 实现，导致 /wf/processDesignHis/page 报"未知 action"。
-# 但 ext_repo.list_design_his(save_design_his) 已完整累积历史数据。
-# 修复：monkey-patch facade 实例属性，添加 _processDesignHis_page 方法直接读 ext_repo。
-async def _processDesignHis_page(args: dict) -> dict:
-    page_num = int(args.get("pageNum") or 1)
-    page_size = int(args.get("pageSize") or 10)
-    m_design_id = args.get("m_processDesignId") or args.get("m_designId")
-    design_id_filter = int(m_design_id) if m_design_id else None
-
-    rows_out = []
-    for did, his_list in ext_repo._designHis.items():
-        for h in his_list:
-            if design_id_filter and h.processDesignId != design_id_filter:
-                continue
-            rows_out.append({
-                "id": h.id,
-                "processDesignId": h.processDesignId,
-                "content": h.content,
-                "createTime": h.createTime.isoformat() if h.createTime else None,
-                "createUser": h.createUser,
-            })
-
-    rows_out.sort(key=lambda r: (r["processDesignId"], -(r["id"] or 0)))
-    total = len(rows_out)
-    start = (page_num - 1) * page_size
-    page_rows = rows_out[start:start + page_size]
-    return {
-        "pageNum": page_num, "pageSize": page_size,
-        "recordCount": total, "totalPage": (total + page_size - 1) // page_size,
-        "rows": page_rows,
-    }
-
-import types as _types
-facade._processDesignHis_page = _processDesignHis_page
-import jeeflow.facade as _jf2
-# 同步注册到类，保证 getattr(self, "_processDesignHis_page") 找到
-if not hasattr(_jf2.JeeflowFacade, "_processDesignHis_page"):
-    setattr(_jf2.JeeflowFacade, "_processDesignHis_page", _processDesignHis_page)
+# FIX-T7 (2026-09-17): processDesignHis/page 路由已上移到 vendor/jeeflow/facade.py
+# vendor/jeeflow/facade.py 新增 _processDesignHis_page 方法（累计读 ext_repo.list_design_his）
+# 此处不再需要 monkey patch（vendor 是项目内嵌，优先级高于 site-packages）
 
 def load_seed():
     """预加载流程定义（种子）——/api/reset 重置后复用"""

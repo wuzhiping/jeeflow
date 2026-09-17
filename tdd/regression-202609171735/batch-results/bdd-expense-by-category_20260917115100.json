@@ -1,0 +1,36 @@
+=== memory bdd/bdd-expense-by-category_20260917115100.json ===
+{
+  "ok": true,
+  "pdid": "402",
+  "inst_id": "91814754955591",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814754955591"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "leader_review"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

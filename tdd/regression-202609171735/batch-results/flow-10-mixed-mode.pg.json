@@ -1,0 +1,51 @@
+=== pg flows/10-mixed-mode.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789662838243000",
+  "inst_id": "91814746368047",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814746368047"
+    },
+    {
+      "step": "execute-checker",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-reviewer",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-boss",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "task2",
+        "task3",
+        "task4"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

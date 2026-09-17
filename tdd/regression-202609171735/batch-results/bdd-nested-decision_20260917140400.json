@@ -1,0 +1,43 @@
+=== memory bdd/bdd-nested-decision_20260917140400.json ===
+{
+  "ok": true,
+  "pdid": "509",
+  "inst_id": "91814757952924",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814757952924"
+    },
+    {
+      "step": "execute-manager",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-user1",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "mgr_review",
+        "notify"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

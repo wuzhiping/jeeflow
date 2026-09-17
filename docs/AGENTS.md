@@ -319,6 +319,12 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 | 测试用 `/wf/processInstance/start` / `/wf/task/page` 等未登记 action | 404 或路由不命中 | 严格按 §5.1 速查表选用 action |
 | WIP JSON 直接写到 `./flows/` | 与稳定样例混在一起，无法区分 | 先写 `./tdd/<key>.json`，测试稳定后再 cp 晋升 |
 | 测试通过但没写 `./tdd/test_<key>_<YYYYMMDDHHMMSS>.md` | 复测 / 移交时无记录 | §3.2 step 8 是必做项 |
+| `assignmentHandler` 用 SPI 角色但 `DEMO_ROLE_TO_USERS.json` 没装该 role | **v1.8.0 FIX-T17 改进**：原静默返回 []，现抛 `ValueError(... SPI 角色匹配为空)` 让 runner 立即定位 | 在 `properties.roleCode` 显式声明，或向 SPI 包补充 role 映射（详见 `known-issues.md §71`） |
+| 流程顶层 `postInterceptors: "XXX"` 但 main.py 没注册 XXX | **vendor/jeeflow/engine.py:_resolve_interceptors** 抛 `ValueError(拦截器未注册: XXX)` | 在 `main.py` `EngineExtensions(interceptor_registry={...})` 注册（详见 `known-issues.md §72`） |
+| custom 节点 `clazz/methodName` 未实现 | **vendor/jeeflow/engine.py:_execute_node**：F1X-T17 raise（之前静默 return）让流程卡死 | 当前引擎不支持 custom 节点，跳过或 fallback 到 task 节点（详见 `known-issues.md §16`） |
+| `assignmentHandler` 用 `com.jeeflow.*` 前缀（应为 com.mldong.*） | 引擎未注册该 FQCN，raise `handler 未注册` | 严格使用 `com.mldong.jeeflow.interceptor.impl.*` 完整路径（详见 `known-issues.md §67`） |
+| `decision` 所有出边 `expr` 都为 False | 兜底走第一条边 | 加默认边 `expr=""`（详见 §3.4） |
+| 测试中调用 `task/processInstance/start` 而非 `startAndExecute` | API 不在 §5.1 速查表，返回 404 | 严格按 §5.1 action 名调用 |
 
 ---
 

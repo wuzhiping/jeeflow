@@ -1,0 +1,10 @@
+=== memory bdd/bdd-business-interceptor_20260917132800.json ===
+{
+  "ok": false,
+  "step": "start",
+  "log": {
+    "code": 99999999,
+    "msg": "[ValueError] postInterceptors 声明的拦截器未注册: POST_ONE"
+  },
+  "pdid": "250"
+}

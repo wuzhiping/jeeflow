@@ -1,0 +1,50 @@
+=== memory flows/02-multi-task.json ===
+{
+  "ok": true,
+  "pdid": "209",
+  "inst_id": "91814741377197",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814741377197"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-manager",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-boss",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "task1",
+        "task2",
+        "task3"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+=== memory flows/07-countersign-ratio.json ===
+{
+  "ok": true,
+  "pdid": "236",
+  "inst_id": "91814742022339",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814742022339"
+    },
+    {
+      "step": "execute-userA",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userB",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "task1",
+        "task1",
+        "task1",
+        "task1"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

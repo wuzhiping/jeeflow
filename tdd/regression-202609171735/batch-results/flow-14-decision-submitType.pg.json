@@ -1,0 +1,37 @@
+=== pg flows/14-decision-submitType.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789662839657000",
+  "inst_id": "91814747816005",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814747816005"
+    },
+    {
+      "step": "execute-user2",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "task1"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

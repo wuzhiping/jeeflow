@@ -1,0 +1,37 @@
+=== pg flows/08-custom-node.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789662837749000",
+  "inst_id": "91814745860136",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814745860136"
+    },
+    {
+      "step": "execute-user1",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "custom1"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

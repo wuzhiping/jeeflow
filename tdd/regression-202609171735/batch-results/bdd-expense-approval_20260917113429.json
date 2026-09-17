@@ -1,0 +1,51 @@
+=== memory bdd/bdd-expense-approval_20260917113429.json ===
+{
+  "ok": true,
+  "pdid": "395",
+  "inst_id": "91814754826561",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814754826561"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-manager",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-user1",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "review",
+        "manager_audit",
+        "apply",
+        "review"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

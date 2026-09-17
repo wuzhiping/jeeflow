@@ -1,0 +1,29 @@
+=== memory bdd/bdd-form-double-var_20260917150400.json ===
+{
+  "ok": true,
+  "pdid": "424",
+  "inst_id": "91814755810648",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814755810648"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

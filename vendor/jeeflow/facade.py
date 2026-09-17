@@ -70,7 +70,9 @@ class JeeflowFacade:
             # ToStringSerializer）——前端 JS number 无法承载雪花 id（>2^53）
             return self._ok(_stringify_ids(data))
         except Exception as e:
-            return self._error(str(e))
+            # FIX-T19 (2026-09-17)：错误信息附异常类型，便于调试区分 ValueError/RuntimeError
+            msg = str(e) if str(e) else type(e).__name__
+            return self._error(f"[{type(e).__name__}] {msg}")
 
     # ── 流程定义 / 实例 ─────────────────────────────────────────────────────
 
@@ -128,6 +130,7 @@ class JeeflowFacade:
             "id": inst.id, "parentId": inst.parentId, "processDefineId": inst.defineId,
             "state": inst.state, "parentNodeName": inst.parentNodeName,
             "businessNo": inst.businessNo, "operator": inst.operator,
+            "ownerId": getattr(inst, "ownerId", "") or "",  # FIX-T9 (2026-09-17) §66
             "variables": inst.variables,
             "formData": self._form_data_of(inst.variables, "f_"),  # issues/15
             "createTime": inst.createTime, "createUser": inst.createUser,
@@ -150,8 +153,23 @@ class JeeflowFacade:
         if not define_id:
             raise ValueError("processDefineId 缺失或非法")
         operator = str(args.get("operator", "user1"))
+        # FIX-T10 (2026-09-17)：business variables 嵌套解包（§Issue D 上游修复）
+        # 兼容调用方传 {variables: {amount: 5000}}（设计器前端规范），
+        # 把 nested variables 展开到 args 顶层；顶层已有 key 不覆盖（优先级：顶层 > nested）
+        nested = args.get("variables")
+        if isinstance(nested, dict):
+            for k, val in nested.items():
+                args.setdefault(k, val)
         flow_args = {k: v for k, v in args.items() if k not in ("processDefineId", "operator")}
         inst = await self._engine.start_process_instance_by_id(define_id, operator, flow_args)
+        # FIX-T9 (2026-09-17)：ProcessInstance.ownerId 提取（§66 修复，兜底双轨制）
+        # engine 已经在 start_process_instance_by_id 内提取；此处兜底（防御 facade 跳过 engine）
+        if not getattr(inst, "ownerId", ""):
+            inst.ownerId = (
+                str(args.get("ownerId", "") or "").strip()
+                or str(flow_args.get("u_userId", "") or "").strip()
+                or operator
+            )
         # issues/56 E28：发起时抄送（f_ccActors）创建 cc 实例（对齐 Java enableCcActors 语义）
         cc = flow_args.get("f_ccActors")
         if cc is not None:
@@ -177,7 +195,17 @@ class JeeflowFacade:
             start_next_op = flow_args.get(KEY_PROCESS_START_NEXT_NODE_OPERATOR)
             if start_next_op:
                 flow_args[KEY_NEXT_NODE_OPERATOR] = start_next_op
-            await self._engine.execute_process_task(task.id, operator, flow_args)
+            try:
+                await self._engine.execute_process_task(task.id, operator, flow_args)
+            except Exception as e:
+                # FIX-T17 (2026-09-17)：下游 task 创建失败时清理半成品实例
+                # 原代码 exception 吞掉，instance 留在 state=10 DOING 但 active=[]
+                # 现在让上层看到明确错误；实例标记 ABANDON 便于排查
+                from .model import InstanceState
+                inst.state = InstanceState.ABANDON
+                inst.updateTime = datetime.now()
+                await self._repo.update_instance(inst)
+                raise
         return {"processInstanceId": inst.id}
 
     async def _processDefine_deploy(self, args: dict) -> dict:
@@ -196,7 +224,7 @@ class JeeflowFacade:
             "content": his_list[0].content,
             "operator": args.get("operator", "system"),
         })
-        design.isDeployed = 1
+        design.isDeployed = True
         design.updateUser = str(args.get("operator", "system"))
         await ext.update_design(design)
         return define_id
@@ -310,6 +338,8 @@ class JeeflowFacade:
                                                      str(args.get("taskName", "")))
         elif submit_type == SUBMIT_ROLLBACK_TO_OPERATOR:
             await self._engine.execute_and_jump_to_first_task_node(task_id, operator, flow_args)
+        elif submit_type == 5:  # SUBMIT_RE_APPLY — FIX-T6 2026-09-17：boot3 同义于跳回首个 task 节点（参考 §64 monkey patch 行为）
+            await self._engine.execute_and_jump_to_first_task_node(task_id, operator, flow_args)
         elif submit_type == SUBMIT_COUNTERSIGN_DISAGREE:
             flow_args["countersignDisagreeFlag"] = 1
             await self._engine.execute_process_task(task_id, operator, flow_args)
@@ -325,7 +355,7 @@ class JeeflowFacade:
         page_num = self._to_int(args.get("pageNum")) or 1
         page_size = self._to_int(args.get("pageSize")) or 10
         rows, total = await ext.page_designs(page_num, page_size,
-                                             conditions=self._parse_m_query(args))
+                                              conditions=self._parse_m_query(args))
         out = []
         for d in rows:
             out.append({"id": d.id, "name": d.name, "displayName": d.displayName, "type": d.type,
@@ -333,6 +363,48 @@ class JeeflowFacade:
                         "createTime": self._fmt_time(d.createTime), "createUser": d.createUser,
                         "updateTime": self._fmt_time(d.updateTime), "updateUser": d.updateUser})
         return self._page_data(out, total, page_num, page_size)
+
+    async def _processDesignHis_page(self, args: dict) -> dict:
+        # FIX-T7 (2026-09-17)：设计历史分页（v1.1.0 wf_process_design_his 表）
+        # 累积读所有 design 的 list_design_his，支持 m_processDesignId / m_designId 过滤
+        ext = self._ext_repo()
+        page_num = self._to_int(args.get("pageNum")) or 1
+        page_size = self._to_int(args.get("pageSize")) or 10
+        m_design_id = args.get("m_processDesignId") or args.get("m_designId")
+        design_id_filter = self._to_int(m_design_id) if m_design_id else None
+
+        rows_out = []
+        # MemoryExtRepository._designHis: dict[int, list[ProcessDesignHis]]
+        # JdbcProcessExtRepository 用 list_design_his(design_id) 累积
+        if hasattr(ext, "_designHis"):
+            for did, his_list in ext._designHis.items():
+                if design_id_filter and did != design_id_filter:
+                    continue
+                for h in his_list:
+                    rows_out.append({
+                        "id": h.id, "processDesignId": h.processDesignId,
+                        "content": h.content, "createTime": self._fmt_time(h.createTime),
+                        "createUser": h.createUser,
+                    })
+        elif hasattr(ext, "list_design_his"):
+            # PG 后端：扫所有 design_id
+            for did in (ext._designs.keys() if hasattr(ext, "_designs") else []):
+                if design_id_filter and did != design_id_filter:
+                    continue
+                for h in await ext.list_design_his(did):
+                    rows_out.append({
+                        "id": h.id, "processDesignId": h.processDesignId,
+                        "content": h.content, "createTime": self._fmt_time(h.createTime),
+                        "createUser": h.createUser,
+                    })
+        rows_out.sort(key=lambda r: -(r["id"] or 0))
+        # FIX-T26 (2026-09-17)：设计历史支持 m_EQ_createUser / m_LIKE_createUser 等通用 m_ 条件
+        rows_out = self._filter_rows_by_m_query(rows_out, args)
+        total = len(rows_out)
+        start = (page_num - 1) * page_size
+        page_rows = rows_out[start:start + page_size]
+        return self._page_data(page_rows, total, page_num, page_size)
+
 
     async def _processDesign_detail(self, args: dict) -> dict:
         ext = self._ext_repo()
@@ -379,7 +451,7 @@ class JeeflowFacade:
                                    type=str(args.get("type", "approval")),
                                    icon=str(args.get("icon", "")),
                                    remark=str(args.get("remark", "")),
-                                   isDeployed=0,
+                                   isDeployed=False,  # FIX-T14 (2026-09-17) bool 兼容 PG
                                    createUser=operator, updateUser=operator)
             await ext.save_design(design)
         else:
@@ -397,7 +469,7 @@ class JeeflowFacade:
             design.updateUser = operator
             # 内容快照变更 → 置为未部署（对齐 boot3 updateDefine 语义，issues/08）
             if self._content(args, required=False):
-                design.isDeployed = 0
+                design.isDeployed = False
             await ext.update_design(design)
         # 内容快照（设计稿内容存历史表）
         content = self._content(args, required=False)
@@ -459,7 +531,7 @@ class JeeflowFacade:
                 design.type = flow["type"]
         except Exception:
             pass
-        design.isDeployed = 0
+        design.isDeployed = False
         design.updateUser = str(args.get("operator", "system"))
         await ext.update_design(design)
         return None
@@ -498,7 +570,7 @@ class JeeflowFacade:
             last.updateUser = str(args.get("operator", "system"))
             await self._repo.update_define(last)
             define_id = last.id
-        design.isDeployed = 1
+        design.isDeployed = True
         design.updateUser = str(args.get("operator", "system"))
         await ext.update_design(design)
         return {"processDefineId": define_id}
@@ -638,6 +710,10 @@ class JeeflowFacade:
         s.endTime = JeeflowFacade._parse_surrogate_time(args.get("endTime"))
         enabled = JeeflowFacade._to_int(args.get("enabled"))
         s.enabled = 1 if enabled is None else enabled  # 显式 0 不得被 or 1 吞掉（对齐 Java/Go toIntDef）
+        # FIX-T13 (2026-09-17)：委托 enabled 列兼容 PG BOOLEAN（int 0/1 → bool）
+        # PG wf_process_surrogate.enabled 是 BOOLEAN；int 0/1 直接 INSERT asyncpg 拒收。
+        # 兜底 bool()，下游 ext_repo.save_surrogate 强转即可。
+        s.enabled = bool(s.enabled)
         s.updateUser = operator
 
     @staticmethod
@@ -1121,6 +1197,44 @@ class JeeflowFacade:
             out.append(QueryCondition(column=column, operator=operator.upper(), value=value))
         return out
 
+    def _filter_rows_by_m_query(self, rows: list, args: dict, allowed_columns: set = None) -> list:
+        """FIX-T26 (2026-09-17)：对已聚合的 rows 应用 m_ 过滤（设计历史等非 SQL 来源行）
+        columns 默认白名单：id, processDesignId, content, createTime, createUser
+        """
+        conds = self._parse_m_query(args)
+        # 过滤掉 processDesignId（已在外面处理）和未允许列
+        if allowed_columns is None:
+            allowed_columns = {"t.id", "t.process_design_id", "t.content", "t.create_time", "t.create_user"}
+        kept = []
+        for r in rows:
+            fields = {
+                "t.id": r.get("id"),
+                "t.process_design_id": r.get("processDesignId"),
+                "t.content": r.get("content"),
+                "t.create_time": r.get("createTime"),
+                "t.create_user": r.get("createUser"),
+            }
+            ok = True
+            for c in conds:
+                if c.column not in allowed_columns:
+                    continue
+                v = fields.get(c.column)
+                expect = c.value
+                op = c.operator.upper()
+                if op == "EQ" and not (str(v) == str(expect)):
+                    ok = False; break
+                elif op == "NE" and not (str(v) != str(expect)):
+                    ok = False; break
+                elif op == "LIKE" and expect not in str(v or ""):
+                    ok = False; break
+                elif op == "LLIKE" and not str(v or "").endswith(str(expect)):
+                    ok = False; break
+                elif op == "RLIKE" and not str(v or "").startswith(str(expect)):
+                    ok = False; break
+            if ok:
+                kept.append(r)
+        return kept
+
     @staticmethod
     def _to_underscore(camel: str) -> str:
         out = []
@@ -1229,6 +1343,8 @@ class JeeflowFacade:
 
         pending, overdue = await self._repo.stats_pending_and_overdue_count()
         avg_dur = await self._repo.stats_avg_completed_duration_seconds(start, end)
+        # FIX-T27 (2026-09-17)：活跃操作人数（窗口内不同 operator 数）
+        active_users = await self._repo.stats_active_users_count(start, end)
 
         cs_total, cs_count, on_time, on_time_denom = await self._repo.stats_completed_task_aggregate()
         countersign_rate = _stats_round4(cs_count / cs_total) if cs_total > 0 else 0.0
@@ -1242,6 +1358,7 @@ class JeeflowFacade:
             "rejectRate": reject_rate, "pendingTaskCount": pending,
             "overdueTaskCount": overdue, "countersignRate": countersign_rate,
             "onTimeRate": on_time_rate,
+            "activeUserCount": active_users,
         }
 
     async def _processInstance_stats_trend(self, args: dict) -> dict:
@@ -1294,12 +1411,14 @@ class JeeflowFacade:
 
         elif dimension == "state":
             insts = await self._repo.query_instances_for_stats(None, "create_time", start, end)  # 无 state 过滤（对齐内置线：仅 overview 用 stateIn）
+            # FIX-T21 (2026-09-17)：state 枚举映射 label（设计器可读）
+            _STATE_LABELS = {"10": "进行中", "20": "已完成", "30": "已撤回", "99": "已废弃"}
             grouped: dict[str, int] = {}
             for r in insts:
                 k = str(r.state)
                 grouped[k] = grouped.get(k, 0) + 1
             entries = sorted(grouped.items(), key=lambda x: x[1], reverse=True)[:limit]
-            rows = [{"key": k, "label": None, "count": c, "avgDurationSeconds": None} for k, c in entries]
+            rows = [{"key": k, "label": _STATE_LABELS.get(k, "未知"), "count": c, "avgDurationSeconds": None} for k, c in entries]
 
         elif dimension == "category":
             insts = await self._repo.query_instances_for_stats(None, "create_time", start, end)  # 无 state 过滤（对齐内置线：仅 overview 用 stateIn）
@@ -1422,6 +1541,7 @@ class JeeflowFacade:
         return {"id": r.id, "parentId": r.parentId, "processDefineId": r.defineId,
                 "state": int(r.state) if r.state is not None else None,
                 "parentNodeName": r.parentNodeName, "businessNo": r.businessNo, "operator": r.operator,
+                "ownerId": getattr(r, "ownerId", "") or "",  # FIX-T9 (2026-09-17) §66 ownerId 字段
                 "expireTime": self._fmt_time(r.expireTime), "variable": r.variables,
                 "createTime": self._fmt_time(r.createTime), "createUser": r.createUser,
                 "updateTime": self._fmt_time(r.updateTime), "updateUser": r.updateUser,

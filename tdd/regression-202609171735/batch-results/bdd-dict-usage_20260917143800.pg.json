@@ -1,0 +1,37 @@
+=== pg bdd/bdd-dict-usage_20260917143800.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789662857783000",
+  "inst_id": "91814766376078",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814766376078"
+    },
+    {
+      "step": "execute-director",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "director_review"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

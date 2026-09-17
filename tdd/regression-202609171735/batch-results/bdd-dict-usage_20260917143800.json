@@ -1,0 +1,36 @@
+=== memory bdd/bdd-dict-usage_20260917143800.json ===
+{
+  "ok": true,
+  "pdid": "378",
+  "inst_id": "91814754350388",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814754350388"
+    },
+    {
+      "step": "execute-director",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "director_review"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

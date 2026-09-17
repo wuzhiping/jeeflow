@@ -1,0 +1,44 @@
+=== pg flows/03-decision-expr.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789662836089000",
+  "inst_id": "91814744161292",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814744161292"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-manager",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "task1",
+        "task2"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

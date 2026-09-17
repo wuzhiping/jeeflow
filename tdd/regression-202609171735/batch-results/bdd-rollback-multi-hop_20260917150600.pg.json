@@ -1,0 +1,44 @@
+=== pg bdd/bdd-rollback-multi-hop_20260917150600.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789662869004000",
+  "inst_id": "91814777866547",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814777866547"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-manager",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "leader",
+        "manager"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

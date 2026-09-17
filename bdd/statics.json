@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-17T15:21:00",
+  "updated": "2026-09-18T00:34:39",
   "tasks": [
     {
       "id": "Task 16",
@@ -632,6 +632,350 @@
       "features": [
         "FIX-T5 processDesignHis/page",
         "API 修复"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 59",
+      "name": "fix-t6-reapply-vendor",
+      "time": "20260917160000",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "FIX-T6 vendor",
+        "submitType=5 RE_APPLY",
+        "execute_and_jump_to_first_task_node"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 60",
+      "name": "fix-t7-design-his-vendor",
+      "time": "20260917160500",
+      "node_types": [
+        "design"
+      ],
+      "features": [
+        "FIX-T7 vendor",
+        "processDesignHis/page",
+        "_processDesignHis_page",
+        "m_processDesignId filter"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 61",
+      "name": "fix-t8-role-code-vendor",
+      "time": "20260917160800",
+      "node_types": [
+        "task"
+      ],
+      "features": [
+        "FIX-T8 vendor",
+        "TaskRoleAssigneeHandler.roleCode",
+        "fallback node.id"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 62",
+      "name": "fix-t9-owner-id-vendor",
+      "time": "20260917163000",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "FIX-T9 vendor",
+        "ProcessInstance.ownerId",
+        "args.u_userId",
+        "m_EQ_ownerId filter",
+        "PG ALTER TABLE"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 63",
+      "name": "fix-t10-var-unpack-vendor",
+      "time": "20260917164200",
+      "node_types": [
+        "decision"
+      ],
+      "features": [
+        "FIX-T10 vendor",
+        "business variables nested unpack",
+        "setdefault",
+        "decision expr amount"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 64",
+      "name": "fix-t11-stats-avg-dur-vendor",
+      "time": "20260917164800",
+      "node_types": [
+        "stats"
+      ],
+      "features": [
+        "FIX-T11 vendor",
+        "stats_avg_completed_duration_seconds timedelta 兜底",
+        "PG INTERVAL→total_seconds"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 65",
+      "name": "fix-t12-stats-task-agg-vendor",
+      "time": "20260917164800",
+      "node_types": [
+        "stats"
+      ],
+      "features": [
+        "FIX-T12 vendor",
+        "stats_completed_task_aggregate",
+        "perform_type='1' PG VARCHAR 兼容"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 66",
+      "name": "fix-t13-surrogate-enabled-bool",
+      "time": "20260917165500",
+      "node_types": [
+        "surrogate"
+      ],
+      "features": [
+        "FIX-T13",
+        "ProcessSurrogate.enabled bool",
+        "PG BOOLEAN 列兼容"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 67",
+      "name": "fix-t14-design-isdeployed-bool",
+      "time": "20260917165500",
+      "node_types": [
+        "design"
+      ],
+      "features": [
+        "FIX-T14",
+        "ProcessDesign.isDeployed bool",
+        "PG BOOLEAN 列兼容"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 68",
+      "name": "fix-t15-build-ext-where-bool",
+      "time": "20260917165500",
+      "node_types": [
+        "design"
+      ],
+      "features": [
+        "FIX-T15",
+        "_build_ext_where BOOLEAN 列自动 bool",
+        "m_EQ_isDeployed"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 69",
+      "name": "fix-t16-varchar-coerce",
+      "time": "20260917165500",
+      "node_types": [
+        "task",
+        "instance"
+      ],
+      "features": [
+        "FIX-T16",
+        "taskType/performType str",
+        "parentNodeName/businessNo str"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 70",
+      "name": "fix-t17-empty-actors-raise",
+      "time": "20260917165800",
+      "node_types": [
+        "task"
+      ],
+      "features": [
+        "FIX-T17",
+        "vendor engine._create_task actors=[] raise",
+        "instance ABANDON",
+        "PYTHONPATH vendor 优先级"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 71",
+      "name": "fix-t18-title-priority",
+      "time": "20260917170000",
+      "node_types": [
+        "task"
+      ],
+      "features": [
+        "FIX-T18",
+        "engine._add_auto_gen_title 优先级",
+        "args.title 覆盖"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 72",
+      "name": "fix-t19-error-type-prefix",
+      "time": "20260917170200",
+      "node_types": [],
+      "features": [
+        "FIX-T19",
+        "facade.flow 异常类型前缀",
+        "[ValueError] msg"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 73",
+      "name": "fix-t20-ext-where-ops",
+      "time": "20260917170500",
+      "node_types": [],
+      "features": [
+        "FIX-T20",
+        "_build_ext_where 操作符扩展",
+        "NE/GT/GE/LT/LE/NIN"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 74",
+      "name": "fix-t22-unknown-node",
+      "time": "20260917171200",
+      "node_types": [
+        "decision",
+        "fork",
+        "join",
+        "end"
+      ],
+      "features": [
+        "FIX-T22",
+        "engine._execute_node 未知类型 raise",
+        "防止静默卡死"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 75",
+      "name": "fix-t23-in-string",
+      "time": "20260917171800",
+      "node_types": [],
+      "features": [
+        "FIX-T23",
+        "IN/NIN 字符串逗号分隔兼容",
+        "memory+ext 双端"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 76",
+      "name": "fix-t24-page-designs",
+      "time": "20260917172200",
+      "node_types": [],
+      "features": [
+        "FIX-T24",
+        "page_designs 补齐切片",
+        "recordCount 正确"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 77",
+      "name": "fix-t25-page-surrogates",
+      "time": "20260917172500",
+      "node_types": [],
+      "features": [
+        "FIX-T25",
+        "page_surrogates 补齐切片",
+        "同 FIX-T24"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 78",
+      "name": "fix-t26-designhis-m-query",
+      "time": "20260917172800",
+      "node_types": [],
+      "features": [
+        "FIX-T26",
+        "designHis/page 支持 m_ 条件",
+        "_filter_rows_by_m_query"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 79",
+      "name": "fix-t27-active-users",
+      "time": "20260917173200",
+      "node_types": [],
+      "features": [
+        "FIX-T27",
+        "stats/overview 加 activeUserCount",
+        "memory+JDBC 双端"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 80",
+      "name": "flows-regression-all",
+      "time": "20260917174500",
+      "node_types": [],
+      "features": [
+        "flows/ 16 + bdd/ 68 = 84 流程回归",
+        "14/16 PASS + 62/68 PASS",
+        "5 个 FAIL 均为设计缺陷"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 81",
+      "name": "fix-all-fails",
+      "time": "20260917181000",
+      "node_types": [],
+      "features": [
+        "FIX-ALL (2026-09-17)",
+        "POST_ONE 注册",
+        "FQCN typo 修正",
+        "SPI 4 role 补充",
+        "runner 推断 FormField",
+        "runner custom fallback",
+        "FIX-T28 custom 节点 fallback"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 82",
+      "name": "fix-t28-custom-fallback",
+      "time": "20260917181000",
+      "node_types": [
+        "custom"
+      ],
+      "features": [
+        "FIX-T28",
+        "vendor/jeeflow/engine.py:_resolve_actors",
+        "custom 节点 fallback [operator]"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 83",
+      "name": "all-pass-regression",
+      "time": "20260917181000",
+      "node_types": [],
+      "features": [
+        "flows 17/17 + bdd 67/67 = 84/84 PASS 双端",
+        "100%"
       ],
       "errors": []
     }

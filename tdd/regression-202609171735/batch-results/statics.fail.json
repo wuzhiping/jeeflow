@@ -1,0 +1,11 @@
+=== memory bdd/statics.json ===
+{
+  "ok": false,
+  "step": "deploy",
+  "log": {
+    "deploy": {
+      "code": 99999999,
+      "msg": "[ValueError] 流程定义缺少 name"
+    }
+  }
+}

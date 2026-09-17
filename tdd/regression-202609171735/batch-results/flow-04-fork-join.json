@@ -1,0 +1,43 @@
+=== memory flows/04-fork-join.json ===
+{
+  "ok": true,
+  "pdid": "220",
+  "inst_id": "91814741641398",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814741641398"
+    },
+    {
+      "step": "execute-userA",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userB",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "taskA",
+        "taskB"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

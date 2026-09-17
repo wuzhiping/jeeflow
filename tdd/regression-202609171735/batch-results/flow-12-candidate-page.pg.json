@@ -1,0 +1,37 @@
+=== pg flows/12-candidate-page.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789662839119000",
+  "inst_id": "91814747264061",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814747264061"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "review"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

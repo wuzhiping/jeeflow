@@ -1,0 +1,44 @@
+=== pg flows/06-countersign-sequential.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789662836907000",
+  "inst_id": "91814744998937",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814744998937"
+    },
+    {
+      "step": "execute-userA",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userB",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "task1",
+        "task1"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

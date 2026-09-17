@@ -1,0 +1,53 @@
+=== memory bdd/bdd-performance-review_20260917115800.json ===
+{
+  "ok": true,
+  "pdid": "522",
+  "inst_id": "91814758407590",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814758407590"
+    },
+    {
+      "step": "execute-userB",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userA",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-director",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "self_review",
+        "leader_review",
+        "hr_review",
+        "director_review",
+        "archive"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 10
+    }
+  ]
+}

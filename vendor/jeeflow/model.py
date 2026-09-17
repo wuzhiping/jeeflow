@@ -123,6 +123,10 @@ class ProcessInstance:
     createUser: str = ""
     updateTime: Any = None
     updateUser: str = ""
+    # FIX-T9 (2026-09-17)：实例所有者（用户ID）—— Java 设计器 ProcessInstance.ownerId 字段
+    # 业务场景：审批人待办列表"我发起的"按 ownerId 过滤
+    # 优先级：显式 ownerId > variables.u_userId > operator
+    ownerId: str = ""
 
     # ── 聚合根行为（对标 Java domain/ProcessInstance）──
 
@@ -244,7 +248,7 @@ class ProcessDesign:
     displayName: str = ""
     type: str = "approval"
     icon: str = ""
-    isDeployed: int = 0
+    isDeployed: Any = False  # FIX-T14 (2026-09-17) bool 兼容 PG BOOLEAN 列
     remark: str = ""
     createTime: Any = None
     createUser: str = ""
@@ -269,7 +273,7 @@ class ProcessSurrogate:
     surrogate: str = ""
     startTime: Any = None
     endTime: Any = None
-    enabled: int = 1
+    enabled: Any = True  # FIX-T13 (2026-09-17) bool 类型兼容 PG BOOLEAN 列（默认 True）
     createTime: Any = None
     createUser: str = ""
     updateTime: Any = None
@@ -304,6 +308,7 @@ class CcInstanceRow:
     defineName: str = ""
     defineDisplayName: str = ""
     defineVersion: int = 0
+    ownerId: str = ""  # FIX-T9 (2026-09-17) §66 实例所有者（userId）
 
 
 # ─── JSON Parsing ────────────────────────────────────────────────────────────────
@@ -385,6 +390,7 @@ class InstanceRow:
     createUser: str = ""
     updateTime: Any = None
     updateUser: str = ""
+    ownerId: str = ""  # FIX-T9 (2026-09-17) §66 实例所有者（userId）
     defineName: str = ""
     defineDisplayName: str = ""
     defineVersion: int = 0

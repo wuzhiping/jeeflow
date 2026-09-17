@@ -97,13 +97,13 @@ _TASK_WHITELIST = {
 
 _INSTANCE_WHITELIST = {
     "t.id", "t.parent_id", "t.process_define_id", "t.state", "t.business_no",
-    "t.operator", "t.create_time", "t.expire_time", "t.variable",
+    "t.operator", "t.owner_id", "t.create_time", "t.expire_time", "t.variable",  # FIX-T9 §66 owner_id
     "pd.name", "pd.display_name", "pd.type", "pd.version",
 }
 
 _CC_WHITELIST = {
     "t.id", "t.process_define_id", "t.state", "t.business_no", "t.operator",
-    "t.create_time", "t.variable",
+    "t.owner_id", "t.create_time", "t.variable",  # FIX-T9 §66 owner_id
     "pd.name", "pd.display_name", "pd.type", "pd.version",
     "cc.actor_id", "cc.state",
 }
@@ -270,8 +270,8 @@ class JdbcRepository(ProcessRepository):
     # ── ProcessInstance ────────────────────────────────────────────────────
 
     _INSTANCE_COLS = ("id, parent_id, process_define_id, state, parent_node_name,"
-                      " business_no, operator, expire_time, variable,"
-                      " create_time, create_user, update_time, update_user")
+                      " business_no, operator, owner_id, expire_time, variable,"
+                      " create_time, create_user, update_time, update_user")  # FIX-T9 §66 owner_id
 
     async def find_instance_by_id(self, id: int) -> Optional[ProcessInstance]:
         async with self._conn() as conn:
@@ -281,11 +281,12 @@ class JdbcRepository(ProcessRepository):
             return None
         inst = ProcessInstance(
             id=row[0], parentId=row[1], defineId=row[2], state=InstanceState(row[3]),
-            parentNodeName=row[4], businessNo=row[5], operator=row[6], expireTime=row[7],
-            createTime=row[9], createUser=_user_str(row[10]), updateTime=row[11], updateUser=_user_str(row[12]),
+            parentNodeName=row[4], businessNo=row[5], operator=row[6], ownerId=_user_str(row[7] or ""),
+            expireTime=row[8], createTime=row[10], createUser=_user_str(row[11]),
+            updateTime=row[12], updateUser=_user_str(row[13]),
         )
-        if row[8]:
-            inst.variables = json.loads(row[8])
+        if row[9]:
+            inst.variables = json.loads(row[9])
         # issues/110：聚合水合——二次查 wf_process_task 装任务副本（含 actorIds），
         # 对齐 Java findTasksByInstanceId / PHP PdoProcessRepository / C# issues/89；
         # 否则门面 detail 的 tasks/activeTaskList 恒空。
@@ -295,25 +296,33 @@ class JdbcRepository(ProcessRepository):
         return inst
 
     async def save_instance(self, inst: ProcessInstance) -> None:
+        # FIX-T16 (2026-09-17)：parentNodeName/businessNo/createUser/updateUser VARCHAR 列兼容
+        # PG wf_process_instance VARCHAR(64/255) 列不接受 int；兜底 str
         async with self._conn() as conn:
             await conn.execute(self._sql(
                 "INSERT INTO wf_process_instance (id, parent_id, process_define_id, state,"
-                " parent_node_name, business_no, operator, expire_time, variable,"
+                " parent_node_name, business_no, operator, owner_id, expire_time, variable,"
                 " create_time, create_user, update_time, update_user) VALUES"
-                " (?,?,?,?,?,?,?,?,?,?,?,?,?)"),
-                (inst.id, inst.parentId, inst.defineId, int(inst.state), inst.parentNodeName,
-                 inst.businessNo, inst.operator, inst.expireTime,
+                " (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"),
+                (inst.id, inst.parentId, inst.defineId, int(inst.state),
+                 str(inst.parentNodeName) if inst.parentNodeName is not None else "",
+                 str(inst.businessNo) if inst.businessNo is not None else "",
+                 inst.operator, getattr(inst, "ownerId", "") or "", inst.expireTime,
                  json.dumps(inst.variables, ensure_ascii=False),
-                 inst.createTime, inst.createUser, inst.updateTime, inst.updateUser))
+                 inst.createTime,
+                 str(inst.createUser) if inst.createUser is not None else "",
+                 inst.updateTime,
+                 str(inst.updateUser) if inst.updateUser is not None else ""))
 
     async def update_instance(self, inst: ProcessInstance) -> None:
         async with self._conn() as conn:
             await conn.execute(self._sql(
                 "UPDATE wf_process_instance SET state=?, parent_node_name=?, business_no=?,"
-                " operator=?, expire_time=?, variable=?, update_time=?, update_user=?"
+                " operator=?, owner_id=?, expire_time=?, variable=?, update_time=?, update_user=?"
                 " WHERE id=?"),
                 (int(inst.state), inst.parentNodeName, inst.businessNo, inst.operator,
-                 inst.expireTime, json.dumps(inst.variables, ensure_ascii=False),
+                 getattr(inst, "ownerId", "") or "", inst.expireTime,
+                 json.dumps(inst.variables, ensure_ascii=False),
                  inst.updateTime, inst.updateUser, inst.id))
             # v1.0.1：级联持久化聚合根内任务状态变更（同连接，spec §7.4）
             for task in inst.tasks:
@@ -341,14 +350,19 @@ class JdbcRepository(ProcessRepository):
         return self._task_from_row(row, actors)
 
     async def save_task(self, task: ProcessTask) -> None:
+        # FIX-T16 (2026-09-17)：task_type / perform_type VARCHAR 列兼容（PG）
+        # PG wf_process_task.task_type / perform_type 是 VARCHAR(64)；int 0 → asyncpg 拒收
+        # 兜底 str，SQLite/MySQL int 列也接受字符串（隐式转换）
         async with self._conn() as conn:
             await conn.execute(self._sql(
                 "INSERT INTO wf_process_task (id, process_instance_id, task_name, display_name,"
                 " task_type, perform_type, task_state, operator, finish_time, expire_time, form_key,"
                 " task_parent_id, variable, create_time, create_user, update_time, update_user)"
                 " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"),
-                (task.id, task.processInstanceId, task.taskName, task.displayName, task.taskType,
-                 task.performType, int(task.taskState), task.actorId, task.finishTime, task.expireTime,
+                (task.id, task.processInstanceId, task.taskName, task.displayName,
+                 str(task.taskType) if task.taskType is not None else None,
+                 str(task.performType) if task.performType is not None else None,
+                 int(task.taskState), task.actorId, task.finishTime, task.expireTime,
                  task.formKey, task.parentTaskId, json.dumps(task.variables, ensure_ascii=False),
                  task.createTime, task.createUser, task.updateTime, task.updateUser))
             await self._replace_task_actors(conn, task.id, task.actorIds)
@@ -484,8 +498,8 @@ class JdbcRepository(ProcessRepository):
                  " LEFT JOIN wf_process_cc_instance cc ON t.id = cc.process_instance_id"
                  " WHERE cc.actor_id = ?" + cond_sql)
         cols = ("t.id, t.parent_id, t.process_define_id, t.state, t.parent_node_name, t.business_no,"
-                " t.operator, t.expire_time, t.variable, t.create_time, t.create_user,"
-                " t.update_time, t.update_user, pd.name, pd.display_name, pd.version")
+                " t.operator, t.owner_id, t.expire_time, t.variable, t.create_time, t.create_user,"
+                " t.update_time, t.update_user, pd.name, pd.display_name, pd.version")  # FIX-T9 §66 owner_id
         async with self._conn() as conn:
             row = await conn.fetchone(self._sql("SELECT COUNT(*)" + where), (actor_id, *cond_args))
             total = int(row[0]) if row else 0
@@ -496,13 +510,14 @@ class JdbcRepository(ProcessRepository):
 
     def _map_cc_row(self, r: Sequence[Any]) -> CcInstanceRow:
         import json
-        variables = json.loads(r[8]) if r[8] else {}
+        variables = json.loads(r[9]) if r[9] else {}
         return CcInstanceRow(
             id=r[0], parentId=r[1], defineId=r[2], state=InstanceState(r[3]),
-            parentNodeName=r[4], businessNo=r[5], operator=r[6], expireTime=r[7],
-            variables=variables, createTime=r[9], createUser=_user_str(r[10]),
-            updateTime=r[11], updateUser=_user_str(r[12]),
-            defineName=r[13], defineDisplayName=r[14], defineVersion=r[15] or 0)
+            parentNodeName=r[4], businessNo=r[5], operator=r[6], expireTime=r[8],
+            variables=variables, createTime=r[10], createUser=_user_str(r[11]),
+            updateTime=r[12], updateUser=_user_str(r[13]),
+            defineName=r[14], defineDisplayName=r[15], defineVersion=r[16] or 0,
+            ownerId=_user_str(r[7]) if len(r) > 7 else "")  # FIX-T9 §66 owner_id (r[7])
 
     # ── 核心表分页（v1.5.0，对齐 Java pageDefines/pageInstances/pageTodoTasks/pageDoneTasks）──
 
@@ -529,8 +544,8 @@ class JdbcRepository(ProcessRepository):
                  " LEFT JOIN wf_process_define pd ON t.process_define_id = pd.id"
                  " WHERE t.operator = ?" + cond_sql)
         cols = ("t.id, t.parent_id, t.process_define_id, t.state, t.parent_node_name, t.business_no,"
-                " t.operator, t.expire_time, t.variable, t.create_time, t.create_user,"
-                " t.update_time, t.update_user, pd.name, pd.display_name, pd.version")
+                " t.operator, t.owner_id, t.expire_time, t.variable, t.create_time, t.create_user,"
+                " t.update_time, t.update_user, pd.name, pd.display_name, pd.version")  # FIX-T9 §66 owner_id
         async with self._conn() as conn:
             row = await conn.fetchone(self._sql("SELECT COUNT(*)" + where), (operator, *cond_args))
             total = int(row[0]) if row else 0
@@ -624,9 +639,12 @@ class JdbcRepository(ProcessRepository):
         return pending, overdue
 
     async def stats_completed_task_aggregate(self) -> tuple[int, int, int, int]:
+        # FIX-T12 (2026-09-17)：perform_type 字面量兼容 PG VARCHAR 列
+        # PG wf_process_task.perform_type 是 VARCHAR(64)，字面量 1 与 character varying=integer
+        # 报 operator 不存在；改用字符串 '1' 兼容 PG + SQLite/MySQL (sqlite 接受两种)
         async with self._conn() as conn:
             r = await conn.fetchone(
-                self._sql("SELECT COUNT(*), SUM(CASE WHEN perform_type = 1 THEN 1 ELSE 0 END), "
+                self._sql("SELECT COUNT(*), SUM(CASE WHEN perform_type = '1' THEN 1 ELSE 0 END), "
                           "SUM(CASE WHEN expire_time IS NOT NULL AND finish_time <= expire_time THEN 1 ELSE 0 END), "
                           "SUM(CASE WHEN expire_time IS NOT NULL THEN 1 ELSE 0 END) "
                           "FROM wf_process_task WHERE task_state = 20"), ())
@@ -649,7 +667,26 @@ class JdbcRepository(ProcessRepository):
             r = await conn.fetchone(self._sql(sql), tuple(args))
         if not r or r[0] is None:
             return 0
-        return int(r[0])
+        # FIX-T11 (2026-09-17)：PG JDBC 返回 timedelta 而非 int（avg(timestamp-timestamp) → INTERVAL）
+        # SQLAlchemy/asyncpg/psycopg 都把 timestamp-timestamp 解码为 datetime.timedelta；
+        # SQLite/MySQL 直接返回 int 秒数。统一兼容：timedelta 转秒，其他原样 int。
+        v = r[0]
+        if hasattr(v, "total_seconds"):
+            return int(v.total_seconds())
+        return int(v)
+
+    async def stats_active_users_count(self, start: Optional[datetime] = None,
+                                       end: Optional[datetime] = None) -> int:
+        """FIX-T27 (2026-09-17)：活跃操作人数（指定窗口内不同 operator 数）"""
+        sql = "SELECT COUNT(DISTINCT operator) FROM wf_process_instance t WHERE operator IS NOT NULL"
+        args: list = []
+        if start:
+            sql += " AND t.create_time >= ?"; args.append(start)
+        if end:
+            sql += " AND t.create_time < ?"; args.append(end)
+        async with self._conn() as conn:
+            r = await conn.fetchone(self._sql(sql), tuple(args))
+        return int(r[0]) if r and r[0] is not None else 0
 
     async def stats_define_group(self, start: Optional[datetime] = None,
                                  end: Optional[datetime] = None,
@@ -710,13 +747,14 @@ class JdbcRepository(ProcessRepository):
 
     def _map_instance_row(self, r: Sequence[Any]) -> InstanceRow:
         import json
-        variables = json.loads(r[8]) if r[8] else {}
+        variables = json.loads(r[9]) if r[9] else {}
         return InstanceRow(
             id=r[0], parentId=r[1], defineId=r[2], state=InstanceState(r[3]),
-            parentNodeName=r[4], businessNo=r[5], operator=r[6], expireTime=r[7],
-            variables=variables, createTime=r[9], createUser=_user_str(r[10]),
-            updateTime=r[11], updateUser=_user_str(r[12]),
-            defineName=r[13], defineDisplayName=r[14], defineVersion=r[15] or 0)
+            parentNodeName=r[4], businessNo=r[5], operator=r[6], expireTime=r[8],
+            variables=variables, createTime=r[10], createUser=_user_str(r[11]),
+            updateTime=r[12], updateUser=_user_str(r[13]),
+            defineName=r[14], defineDisplayName=r[15], defineVersion=r[16] or 0,
+            ownerId=_user_str(r[7]) if len(r) > 7 else "")  # FIX-T9 §66 owner_id (r[7])
 
     def _map_task_row(self, r: Sequence[Any]) -> TaskRow:
         import json

@@ -288,71 +288,48 @@ def _wrap_facade_flow(facade: JeeflowFacade, repo: JdbcRepository) -> None:
                     real = _DEFINE_ORDINAL_CACHE.get(v)
                 if real is not None:
                     args["processDefineId"] = real
-            # Issue D：业务 variables 嵌套解包——startAndExecute 把 args 整体塞到
-            # inst.variables（jeeflow engine.start_process_instance_by_id:69）。
-            # 若调用方传 {variables: {amount: 5000}}，amount 会被嵌套到
-            # inst.variables.variables.amount，decision expr vars_.get("amount")
-            # 永远拿不到 → expr 永远 False → fallback 到 edges[0]。
-            # 此处把 variables 子字典就地展开到 args 顶层（key 不冲突时），
-            # 让 inst.variables = {amount: 5000, ...} 直接可被 expr 访问。
-            nested = args.get("variables")
-            if isinstance(nested, dict):
-                for k, val in nested.items():
-                    if k not in args:
-                        args[k] = val
+            # FIX-T10 (2026-09-17)：Issue D 业务 variables 嵌套解包已上移到 vendor/jeeflow/facade.py
+            # vendor/jeeflow/facade.py:_startAndExecute 内自动 setdefault 展开 nested variables
+            # 此处不再需要 monkey patch
         return await _orig_flow(action, args)
 
     facade.flow = _safe_flow
 
 
 def _coerce_task_str_fields(task: ProcessTask) -> None:
-    """Issue C 步骤 1：把 ProcessTask 中该是 VARCHAR 的列从 int 兜底成 str。
+    """FIX-T16 (2026-09-17) Issue C 步骤 1 VARCHAR 兜底已上移到 vendor。
 
-    ProcessTask.taskType / performType 默认值是 int 0；PG wf_process_task.task_type /
-    perform_type 列是 VARCHAR(64)，asyncpg 严格类型校验会拒收。seed_business.py 启动期
-    触发的 startAndExecute 必然走这条路径。
+    vendor/jeeflow/repository/base.py:save_task 内已 str(task.taskType/performType) 兜底
+    vendor/jeeflow/repository/base.py:save_instance 内已 str(...) 兜底
+    此处不再需要 monkey patch（vendor 是项目内嵌，优先级高于 site-packages）
     """
-    if getattr(task, "taskType", None) is not None and not isinstance(task.taskType, str):
-        task.taskType = str(task.taskType)
-    if getattr(task, "performType", None) is not None and not isinstance(task.performType, str):
-        task.performType = str(task.performType)
 
 
 def _coerce_instance_str_fields(inst: ProcessInstance) -> None:
-    """Issue C 步骤 1 扩展：把 ProcessInstance 中 VARCHAR 列做同样兜底。
+    """FIX-T16 (2026-09-17) Issue C 步骤 1 扩展 VARCHAR 兜底已上移到 vendor。
 
-    dataclass 默认值已是 str（parentNodeName="" 等），但 seed_business.py 路径中如
-    果给这些字段赋了 int，asyncpg 同样会拒收。属于 Issue C 同源的轻量兜底。
+    vendor/jeeflow/repository/base.py:save_instance 内 str(parentNodeName/businessNo/...) 兜底
     """
-    for fld in ("parentNodeName", "businessNo", "createUser", "updateUser"):
-        v = getattr(inst, fld, None)
-        if v is not None and not isinstance(v, str):
-            setattr(inst, fld, str(v))
 
 
 def _coerce_surrogate_enabled(s) -> None:
-    """Issue A 防御深度：ext_repo 写入前把 ProcessSurrogate.enabled 兜底成 bool。
+    """FIX-T13 (2026-09-17) Issue A 防御深度已上移到 vendor。
 
-    facade._apply_surrogate_fields 在 _orig_flow 内部把 args["enabled"] 缺省补成 int 1
-    然后再写到 s.enabled；此处 ext_repo.save/update_surrogate 落 SQL 前再校一次，确保
-    PG BOOLEAN 列永远收到 bool 而非 int（避免双 wrap 之间的窗口期仍出错）。
+    vendor/jeeflow/repository/ext.py:save_surrogate + update_surrogate 内已 bool() 兜底
+    vendor/jeeflow/facade.py:_apply_surrogate_fields 内已 s.enabled = bool(s.enabled)
+    此处不再需要 monkey patch（vendor 是项目内嵌，优先级高于 site-packages）
     """
-    v = getattr(s, "enabled", None)
-    if v is not None and not isinstance(v, bool):
-        s.enabled = bool(v)
 
 
 def _coerce_design_bool_fields(d) -> None:
-    """Issue D 防御深度：ext_repo 写入前把 ProcessDesign.isDeployed 兜底成 bool。
+    """FIX-T14 (2026-09-17) Issue D 兜底已上移到 vendor。
 
-    facade._processDesign_save/update/updateDefine/deploy 内部统一把 design.isDeployed
-    写成 int 0/1（facade.py:382/400/462/501），ProcessDesign dataclass 声明 isDeployed: int
-    = 0 也不可变；此处 ext_repo.save_design/update_design 落 SQL 前再校一次，确保 PG
-    wf_process_design.is_deployed（BOOLEAN）永远收到 bool 而非 int。
+    vendor/jeeflow/model.py:ProcessDesign.isDeployed 改为 Any 默认 False
+    vendor/jeeflow/facade.py:_processDesign_* 改为 True/False
+    vendor/jeeflow/repository/ext.py:save/update_design 内 bool() 兜底
+    vendor/jeeflow/repository/ext.py:_map_design 读回 bool 统一
+    此处不再需要 monkey patch（vendor 是项目内嵌，优先级高于 site-packages）
     """
-    v = getattr(d, "isDeployed", None)
-    if v is not None and not isinstance(v, bool):
-        d.isDeployed = bool(v)
 
 
 def _wrap_repo_methods(repo: JdbcRepository, ext_repo: JdbcProcessExtRepository) -> None:
@@ -363,125 +340,36 @@ def _wrap_repo_methods(repo: JdbcRepository, ext_repo: JdbcProcessExtRepository)
     - ext_repo.save_design / ext_repo.update_design：调用前把 d.isDeployed 强转 bool。
     全部原地修改 dataclass 字段（mutable），不会破坏其他已绑定同名对象的引用。
     """
-    _orig_save_task = repo.save_task
-    _orig_save_instance = repo.save_instance
 
-    async def _safe_save_task(task):
-        _coerce_task_str_fields(task)
-        return await _orig_save_task(task)
+    # FIX-T16 (2026-09-17)：taskType/performType VARCHAR 兜底已上移到 vendor
+    # vendor/jeeflow/repository/base.py:save_task 内 str(taskType/performType) 兜底
+    # vendor/jeeflow/repository/base.py:save_instance 内 str(parentNodeName/businessNo/...) 兜底
+    # 此处不再需要 monkey patch（vendor 是项目内嵌，优先级高于 site-packages）
 
-    async def _safe_save_instance(inst):
-        _coerce_instance_str_fields(inst)
-        return await _orig_save_instance(inst)
+    # FIX-T13 (2026-09-17)：surrogate enabled bool 兜底已上移到 vendor/jeeflow
+    # vendor/jeeflow/facade.py:_apply_surrogate_fields 内 s.enabled = bool(s.enabled)
+    # vendor/jeeflow/repository/ext.py:save/update_surrogate 内 bool() 兜底
+    # 此处不再需要 monkey patch（vendor 是项目内嵌，优先级高于 site-packages）
 
-    repo.save_task = _safe_save_task
-    repo.save_instance = _safe_save_instance
+    # FIX-T14 (2026-09-17)：design.isDeployed bool 兜底已上移到 vendor/jeeflow
+    # vendor/jeeflow/model.py:ProcessDesign.isDeployed = Any 默认 False
+    # vendor/jeeflow/facade.py:_processDesign_* 改 True/False
+    # vendor/jeeflow/repository/ext.py:save/update_design 内 bool() 兜底 + _map_design 读回 bool
+    # 此处不再需要 monkey patch
 
-    _orig_save_surrogate = ext_repo.save_surrogate
-    _orig_update_surrogate = ext_repo.update_surrogate
+    # FIX-T15 (2026-09-17)：_build_ext_where BOOLEAN 列读路径兼容已上移到 vendor
+    # vendor/jeeflow/repository/ext.py:_build_ext_where 内自动 bool() 兜底
+    # 此处不再需要 monkey patch（vendor 是项目内嵌，优先级高于 site-packages）
 
-    async def _safe_save_surrogate(s):
-        _coerce_surrogate_enabled(s)
-        return await _orig_save_surrogate(s)
+    # FIX-T11 (2026-09-17)：Issue E stats_avg_completed_duration_seconds timedelta 兜底
+    # 已上移到 vendor/jeeflow/repository/base.py:stats_avg_completed_duration_seconds
+    # vendor 自动检测 timedelta（PG INTERVAL）→ total_seconds；其他后端（SQLite/MySQL）原样 int
+    # 此处不再需要 monkey patch（vendor 是项目内嵌，优先级高于 site-packages）
 
-    async def _safe_update_surrogate(s):
-        _coerce_surrogate_enabled(s)
-        return await _orig_update_surrogate(s)
-
-    ext_repo.save_surrogate = _safe_save_surrogate
-    ext_repo.update_surrogate = _safe_update_surrogate
-
-    _orig_save_design = ext_repo.save_design
-    _orig_update_design = ext_repo.update_design
-
-    async def _safe_save_design(d):
-        _coerce_design_bool_fields(d)
-        return await _orig_save_design(d)
-
-    async def _safe_update_design(d):
-        _coerce_design_bool_fields(d)
-        return await _orig_update_design(d)
-
-    ext_repo.save_design = _safe_save_design
-    ext_repo.update_design = _safe_update_design
-
-    # Issue D 读路径：page_designs / page_surrogates 通过 _build_ext_where 构造
-    # "AND t.is_deployed = ?" / "AND t.enabled = ?" 时，前端传来的 0/1 是 int，
-    # BOOLEAN 列拒收（同 Issue A 写入路径同根因）。在条件构建层把布尔列的值强转 bool。
-    # 注意：原 _build_ext_where 对不在白名单的 condition 跳过但不计入 args，
-    # 因此要按"被接受"的子集对齐参数，避免把 LIKE 参数误转 bool。
-    _orig_build_ext_where = ext_repo._build_ext_where
-    _BOOL_COL_SUFFIXES = ("_deployed",)  # t.enabled 不是后缀匹配，下面单独处理
-    _BOOL_COL_EXACT = {"t.enabled"}
-
-    def _safe_build_ext_where(conditions, whitelist):
-        sql, args = _orig_build_ext_where(conditions, whitelist)
-        if not args:
-            return sql, args
-        accepted = [c for c in (conditions or []) if c.column in whitelist]
-        coerced = []
-        for c, v in zip(accepted, args):
-            col = getattr(c, "column", "")
-            is_bool_col = (col in _BOOL_COL_EXACT
-                           or any(col.endswith(suf) for suf in _BOOL_COL_SUFFIXES))
-            coerced.append(bool(v) if is_bool_col and not isinstance(v, bool) else v)
-        return sql, tuple(coerced)
-
-    ext_repo._build_ext_where = _safe_build_ext_where
-
-    # Issue E：stats_avg_completed_duration_seconds 里 SQL 是
-    # "AVG(ts.max_finish - i.create_time)"，PG 的 timestamp-timestamp 返回 INTERVAL，
-    # asyncpg 把 INTERVAL 解码为 datetime.timedelta。原代码 line 652 直接
-    # "return int(r[0])"，对 timedelta 抛 TypeError（int() 不接受 timedelta）。
-    # 原始实现位于 .venv/.../repository/base.py:637，不可改源；用 monkey-patch 覆盖。
-    import functools
-    _orig_stats_avg_dur = repo.stats_avg_completed_duration_seconds
-
-    @functools.wraps(_orig_stats_avg_dur)
-    async def _fixed_stats_avg_dur(start=None, end=None):
-        sql = ("SELECT AVG(ts.max_finish - i.create_time) FROM wf_process_instance i "
-               "INNER JOIN (SELECT process_instance_id, MAX(finish_time) AS max_finish "
-               "FROM wf_process_task WHERE task_state = 20 GROUP BY process_instance_id) ts "
-               "ON i.id = ts.process_instance_id WHERE i.state = 20")
-        args: list = []
-        if start:
-            sql += " AND i.create_time >= ?"; args.append(start)
-        if end:
-            sql += " AND i.create_time < ?"; args.append(end)
-        async with repo._conn() as conn:
-            r = await conn.fetchone(repo._sql(sql), tuple(args))
-        if not r or r[0] is None:
-            return 0
-        v = r[0]
-        if hasattr(v, "total_seconds"):
-            return int(v.total_seconds())
-        return int(v)
-
-    repo.stats_avg_completed_duration_seconds = _fixed_stats_avg_dur
-
-    # Issue F：stats_completed_task_aggregate SQL 里有 "perform_type = 1" 字面量，
-    # 但 wf_process_task.perform_type 在 PG 里是 VARCHAR(64)（对齐 jeeflow model
-    # ProcessTask.performType=IntEnum，PG schema 把枚举存为字符串，见
-    # docs/pg_schema.sql:42）。原 .venv/.../base.py:629 字面量 = 1 → PG 报
-    # "operator does not exist: character varying = integer"。把字面量改字符串。
-    _orig_stats_task_agg = repo.stats_completed_task_aggregate
-
-    @functools.wraps(_orig_stats_task_agg)
-    async def _fixed_stats_task_agg():
-        async with repo._conn() as conn:
-            r = await conn.fetchone(
-                repo._sql(
-                    "SELECT COUNT(*), "
-                    "SUM(CASE WHEN perform_type = '1' THEN 1 ELSE 0 END), "
-                    "SUM(CASE WHEN expire_time IS NOT NULL AND finish_time <= expire_time THEN 1 ELSE 0 END), "
-                    "SUM(CASE WHEN expire_time IS NOT NULL THEN 1 ELSE 0 END) "
-                    "FROM wf_process_task WHERE task_state = 20"
-                ), ())
-        if not r:
-            return 0, 0, 0, 0
-        return int(r[0] or 0), int(r[1] or 0), int(r[2] or 0), int(r[3] or 0)
-
-    repo.stats_completed_task_aggregate = _fixed_stats_task_agg
+    # FIX-T12 (2026-09-17)：Issue F stats_completed_task_aggregate 字面量兼容 PG
+    # 已上移到 vendor/jeeflow/repository/base.py:stats_completed_task_aggregate
+    # perform_type 字面量改 '1'（PG VARCHAR 列要求字符串字面量，SQLite 兼容两种）
+    # 此处不再需要 monkey patch（vendor 是项目内嵌，优先级高于 site-packages）
 
 
 # ─── 应用状态（lifespan 注入；路由闭包从这里取） ─────────────────────────────────
@@ -535,6 +423,8 @@ async def lifespan(app: FastAPI):
 
     _ic_registry = {
         "com.example.MockAuditInterceptor": MockAuditInterceptor(),
+        # FIX-ALL (2026-09-17)：注册 bdd 测试用 POST_ONE 拦截器
+        "POST_ONE": MockAuditInterceptor(name="POST_ONE"),
     }
     engine.set_extensions(EngineExtensions(registry=_registry, interceptor_registry=_ic_registry))
     facade = JeeflowFacade(engine, repo, ext_repo, user_search=spi_user_search, org_prov=org_prov)
@@ -570,10 +460,14 @@ async def lifespan(app: FastAPI):
             h = engine.ext.registry.resolve_assignment(handler_name)
             if not h:
                 _fix_log(f"[FIX-T2 WARN] handler not registered: FQCN='{handler_name}' node_id='{node.id}' (process={inst.defineId})")
-                return []
+                # FIX-T17 (2026-09-17)：handler 未注册不再静默 return []
+                # 改为 raise 让上游 facade 报清晰错误（实例转 ABANDON）
+                raise ValueError(f"节点[{node.id}] handler FQCN='{handler_name}' 未注册")
         actors = await _orig_resolve_actors(node, inst, operator, vars_)
         if handler_name and not actors:
             _fix_log(f"[FIX-T2 WARN] handler '{handler_name}' returned empty actors for node_id='{node.id}' (process={inst.defineId}); check SPI role_code")
+            # FIX-T17：handler 已注册但 SPI 无匹配 → raise 让 facade 报错
+            raise ValueError(f"节点[{node.id}] handler '{handler_name}' SPI 角色匹配为空（检查 role_code）")
         return actors
     engine._resolve_actors = _logged_resolve_actors
 
@@ -681,55 +575,13 @@ async def _load_graph(define_id) -> Optional[dict]:
 APPLY, AGREE, REJECT, ROLLBACK, JUMP, RE_APPLY = 0, 1, 2, 3, 4, 5
 ROLLBACK_TO_OPERATOR, COUNTERSIGN_DISAGREE = 6, 20
 
-# Issue E (FIX-T4 2026-09-17): submitType=5 RE_APPLY 路由缺失
-# jeeflow facade.py L295-318 默认 else 分支把 5 当 AGREE 处理，
-# monkey-patch facade.flow：拦截 processTask/execute，把 submitType=5 替换为 6 (ROLLBACK_TO_OPERATOR)
-# 注：facade.flow 此时已是 _safe_flow（_wrap_facade_flow 包装），直接调用 facade.flow
-from jeeflow.model import SubmitType
-async def _reapply_flow_pg(action, args=None):
-    args = dict(args or {})
-    if action == "processTask/execute" and int(args.get("submitType") or 1) == int(SubmitType.RE_APPLY):
-        args["submitType"] = int(SubmitType.ROLLBACK_TO_OPERATOR)
-    return await facade.flow(action, args)
-facade.flow = _reapply_flow_pg
+# FIX-T6 (2026-09-17): submitType=5 RE_APPLY 路由已上移到 vendor/jeeflow/facade.py
+# vendor/jeeflow/facade.py:312 新增 elif submit_type == 5 分支 → execute_and_jump_to_first_task_node
+# 此处不再需要 monkey patch（vendor 是项目内嵌，优先级高于 site-packages）
 
-# Issue F (FIX-T5 2026-09-17): processDesignHis/page action 未注册（facade 缺 _processDesignHis_*）
-# 与 main.py 同步：直接调 ext_repo.list_design_his() 累积读取，按 id 倒序。
-async def _processDesignHis_page_pg(args: dict) -> dict:
-    page_num = int(args.get("pageNum") or 1)
-    page_size = int(args.get("pageSize") or 10)
-    m_design_id = args.get("m_processDesignId") or args.get("m_designId")
-    design_id_filter = int(m_design_id) if m_design_id else None
-
-    rows_out = []
-    # JdbcProcessExtRepository 设计历史累积：扫所有 design_id 调 list_design_his
-    design_ids = list(ext_repo._designs.keys()) if hasattr(ext_repo, "_designs") else []
-    for did in design_ids:
-        if design_id_filter and did != design_id_filter:
-            continue
-        his_list = await ext_repo.list_design_his(did)
-        for h in his_list:
-            rows_out.append({
-                "id": h.id,
-                "processDesignId": h.processDesignId,
-                "content": h.content,
-                "createTime": h.createTime.isoformat() if h.createTime else None,
-                "createUser": h.createUser,
-            })
-    rows_out.sort(key=lambda r: -(r["id"] or 0))
-    total = len(rows_out)
-    start = (page_num - 1) * page_size
-    page_rows = rows_out[start:start + page_size]
-    return {
-        "pageNum": page_num, "pageSize": page_size,
-        "recordCount": total, "totalPage": (total + page_size - 1) // page_size,
-        "rows": page_rows,
-    }
-
-facade._processDesignHis_page = _processDesignHis_page_pg
-import jeeflow.facade as _jf2_pg
-if not hasattr(_jf2_pg.JeeflowFacade, "_processDesignHis_page"):
-    setattr(_jf2_pg.JeeflowFacade, "_processDesignHis_page", _processDesignHis_page_pg)
+# FIX-T7 (2026-09-17): processDesignHis/page 路由已上移到 vendor/jeeflow/facade.py
+# vendor/jeeflow/facade.py 新增 _processDesignHis_page 方法（兼容 memory + jdbc 后端）
+# 此处不再需要 monkey patch（vendor 是项目内嵌，优先级高于 site-packages）
 
 # ─── 流程定义 ────────────────────────────────────────────────────────────────────
 
@@ -816,5 +668,6 @@ async def api_dicts(request: Request):
 
 if __name__ == "__main__":
     import uvicorn
-    # 端口可覆盖（PORT 环境变量）：本机 8100 被残留进程占用时可 PORT=8101 起
-    uvicorn.run("main_pg:app", host="0.0.0.0", port=int(os.environ.get("PORT", "8101")), reload=True)
+    # main_pg.py 用 8102 端口（与 main.py 内存后端 8101 区分），避免冲突
+    # 端口可覆盖（PORT 环境变量）：本机 8100 被残留进程占用时可 PORT=8103 起
+    uvicorn.run("main_pg:app", host="0.0.0.0", port=int(os.environ.get("PORT", "8102")), reload=True)

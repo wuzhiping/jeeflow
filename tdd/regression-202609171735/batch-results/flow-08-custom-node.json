@@ -1,0 +1,36 @@
+=== memory flows/08-custom-node.json ===
+{
+  "ok": true,
+  "pdid": "249",
+  "inst_id": "91814742307022",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814742307022"
+    },
+    {
+      "step": "execute-user1",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "custom1"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

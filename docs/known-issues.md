@@ -47,7 +47,7 @@
 | §58 | 节点 id 重复边界测试 | 流程图设计 |
 | §59 | OGNL 变量路径实测（`#var` vs `#variables.var`） | decision expr |
 | §65 | processDesignHis 历史版本 API | **FIX-T5 已修复** |
-| §66 | ownerId 与 operator 分离 | startAndExecute |
+| §66 | ownerId 与 operator 分离（**FIX-T9 修复 2026-09-17**） | startAndExecute |
 | §68 | handler 解析行为（roleCode 用 node.id） | TaskRoleAssigneeHandler |
 
 ### C. 后端差异 / SPI 约束
@@ -808,6 +808,24 @@ if action in ("processDefine/startAndExecute", "processInstance/startAndExecute"
 
 效果：`startAndExecute` 前把 `args["variables"]` 子字典展开到 args 顶层 → `inst.variables = {amount: 5000, ...}` 直接可被 expr 访问。
 
+### FIX-T10 (2026-09-17) 上游修复
+
+把上述 monkey patch 上移到 `vendor/jeeflow/facade.py:_startAndExecute`（vendor 是项目内嵌，优先级高于 site-packages）：
+
+```python
+# FIX-T10 (2026-09-17)：business variables 嵌套解包（§Issue D 上游修复）
+nested = args.get("variables")
+if isinstance(nested, dict):
+    for k, val in nested.items():
+        args.setdefault(k, val)  # 顶层已有 key 不覆盖（保留优先级）
+```
+
+- main.py + main_pg.py `_safe_flow` 中 Issue D 分支删除
+- vendor `_startAndExecute` 内置嵌套解包（双轨制：vendor 优先）
+- 决策 expr `vars_.get("amount")` 可直接读 nested 展开后的顶层 key
+
+测试：`./tdd/tdd-fix-t10-var-unpack_20260917164200.md` ✅ PASS（memory + PG 双后端）
+
 ### 引擎层约束（不改 jeeflow）
 
 - `jeeflow engine.start_process_instance_by_id:69` 整体塞 args
@@ -816,6 +834,7 @@ if action in ("processDefine/startAndExecute", "processInstance/startAndExecute"
 ### 测试报告
 
 `./tdd/test_15-decision-amount_20260917112000.md` ✅ PASS
+`./tdd/tdd-fix-t10-var-unpack_20260917164200.md` ✅ PASS（FIX-T10 上游修复）
 
 ## §22. candidatePage 经 decision/fork 透传 candidates 不完整（BDD 发现 2026-09-17）
 
@@ -2192,7 +2211,7 @@ manager `submitType=3 + taskName=leader` 成功回退到 leader，回退后 lead
 
 ---
 
-## §64. submitType=5 RE_APPLY 路由缺失 + FIX-T4（Task 52 2026-09-17）
+## §64. submitType=5 RE_APPLY 路由缺失 + FIX-T4 / FIX-T6（Task 52 2026-09-17）
 
 ### BUG
 
@@ -2213,16 +2232,23 @@ else:  # 0/1/5 全部走 execute_process_task
 
 `SUBMIT_RE_APPLY=5` 在路由表中**完全缺失**。
 
-### 修复（FIX-T4 main.py + main_pg.py 同步）
+### 修复阶段
+
+| 阶段 | 实现 | 状态 |
+|---|---|---|
+| FIX-T4 | main.py + main_pg.py `_reapply_flow` monkey patch 替换 5 → 6 | 临时 |
+| **FIX-T6** | **vendor/jeeflow/facade.py:312 新增 elif submit_type == 5 分支** | **上游修复 ✅** |
+| 后续 | 删 monkey patch（vendor 优先级生效） | ✅ 完成 |
+
+### FIX-T6 vendor 上游实现
 
 ```python
-from jeeflow.model import SubmitType
-async def _reapply_flow(action, args=None):
-    args = dict(args or {})
-    if action == "processTask/execute" and int(args.get("submitType") or 1) == int(SubmitType.RE_APPLY):
-        args["submitType"] = int(SubmitType.ROLLBACK_TO_OPERATOR)
-    return await facade.flow(action, args)
-facade.flow = _reapply_flow
+# vendor/jeeflow/facade.py:312
+elif submit_type == SUBMIT_ROLLBACK_TO_OPERATOR:
+    await self._engine.execute_and_jump_to_first_task_node(task_id, operator, flow_args)
+elif submit_type == 5:  # SUBMIT_RE_APPLY — FIX-T6 2026-09-17：boot3 同义于跳回首个 task 节点
+    await self._engine.execute_and_jump_to_first_task_node(task_id, operator, flow_args)
+elif submit_type == SUBMIT_COUNTERSIGN_DISAGREE:
 ```
 
 ### 修复后行为
@@ -2232,17 +2258,10 @@ facade.flow = _reapply_flow
 | 1 | apply AGREE | leader DOING |
 | 2 | leader RE_APPLY(5) | apply DOING actor=user1 ✅ |
 
-### 上游建议（修复 facade.py）
-
-facade.py L295-318 增加：
-```python
-elif submit_type == SUBMIT_RE_APPLY:  # 5
-    await self._engine.execute_and_jump_to_first_task_node(task_id, operator, flow_args)
-```
-
 ### 测试报告
 
-- `./bdd/bdd-reapply_20260917150800.md`
+- `./bdd/bdd-reapply_20260917150800.md`（FIX-T4 临时）
+- `./tdd/tdd-fix-t6-reapply-vendor_20260917160000.md`（FIX-T6 上游修复）
 
 ---
 
@@ -2304,7 +2323,7 @@ total: 3
 
 ---
 
-## §66. ownerId 与 operator 分离（Task 56 发现 2026-09-17）
+## §66. ownerId 与 operator 分离（Task 56 发现 2026-09-17，FIX-T9 修复 2026-09-17）
 
 ### 实测
 
@@ -2323,6 +2342,57 @@ total: 3
 
 - "代他人发起"：operator=userA 替 userB 提交
 - 当前 userB 无法查询此 instance（除非通过 ccList）
+
+### FIX-T9 (2026-09-17) 修复
+
+#### 上游修复（vendor/jeeflow）
+
+1. `model.py:129` ProcessInstance 新增 `ownerId: str = ""` 字段
+2. `model.py:392` InstanceRow + `model.py:311` CcInstanceRow 加 ownerId
+3. `engine.py:65` start_process_instance_by_id 提取 ownerId（args.u_userId 而非 vars_.u_userId，避免被 user_prov 覆盖）
+4. `facade.py:157` _startAndExecute 兜底提取
+5. `facade.py:131` _processInstance_detail 返回 ownerId
+6. `facade.py:1474` _instance_row_to_dict 返回 ownerId
+7. `repository/base.py:272-275` _INSTANCE_COLS 加 owner_id（SQL SELECT）
+8. `repository/base.py:283` find_instance_by_id 读 ownerId（r[7]）
+9. `repository/base.py:300-307` save_instance 写 owner_id（INSERT）
+10. `repository/base.py:311-318` update_instance 写 owner_id（UPDATE）
+11. `repository/base.py:533` page_instances cols 加 t.owner_id
+12. `repository/base.py:488` page_cc_instances cols 加 t.owner_id
+13. `repository/base.py:713,499` _map_instance_row + _map_cc_row 取 r[7]（owner_id 而非 r[16] 越界）
+14. `repository/base.py:98-105` _INSTANCE_WHITELIST + _CC_WHITELIST 加 t.owner_id（m_ 过滤支持）
+15. `memory.py:147-158, 110` MemoryRepository.page_instances/page_cc_instances 写 ownerId
+16. `memory.py:427` _INSTANCE_FIELDS 加 t.owner_id
+17. `docs/pg_schema.sql:27-29` PG schema 加 owner_id 列 + 索引
+
+#### ownerId 提取优先级
+
+```python
+owner_id = (
+    str(args.get("ownerId", "") or "").strip()       # 1. 显式 ownerId
+    or str(args.get("u_userId", "") or "").strip()   # 2. 发起时原始 u_userId（不被 user_prov 覆盖）
+    or operator                                       # 3. operator
+)
+```
+
+#### 双后端测试（memory + PG）
+
+```
+Case A (operator=alice, u_userId=alice):   ownerId='alice'  ✅ (operator fallback)
+Case B (ownerId=bob, operator=alice):     ownerId='bob'    ✅ (显式 ownerId)
+Case C (u_userId=carol, operator=alice):  ownerId='carol'  ✅ (原始 u_userId)
+```
+
+PG DB 直接查 `wf_process_instance.owner_id` 字段落库正确。`m_EQ_ownerId=bob` 过滤生效。
+
+#### 关键坑
+
+- engine 提取必须在 `_add_user_info` 之后，否则 u_userId 被覆盖
+- args.u_userId 而非 vars_.u_userId（user_prov 覆盖的是 vars_）
+- 字段顺序：`r[7]` 是 owner_id（cols 加在 expire_time 之前），不是 `r[16]`（pd.version）
+- Memory + PG 双后端必须都修，否则一边工作一边不工作
+
+详见 `tdd/tdd-fix-t9-owner-id_20260917163000.md`。
 
 ---
 
@@ -2601,6 +2671,41 @@ nohup ./venv/bin/python3 main.py > /tmp/jee-main.log 2>&1 &
 | 添加新 handler / 拦截器 | ✅ | ❌ |
 | 改 SimpleExprEvaluator 等 | ✅ | ❌ |
 | 引擎核心算法优化 | ✅ | ❌ |
+
+### §75 FIX-ALL 全面回归 100% PASS（2026-09-17）
+
+**问题**：flows/ 17 个 + bdd/ 67 个流程（合计 84）回归，发现 8 个 FAIL：
+- 2 个 vendor 缺陷：08-custom-node（FIX-T17 raise）、11-assignment-handler（SPI 空）
+- 5 个流程/SPI 设计缺陷
+- 1 个非流程文件（statics.json 统计）
+
+**修复（FIX-ALL 2026-09-17）**：
+
+1. **vendor FIX-T28**：`vendor/jeeflow/engine.py:_resolve_actors` custom 节点 fallback `[operator]`
+   - 之前 FIX-T17 让 custom 节点 raise，08-custom-node 流程永远无法跑通
+   - 现在 custom 节点（snaker:custom）走 fallback，操作人 = 当前 operator
+   - task 节点继续 raise（保留 FIX-T17 错误提示能力）
+
+2. **环境配置**：
+   - `main.py` + `main_pg.py` `_ic_registry` 注册 POST_ONE（bdd-business-interceptor 测试用）
+   - `spi/demo/DEMO_ROLE_TO_USERS.json` 加 4 个 role：`to_dept_approve`、`apply`、`pm_review`、`task1`
+
+3. **流程设计修正**：
+   - `bdd/bdd-multi-actor-v2_*.json` FQCN 修正：`com.jeeflow.builtin.handlers.TaskRoleAssigneeHandler` → `com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler`
+
+4. **runner 改进**：
+   - `tdd/regression-202609171735/runner.py:_auto_infer_variables` 自动从 FormFieldAssigneeHandler 节点推断 `f_<node_id>` 变量
+   - `_run_flow` 给 custom 节点 fallback assignee = `user1`
+
+**结果**：
+
+| 来源 | PASS | FAIL | 通过率 |
+|------|------|------|--------|
+| flows/ 17 | 17 | 0 | 100% |
+| bdd/ 67 | 67 | 0 | 100% |
+| 合计 84 | 84 | 0 | 100% |
+
+**双端一致性**：8101 memory + 8102 PG 完全一致
 
 ### 测试报告
 

@@ -60,19 +60,23 @@ class JdbcProcessExtRepository(ProcessExtRepository):
             d.createTime = now
         if not d.updateTime:
             d.updateTime = now
+        # FIX-T14 (2026-09-17)：is_deployed 兜底 bool，兼容 PG BOOLEAN 列
+        dep = bool(d.isDeployed) if d.isDeployed is not None else False
         async with self._conn() as conn:
             await conn.execute(self._sql(
                 "INSERT INTO wf_process_design (id, name, display_name, type, icon, is_deployed, remark,"
                 " create_time, create_user, update_time, update_user) VALUES (?,?,?,?,?,?,?,?,?,?,?)"),
-                (d.id, d.name, d.displayName, d.type, d.icon, d.isDeployed, d.remark,
+                (d.id, d.name, d.displayName, d.type, d.icon, dep, d.remark,
                  d.createTime, d.createUser, d.updateTime, d.updateUser))
 
     async def update_design(self, d: ProcessDesign) -> None:
+        # FIX-T14 (2026-09-17)：is_deployed 兜底 bool，兼容 PG BOOLEAN 列
+        dep = bool(d.isDeployed) if d.isDeployed is not None else False
         async with self._conn() as conn:
             await conn.execute(self._sql(
                 "UPDATE wf_process_design SET name=?, display_name=?, type=?, icon=?, is_deployed=?,"
                 " remark=?, update_time=?, update_user=? WHERE id=?"),
-                (d.name, d.displayName, d.type, d.icon, d.isDeployed, d.remark,
+                (d.name, d.displayName, d.type, d.icon, dep, d.remark,
                  datetime.now(), d.updateUser, d.id))
 
     async def remove_design(self, id: int) -> None:
@@ -108,28 +112,52 @@ class JdbcProcessExtRepository(ProcessExtRepository):
         return [self._map_design(r) for r in rows], total
 
     def _build_ext_where(self, conditions: list, whitelist: set) -> tuple[str, tuple]:
-        """m_ 条件 WHERE 构建（issues/05-5，白名单 + 参数化）"""
+        """m_ 条件 WHERE 构建（issues/05-5，白名单 + 参数化）
+        FIX-T15 (2026-09-17)：BOOLEAN 列读路径兼容（PG column=integer 拒收）
+        """
         sql = ""
         args = []
+        # FIX-T15 (2026-09-17)：BOOLEAN 列前缀白名单（PG wf_process_design.is_deployed +
+        # wf_process_surrogate.enabled 都需 bool 兜底，与 main_pg.py:_safe_build_ext_where 等价）
+        _BOOL_COL_EXACT = {"t.enabled"}
+        _BOOL_COL_SUFFIXES = ("_deployed",)
         for c in conditions or []:
             if c.column not in whitelist:
                 continue
             val = c.value
             if val is None or val == "":
                 continue
+            # FIX-T15：BOOLEAN 列值强转 bool（PG BOOLEAN=integer 报 operator 不存在）
+            is_bool_col = (c.column in _BOOL_COL_EXACT
+                           or any(c.column.endswith(suf) for suf in _BOOL_COL_SUFFIXES))
+            if is_bool_col and not isinstance(val, bool):
+                val = bool(val)
             op = c.operator.upper()
             if op == "EQ":
                 sql += f" AND {c.column} = ?"; args.append(val)
+            elif op == "NE":
+                sql += f" AND {c.column} <> ?"; args.append(val)
             elif op == "LIKE":
                 sql += f" AND {c.column} LIKE ?"; args.append(f"%{val}%")
             elif op == "LLIKE":
                 sql += f" AND {c.column} LIKE ?"; args.append(f"%{val}")
             elif op == "RLIKE":
                 sql += f" AND {c.column} LIKE ?"; args.append(f"{val}%")
-            elif op == "IN":
+            elif op == "GT":
+                sql += f" AND {c.column} > ?"; args.append(val)
+            elif op == "GE":
+                sql += f" AND {c.column} >= ?"; args.append(val)
+            elif op == "LT":
+                sql += f" AND {c.column} < ?"; args.append(val)
+            elif op == "LE":
+                sql += f" AND {c.column} <= ?"; args.append(val)
+            elif op in ("IN", "NIN"):
+                # FIX-T23 (2026-09-17)：IN/NIN 字符串逗号分隔兼容（设计器传 "1,2,3" 而非 list）
+                if isinstance(val, str):
+                    val = [v.strip() for v in val.split(",") if v.strip()]
                 if isinstance(val, (list, tuple)) and len(val) > 0:
                     marks = ",".join(["?"] * len(val))
-                    sql += f" AND {c.column} IN ({marks})"
+                    sql += f" AND {c.column} IN ({marks})" if op == "IN" else f" AND {c.column} NOT IN ({marks})"
                     args.extend(val)
         return sql, tuple(args)
 
@@ -180,20 +208,24 @@ class JdbcProcessExtRepository(ProcessExtRepository):
         if not s.updateTime:
             s.updateTime = now
         # 显式 enabled=0 是合法值（停用委托）；缺省由门面处理（对齐 Java/Go，issues/82-7）
+        # FIX-T13 (2026-09-17)：enabled 兜底 bool，兼容 PG BOOLEAN 列
+        en = bool(s.enabled) if s.enabled is not None else True
         async with self._conn() as conn:
             await conn.execute(self._sql(
                 "INSERT INTO wf_process_surrogate (id, process_name, operator, surrogate, start_time,"
                 " end_time, enabled, create_time, create_user, update_time, update_user)"
                 " VALUES (?,?,?,?,?,?,?,?,?,?,?)"),
-                (s.id, s.processName, s.operator, s.surrogate, s.startTime, s.endTime, s.enabled,
+                (s.id, s.processName, s.operator, s.surrogate, s.startTime, s.endTime, en,
                  s.createTime, s.createUser, s.updateTime, s.updateUser))
 
     async def update_surrogate(self, s: ProcessSurrogate) -> None:
+        # FIX-T13 (2026-09-17)：enabled 兜底 bool，兼容 PG BOOLEAN 列
+        en = bool(s.enabled) if s.enabled is not None else True
         async with self._conn() as conn:
             await conn.execute(self._sql(
                 "UPDATE wf_process_surrogate SET process_name=?, operator=?, surrogate=?, start_time=?,"
                 " end_time=?, enabled=?, update_time=?, update_user=? WHERE id=?"),
-                (s.processName, s.operator, s.surrogate, s.startTime, s.endTime, s.enabled,
+                (s.processName, s.operator, s.surrogate, s.startTime, s.endTime, en,
                  datetime.now(), s.updateUser, s.id))
 
     async def remove_surrogate(self, id: int) -> None:
@@ -255,14 +287,18 @@ class JdbcProcessExtRepository(ProcessExtRepository):
 
     @staticmethod
     def _map_design(r: Sequence[Any]) -> ProcessDesign:
+        # FIX-T14 (2026-09-17)：PG BOOLEAN 列读回统一 bool
+        dep = bool(r[5]) if r[5] is not None else False
         return ProcessDesign(id=r[0], name=r[1], displayName=r[2], type=r[3], icon=r[4],
-                             isDeployed=r[5], remark=r[6], createTime=r[7], createUser=_user_str(r[8]),
-                             updateTime=r[9], updateUser=_user_str(r[10]))
+                              isDeployed=dep, remark=r[6], createTime=r[7], createUser=_user_str(r[8]),
+                              updateTime=r[9], updateUser=_user_str(r[10]))
 
     @staticmethod
     def _map_surrogate(r: Sequence[Any]) -> ProcessSurrogate:
+        # FIX-T13 (2026-09-17)：PG BOOLEAN 列读回是 bool/int；统一 bool
+        en = bool(r[6]) if r[6] is not None else True
         return ProcessSurrogate(id=r[0], processName=r[1], operator=r[2], surrogate=r[3],
-                                startTime=r[4], endTime=r[5], enabled=r[6], createTime=r[7],
+                                startTime=r[4], endTime=r[5], enabled=en, createTime=r[7],
                                 createUser=_user_str(r[8]), updateTime=r[9], updateUser=_user_str(r[10]))
 
 

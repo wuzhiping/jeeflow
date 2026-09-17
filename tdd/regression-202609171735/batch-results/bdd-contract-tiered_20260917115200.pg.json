@@ -1,0 +1,51 @@
+=== pg bdd/bdd-contract-tiered_20260917115200.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789662855620000",
+  "inst_id": "91814764161134",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814764161134"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-manager",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userA",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "dept_leader",
+        "manager_review",
+        "legal_review"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

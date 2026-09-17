@@ -1,0 +1,50 @@
+=== memory bdd/bdd-leave-form-permission_20260917143000.json ===
+{
+  "ok": true,
+  "pdid": "460",
+  "inst_id": "91814756784500",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814756784500"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-manager",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-user1",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "leader_review",
+        "manager_review",
+        "notify"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

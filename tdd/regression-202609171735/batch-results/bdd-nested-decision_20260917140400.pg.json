@@ -1,0 +1,44 @@
+=== pg bdd/bdd-nested-decision_20260917140400.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789662865309000",
+  "inst_id": "91814774083830",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814774083830"
+    },
+    {
+      "step": "execute-manager",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-user1",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "mgr_review",
+        "notify"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

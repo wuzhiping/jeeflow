@@ -1,0 +1,43 @@
+=== memory bdd/bdd-rollback-multi-hop_20260917150600.json ===
+{
+  "ok": true,
+  "pdid": "582",
+  "inst_id": "91814759721433",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814759721433"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-manager",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "leader",
+        "manager"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

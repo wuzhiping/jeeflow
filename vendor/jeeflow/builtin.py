@@ -133,7 +133,10 @@ class ApplicantDeptMainLeaderAssignmentHandler(_OrgBase, IAssignmentHandler):
 
 
 class TaskRoleAssigneeHandler(IAssignmentHandler):
-    """任务节点唯一编码关联角色（roleCode = 节点 id）"""
+    """任务节点关联角色（FIX-T8 2026-09-17：优先 properties.roleCode，回落 node.id）
+    - properties.roleCode 显式指定角色编码（Java 设计器规范字段）
+    - 未配置时回落 node.id（保持向后兼容 §68 行为）
+    """
 
     def __init__(self, org_prov: Optional[OrgUserProvider] = None):
         self.org_prov = org_prov
@@ -141,7 +144,9 @@ class TaskRoleAssigneeHandler(IAssignmentHandler):
     async def assign(self, node, inst, operator) -> list[str]:
         if node is None or self.org_prov is None:
             return []
-        return await self.org_prov.find_by_role(node.id) or []
+        # FIX-T8：优先 properties.roleCode，回落 node.id
+        role_code = (node.properties or {}).get("roleCode") or node.id
+        return await self.org_prov.find_by_role(role_code) or []
 
 
 # ─── 注册 ───────────────────────────────────────────────────────────────────────

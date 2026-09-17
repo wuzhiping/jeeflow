@@ -1,0 +1,39 @@
+=== memory bdd/bdd-dept-leader-test_20260917140800.json ===
+{
+  "ok": true,
+  "pdid": "366",
+  "inst_id": "91814754062634",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91814754062634"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "finance",
+        "approver",
+        "deptleader"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 10
+    }
+  ]
+}

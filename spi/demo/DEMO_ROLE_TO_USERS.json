@@ -23,5 +23,17 @@
   ],
   "custom_role": [
     "userA"
+  ],
+  "to_dept_approve": [
+    "leader"
+  ],
+  "apply": [
+    "user1"
+  ],
+  "pm_review": [
+    "leader"
+  ],
+  "task1": [
+    "leader"
   ]
 }

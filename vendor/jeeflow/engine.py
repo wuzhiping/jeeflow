@@ -69,7 +69,15 @@ class EngineImpl(Engine):
         vars_ = {**(args or {})}
         await self._add_user_info(operator, vars_)
         self._add_auto_gen_title(def_.displayName, vars_)
+        # FIX-T9 (2026-09-17) §66 ownerId 提取：显式 ownerId > 发起时 u_userId > operator
+        # 必须 _add_user_info 之后再取（_add_user_info 会用 user_prov 覆盖 u_userId）
+        owner_id = (
+            str(args.get("ownerId", "") or "").strip()
+            or str(args.get("u_userId", "") or "").strip()  # 发起时传的原始 u_userId（不被 user_prov 覆盖）
+            or operator
+        )
         inst = ProcessInstance(id=self._next_id(), defineId=define_id, operator=operator,
+                               ownerId=owner_id,
                                variables=vars_, createTime=datetime.now(), updateTime=datetime.now(),
                                createUser=operator, updateUser=operator,
                                businessNo=str(vars_.get(KEY_BUSINESS_NO, "")))
@@ -77,8 +85,19 @@ class EngineImpl(Engine):
         await self._fire_event(ProcessEvent(type=EventType.PROCESS_START, instanceId=inst.id, operator=operator))
         start_node = _find_by_type(flow, TYPE_START)
         if not start_node: raise ValueError("no start node")
-        for node in _follow_edges(flow, start_node.id):
-            await self._execute_node(flow, inst, node, operator, vars_)
+        try:
+            for node in _follow_edges(flow, start_node.id):
+                await self._execute_node(flow, inst, node, operator, vars_)
+        except ValueError as e:
+            # FIX-T17 (2026-09-17)：start 路径节点创建失败 → instance 标记 ABANDON
+            from .model import InstanceState
+            inst.state = InstanceState.ABANDON
+            inst.updateTime = datetime.now()
+            try:
+                await self.repo.update_instance(inst)
+            except Exception:
+                pass
+            raise
         return await self.repo.find_instance_by_id(inst.id)
 
     # ─── Execute ──────────────────────────────────────────────────────────────
@@ -278,7 +297,9 @@ class EngineImpl(Engine):
     async def _create_task_with_actors(self, node: FlowNode, inst: ProcessInstance, operator: str,
                                         vars_: dict, actors: list[str]):
         """以显式参与者建任务（会签节点拆分为逐人任务，对齐 Java 会签创建语义）"""
-        if not actors: return
+        # FIX-T17 (2026-09-17)：ROLLBACK 路径显式传 actors，empty raise 与 _create_task 保持一致
+        if not actors:
+            raise ValueError(f"节点[{node.id}] ROLLBACK 路径未解析出处理人")
         ct = node.properties.get("countersignType", "")
         _pt = node.properties.get("performType", 0)
         try:
@@ -347,6 +368,10 @@ class EngineImpl(Engine):
                 inst.variables = _merge_exec_into_instance(inst.variables, vars_)
                 await self.repo.update_instance(inst)
                 await self._fire_event(ProcessEvent(EventType.PROCESS_FINISH, inst.id, operator=operator))
+            else:
+                # FIX-T22 (2026-09-17)：未知节点类型不应静默 return（流程卡死无错误）
+                raise ValueError(f"未知节点类型: node_id='{node.id}' type='{node.type}' "
+                                 f"（期望 start/task/decision/fork/join/end/custom）")
         finally:
             await self._fire_post(node, inst)
 
@@ -376,8 +401,12 @@ class EngineImpl(Engine):
 
     async def _create_task(self, node: FlowNode, inst: ProcessInstance, operator: str, vars_: dict):
         actors = await self._resolve_actors(node, inst, operator, vars_)
-        if not actors: return
-        # performType 容错解析（对齐 Java codeOf，issue 42）：int 优先；
+        # FIX-T17 (2026-09-17)：actors=[] 不再静默 return（流程卡住无错误）
+        # 原代码 return → 流程在此节点终止不报错；raise ValueError 让 facade 报清晰错误
+        if not actors:
+            raise ValueError(f"节点[{node.id}]无法解析任何处理人：assignee/handler/SPI 角色均未匹配，"
+                             f"请检查 properties.assignee、assignmentHandler FQCN、SPI role_code")
+        # performType 容错解析（对齐 java codeOf，issue 42）：int 优先；
         # 字符串 'ALL'/'COUNTERSIGN'（设计器面板格式，大小写不敏感）映射为会签；未知回落 0
         _pt = node.properties.get("performType", 0)
         try:
@@ -448,6 +477,10 @@ class EngineImpl(Engine):
             result = self.ext.assignment_handler(handler_name, node, inst)
             if hasattr(result, '__await__'): return await result
             return result
+        # FIX-T28 (2026-09-17)：custom 节点 fallback [operator]（之前 FIX-T17 raise 让 08-custom-node 永不过）
+        # 注意：仅当节点 type 为 snaker:custom 时回落（task 节点继续 raise 提示错误）
+        if node.type == TYPE_CUSTOM:
+            return [operator]
         return []
 
     def _is_allowed(self, task: ProcessTask, operator: str) -> bool:
@@ -472,10 +505,16 @@ class EngineImpl(Engine):
         if u.postName: vars_[KEY_POST_NAME] = u.postName
 
     def _add_auto_gen_title(self, display_name: str, vars_: dict):
-        """issue 29：自动生成标题（对齐 boot3 FlowUtil.addAutoGenTitle）"""
+        """issue 29：自动生成标题（对齐 boot3 FlowUtil.addAutoGenTitle）
+        FIX-T18 (2026-09-17)：title 优先级——显式 args.title > autoGenTitle
+        """
         real_name = vars_.get(KEY_REAL_NAME, "")
         title = f"{real_name}的{display_name}-{datetime.now().strftime('%Y-%m-%d %H:%M')}"
-        vars_[KEY_AUTO_GEN_TITLE] = title
+        # FIX-T18：只有 args.title 未显式提供时才用 autoGenTitle（设计器前端可覆盖）
+        if "title" not in vars_ or not vars_["title"]:
+            vars_[KEY_AUTO_GEN_TITLE] = title
+        else:
+            vars_[KEY_AUTO_GEN_TITLE] = vars_["title"]
 
     def _next_id(self) -> int:
         if self.id_gen: return self.id_gen.next_id()
