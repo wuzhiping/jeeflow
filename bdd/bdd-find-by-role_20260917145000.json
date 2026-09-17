@@ -1,0 +1,90 @@
+{
+  "name": "find-by-role",
+  "displayName": "SPI find_by_role 角色取人",
+  "type": "approval",
+  "instanceUrl": "/fix/find-by-role/detail",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "apply-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "发起"
+      }
+    },
+    {
+      "id": "finance_review",
+      "type": "snaker:task",
+      "x": 300,
+      "y": 200,
+      "properties": {
+        "width": 120,
+        "height": 50,
+        "form": "review-form",
+        "assignee": "finance",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "财务审批 (SPI 角色)"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 450,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e1",
+      "sourceNodeId": "apply",
+      "targetNodeId": "finance_review",
+      "properties": {}
+    },
+    {
+      "id": "e2",
+      "sourceNodeId": "finance_review",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

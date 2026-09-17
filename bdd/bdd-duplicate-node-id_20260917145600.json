@@ -1,0 +1,84 @@
+{
+  "name": "duplicate-node-id",
+  "displayName": "节点 id 重复边界测试",
+  "type": "approval",
+  "instanceUrl": "/fix/duplicate-node-id/detail",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "apply-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "发起"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 250,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "review-form",
+        "assignee": "leader",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "领导审批 (重复 id)"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 400,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e1",
+      "sourceNodeId": "apply",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "name": "instance-query",
+  "displayName": "流程实例查询测试",
+  "type": "approval",
+  "instanceUrl": "/fix/instance-query/detail",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "apply-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_dept": ""
+        }
+      },
+      "text": {
+        "value": "发起"
+      }
+    },
+    {
+      "id": "leader_review",
+      "type": "snaker:task",
+      "x": 300,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "review-form",
+        "assignee": "leader",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "领导审批"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 450,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e1",
+      "sourceNodeId": "apply",
+      "targetNodeId": "leader_review",
+      "properties": {}
+    },
+    {
+      "id": "e2",
+      "sourceNodeId": "leader_review",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

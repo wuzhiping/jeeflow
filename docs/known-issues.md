@@ -1879,28 +1879,61 @@ manager 驳回到 leader_review：
 
 ---
 
-## §54. taskVariables vs instance.variables（Task 38 发现 2026-09-17）
+## §54. taskVariables 完整合并到 instance.variables（Task 44 修正 2026-09-17）
 
-### 现象
+### 实测真相（修正之前 §54 错误）
 
-execute 时传的 `taskVariables` 只写入实例 `formData`，**不注入** `instance.variables`。
+`processInstance/detail` API **实际返回** `variables` 字段（注意是复数，不是单数 "variable"），完整包含：
+- startAndExecute variables
+- execute taskVariables
+- v1.5.0 wrapper 解包的 f_xxx + xxx
+
+### 实测数据
+
+```json
+{
+  "variables": {
+    "title": "t44",
+    "submitType": 1,
+    "u_userId": "user1",
+    "u_realName": "张三",
+    "u_deptId": "D01",
+    "f_initial_amount": 3000,         // startAndExecute 注入
+    "f_initial_note": "申请",          // startAndExecute 注入
+    "f_opinion": "批准",               // execute 注入
+    "f_approved_amount": 2800,        // execute 注入
+    "autoGenTitle": "..."
+  },
+  "formData": {
+    "f_initial_amount": 3000, "initial_amount": 3000,
+    "f_opinion": "批准", "opinion": "批准",
+    ...
+  }
+}
+```
 
 ### 引擎行为
 
-- startAndExecute `variables` → 注入到 `instance.variables`（v1.5.0 wrapper 解包）
-- execute `taskVariables` → 仅写入 `formData` 字段（task 级表单数据）
-- 两个存储独立，互不影响
+- `engine.py:_prepare_execute_task` 实际合并到 `inst.variables`
+- `_merge_exec_into_instance` 排除 u_* 键（不覆盖发起人信息）
+- facade `_processInstance_detail` 返回 `variables` 字段
+- main.py detail API 不调用 facade._inst_vo（直接用 facade 内部）
 
-### 数据位置
+### 字段对照表
 
-| 来源 | 字段位置 |
-|---|---|
-| startAndExecute variables | instance.variables |
-| execute taskVariables | instance.formData（追加） |
-| 节点 properties.field | node 级 schema（前端表单） |
+| 字段名 | 来源 | 用途 |
+|---|---|---|
+| `variables` (复数) | detail API | 完整实例变量 |
+| `formData` | detail API | v1.5.0 解包 f_xxx + xxx |
+| `ext` | detail API 任务行 | task 级变量 |
+
+### 历史错误
+
+§54 之前版本错误地描述"taskVariables 不注入 instance.variables"，原因是用 `variable` 单数字段名查询（实际是 `variables` 复数）。
 
 ### 测试报告
 
+- `./bdd/bdd-taskvar-injection_20260917145200.md`
 - `./bdd/bdd-task-vs-instance-var_20260917144000.md`
 
 ---
@@ -1951,3 +1984,106 @@ inst.parentId = parent_id  # 注入到实例
 ### 测试报告
 
 - `./bdd/bdd-parent-child-flow_20260917144400.md`
+
+---
+
+---
+
+## §57. processInstance/page operator 是顶层参数，非 m_query（Task 45 发现 2026-09-17）
+
+### 现象
+
+`processInstance/page` API 用 `operator` 顶层参数过滤发起人，不是 `m_operator` m_query。
+
+### 引擎行为
+
+```python
+# facade.py:_processInstance_page
+operator = str(args.get("operator", "user1"))  # 顶层
+rows, total = await self._repo.page_instances(page_num, page_size, operator, _parse_m_query(args))
+```
+
+### 参数对照
+
+| 参数 | 类型 | 用途 |
+|---|---|---|
+| `operator` (顶层) | string | 过滤发起人 |
+| `m_state` | int | 过滤实例状态 |
+| `m_processDefineId` | int | 过滤流程定义 |
+| `m_title` | string | 模糊匹配（**未生效**） |
+| `m_businessNo` | string | 业务编号 |
+
+### 测试报告
+
+- `./bdd/bdd-instance-query_20260917145400.md`
+
+---
+
+## §58. 节点 id 重复边界测试（Task 46 发现 2026-09-17）
+
+### 现象
+
+两个节点用同一个 id（`apply`），save + deploy + start 都不报错，但实例**直接 state=20 结束**，无 task 创建。
+
+### 实测
+
+```json
+{
+  "nodes": [
+    {"id": "apply", "type": "snaker:task", "assignee": "applicant"},
+    {"id": "apply", "type": "snaker:task", "assignee": "leader"}
+  ]
+}
+```
+
+启动后 state=20，无任何 task。
+
+### 引擎行为
+
+- `_find_node` 字典序第一个匹配
+- `start` → `_execute_node('apply')` → 第一个 apply 节点创建 task
+- 边 e1 target='end' 流转到 end
+- 实际可能因重复 id 退化：apply 节点未正常推进
+
+### AGENTS.md §3.3
+
+约束："禁止节点 id 含空格 / `-` / 中文"。但**重复 id 也应禁止**，Python 引擎未强制。
+
+### 测试报告
+
+- `./bdd/bdd-duplicate-node-id_20260917145600.md`
+
+---
+
+## §59. OGNL 变量路径实测（Task 47 发现 2026-09-17）
+
+### 现象
+
+`#amount>=5000` 直接生效，但 `#variables.amount>=5000` 和 `amount>=5000` 不工作。
+
+### 实测（Python 引擎 v1.6.0）
+
+| expr | 形式 | 行为 |
+|---|---|---|
+| `#amount>=5000` | OGNL `#var` | ✅ 生效 |
+| `#variables.amount>=5000` | OGNL 嵌套 | ❌ 不支持（regex 不匹配） |
+| `amount>=5000` | 无 `#` | ❌ 不识别为变量 |
+
+### SimpleExprEvaluator 实现
+
+```python
+m_num = re.match(r"^\s*(#?\w+)\s*(>=|<=|!=|==|>|<)\s*(\d+(?:\.\d+)?)\s*$", expr)
+key = m_num.group(1).lstrip("#")  # 去 #
+actual = vars.get(key)  # vars = instance.variables
+```
+
+### AGENTS.md §7 警告修正
+
+| 警告原文 | 修正后 |
+|---|---|
+| "OGNL root 不含 variables" | **不适用**（Python 引擎直接 vars_） |
+| "用 #variables.amount > 1000" | **不必要**，用 `#amount` 即可 |
+
+### 测试报告
+
+- `./bdd/bdd-ognl-vars_20260917145800.md`

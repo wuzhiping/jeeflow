@@ -1,0 +1,157 @@
+{
+  "name": "ognl-vars",
+  "displayName": "OGNL 变量路径测试",
+  "type": "approval",
+  "instanceUrl": "/fix/ognl-vars/detail",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "apply-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "发起"
+      }
+    },
+    {
+      "id": "dec_test",
+      "type": "snaker:decision",
+      "x": 300,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50
+      },
+      "text": {
+        "value": "OGNL 测试"
+      }
+    },
+    {
+      "id": "big",
+      "type": "snaker:task",
+      "x": 450,
+      "y": 100,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "review-form",
+        "assignee": "manager",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "金额大"
+      }
+    },
+    {
+      "id": "small",
+      "type": "snaker:task",
+      "x": 450,
+      "y": 300,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "review-form",
+        "assignee": "leader",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "金额小"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 600,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e1",
+      "sourceNodeId": "apply",
+      "targetNodeId": "dec_test",
+      "properties": {}
+    },
+    {
+      "id": "e_amount_simple",
+      "sourceNodeId": "dec_test",
+      "targetNodeId": "big",
+      "properties": {
+        "expr": "#amount>=5000"
+      }
+    },
+    {
+      "id": "e_amount_ognl",
+      "sourceNodeId": "dec_test",
+      "targetNodeId": "big",
+      "properties": {
+        "expr": "#variables.amount>=5000"
+      }
+    },
+    {
+      "id": "e_amount_plain",
+      "sourceNodeId": "dec_test",
+      "targetNodeId": "big",
+      "properties": {
+        "expr": "amount>=5000"
+      }
+    },
+    {
+      "id": "e_default",
+      "sourceNodeId": "dec_test",
+      "targetNodeId": "small",
+      "properties": {}
+    },
+    {
+      "id": "e5",
+      "sourceNodeId": "big",
+      "targetNodeId": "end",
+      "properties": {}
+    },
+    {
+      "id": "e6",
+      "sourceNodeId": "small",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

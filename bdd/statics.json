@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-17T14:50:00",
+  "updated": "2026-09-17T15:00:00",
   "tasks": [
     {
       "id": "Task 16",
@@ -400,10 +400,88 @@
         "多 actor"
       ],
       "errors": []
+    },
+    {
+      "id": "Task 43",
+      "name": "find-by-role-handler",
+      "time": "20260917145000",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "SPI find_by_role",
+        "TaskRole handler"
+      ],
+      "errors": [
+        "§35 assignee 字面量"
+      ]
+    },
+    {
+      "id": "Task 44",
+      "name": "taskvar-injection",
+      "time": "20260917145200",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "taskVariables 合并",
+        "formData + variables 字段"
+      ],
+      "errors": [
+        "§54 修正"
+      ]
+    },
+    {
+      "id": "Task 45",
+      "name": "instance-query",
+      "time": "20260917145400",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "processInstance/page m_ query"
+      ],
+      "errors": [
+        "§57 operator 是顶层参数"
+      ]
+    },
+    {
+      "id": "Task 46",
+      "name": "duplicate-node-id",
+      "time": "20260917145600",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "重复节点 id 边界测试"
+      ],
+      "errors": [
+        "§58 节点 id 重复"
+      ]
+    },
+    {
+      "id": "Task 47",
+      "name": "ognl-vars",
+      "time": "20260917145800",
+      "node_types": [
+        "decision",
+        "task",
+        "end"
+      ],
+      "features": [
+        "OGNL 变量路径 #amount vs #variables.amount"
+      ],
+      "errors": [
+        "§59 #variables 不支持"
+      ]
     }
   ],
   "summary": {
-    "total_tasks": 27,
+    "total_tasks": 32,
     "node_types_used": [
       "start",
       "end",
@@ -470,23 +548,26 @@
   },
   "statistics": {
     "by_node_type": {
-      "decision": 6,
-      "task": 27,
-      "end": 21,
+      "decision": 7,
+      "task": 32,
+      "end": 26,
       "start": 1,
       "join": 1
     },
     "by_feature_category": {
       "countersign": 1,
-      "decision_expr": 4,
+      "decision_expr": 5,
       "submitType_routing": 4,
       "candidate": 3,
       "interceptor": 2,
+      "handler_chain": 2,
       "field_permission": 1,
       "cc": 1,
       "multi_version": 1,
       "dict_routing": 1,
-      "applicant_substitution": 1
+      "task_variables": 2,
+      "applicant_substitution": 1,
+      "boundary_test": 1
     },
     "by_error_chapter": {
       "§36": 1,
@@ -504,10 +585,14 @@
       "§51": 1,
       "§52": 1,
       "§53": 1,
-      "§54": 1,
+      "§54": 2,
       "§55": 1,
       "§56": 1,
-      "§37": 1
+      "§37": 1,
+      "§35": 1,
+      "§57": 1,
+      "§58": 1,
+      "§59": 1
     },
     "by_severity": {
       "critical": [
@@ -543,7 +628,10 @@
         "§39",
         "§43",
         "§52",
-        "§45"
+        "§45",
+        "§57",
+        "§58",
+        "§59"
       ]
     },
     "tasks_with_errors": [
@@ -563,7 +651,12 @@
       "Task 38",
       "Task 39",
       "Task 40",
-      "Task 41"
+      "Task 41",
+      "Task 43",
+      "Task 44",
+      "Task 45",
+      "Task 46",
+      "Task 47"
     ],
     "tasks_all_pass": [
       "Task 16",
