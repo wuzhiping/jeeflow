@@ -127,6 +127,12 @@ curl -s -X POST http://127.0.0.1:8101/api/reset | jq
 > - seed 流程（如 `simple` v1=id 1）与本次部署 v2（实测 id=113）共存，`processDefine/page` 能看到全部历史版本。
 > - 清除设计缓存可用 `/wf/processDesign/delete`（未在 §5.1 速查表，谨慎使用）。
 
+> ⚠️ **2026-09-17 PG 后端实测补充（17 个 flow 全量回归）**：
+> - PG 后端 `processDesign.id` 和 `processDefine.id` 是 **19 位雪花 ID**（time-ordered bigint），非 sqlite 自增格式（如 1-17 或累积 113）
+> - 本轮 17 个 flow PG 回归实测：design_id 形如 `1789614853725000`，processDefineId 形如 `1789614853782000`
+> - runner **必须**从 `processDesign/save` 响应取 `data.id`，从 `processDesign/deploy` 响应取 `data.processDefineId`；**不可假设任何固定值**
+> - 17 个流程 PG 行为与 sqlite 完全一致（除 ID 格式）；唯一 FAIL 是 `08-custom-node`（已知 §16 引擎缺陷，跨后端一致）
+
 **约束**：
 - **非工作流 action**，不走 `/wf/{action}` 门面，AGENTS.md §5.3-§5.8 的 action 替换规则对它无效。
 - 调用前确认磁盘上没有未晋升的 `./tdd/<key>.json`（WIP 数据本身不会被清，因为 reset 只动 PG 表），但若该流程已部署到 PG，部署的副本会消失 —— 需要重新部署或从 `./flows/<key>.json` 再次启动。

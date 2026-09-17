@@ -720,3 +720,40 @@ if action in ("processDefine/startAndExecute", "processInstance/startAndExecute"
 ### 测试报告
 
 `./tdd/test_15-decision-amount_20260917112000.md` ✅ PASS
+
+## §22. candidatePage 经 decision/fork 透传 candidates 不完整（BDD 发现 2026-09-17）
+
+### 现象
+
+`bdd-purchase-approval` 设计：apply → decision1(f_amount>=5000) → {manager_review | supervisor_review} → countersign → end。
+
+- apply 节点配 `candidateUsers="userA,userB"` + `candidateGroups="finance"`（预期 4 个候选人）
+- countersign 节点配 `candidateUsers="userA,userB"` + `candidateGroups="finance"`（同样 4 个候选人）
+
+实测：
+- `processTask/candidatePage` in **apply task**：返回 **8 个**（fallback user_search 全用户）
+- `processTask/candidatePage` in **countersign task**：返回 **8 个**（fallback）
+
+### 引擎行为（推测）
+
+`_next_task_candidates.walk()` 经 decision/fork 节点时：
+- 单链透传：apply → review → end（12-candidate-page）→ 正确返回 review 的 candidates（4 个）
+- decision/fork 多分支：仅查**第一个匹配 task 节点**的 candidates，不合并多分支
+
+当 `_next_task_candidates` 返回空时，facade 静默 fallback 到 `self._user_search(args)`（SPI 全用户 = 8 个）。
+
+### 影响
+
+- 单链候选设计（如 12-candidate-page）行为正确
+- 含 decision/fork 多分支流程的候选设计**不符合预期**，candidatePage 走 fallback
+- 用户感知："候选怎么变成全员了？" — 静默行为，无 warning
+
+### 缓解措施
+
+- 短期：设计避免 candidatePage 查 apply 之后的 decision/fork 多分支场景
+- 引擎层：`_next_task_candidates.walk()` 增强 — 经 decision/fork 时合并所有可达 task 节点的 candidateUsers/candidateGroups
+- 文档：明确告知 candidatePage 的透传边界
+
+### 测试报告
+
+`./bdd/bdd-purchase-approval_20260917112722.md`

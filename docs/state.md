@@ -97,8 +97,11 @@
 | --- | --- | --- |
 | 10 | `DOING` | 任务待执行 |
 | 20 | `DONE` | 任务已完成（submitType=0/1/5/20 等"通过"类） |
+| 99 | `ABANDON` | 任务废弃（如比例会签完成条件满足后，未完成的会签子任务被设为 ABANDON） |
 
-> 💡 与 `InstanceState` 编号体系**恰好相同**（DOING=10, DONE=20），但语义不同：前者是任务粒度，后者是实例粒度。
+> 💡 与 `InstanceState` 编号体系**部分重叠**（DOING=10, DONE=20），但语义不同：前者是任务粒度，后者是实例粒度。
+> 
+> ⚠️ **2026-09-17 实测补（07-countersign-ratio）**：比例会签满足 `countersignCompletionCondition` 后，未完成的子任务 `taskState=99 ABANDON`。`approvalRecord` 中这些 task 仍记录但 `operator` 为空字符串。详见 `./tdd/test_07-countersign-ratio_20260917120200.md`。
 
 ---
 

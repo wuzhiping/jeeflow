@@ -1,0 +1,166 @@
+{
+  "name": "bdd-purchase-approval",
+  "displayName": "BDD-采购审批",
+  "type": "approval",
+  "instanceUrl": "/bdd/purchase/detail",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "text": {
+        "value": "发起"
+      },
+      "properties": {}
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 200,
+      "y": 200,
+      "text": {
+        "value": "采购申请"
+      },
+      "properties": {
+        "form": "purchase-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "PERMISSION_f_amount": 2,
+          "PERMISSION_f_reason": 1,
+          "candidateUsers": "userA,userB",
+          "candidateGroups": "finance"
+        }
+      }
+    },
+    {
+      "id": "decision1",
+      "type": "snaker:decision",
+      "x": 400,
+      "y": 200,
+      "text": {
+        "value": "金额决策"
+      },
+      "properties": {}
+    },
+    {
+      "id": "manager_review",
+      "type": "snaker:task",
+      "x": 600,
+      "y": 100,
+      "text": {
+        "value": "经理审批(>=5000)"
+      },
+      "properties": {
+        "form": "manager-review-form",
+        "assignee": "manager",
+        "taskType": 0,
+        "performType": 0
+      }
+    },
+    {
+      "id": "supervisor_review",
+      "type": "snaker:task",
+      "x": 600,
+      "y": 300,
+      "text": {
+        "value": "主管审批(<5000)"
+      },
+      "properties": {
+        "form": "supervisor-review-form",
+        "assignee": "leader",
+        "taskType": 0,
+        "performType": 0
+      }
+    },
+    {
+      "id": "countersign",
+      "type": "snaker:task",
+      "x": 800,
+      "y": 200,
+      "text": {
+        "value": "财务会签(并行)"
+      },
+      "properties": {
+        "form": "finance-countersign-form",
+        "assignee": "userA,userB,userC",
+        "taskType": 0,
+        "performType": 1,
+        "countersignType": "PARALLEL",
+        "countersignCompletionCondition": "ONE_VOTE_VETO",
+        "field": {
+          "candidateUsers": "userA,userB",
+          "candidateGroups": "finance"
+        }
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 1000,
+      "y": 200,
+      "text": {
+        "value": "结束"
+      },
+      "properties": {}
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {
+        "expr": ""
+      }
+    },
+    {
+      "id": "e_apply_decision",
+      "sourceNodeId": "apply",
+      "targetNodeId": "decision1",
+      "properties": {
+        "expr": ""
+      }
+    },
+    {
+      "id": "e_dec_manager",
+      "sourceNodeId": "decision1",
+      "targetNodeId": "manager_review",
+      "properties": {
+        "expr": "f_amount >= 5000"
+      }
+    },
+    {
+      "id": "e_dec_supervisor",
+      "sourceNodeId": "decision1",
+      "targetNodeId": "supervisor_review",
+      "properties": {
+        "expr": "f_amount < 5000"
+      }
+    },
+    {
+      "id": "e_manager_cs",
+      "sourceNodeId": "manager_review",
+      "targetNodeId": "countersign",
+      "properties": {
+        "expr": ""
+      }
+    },
+    {
+      "id": "e_supervisor_cs",
+      "sourceNodeId": "supervisor_review",
+      "targetNodeId": "countersign",
+      "properties": {
+        "expr": ""
+      }
+    },
+    {
+      "id": "e_cs_end",
+      "sourceNodeId": "countersign",
+      "targetNodeId": "end",
+      "properties": {
+        "expr": ""
+      }
+    }
+  ]
+}
