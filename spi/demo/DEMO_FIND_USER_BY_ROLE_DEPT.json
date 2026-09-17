@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0",
+  "functions": {
+    "find_user_by_role_dept": {
+      "D01:leader": ["leader"],
+      "D02:manager": ["manager"],
+      "D03:director": ["director"],
+      "D01:finance": ["leader"],
+      "D02:finance": ["manager"]
+    }
+  }
+}

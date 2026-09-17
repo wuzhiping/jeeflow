@@ -1,0 +1,94 @@
+{
+  "name": "multi-actor-v3",
+  "displayName": "多 actor 分发 + 正确 FQCN",
+  "type": "approval",
+  "instanceUrl": "/fix/multi-actor-v3/detail",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "m3-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "发起"
+      }
+    },
+    {
+      "id": "co_sign",
+      "type": "snaker:task",
+      "x": 300,
+      "y": 200,
+      "properties": {
+        "width": 120,
+        "height": 50,
+        "form": "m3-form",
+        "assignee": "finance",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler",
+        "roleCode": "finance",
+        "taskType": 0,
+        "performType": 1,
+        "countersignType": "PARALLEL",
+        "countersignCompletionCondition": "ALL",
+        "field": {}
+      },
+      "text": {
+        "value": "财务会签"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 450,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e1",
+      "sourceNodeId": "apply",
+      "targetNodeId": "co_sign",
+      "properties": {}
+    },
+    {
+      "id": "e2",
+      "sourceNodeId": "co_sign",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

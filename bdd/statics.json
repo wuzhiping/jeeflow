@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-17T15:00:00",
+  "updated": "2026-09-17T15:21:00",
   "tasks": [
     {
       "id": "Task 16",
@@ -478,10 +478,166 @@
       "errors": [
         "§59 #variables 不支持"
       ]
+    },
+    {
+      "id": "Task 48",
+      "name": "business-interceptor",
+      "time": "20260917150000",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "business flow",
+        "interceptor"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 49",
+      "name": "cc-multi-actor",
+      "time": "20260917150200",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "f_ccActors 多用户抄送",
+        "ccList API"
+      ],
+      "errors": [
+        "§61 processInstanceId 未生效"
+      ]
+    },
+    {
+      "id": "Task 50",
+      "name": "form-double-var",
+      "time": "20260917150400",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "f_xxx 与 xxx 双重变量"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 51",
+      "name": "rollback-multi-hop",
+      "time": "20260917150600",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "跨多节点 ROLLBACK"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 52",
+      "name": "reapply-test",
+      "time": "20260917150800",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "RE_APPLY submitType=5",
+        "FIX-T4 monkey patch"
+      ],
+      "errors": [
+        "§64 RE_APPLY 路由缺失"
+      ]
+    },
+    {
+      "id": "Task 53",
+      "name": "process-design-his",
+      "time": "20260917151000",
+      "node_types": [],
+      "features": [
+        "processDesignHis 历史版本"
+      ],
+      "errors": [
+        "§65 processDesignHis/page 未注册",
+        "§65 his 字段只保留 1 条"
+      ]
+    },
+    {
+      "id": "Task 54",
+      "name": "spi-new-function",
+      "time": "20260917151200",
+      "node_types": [],
+      "features": [
+        "SPI 新增函数",
+        "find_user_by_role_dept"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 55",
+      "name": "form-data-decision",
+      "time": "20260917151400",
+      "node_types": [
+        "decision",
+        "task",
+        "end"
+      ],
+      "features": [
+        "decision expr formData 路径",
+        "#f_xxx 与 #xxx"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 56",
+      "name": "owner-id",
+      "time": "20260917151600",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "ownerId 与 operator 分离"
+      ],
+      "errors": [
+        "§66 ownerId 字段不存在"
+      ]
+    },
+    {
+      "id": "Task 57",
+      "name": "multi-actor-v4",
+      "time": "20260917151800",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "多 actor 任务分发",
+        "TaskRoleAssigneeHandler",
+        "PARALLEL 会签"
+      ],
+      "errors": [
+        "§67 FQCN 修正",
+        "§68 handler 静默 fallback",
+        "§68 roleCode 字段被忽略"
+      ]
+    },
+    {
+      "id": "Task 58",
+      "name": "fix-t5-design-his",
+      "time": "20260917152000",
+      "node_types": [],
+      "features": [
+        "FIX-T5 processDesignHis/page",
+        "API 修复"
+      ],
+      "errors": []
     }
   ],
   "summary": {
-    "total_tasks": 32,
+    "total_tasks": 43,
     "node_types_used": [
       "start",
       "end",
@@ -548,26 +704,28 @@
   },
   "statistics": {
     "by_node_type": {
-      "decision": 7,
-      "task": 32,
-      "end": 26,
+      "decision": 8,
+      "task": 40,
+      "end": 34,
       "start": 1,
       "join": 1
     },
     "by_feature_category": {
       "countersign": 1,
-      "decision_expr": 5,
-      "submitType_routing": 4,
-      "candidate": 3,
-      "interceptor": 2,
-      "handler_chain": 2,
+      "decision_expr": 6,
+      "submitType_routing": 6,
+      "candidate_or_cc": 6,
+      "interceptor": 3,
+      "handler_chain": 7,
+      "spi_extension": 3,
       "field_permission": 1,
-      "cc": 1,
-      "multi_version": 1,
+      "multi_version_or_history": 2,
       "dict_routing": 1,
-      "task_variables": 2,
+      "task_variables": 3,
       "applicant_substitution": 1,
-      "boundary_test": 1
+      "boundary_test": 1,
+      "business_flow": 1,
+      "owner_operator": 1
     },
     "by_error_chapter": {
       "§36": 1,
@@ -592,7 +750,13 @@
       "§35": 1,
       "§57": 1,
       "§58": 1,
-      "§59": 1
+      "§59": 1,
+      "§61": 1,
+      "§64": 1,
+      "§65": 2,
+      "§66": 1,
+      "§67": 1,
+      "§68": 2
     },
     "by_severity": {
       "critical": [
@@ -600,7 +764,9 @@
         "§40",
         "§46",
         "§47",
-        "§56"
+        "§56",
+        "§67",
+        "§68"
       ],
       "warning": [
         "§39",
@@ -608,7 +774,10 @@
         "§50",
         "§52",
         "§54",
-        "§55"
+        "§55",
+        "§61",
+        "§64",
+        "§66"
       ]
     },
     "by_fix_status": {
@@ -616,7 +785,9 @@
         "§47",
         "§41",
         "§28",
-        "§29"
+        "§29",
+        "§64",
+        "§65"
       ],
       "documented_only": [
         "§34",
@@ -631,7 +802,14 @@
         "§45",
         "§57",
         "§58",
-        "§59"
+        "§59",
+        "§60",
+        "§61",
+        "§62",
+        "§63",
+        "§66",
+        "§67",
+        "§68"
       ]
     },
     "tasks_with_errors": [
@@ -656,7 +834,12 @@
       "Task 44",
       "Task 45",
       "Task 46",
-      "Task 47"
+      "Task 47",
+      "Task 49",
+      "Task 52",
+      "Task 53",
+      "Task 56",
+      "Task 57"
     ],
     "tasks_all_pass": [
       "Task 16",
@@ -668,7 +851,12 @@
       "Task 24",
       "Task 25",
       "Task 31",
-      "Task 42"
+      "Task 42",
+      "Task 48",
+      "Task 50",
+      "Task 51",
+      "Task 54",
+      "Task 55"
     ]
   }
 }

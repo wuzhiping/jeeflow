@@ -1,0 +1,149 @@
+{
+  "name": "formData-path-decision",
+  "displayName": "formData 路径决策",
+  "type": "approval",
+  "instanceUrl": "/fix/formData-decision/detail",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "fd-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "发起"
+      }
+    },
+    {
+      "id": "dec_form",
+      "type": "snaker:decision",
+      "x": 300,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50
+      },
+      "text": {
+        "value": "formData 决策"
+      }
+    },
+    {
+      "id": "big",
+      "type": "snaker:task",
+      "x": 450,
+      "y": 100,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "rev-form",
+        "assignee": "manager",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "金额大"
+      }
+    },
+    {
+      "id": "small",
+      "type": "snaker:task",
+      "x": 450,
+      "y": 300,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "rev-form",
+        "assignee": "leader",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "金额小"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 600,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e1",
+      "sourceNodeId": "apply",
+      "targetNodeId": "dec_form",
+      "properties": {}
+    },
+    {
+      "id": "e_f",
+      "sourceNodeId": "dec_form",
+      "targetNodeId": "big",
+      "properties": {
+        "expr": "#f_amount>=5000"
+      }
+    },
+    {
+      "id": "e_plain",
+      "sourceNodeId": "dec_form",
+      "targetNodeId": "big",
+      "properties": {
+        "expr": "#amount>=5000"
+      }
+    },
+    {
+      "id": "e_default",
+      "sourceNodeId": "dec_form",
+      "targetNodeId": "small",
+      "properties": {}
+    },
+    {
+      "id": "e4",
+      "sourceNodeId": "big",
+      "targetNodeId": "end",
+      "properties": {}
+    },
+    {
+      "id": "e5",
+      "sourceNodeId": "small",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

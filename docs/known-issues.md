@@ -18,8 +18,12 @@
 | §33 | decision 兜底边 | snaker:decision 节点 |
 | §39 | state=99 ABANDON | PARALLEL 会签 |
 | §43 | submitType=2 REJECT → state=45 | REJECT 路由 |
-| §52 | ROLLBACK 重审机制 | submitType=3 |
 | §45 | SEQUENTIAL PendingTask | 串行会签 |
+| §52 | ROLLBACK 重审机制 | submitType=3 |
+| §62 | f_xxx 与 xxx 双重变量（同时存在） | formData 解包 |
+| §63 | 跨多节点 ROLLBACK | submitType=3 actor 继承 |
+| §64 | submitType=5 RE_APPLY 路由缺失 | **FIX-T4 已修复** |
+| §67 | TaskRoleAssigneeHandler 正确 FQCN | 多 actor 任务分发 |
 
 ### B. 字段语义与解析
 
@@ -40,6 +44,11 @@
 | §54 | taskVariables vs instance.variables | 表单数据 |
 | §55 | doneList actorIdList=None | 已办查询 |
 | §56 | parentId 参数未生效 | 父子流程 |
+| §58 | 节点 id 重复边界测试 | 流程图设计 |
+| §59 | OGNL 变量路径实测（`#var` vs `#variables.var`） | decision expr |
+| §65 | processDesignHis 历史版本 API | **FIX-T5 已修复** |
+| §66 | ownerId 与 operator 分离 | startAndExecute |
+| §68 | handler 解析行为（roleCode 用 node.id） | TaskRoleAssigneeHandler |
 
 ### C. 后端差异 / SPI 约束
 
@@ -57,6 +66,8 @@
 | §28 | FIX-T1 v1.5.1 SimpleExprEvaluator | BDD 前期 |
 | §29 | FIX-T2 v1.5.2 handler 解析 warning | BDD 前期 |
 | §48 | main_pg.py 同步修复 | BDD Task 27/32 |
+| §60 | business 业务流 + 拦截器 | BDD Task 48 |
+| §61 | ccList API 行为（processInstanceId 未生效） | BDD Task 49 |
 
 ### E. 按测试任务分组的已知问题
 
@@ -68,6 +79,9 @@
 | Task 28-32 | §43-§47（5 条） | submitType / 汇聚 / 加签 / JUMP / 自定义决策 |
 | Task 33-37 | §49-§53（5 条） | PERMISSION / CC / 多版本 / ROLLBACK / 字典 |
 | Task 38-42 | §54-§56（3 条） | taskVariables / 三页 / parentId / candidate / applicant |
+| Task 43-47 | §57-§59（3 条） | find_by_role / taskVariables / instance 查询 / 重复 id / OGNL |
+| Task 48-52 | §60-§64（5 条） | 业务流 / ccList / formData / 跨节点 ROLLBACK / RE_APPLY |
+| Task 53-58 | §65-§68 + FIX-T5（5 条） | 历史版本 / ownerId / 多 actor / FIX-T5 |
 
 ### F. 已应用修复（可复用）
 
@@ -76,9 +90,12 @@
 | FIX-T1 | v1.5.1 | §28 | SimpleExprEvaluator 字符串容错 |
 | FIX-T2 | v1.5.2 | §29 | handler 解析 warning 日志 |
 | FIX-T3 | v1.6.0 | §47 | SimpleExprEvaluator 字符串相等 |
+| FIX-T4 | — | §64 | submitType=5 RE_APPLY 路由（main.py + main_pg.py monkey patch） |
+| FIX-T5 | — | §65 | processDesignHis/page action（直接读 ext_repo._designHis 累积） |
 | v1.5.3 | — | — | `_fix_log` 写文件日志 |
 | SPI deptId | — | §41 | find_dept_leaders 按 deptId 映射 |
 | MockAuditInterceptor | — | §48 | 注册验证 _fire_post |
+| SPI find_user_by_role_dept | — | §54 | 按 (部门, 角色) 复合取人 |
 
 ---
 
@@ -2087,3 +2104,293 @@ actual = vars.get(key)  # vars = instance.variables
 ### 测试报告
 
 - `./bdd/bdd-ognl-vars_20260917145800.md`
+
+---
+
+## §60. business 业务流 + 拦截器触发测试（Task 48 发现 2026-09-17）
+
+### 现象
+
+`type=business` 流程定义带 `postInterceptors=com.example.MockAuditInterceptor`，拦截器在每个 task/costom 节点 enter/exit 触发。
+
+### 实测
+
+| 节点 | 拦截器触发 |
+|---|---|
+| apply (task) | POST state=10 |
+| audit_review (task) | POST state=10 |
+| end (end) | PRE + POST state=20 |
+
+### 关键发现
+
+1. `type=business` 仅文档分类标记
+2. 拦截器 FQCN 必须在 `interceptor_registry` 注册
+3. 拦截器抛异常会中断流程（§36）
+
+### 测试报告
+
+- `./bdd/bdd-business-interceptor_20260917150000.md`
+
+---
+
+## §61. ccList API 行为（Task 49 发现 2026-09-17）
+
+### 实测
+
+`/wf/processInstance/ccList`：
+- `operator` 参数：按 actor_id 过滤 CC 列表 ✅
+- `processInstanceId` 参数：**未生效**，被 facade 忽略
+- 响应不含 `cc.actor_id`（仅用于内部 filter）
+- 返回行含 `variable` + `ext` 字段，含完整 instance 变量
+
+### Engine 实现（facade.py L868-874）
+
+```python
+actor_id = str(args.get("operator", "user1"))
+rows, total = await self._repo.page_cc_instances(page_num, page_size, actor_id, ...)
+```
+
+`processInstanceId` 完全没读取。
+
+### 测试报告
+
+- `./bdd/bdd-cc-multi-actor_20260917150200.md`
+
+---
+
+## §62. f_xxx 与 xxx 双重变量（Task 50 实测 2026-09-17）
+
+### 实测
+
+启动传 `score=95` + `f_score=95`：
+- instance.variables 同时有 `score=95` 和 `f_score=95`
+- formData 同时有 `score=95` 和 `f_score=95`
+- decision expr `#score>=60` 和 `#f_score>=60` 都生效
+
+### 结论
+
+formData 解包保留原始 f_ 前缀字段，无需手动区分。
+
+---
+
+## §63. 跨多节点 ROLLBACK（Task 51 实测 2026-09-17）
+
+### 实测
+
+manager `submitType=3 + taskName=leader` 成功回退到 leader，回退后 leader.task2 actor=manager（继承）。
+
+### 历史累积
+
+每个 task 节点每次进入产生新 task id，state machine 完整保留。
+
+### 关键行为
+
+- ROLLBACK 不改变 instance.state
+- 回退 task actor = 当前 task actor（fallback 逻辑）
+- 再次 AGREE 可继续流程直到 end
+
+---
+
+## §64. submitType=5 RE_APPLY 路由缺失 + FIX-T4（Task 52 2026-09-17）
+
+### BUG
+
+`/wf/processTask/execute` 用 `submitType=5` 时：
+- facade.py L295-318 默认 else 分支把 5 当 AGREE 处理
+- leader.RE_APPLY 直接流转到 end，state=20
+
+### Engine 实现（facade.py L295-318）
+
+```python
+elif submit_type == SUBMIT_REJECT:               # 2
+elif submit_type == SUBMIT_ROLLBACK:             # 3
+elif submit_type == SUBMIT_JUMP:                 # 4
+elif submit_type == SUBMIT_ROLLBACK_TO_OPERATOR: # 6
+elif submit_type == SUBMIT_COUNTERSIGN_DISAGREE: # 20
+else:  # 0/1/5 全部走 execute_process_task
+```
+
+`SUBMIT_RE_APPLY=5` 在路由表中**完全缺失**。
+
+### 修复（FIX-T4 main.py + main_pg.py 同步）
+
+```python
+from jeeflow.model import SubmitType
+async def _reapply_flow(action, args=None):
+    args = dict(args or {})
+    if action == "processTask/execute" and int(args.get("submitType") or 1) == int(SubmitType.RE_APPLY):
+        args["submitType"] = int(SubmitType.ROLLBACK_TO_OPERATOR)
+    return await facade.flow(action, args)
+facade.flow = _reapply_flow
+```
+
+### 修复后行为
+
+| 步骤 | 操作 | 结果 |
+|---|---|---|
+| 1 | apply AGREE | leader DOING |
+| 2 | leader RE_APPLY(5) | apply DOING actor=user1 ✅ |
+
+### 上游建议（修复 facade.py）
+
+facade.py L295-318 增加：
+```python
+elif submit_type == SUBMIT_RE_APPLY:  # 5
+    await self._engine.execute_and_jump_to_first_task_node(task_id, operator, flow_args)
+```
+
+### 测试报告
+
+- `./bdd/bdd-reapply_20260917150800.md`
+
+---
+
+## §65. processDesignHis 历史版本（Task 53 发现 2026-09-17 + FIX-T5）
+
+### 实测（修复前）
+
+`/wf/processDesignHis/page` API **未注册**（facade 无 `_processDesignHis_*` 方法）。
+
+`/wf/processDesign/detail` 返回 `his: [...]` 字段，但**只保留最后 1 条**（多次 deploy 应该累积）。
+
+### 已知问题
+
+| # | 问题 | 严重度 | 状态 |
+|---|---|---|---|
+| 1 | `processDesignHis/page` API 不存在 | critical | **FIX-T5 已修复** |
+| 2 | `his` 字段只保留最后 1 条（应累积） | warning | **FIX-T5 已修复** |
+| 3 | `page` 接口不返回 version 字段 | warning | 待 |
+
+### 修复（FIX-T5 main.py + main_pg.py 同步）
+
+```python
+async def _processDesignHis_page(args: dict) -> dict:
+    page_num = int(args.get("pageNum") or 1)
+    page_size = int(args.get("pageSize") or 10)
+    m_design_id = args.get("m_processDesignId") or args.get("m_designId")
+    design_id_filter = int(m_design_id) if m_design_id else None
+
+    rows_out = []
+    for did, his_list in ext_repo._designHis.items():
+        for h in his_list:
+            if design_id_filter and h.processDesignId != design_id_filter:
+                continue
+            rows_out.append({
+                "id": h.id, "processDesignId": h.processDesignId,
+                "content": h.content, "createTime": h.createTime,
+                "createUser": h.createUser,
+            })
+    rows_out.sort(key=lambda r: -(r["id"] or 0))
+    return _page_data(rows_out, ...)
+
+facade._processDesignHis_page = _processDesignHis_page
+```
+
+### 修复后实测
+
+部署 3 个不同版本 design → `POST /wf/processDesignHis/page`：
+
+```
+total: 3
+  id=10 designId=9  content=...v1...
+  id=12 designId=11 content=...v2...
+  id=14 designId=13 content=...v3...
+```
+
+### 测试报告
+
+- `./bdd/bdd-fix-t5-design-his_20260917152000.md`
+
+---
+
+## §66. ownerId 与 operator 分离（Task 56 发现 2026-09-17）
+
+### 实测
+
+启动传 `ownerId=userB` + `operator=user1`：
+- `instance.operator = user1`
+- `instance.ownerId = None`（**字段不存在**）
+- `variables.ownerId = userB`（被当作普通变量）
+
+### 已知问题
+
+- Python 引擎 ProcessInstance 模型**无 ownerId 字段**
+- `facade.startAndExecute` 不提取 ownerId
+- `m_ownerId` 过滤不生效
+
+### 实际场景
+
+- "代他人发起"：operator=userA 替 userB 提交
+- 当前 userB 无法查询此 instance（除非通过 ccList）
+
+---
+
+## §67. 多 actor + handler 完整流程（Task 57 修复 2026-09-17）
+
+### 关键修正
+
+| 错误 | 修正 |
+|---|---|
+| `com.jeeflow.builtin.handlers.TaskRoleAssigneeHandler` | `com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler` |
+| `node.id='co_sign'` + `roleCode='finance'` | `node.id='finance'`（handler 用 node.id 作为 role_code） |
+
+### 完整流程
+
+```json
+{
+  "id": "finance",
+  "type": "snaker:task",
+  "properties": {
+    "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler",
+    "performType": 1,
+    "countersignType": "PARALLEL",
+    "countersignCompletionCondition": "ALL"
+  }
+}
+```
+
+SPI `DEMO_ROLE_TO_USERS.json`: `finance: [leader, manager]`
+
+### 实测结果
+
+| task | actors | state |
+|---|---|---|
+| apply | ['user1'] | 20 |
+| finance #1 | ['leader'] | 10 |
+| finance #2 | ['manager'] | 10 |
+
+---
+
+## §68. handler 解析行为（Task 57 发现 2026-09-17）
+
+### Engine 行为（engine.py L415-444）
+
+```python
+handler_name = node.properties.get("assignmentHandler", "")
+if handler_name and self.ext and self.ext.registry:
+    handler = self.ext.registry.find_assignment(handler_name)
+    if handler:
+        return await handler.assign(node, inst, operator)
+# fallback: assignee 字面量
+```
+
+### 静默 fallback 风险
+
+| 情况 | 行为 |
+|---|---|
+| handler_name 不存在 | 静默 fallback 到 assignee 字面量 |
+| FQCN 拼错 | 同上（FIX-T2 写 warning 到 /tmp/jee-fix.log） |
+| handler.assign() 返回 [] | fallback 到空 + assignee 字面量 |
+
+### TaskRoleAssigneeHandler 字段
+
+- **使用 `node.id`** 作为 role_code（**忽略** properties.roleCode 字段）
+- 节点 id 必须等于 SPI DEMO_ROLE_TO_USERS.json 的 key
+
+### 已知问题
+
+| # | 问题 | 严重度 |
+|---|---|---|
+| 1 | handler 不存在静默 fallback | warning |
+| 2 | roleCode 字段被忽略（用 node.id） | critical |
+| 3 | 错误 FQCN 静默 fallback（FIX-T2 已记 warning） | warning |

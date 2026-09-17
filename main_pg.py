@@ -676,6 +676,56 @@ async def _load_graph(define_id) -> Optional[dict]:
 APPLY, AGREE, REJECT, ROLLBACK, JUMP, RE_APPLY = 0, 1, 2, 3, 4, 5
 ROLLBACK_TO_OPERATOR, COUNTERSIGN_DISAGREE = 6, 20
 
+# Issue E (FIX-T4 2026-09-17): submitType=5 RE_APPLY 路由缺失
+# jeeflow facade.py L295-318 默认 else 分支把 5 当 AGREE 处理，
+# monkey-patch facade.flow：拦截 processTask/execute，把 submitType=5 替换为 6 (ROLLBACK_TO_OPERATOR)
+# 注：facade.flow 此时已是 _safe_flow（_wrap_facade_flow 包装），直接调用 facade.flow
+from jeeflow.model import SubmitType
+async def _reapply_flow_pg(action, args=None):
+    args = dict(args or {})
+    if action == "processTask/execute" and int(args.get("submitType") or 1) == int(SubmitType.RE_APPLY):
+        args["submitType"] = int(SubmitType.ROLLBACK_TO_OPERATOR)
+    return await facade.flow(action, args)
+facade.flow = _reapply_flow_pg
+
+# Issue F (FIX-T5 2026-09-17): processDesignHis/page action 未注册（facade 缺 _processDesignHis_*）
+# 与 main.py 同步：直接调 ext_repo.list_design_his() 累积读取，按 id 倒序。
+async def _processDesignHis_page_pg(args: dict) -> dict:
+    page_num = int(args.get("pageNum") or 1)
+    page_size = int(args.get("pageSize") or 10)
+    m_design_id = args.get("m_processDesignId") or args.get("m_designId")
+    design_id_filter = int(m_design_id) if m_design_id else None
+
+    rows_out = []
+    # JdbcProcessExtRepository 设计历史累积：扫所有 design_id 调 list_design_his
+    design_ids = list(ext_repo._designs.keys()) if hasattr(ext_repo, "_designs") else []
+    for did in design_ids:
+        if design_id_filter and did != design_id_filter:
+            continue
+        his_list = await ext_repo.list_design_his(did)
+        for h in his_list:
+            rows_out.append({
+                "id": h.id,
+                "processDesignId": h.processDesignId,
+                "content": h.content,
+                "createTime": h.createTime.isoformat() if h.createTime else None,
+                "createUser": h.createUser,
+            })
+    rows_out.sort(key=lambda r: -(r["id"] or 0))
+    total = len(rows_out)
+    start = (page_num - 1) * page_size
+    page_rows = rows_out[start:start + page_size]
+    return {
+        "pageNum": page_num, "pageSize": page_size,
+        "recordCount": total, "totalPage": (total + page_size - 1) // page_size,
+        "rows": page_rows,
+    }
+
+facade._processDesignHis_page = _processDesignHis_page_pg
+import jeeflow.facade as _jf2_pg
+if not hasattr(_jf2_pg.JeeflowFacade, "_processDesignHis_page"):
+    setattr(_jf2_pg.JeeflowFacade, "_processDesignHis_page", _processDesignHis_page_pg)
+
 # ─── 流程定义 ────────────────────────────────────────────────────────────────────
 
 

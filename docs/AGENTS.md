@@ -288,10 +288,12 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 | 坑 | 表现 | 修复 |
 | --- | --- | --- |
 | 决策节点所有 `expr` 都不满足 | 引擎兜底走第一条出边 | 加默认边 `expr=""` 或显式兜底分支 |
-| 决策 `expr` 引用 `variables.amount` 失败 | OGNL root 不含 `variables`，两个分支都走首边 | 用 OGNL 完整路径 `#variables.amount > 1000`（**待实测确认**）；或决策前必经 task 把 amount 写入 `f_amount` |
+| ~~决策 `expr` 引用 `variables.amount` 失败~~ | **v1.6.0 FIX-T3 已修复**：Python SimpleExprEvaluator 直接读 vars_，OGNL `#var` 风格即可，**不需要 `#variables.xxx` 嵌套路径** | 用 `#amount>=5000`；如需 f_ 前缀，用 `#f_amount>=5000`（实测有效，详见 `known-issues.md §47 / §59`） |
 | `performType` 字符串 "1" 但 `countersignType` 漏配 | 子任务生成但完成逻辑乱 | 引擎容错解析，但 `countersignType` 必须给 |
 | `countersignCompletionCondition` 写 `field` 但 assignees 全是变量 | 条件永远不评估 | 改用根 `properties` 写，或确保 field.candidateUsers 非空 |
 | `assignmentHandler` 拼写错（大小写） | 引擎走默认 handler = `inst.operator` | 严格照 `./docs/flow.md §6` FQCN |
+| `assignmentHandler` 用 `com.jeeflow.*` 前缀 | **FQCN 错误**：Python 引擎 FQCN 实际为 `com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler`（注意 `$`） | 详见 `known-issues.md §67` |
+| `TaskRoleAssigneeHandler` 配置 `properties.roleCode` | **字段被忽略**：handler 实际用 `node.id` 作为 role_code | 节点 id 必须等于 SPI `DEMO_ROLE_TO_USERS.json` 的 key，详见 `known-issues.md §68` |
 | 节点 `form: ""` 但后续字段回写 | `args` 没字段 | 让 form 为 None 或省略，提交时也只给 `u_*` |
 | 发起人 `u_realName` 想每次改 | 引擎恒以发起人为准 | 设计上不覆盖 |
 | 测试中 operator 与 assignee 解析错 | `inst.operator` 取不到 | 启动时必传 `args.u_userId` |

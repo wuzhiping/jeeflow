@@ -1,0 +1,90 @@
+{
+  "name": "cc-multi-actor",
+  "displayName": "抄送多人列表",
+  "type": "approval",
+  "instanceUrl": "/fix/cc-multi-actor/detail",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "cc-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "发起含抄送"
+      }
+    },
+    {
+      "id": "manager",
+      "type": "snaker:task",
+      "x": 300,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "review-form",
+        "assignee": "manager",
+        "taskType": 0,
+        "performType": 0,
+        "field": {}
+      },
+      "text": {
+        "value": "主管审核"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 450,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e1",
+      "sourceNodeId": "apply",
+      "targetNodeId": "manager",
+      "properties": {}
+    },
+    {
+      "id": "e2",
+      "sourceNodeId": "manager",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

@@ -244,6 +244,59 @@ async def _safe_flow(action, args=None):
     return await _orig_flow(action, args)
 facade.flow = _safe_flow
 
+# Issue E (FIX-T4 2026-09-17): submitType=5 RE_APPLY 路由缺失
+# jeeflow facade.py L295-318 默认 else 分支把 5 当 AGREE 处理，
+# 导致 RE_APPLY = "重新申请" 语义丢失（apply→leader 链中 leader RE_APPLY 直接流转到 end）
+# 注意：facade.flow 已经被 _safe_flow（startAndExecute 变量展开）包装，
+# 此处必须包装在 _safe_flow 之上才能保留变量展开行为。
+from jeeflow.model import SubmitType
+async def _reapply_flow(action, args=None):
+    args = dict(args or {})
+    if action == "processTask/execute" and int(args.get("submitType") or 1) == int(SubmitType.RE_APPLY):
+        args["submitType"] = int(SubmitType.ROLLBACK_TO_OPERATOR)
+    return await _safe_flow(action, args)
+facade.flow = _reapply_flow
+
+# Issue F (FIX-T5 2026-09-17): processDesignHis/page action 未注册（facade 缺 _processDesignHis_*）
+# jeeflow facade.py 没有 _processDesignHis_page 实现，导致 /wf/processDesignHis/page 报"未知 action"。
+# 但 ext_repo.list_design_his(save_design_his) 已完整累积历史数据。
+# 修复：monkey-patch facade 实例属性，添加 _processDesignHis_page 方法直接读 ext_repo。
+async def _processDesignHis_page(args: dict) -> dict:
+    page_num = int(args.get("pageNum") or 1)
+    page_size = int(args.get("pageSize") or 10)
+    m_design_id = args.get("m_processDesignId") or args.get("m_designId")
+    design_id_filter = int(m_design_id) if m_design_id else None
+
+    rows_out = []
+    for did, his_list in ext_repo._designHis.items():
+        for h in his_list:
+            if design_id_filter and h.processDesignId != design_id_filter:
+                continue
+            rows_out.append({
+                "id": h.id,
+                "processDesignId": h.processDesignId,
+                "content": h.content,
+                "createTime": h.createTime.isoformat() if h.createTime else None,
+                "createUser": h.createUser,
+            })
+
+    rows_out.sort(key=lambda r: (r["processDesignId"], -(r["id"] or 0)))
+    total = len(rows_out)
+    start = (page_num - 1) * page_size
+    page_rows = rows_out[start:start + page_size]
+    return {
+        "pageNum": page_num, "pageSize": page_size,
+        "recordCount": total, "totalPage": (total + page_size - 1) // page_size,
+        "rows": page_rows,
+    }
+
+import types as _types
+facade._processDesignHis_page = _processDesignHis_page
+import jeeflow.facade as _jf2
+# 同步注册到类，保证 getattr(self, "_processDesignHis_page") 找到
+if not hasattr(_jf2.JeeflowFacade, "_processDesignHis_page"):
+    setattr(_jf2.JeeflowFacade, "_processDesignHis_page", _processDesignHis_page)
+
 def load_seed():
     """预加载流程定义（种子）——/api/reset 重置后复用"""
     for fname in sorted(os.listdir(FLOWS_DIR)):
