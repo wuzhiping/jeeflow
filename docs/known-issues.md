@@ -1265,3 +1265,224 @@ curl /wf/processInstance/startAndExecute -d '...'
 
 - `./bdd/bdd-task16-20-mainpy-verify_20260917134000.md`（5 Task main.py 后端完整验证）
 - `./bdd/bdd-business-interceptor_20260917132800.md`（BDD Task 19 main_pg.py 后端验证）
+
+---
+
+## §37. candidatePage API 实际语义（BDD Task 21 发现 2026-09-17）
+
+### 现象
+
+`processTask/candidatePage` API 不是"按 operator 查候选任务"，而是"按当前任务查后继节点的候选池"。
+
+### 实测
+
+```bash
+# ❌ 错误理解：按 operator 查候选任务
+curl /wf/processTask/candidatePage -d '{"operator":"userA"}'
+# 响应：code=99999999 "processTaskId 缺失"
+
+# ✅ 正确用法：传 processTaskId（当前任务 ID）
+curl /wf/processTask/candidatePage -d '{"processTaskId":<apply_task_id>}'
+# 响应：3 条候选（pool_review 节点的 candidateUsers）
+```
+
+### 引擎行为（`facade.py:_processTask_candidatePage`）
+
+1. 必传参数 `processTaskId`（当前任务 ID，不是 instance ID）
+2. 从 inst.defineId 找流程定义 → 解析 flow
+3. 调 `_next_task_candidates(flow, task.taskName)` 找后继节点
+4. 后继节点有 `candidateUsers` → 返回该字段逗号分隔 list
+5. 后继节点有 `candidateGroups` → 调 `org_prov.find_by_role` 解析
+6. 无 candidate 字段 → **回落 user_search 钩子**返回 SPI 全量用户
+
+### 影响
+
+- 前端选人组件应在"任务完成后下一步流转选人"场景使用
+- 不要在"我的待办"列表场景使用（应使用 `processTask/todoList`）
+- actor 仍由 assignee 决定（§26/§27），candidate 不影响 actor
+
+### 缓解措施
+
+- docs/flow.md §3.3 + docs/actions.md 更新字段说明
+- 设计流程时明确：candidate 字段是"后继节点可处理人列表"，不是"当前任务待办人"
+
+### 测试报告
+
+- `./bdd/bdd-candidate-pool-take_20260917135000.md`（BDD Task 21）
+
+---
+
+## §38. handler 链路串联行为（BDD Task 22 发现 2026-09-17）
+
+### 现象
+
+3 个不同 handler（TaskRole + FormField + DeptLeader）可在同一流程串联，每个节点独立解析 actor。
+
+### 实测验证
+
+| 节点 | handler | 解析结果 | SPI / 字段要求 |
+|---|---|---|---|
+| finance | TaskRoleAssigneeHandler | actor=['leader','manager'] | node.id="finance" 匹配 SPI role_code |
+| approver | FormFieldAssigneeHandler | actor=['userB'] | node.id="approver" 查 `f_approver` |
+| deptleader | DeptLeaderAssignmentHandler | actor=['leader'] | SPI find_dept_leaders 总是返回 ["leader"] |
+
+完整流程：apply → finance → approver → deptleader → decision → end，state=20 ✅
+
+### 关键设计约束
+
+1. **handler FQCN 必须精确**（拼错静默失败 / FIX-T2 warning）
+2. **节点 id 与 SPI role_code / 字段名一致**（`f_<node.id>` 字段名约束 §24）
+3. **actor 多值但 performType=0**：引擎接受多 actor 列表但只创建 1 个 task（**非会签**）
+4. **handler 链路独立性**：每个 handler 解析自己的 actor，前一个不影响后一个
+
+### SPI 修改注意
+
+- SPI data.py 模块级 dict 启动时一次性加载
+- 修改 DEMO_ROLE_TO_USERS.json / DEMO_DEPT_LEADERS.json 后**必须重启服务**才生效（§17）
+
+### 测试报告
+
+- `./bdd/bdd-handler-chain_20260917135400.md`（BDD Task 22）
+
+---
+
+## §39. 会签 state=99 ABANDON（BDD Task 23 发现 2026-09-17）
+
+### 现象
+
+PARALLEL ONE_VOTE_VETO 场景下，任一 task DONE 后，剩余未执行的会签 task 自动标记为 state=99 (ABANDON)。
+
+### 实测
+
+5 人 PARALLEL 会签，leader submitType=20 (REJECT)：
+- leader task: DONE (state=20)
+- manager/director/boss/userA 4 个 task: **ABANDON (state=99)** — 未执行
+- 实例流转到 decision → end，state=20
+
+### 引擎行为
+
+- `engine.py` 会签 PARALLEL 检测到任一 task DONE 时
+- 调 `_abandon_other_tasks(instance_id, current_task_id)` 将剩余 task 标记 ABANDON
+- ABANDON 状态不计入流程进度（不影响 state 计算）
+
+### 测试报告
+
+- `./bdd/bdd-sign-parallel-5_20260917140000.md`（Case A ALL + Case B ONE_VOTE_VETO）
+
+---
+
+## §40. Python 引擎 surrogate 仅记录不生效（BDD Task 26 发现 2026-09-17）
+
+### 现象
+
+创建 surrogate（流程级委托）后，被委托人**仍无法**处理授权人的 task。
+
+### 实测
+
+```
+1. POST /wf/processSurrogate/save  → surrogate 记录创建成功 (id=11)
+2. leader 的 task (actor=leader)，manager 执行 execute
+   → {"code":99999999,"msg":"operator manager not allowed"}
+```
+
+### 引擎行为
+
+- `facade.py` **未实现** `_processTask_delegate` 接口（Java boot2 有此接口）
+- `engine.execute_process_task` 严格校验 `operator in repo._actors[task_id]`
+- surrogate 仅作流程级授权记录（用于前端"我的委托"列表），**不修改** task.actorIds
+
+### 缓解措施
+
+1. **临时**：使用 countersign（multi-actor + performType=1）让多 actor 都能处理
+2. **彻底**：需在 facade 实现 `_processTask_delegate`，engine 增加 surrogate 解析
+
+### 测试报告
+
+- `./bdd/bdd-delegate-test_20260917140600.md`
+
+---
+
+## §41. DeptLeader handler SPI deptId 映射（Task 27 修复 2026-09-17）
+
+### 修复前
+
+`./spi/demo/find_dept_leaders.py` 总是返回 `["leader"]`，与 deptId 无关。
+`./spi/demo/find_dept_main_leaders.py` 总是返回 `["director"]`，与 deptId 无关。
+`./spi/demo/get_user.py` 总是返回 `deptId="D01"`。
+
+### 修复后（JSON 化）
+
+部门领导 / 分管领导映射移到 JSON 文件，与 `DEMO_ROLE_TO_USERS.json` 同样的 SPI 加载模式：
+
+| 文件 | 内容 |
+|---|---|
+| `./spi/demo/DEMO_DEPT_LEADERS.json` | `{D01→[leader], D02→[manager], D03→[director], D99→[boss]}` |
+| `./spi/demo/DEMO_DEPT_MAIN_LEADERS.json` | `{D01→[director], D02→[boss], D03→[boss], D99→[boss]}` |
+
+`./spi/demo/data.py` 增加：
+
+```python
+SPI_DEPT_LEADERS: dict = _load("DEMO_DEPT_LEADERS.json")
+SPI_DEPT_MAIN_LEADERS: dict = _load("DEMO_DEPT_MAIN_LEADERS.json")
+```
+
+`./spi/demo/find_dept_leaders.py` 改为读 `SPI_DEPT_LEADERS`，fallback `["leader"]`。
+`./spi/demo/find_dept_main_leaders.py` 改为读 `SPI_DEPT_MAIN_LEADERS`，fallback `["director"]`。
+
+### 部门 / 用户对照（user → deptId）
+
+| userId | deptId |
+|---|---|
+| user1/userA/leader | D01 |
+| userB/manager | D02 |
+| userC/director | D03 |
+| boss | D99 |
+
+（`./spi/demo/get_user.py` 内 DEPT_MAP 暂未移到 JSON，可后续处理）
+
+### 验证
+
+- Case D01 (userB 操作): deptleader actor=['leader']
+- Case D02 (userB deptId): deptleader actor=['manager']
+- 全部 PASS + state=20
+
+### 测试报告
+
+- `./bdd/bdd-empty-flow_20260917140800.md` (Task 27)
+
+---
+
+## §42. Python SPI 函数签名约束（Task 27 发现 2026-09-17）
+
+### 约束
+
+SPI 函数必须接受 `(payload, token)` 两个参数（与 `pocketflow` 签名一致）：
+
+```python
+# ✅ 正确
+def SPI(payload, token={}) -> list:
+    ...
+def pocketflow(payload, token={}) -> list:
+    return SPI(payload, token)
+
+# ❌ 错误（单参数）
+def SPI(payload) -> list:
+    ...  # TypeError: pocketflow() takes 1 positional argument but 2 were given
+```
+
+### Mutable default 警告陷阱
+
+```python
+# ❌ 错误：token={} 是 mutable default，Python 警告 + 行为不符预期
+def SPI(payload, token={}):
+    token["map"][...]  # 修改共享 state
+
+# ✅ 正确：把映射放模块级常量
+DEPT_MAP = {"D01": ["leader"], ...}
+def SPI(payload, token={}):
+    return DEPT_MAP.get(dept_id, [])
+```
+
+### 测试报告
+
+- `./bdd/bdd-empty-flow_20260917140800.md` (Task 27 修复过程)

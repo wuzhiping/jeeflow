@@ -137,10 +137,17 @@
 - assignee 在每个节点独立解析
 - BDD Task 20 中 leader 在 team_lead 和 hr_review 节点各处理一次（taskName 不同）
 
-**candidateUsers/candidateGroups 行为（实测 2026-09-17 BDD Task 18）**：
-- **仅用于前端候选分页过滤**（`processTask/candidatePage` API）
+**candidateUsers/candidateGroups 行为（实测 2026-09-17 BDD Task 18 + 21）**：
+- **仅用于后继任务节点选人**（`processTask/candidatePage` API，**非当前任务**）
 - **不参与 actor 解析**（actor 仍由 assignee / handler 决定）
 - 测试时 actor 必须是真实 user id（如 `leader`），不能是占位字符串
+
+**candidatePage API 实际语义（实测 2026-09-17 §37）**：
+- 必传参数 `processTaskId`（当前任务 ID）
+- **不是**按 operator 查候选任务（operator 参数不影响结果）
+- 行为：查当前任务**后继节点**的 candidateUsers/candidateGroups
+- 后继节点无 candidate 字段 → 回落 user_search 钩子（返回 SPI 全量用户）
+- 用于前端"任务完成后下一步选人组件"，不要用于"我的待办"
 
 **submitType 路由（实测 2026-09-17 BDD Task 17）**：
 
@@ -285,6 +292,23 @@
 | `…OrgUserAssignmentHandlers$ApplicantDeptLeaderAssignmentHandler` | 发起人部门领导 |
 | `…OrgUserAssignmentHandlers$ApplicantDeptMainLeaderAssignmentHandler` | 发起人部门分管领导 |
 | `…OrgUserAssignmentHandlers$TaskRoleAssigneeHandler` | 按角色（`roleCode = nodeId`） |
+
+**多 handler 链路设计（实测 2026-09-17 §38 / BDD Task 22）**：
+
+不同 handler 可在同一流程串联，每个节点独立解析 actor：
+
+| 节点 id | handler | SPI / 字段要求 |
+|---|---|---|
+| `finance` | TaskRole | node.id="finance" 匹配 SPI DEMO_ROLE_TO_USERS.finance=['leader','manager'] |
+| `approver` | FormField | node.id="approver" 查 `vars.f_approver="userB"` |
+| `deptleader` | DeptLeader | node.id 任意（不影响解析），SPI find_dept_leaders + operator.u_deptId |
+
+**关键约束**：
+1. handler FQCN 必须精确（拼错静默失败 / FIX-T2 warning）
+2. 节点 id 与 SPI role_code / 字段名一致（`f_<node.id>` 字段名约束 §24）
+3. actor 多值但 performType=0 → 引擎接受多 actor 列表但只创建 1 个 task（**非会签**）
+4. handler 链路独立性：每个 handler 解析自己的 actor，前一个不影响后一个
+5. SPI data.py 模块级 dict 启动时一次性加载，修改 JSON 后**必须重启服务**才生效（§17）
 
 ---
 

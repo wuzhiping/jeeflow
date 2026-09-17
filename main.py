@@ -24,6 +24,7 @@ from datetime import datetime
 
 from jeeflow import EngineImpl, MemoryRepository, EventType, ProcessEvent, JeeflowFacade, \
     EngineExtensions, HandlerRegistry, register_builtin_assignments
+from jeeflow.extensions import FlowInterceptor
 from jeeflow.engine import _find_node, _follow_edges, _sync_task_to_aggregate
 from jeeflow.memory import MemoryExtRepository
 from jeeflow.model import InstanceState, TaskState, ProcessDefine, ProcessInstance, ProcessTask, UserInfo, parse_flow_model
@@ -153,7 +154,33 @@ engine = RatioCapableEngine(repo, user_prov, idgen, SimpleExprEvaluator())
 # 内置参与者 handler（部门领导/角色取人等，assignment-handler 流程依赖）
 _registry = HandlerRegistry()
 register_builtin_assignments(_registry, user_prov, org_prov)
-engine.set_extensions(EngineExtensions(registry=_registry))
+
+# Task 24 (BDD 2026-09-17 14:02): 注册 mock 拦截器，验证 _fire_post 调用链
+class MockAuditInterceptor(FlowInterceptor):
+    """定义级拦截器：每次 pre/post_handle 写一条到 /tmp/jee-mock-audit.log"""
+    _audit_log = "/tmp/jee-mock-audit.log"
+    def __init__(self, name: str = "com.example.MockAuditInterceptor"):
+        self._name = name
+        try:
+            with open(self._audit_log, "a") as f:
+                f.write(f"# init {self._name} pid={os.getpid()}\n")
+        except Exception:
+            pass
+    @property
+    def order(self) -> int:
+        return 0
+    async def pre_handle(self, node, instance) -> bool:
+        with open(self._audit_log, "a") as f:
+            f.write(f"PRE  {self._name} node={node.id} inst={instance.id}\n")
+        return True
+    async def post_handle(self, node, instance) -> None:
+        with open(self._audit_log, "a") as f:
+            f.write(f"POST {self._name} node={node.id} inst={instance.id} state={instance.state}\n")
+
+_ic_registry = {
+    "com.example.MockAuditInterceptor": MockAuditInterceptor(),
+}
+engine.set_extensions(EngineExtensions(registry=_registry, interceptor_registry=_ic_registry))
 
 # v1.5.2 fix (FIX-T2 2026-09-17): handler 解析失败时记 warning 日志
 # 原 engine._resolve_actors handler 解析不到返回 [] 静默失败，TDD 难以区分
