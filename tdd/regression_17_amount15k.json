@@ -1,0 +1,34 @@
+{
+  "processDefineId": 17,
+  "base": "http://localhost:8101",
+  "operator": "user1",
+  "assignee": "user2",
+  "vars": {
+    "amount": 15000
+  },
+  "cases": [
+    {
+      "submitType": 1,
+      "processInstanceId": "91756495109409",
+      "actualState": 20,
+      "expectedState": 20,
+      "pass": true,
+      "elapsedMs": 82,
+      "resetStatus": 200,
+      "startStatus": 200,
+      "execStatus": 200,
+      "detailStatus": 200,
+      "execBody": {
+        "code": 0,
+        "msg": "成功",
+        "data": null
+      }
+    }
+  ],
+  "totals": {
+    "run": 1,
+    "passed": 1,
+    "failed": 0
+  },
+  "ranAt": "20260917084552"
+}

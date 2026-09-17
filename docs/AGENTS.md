@@ -82,9 +82,9 @@
 | 并行审批 + 汇合 | `./flows/04-fork-join.json` | fork1→taskA/taskB→join1；taskB `taskType:1` |
 | 并行会签（多人同时审） | `./flows/05-countersign-parallel.json` | `performType=1, countersignType=PARALLEL`，assignee 多值 |
 | 串行会签（按顺序审） | `./flows/06-countersign-sequential.json` | `countersignType=SEQUENTIAL` |
-| 比例会签 | `./flows/07-countersign-ratio.json` | `countersignCompletionCondition: "#nrOfCompletedInstances==2"`（放 field 内） |
+| 比例会签（✅ 已实现，RatioCapableEngine 扩展） | `./flows/07-countersign-ratio.json` | `countersignCompletionCondition: "#nrOfCompletedInstances==2"`（OGNL 表达式，`nrOfCompletedInstances`/`nrOfInstances` 自动注入） |
 | 一票否决会签 | `./flows/13-countersign-one-vote-veto.json` | `countersignCompletionCondition: "ONE_VOTE_VETO"` |
-| 自定义节点 | `./flows/08-custom-node.json` | `clazz + methodName + args + val` |
+| 自定义节点 | `./flows/08-custom-node.json` | `clazz + methodName + args + val` ⚠️ **引擎未实现**（详见 §known-issues §16） |
 | 驳回路径 | `./flows/09-with-reject.json` | submitType=Reject 走 reject 边 |
 | 业务流 + 拦截器 | `./flows/10-mixed-mode.json` | 顶层 `preInterceptors/postInterceptors`；`type: "business"` |
 | 处理人为变量 | `./flows/11-assignee-vars.json` | `assignee: "deptLeader"` / `"userA,userB"` |
@@ -122,6 +122,11 @@ curl -s -X POST http://127.0.0.1:8101/api/reset | jq
 
 **用途**：跑完一组用例想从干净状态开始下一组、或数据被前序测试污染时调用。会清空所有 identity / 实例 / 任务，重载 seed 中的流程定义。
 
+> ⚠️ **实测补充（2026-09-17 复测 `01-simple`）**：`/api/reset` **不清空 `processDesign` 与 `processDefine` 两张表**。designId 和 processDefineId 是**累积自增**的，每次 deploy 会创建新版本（同名流程 `version+1`），旧版本保留。
+> - 测试时**必须**用本次 deploy 返回的 `processDefineId`，**不可硬编码**为 `1`/`16` 等历史值。
+> - seed 流程（如 `simple` v1=id 1）与本次部署 v2（实测 id=113）共存，`processDefine/page` 能看到全部历史版本。
+> - 清除设计缓存可用 `/wf/processDesign/delete`（未在 §5.1 速查表，谨慎使用）。
+
 **约束**：
 - **非工作流 action**，不走 `/wf/{action}` 门面，AGENTS.md §5.3-§5.8 的 action 替换规则对它无效。
 - 调用前确认磁盘上没有未晋升的 `./tdd/<key>.json`（WIP 数据本身不会被清，因为 reset 只动 PG 表），但若该流程已部署到 PG，部署的副本会消失 —— 需要重新部署或从 `./flows/<key>.json` 再次启动。
@@ -152,6 +157,11 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDesign/deploy \
 
 `processDesign/deploy` 按 `name` 自动 `+1` version（详见 `./docs/actions.md §2 #14`）。
 
+> ⚠️ **实测补充（2026-09-17 复测 `02-multi-task`）**：
+> - `processDesign/save` 是 **UPSERT**：以 `name` 为唯一键，**复用现有行 id**。`/api/reset` 后 design 表仅 1 行 id=9；多次 save 不同 name 全部返回 id=9（**name 字段被覆盖**）。
+> - `processDesign/deploy` 也复用 `processDefineId`（实测两次 deploy 都返回 113，但 `name`/内容随上次 save 而变）。
+> - **结论**：runner 必须记录本轮 deploy 返回的 `processDefineId` + 用 `processDefine/page` 验证当前 `name` 与期望流程匹配，**不可硬编码 id**。
+
 ### 5.4 启动流程实例
 
 `./docs/actions.md` 中**仅开放** `processInstance/startAndExecute`（及其别名 `startAndExecute`），该方法一次性完成「启动 + 跑第一步」。**禁止**使用 `/wf/processInstance/start`（不在清单中；同等处理见 §6 关键约束）。
@@ -160,10 +170,11 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDesign/deploy \
 curl -s -X POST http://127.0.0.1:8101/wf/processInstance/startAndExecute \
   -H 'Content-Type: application/json' \
   -d '{
-    "name": "simple",
+    "processDefineId": "<本轮 deploy 返回的 processDefineId>",
     "operator": "user1",
     "title": "测试-简单审批-001",
-    "args": {
+    "assignees": {"apply": "user1"},
+    "variables": {
       "submitType": 0,
       "f_leaveType": "事假",
       "days": 3,
@@ -174,6 +185,12 @@ curl -s -X POST http://127.0.0.1:8101/wf/processInstance/startAndExecute \
 ```
 
 返回 `data.processInstanceId`（数字）。所有 id 字段出口会被 `_stringify_ids` 转字符串。
+
+> ⚠️ **必传字段（实测）**：
+> - `processDefineId` — 顶层，**非 `name` + `version` 组合**；本轮 deploy 响应 `data.processDefineId` 即得。
+> - `operator` — 顶层；发起人 userId（与 `variables.u_userId` 一致）。
+> - `assignees` — 顶层 dict `{<taskName>: <userId>}`；**不传则下游 task 处于 taskState=10 但 operator=空，runner 无法自动推进**。
+> - `variables` — 顶层 dict；业务变量（`f_*`）+ 操作人（`u_*`）+ submitType。**`submitType` 顶层 variables 与顶层 `args.submitType` 等效，但 facade bug 会强制改值（见 `./docs/known-issues.md` §1）。
 
 ### 5.5 取待办 + 执行任务
 
@@ -189,11 +206,13 @@ curl -s -X POST http://127.0.0.1:8101/wf/processTask/todoList \
 curl -s -X POST http://127.0.0.1:8101/wf/processTask/execute \
   -H 'Content-Type: application/json' \
   -d '{
-    "taskId": <TASK_ID>,
+    "processTaskId": <TASK_ID>,
     "submitType": 0,
-    "operator": "leader",
-    "args": { "submitType": 0, "u_userId": "leader", "u_realName": "领导" }
+    "operator": "leader"
   }'
+```
+
+> ⚠️ **字段名修正（2026-09-17 实测）**：请求字段是 **`processTaskId`**，**不是** `taskId`。runner v4 之前用错，导致 0/7 通过。
 ```
 
 ### 5.6 校验
@@ -230,10 +249,12 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 
 | 类型 | curl 操作 | 预期 `performType/countersignType` | 预期完成条件 |
 | --- | --- | --- | --- |
-| 并行 | 三用户同时 `processTask/execute` | `1 / PARALLEL` | 任一通过即流转 |
+| 并行 | 三用户按序 `processTask/execute` | `1 / PARALLEL` | **全员通过才流转**（剩余成员 taskState 仍 10，不自动废弃） |
 | 串行 | 三个用户按顺序 `processTask/execute` | `1 / SEQUENTIAL` | 仅最后一个通过即流转 |
 | 比例 | N 个用户中 K 个通过 | `1 / PARALLEL` | `countersignCompletionCondition` 在 field 下 |
-| 一票否决 | 任一用户 reject | `1 / PARALLEL` | `ONE_VOTE_VETO` |
+| 一票否决 | 任一用户 reject（submitType=20） | `1 / PARALLEL` | `ONE_VOTE_VETO`（仅当配置时生效；剩余成员废弃） |
+
+> ⚠️ **修正（2026-09-17 实测 05-countersign-parallel）**：原表写 PARALLEL "任一通过即流转"，实测**全员通过才流转**。`engine.py:121-123` 完成任务后检查 `find_doing_tasks`，有 doing 直接 return 不流转。剩下成员 taskState 仍 10 (DOING)，由后续完成者继续推进；最后一个完成时所有 doing 已清空才往下走。
 
 ---
 
@@ -246,7 +267,7 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 | 3 | 流程图必须 `start` 开 / `end` 收 | `./docs/flow.md §3.1` |
 | 4 | decision 出边按顺序评估，首个真值即流转 | `./docs/flow.md §3.4` |
 | 5 | `performType=1` 必须配 `countersignType` | `./docs/flow.md §3.3` |
-| 6 | `countersignCompletionCondition` 两位置：`properties` 根 或 `properties.field` | `./docs/flow.md §3.3` |
+| 6 | `countersignCompletionCondition` 两位置：`properties` 根 或 `properties.field`（⚠️ 引擎仅识别 `ONE_VOTE_VETO` 字符串；其他条件由 `RatioCapableEngine` 扩展支持） | `./docs/flow.md §3.3` |
 | 7 | `assignmentHandler` 与 `assignee` 互斥；同时写则 handler 优先 | `./docs/flow.md §6` |
 | 8 | 操作人 `u_*` 只进执行上下文，不写回实例 | `./docs/flow.md §7` |
 | 9 | 实例变量 `f_*`（发起时） vs `tf_*`（执行时）分工 | `./docs/flow.md §7` |
@@ -261,6 +282,7 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 | 坑 | 表现 | 修复 |
 | --- | --- | --- |
 | 决策节点所有 `expr` 都不满足 | 引擎兜底走第一条出边 | 加默认边 `expr=""` 或显式兜底分支 |
+| 决策 `expr` 引用 `variables.amount` 失败 | OGNL root 不含 `variables`，两个分支都走首边 | 用 OGNL 完整路径 `#variables.amount > 1000`（**待实测确认**）；或决策前必经 task 把 amount 写入 `f_amount` |
 | `performType` 字符串 "1" 但 `countersignType` 漏配 | 子任务生成但完成逻辑乱 | 引擎容错解析，但 `countersignType` 必须给 |
 | `countersignCompletionCondition` 写 `field` 但 assignees 全是变量 | 条件永远不评估 | 改用根 `properties` 写，或确保 field.candidateUsers 非空 |
 | `assignmentHandler` 拼写错（大小写） | 引擎走默认 handler = `inst.operator` | 严格照 `./docs/flow.md §6` FQCN |
@@ -331,7 +353,7 @@ sleep 1
 - [ ] uvicorn 起在 8101，`/wf/processInstance/stats/overview` 返回 `code:0`
 - [ ] `processDesign/save` + `processDesign/deploy` 返回 `code:0`，版本号 +1
 - [ ] `processInstance/startAndExecute` 返回 `processInstanceId`
-- [ ] 走完所有 task（用 `processTask/todoList` + `processTask/execute`），`processInstance/detail` 显示 `state==7`（已完成）
+- [ ] 走完所有 task（用 `processTask/todoList` + `processTask/execute`），`processInstance/detail` 显示 `state==20`（`InstanceState.DONE`）
 - [ ] `approvalRecord` 节点顺序与设计一致
 - [ ] `bizData` 实例变量符合预期（`u_*` 仅启动时写，`f_*` 持久化）
 - [ ] 所有调用 action 名均在 §5.1 速查表内（不得使用未登记的 action）

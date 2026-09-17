@@ -90,9 +90,24 @@
 
 `engine._evaluate_decision`（`engine.py:353-375`）按出边 `properties.expr` 依次求值，第一个真值即沿该边。`properties.expr` 可空（默认边），`handleClass` 兼容 Java 扩展点（样例 03-decision-expr.json 与 10-mixed-mode.json 均保留 `"handleClass": ""` 占位，当前未触发，留作后续扩展）。
 
+> ✅ **决策 expr 实测约束（2026-09-17 已解决）**：
+> - `SimpleExprEvaluator.eval`（`main_pg.py:71-89`）严格匹配正则 `^\s*(\w+)\s*(>=|<=|!=|==|>|<)\s*(\d+(?:\.\d+)?)\s*$`
+> - 不支持 OGNL 路径（`#variables.*` / `variables.*`）、字面量比较（`1==1`）、字符串字面量（`"yes"=="yes"`）；不匹配直接返回 False
+> - 变量必须直接存在于 `vars_` 顶层：`vars.get(key)` 不展开嵌套字典
+> - **正确写法**：业务变量（`amount`、`days`、`leaveType` 等）放在 `startAndExecute` 顶层（与 `processDefineId`/`operator`/`title`/`assignees` 同级），**不要放在 `variables` 内**：
+>   ```jsonc
+>   // ❌ 错误
+>   {"variables": {"amount": 500, "submitType": 0}}
+>   // ✅ 正确
+>   {"amount": 500, "variables": {"submitType": 0, "u_userId": "applicant", "u_realName": "申请人"}}
+>   ```
+> - **回退顺序**：所有 expr False → 取第一条无 expr 的边（默认边）→ 取第一条边
+
 ### 3.5 custom 节点 properties
 
 来源：`flows/08-custom-node.json` + 引擎入口（`TYPE_CUSTOM` 与 `TYPE_TASK` 共用 `_create_task`，但 custom 不建任务，触发外部处理器）。
+
+> ⚠️ **实测（2026-09-17 复测 08-custom-node）**：引擎**未实现** `clazz/methodName/args/val` 四个字段的反射调用。custom 节点被当 task 处理，要求 `assignee`/`assignmentHandler` 解析 actors；否则 `_create_task` 在 actors=[] 时 return，流程卡死。详见 `./known-issues.md` §16 + `./tdd/test_08-custom-node_20260917101500.md`。
 
 | 字段 | 说明 |
 | --- | --- |
@@ -200,6 +215,36 @@
 
 ---
 
+## 7a. SubmitType 路由矩阵
+
+`SubmitType` 是实例变量 `submitType` 的枚举值（`jeeflow/model.py:45-52`，仅文档记录，不可改），决定任务节点执行后路由走向。
+
+| submitType | 字面含义 | 引擎行为 | 实测终态（`processInstance/detail.state`） | 备注 |
+| --- | --- | --- | --- | --- |
+| 0 | 发起 / 开始 | `startAndExecute` 内部自动注入 | `state=20`（DONE） | 唯一合法 APPLY 路径；客户端禁止直接传 0（详见 §10 bug #1） |
+| 1 | 同意 / 批准 | 直达下一节点；遇 end 触发 `inst.finish()` | `state=20` | 最常见 |
+| 2 | 驳回（拒绝） | 遇 end 触发 `inst.reject()` | `state=45`（REJECT） | 标记实例 REJECT |
+| 3 | 退回 | 跳回首任务节点 `apply` | `state=10`（DOING，活跃任务=apply） | 重新激活 apply |
+| 5 | 转发 / 转办 | 改派下一节点处理人 | `state=20`（经下一节点） | 通常配合 `tf_<nodeId>` |
+| 6 | 退回发起人 | 跳回 `apply` | `state=10`（DOING） | 与 submitType=3 等价路径 |
+| 20 | 提交 / 继续 | 直达下一节点 | `state=20` | 与 submitType=1 同义 |
+
+实测端点：
+
+| 场景 | 端点 | 备注 |
+| --- | --- | --- |
+| 起批 + 首节点同意 | `POST /wf/processInstance/startAndExecute` | body `variables.submitType=1` 模拟首节点同意；submitType=0 由 facade 内部注入 |
+| 中间节点同意/驳回/退回 | `POST /wf/processInstance/execute` | body 含 `processTaskId` + `submitType` |
+
+实测来源：`./tdd/test_demo-single-approval-reject_20260917075915.md`（5/5 PASS）。
+
+约束：
+
+- ⚠ 客户端禁止直接传 `submitType=0`；facade 强制改写为 1（见 §10 bug #1）。合法客户端提交：`1`/`2`/`3`/`5`/`6`/`20`。
+- ⚠ `state=20` 是 `processInstance/detail.state` 字段（`InstanceState.DONE`），实测 `detail.finish_state` 字段整个生命周期恒为 null（弃用）。完整枚举见 `./docs/state.md`。
+
+---
+
 ## 8. 完整样例索引
 
 | 文件 | 演示场景 | 关键字段 |
@@ -238,3 +283,22 @@
 | 字段权限 | `node.properties.field.PERMISSION_<fkey>`（1=只读，2=隐藏） |
 | 动态指定处理人 | 变量 `tf_<nodeId>`（执行时）、`f_<nodeId>`（发起时） |
 | 实例变量合并 | `KEY_SUBMIT_TYPE`、`f_*`、`u_*`（发起人持久化、操作人不持久化） |
+
+---
+
+## 10. 已知问题集中登记
+
+本节集中登记引擎行为约束、facade bug、运维约定等已知问题，便于后续维护时检索。所有条目**仅文档记录，不可改源码**。
+
+| # | 问题 | 影响范围 | 替代方案 / 缓解措施 | 来源 |
+| --- | --- | --- | --- | --- |
+| 1 | facade `submitType=0` 被强制改为 `1`（`X or Y` falsy trap，`facade.py:300`） | 客户端无法直接 `submitType=0` | 仅经 `startAndExecute`（内部自动注入 0）；客户端合法提交：`1`/`2`/`3`/`5`/`6`/`20` | `./venv/.../jeeflow/facade.py:300`（仅记录） |
+| 2 | `_follow_edges` 不解析 `expr`（`engine.py:557-558`） | 非 `snaker:decision` 节点出边 `expr` 被静默忽略 | `expr` 仅放 `snaker:decision` 出边；其他节点出边保持空 `properties` | `./venv/.../jeeflow/engine.py:557-558`（仅记录） |
+| 3 | `u_*` 操作人不持久化到实例变量（`KEY_USER_ID` 等） | 跨节点操作人无法在 `wf_process_instance.variables` 追溯 | 流程上下文内置，但不落盘；如需追溯，改用 `wf_process_task.actor` | `./venv/.../jeeflow/engine.py:8-40`（仅记录） |
+| 4 | 服务 stdout 走 `/dev/pts/42` 未落盘 | 离线排查异常栈受限 | 测试日志落到 `./tdd/test_<key>_<YYYYMMDDHHMMSS>.md`（见 `./tdd/README.md`） | 运维约定 |
+| 5 | `flows/09-with-reject.json` 文件名误导 | 实为线性流（`apply→task1→end`），驳回靠引擎自动 ROLLBACK；不是"含驳回节点的流程图" | 不重命名（避免破坏外部引用），在 `./flows/README.md`（待补）加注说明 | `./flows/09-with-reject.json` |
+| 6 | 状态码双义：`detail.finish_state` 恒为 null（弃用），`detail.state` 才是 `InstanceState` 枚举（DONE=20/REJECT=45/DOING=10 等） | 客户端易混 | 只看 `detail.state`；枚举见 `./docs/state.md` §3 | `./venv/.../jeeflow/model.py:45-52`（仅记录） |
+| 7 | 决策出边 `expr` 兜底逻辑 | 全失败 → 首条边；无 expr → 默认边 | 设计 decision 路由时务必保证至少一条边可命中（含默认边） | `./venv/.../jeeflow/engine.py:353-369`（仅记录） |
+| 8 | `flows/` 现有 JSON 不可改 | 01-13 已固化（含两个 `11-`），所有改动走新增 + 晋升路径 | 新流程 JSON 先落 `./tdd/<key>.json`，测试稳定后 `cp` 晋升 `./flows/<key>.json` | `./flows/`（项目约定） |
+
+> 表格中"来源"列若引用源码行号，仅作历史定位参考，**禁止回读源码**，所有字段语义以本文档和 `./docs/actions.md` 为准。

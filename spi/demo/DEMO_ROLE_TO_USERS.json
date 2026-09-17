@@ -2,5 +2,7 @@
   "leader": ["leader"],
   "manager": ["manager"],
   "director": ["director"],
-  "boss": ["boss"]
+  "boss": ["boss"],
+  "finance": ["leader", "manager"],
+  "task4": ["userC"]
 }

@@ -1,0 +1,98 @@
+{
+  "processDefineId": 16,
+  "base": "http://localhost:8101",
+  "operator": "user1",
+  "assignee": "user2",
+  "cases": [
+    {
+      "submitType": 0,
+      "processInstanceId": "91756274336959",
+      "actualState": 10,
+      "expectedState": 7,
+      "pass": false,
+      "elapsedMs": 109,
+      "resetStatus": 200,
+      "startStatus": 200,
+      "execStatus": null,
+      "detailStatus": 200
+    },
+    {
+      "submitType": 1,
+      "processInstanceId": "91756274413857",
+      "actualState": 10,
+      "expectedState": 7,
+      "pass": false,
+      "elapsedMs": 75,
+      "resetStatus": 200,
+      "startStatus": 200,
+      "execStatus": null,
+      "detailStatus": 200
+    },
+    {
+      "submitType": 2,
+      "processInstanceId": "91756274490755",
+      "actualState": 10,
+      "expectedState": 45,
+      "pass": false,
+      "elapsedMs": 74,
+      "resetStatus": 200,
+      "startStatus": 200,
+      "execStatus": null,
+      "detailStatus": 200
+    },
+    {
+      "submitType": 3,
+      "processInstanceId": "91756274567653",
+      "actualState": 10,
+      "expectedState": 10,
+      "pass": true,
+      "elapsedMs": 74,
+      "resetStatus": 200,
+      "startStatus": 200,
+      "execStatus": null,
+      "detailStatus": 200
+    },
+    {
+      "submitType": 5,
+      "processInstanceId": "91756274644551",
+      "actualState": 10,
+      "expectedState": 7,
+      "pass": false,
+      "elapsedMs": 74,
+      "resetStatus": 200,
+      "startStatus": 200,
+      "execStatus": null,
+      "detailStatus": 200
+    },
+    {
+      "submitType": 6,
+      "processInstanceId": "91756274721449",
+      "actualState": 10,
+      "expectedState": 10,
+      "pass": true,
+      "elapsedMs": 75,
+      "resetStatus": 200,
+      "startStatus": 200,
+      "execStatus": null,
+      "detailStatus": 200
+    },
+    {
+      "submitType": 20,
+      "processInstanceId": "91756274795275",
+      "actualState": 10,
+      "expectedState": 7,
+      "pass": false,
+      "elapsedMs": 71,
+      "resetStatus": 200,
+      "startStatus": 200,
+      "execStatus": null,
+      "detailStatus": 200
+    }
+  ],
+  "totals": {
+    "run": 7,
+    "passed": 2,
+    "failed": 5
+  },
+  "ranAt": "20260917084217"
+}

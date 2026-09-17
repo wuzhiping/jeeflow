@@ -1,0 +1,134 @@
+{
+  "processDefineId": 16,
+  "base": "http://localhost:8101",
+  "operator": "user1",
+  "assignee": "user2",
+  "vars": {},
+  "cases": [
+    {
+      "submitType": 0,
+      "processInstanceId": "91756518565601",
+      "actualState": 20,
+      "expectedState": 20,
+      "pass": true,
+      "elapsedMs": 81,
+      "resetStatus": 200,
+      "startStatus": 200,
+      "execStatus": 200,
+      "detailStatus": 200,
+      "execBody": {
+        "code": 0,
+        "msg": "成功",
+        "data": null
+      }
+    },
+    {
+      "submitType": 1,
+      "processInstanceId": "91756518647619",
+      "actualState": 20,
+      "expectedState": 20,
+      "pass": true,
+      "elapsedMs": 80,
+      "resetStatus": 200,
+      "startStatus": 200,
+      "execStatus": 200,
+      "detailStatus": 200,
+      "execBody": {
+        "code": 0,
+        "msg": "成功",
+        "data": null
+      }
+    },
+    {
+      "submitType": 2,
+      "processInstanceId": "91756518733733",
+      "actualState": 45,
+      "expectedState": 45,
+      "pass": true,
+      "elapsedMs": 86,
+      "resetStatus": 200,
+      "startStatus": 200,
+      "execStatus": 200,
+      "detailStatus": 200,
+      "execBody": {
+        "code": 0,
+        "msg": "成功",
+        "data": null
+      }
+    },
+    {
+      "submitType": 3,
+      "processInstanceId": "91756518819847",
+      "actualState": 10,
+      "expectedState": 10,
+      "pass": true,
+      "elapsedMs": 81,
+      "resetStatus": 200,
+      "startStatus": 200,
+      "execStatus": 200,
+      "detailStatus": 200,
+      "execBody": {
+        "code": 0,
+        "msg": "成功",
+        "data": null
+      }
+    },
+    {
+      "submitType": 5,
+      "processInstanceId": "91756518898794",
+      "actualState": 20,
+      "expectedState": 20,
+      "pass": true,
+      "elapsedMs": 77,
+      "resetStatus": 200,
+      "startStatus": 200,
+      "execStatus": 200,
+      "detailStatus": 200,
+      "execBody": {
+        "code": 0,
+        "msg": "成功",
+        "data": null
+      }
+    },
+    {
+      "submitType": 6,
+      "processInstanceId": "91756518980812",
+      "actualState": 10,
+      "expectedState": 10,
+      "pass": true,
+      "elapsedMs": 79,
+      "resetStatus": 200,
+      "startStatus": 200,
+      "execStatus": 200,
+      "detailStatus": 200,
+      "execBody": {
+        "code": 0,
+        "msg": "成功",
+        "data": null
+      }
+    },
+    {
+      "submitType": 20,
+      "processInstanceId": "91756519061807",
+      "actualState": 20,
+      "expectedState": 20,
+      "pass": true,
+      "elapsedMs": 79,
+      "resetStatus": 200,
+      "startStatus": 200,
+      "execStatus": 200,
+      "detailStatus": 200,
+      "execBody": {
+        "code": 0,
+        "msg": "成功",
+        "data": null
+      }
+    }
+  ],
+  "totals": {
+    "run": 7,
+    "passed": 7,
+    "failed": 0
+  },
+  "ranAt": "20260917084615"
+}

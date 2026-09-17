@@ -23,6 +23,7 @@ from datetime import datetime
 import asyncpg
 from jeeflow import EngineImpl, EventType, ProcessEvent, JeeflowFacade, \
     EngineExtensions, HandlerRegistry, register_builtin_assignments, JdbcRepository
+from jeeflow.engine import _find_node, _follow_edges, _sync_task_to_aggregate
 from jeeflow.repository.postgres import PostgresAdapter
 from jeeflow.repository.ext import JdbcProcessExtRepository
 from jeeflow.model import InstanceState, TaskState, ProcessDefine, ProcessInstance, ProcessTask, UserInfo, parse_flow_model
@@ -69,13 +70,13 @@ class SnowflakeIDGen(IDGenerator):
 
 
 class SimpleExprEvaluator(ExpressionEvaluator):
-    """简易 SpEL 表达式：支持 amount >/>=/</<=/== number"""
+    """简易 SpEL 表达式：支持 amount >/>=/</<=/== number；OGNL 风格 #varname 同支持"""
     async def eval(self, expr: str, vars: dict):
         import re
-        m = re.match(r"^\s*(\w+)\s*(>=|<=|!=|==|>|<)\s*(\d+(?:\.\d+)?)\s*$", expr)
+        m = re.match(r"^\s*(#?\w+)\s*(>=|<=|!=|==|>|<)\s*(\d+(?:\.\d+)?)\s*$", expr)
         if not m:
             return False
-        key, op, val = m.group(1), m.group(2), float(m.group(3))
+        key, op, val = m.group(1).lstrip("#"), m.group(2), float(m.group(3))
         actual = vars.get(key)
         if actual is None:
             return False
@@ -87,6 +88,71 @@ class SimpleExprEvaluator(ExpressionEvaluator):
         if op == "==": return actual == val
         if op == "!=": return actual != val
         return False
+
+
+class RatioCapableEngine(EngineImpl):
+    """比例会签扩展引擎：支持通用 countersignCompletionCondition（OGNL 表达式）。
+
+    引擎默认 PARALLEL 仅识别 ONE_VOTE_VETO（jeeflow/engine.py:101）；其他 OGNL 条件
+    （如 "#nrOfCompletedInstances==2"）会被忽略。此子类在 execute_process_task 中：
+    1. 先调 EngineImpl.execute_process_task 原版完成当前 task（内部做 _prepare_execute_task + 推进）
+    2. 重新查实例，统计 cur_node 的 nrOfCompletedInstances/nrOfInstances
+    3. 若 cs_cond 非 ONE_VOTE_VETO + 求值通过 → 废弃剩余 DOING + 调用 _execute_node 推进下游
+
+    注意：必须先 super 再判断比例条件，因为 super 内部已经把当前 task 从 DOING 推到 DONE，
+    重复 _prepare_execute_task 会导致 "task not doing" 错误。
+
+    cs_cond 同时支持 properties.countersignCompletionCondition（引擎实际读）和
+    properties.field.countersignCompletionCondition（设计器输出），向后兼容。
+    """
+
+    async def execute_process_task(self, task_id: int, operator: str, args: dict = None):
+        result = await EngineImpl.execute_process_task(self, task_id, operator, args)
+        try:
+            from jeeflow.model import parse_flow_model as _parse
+            import json as _json
+            def_ = await self.repo.find_define_by_id(result.defineId)
+            if not def_: return result
+            flow = _parse(_json.loads(def_.content))
+            cur_task = await self.repo.find_task_by_id(task_id)
+            if not cur_task: return result
+            cur_node = _find_node(flow, cur_task.taskName)
+            if not cur_node: return result
+            ct = str(cur_node.properties.get("countersignType", "") or "").strip()
+            cs_cond = ""
+            p = cur_node.properties or {}
+            cs_cond = str(p.get("countersignCompletionCondition", "") or "").strip()
+            if not cs_cond:
+                field = p.get("field", {}) or {}
+                cs_cond = str(field.get("countersignCompletionCondition", "") or "").strip()
+            is_ratio = ct in ("PARALLEL", "RATIO") and cs_cond and cs_cond.upper() != "ONE_VOTE_VETO"
+            if not is_ratio:
+                return result
+            inst_after = result
+            node_tasks = [t for t in (inst_after.tasks or []) if t.taskName == cur_node.id]
+            completed = sum(1 for t in node_tasks if t.taskState == 20)
+            total = len(node_tasks)
+            eval_vars = dict(result.variables or {})
+            eval_vars["nrOfCompletedInstances"] = completed
+            eval_vars["nrOfInstances"] = total
+            try:
+                satisfied = bool(await self.expr_eval.eval(cs_cond, eval_vars))
+            except Exception:
+                satisfied = False
+            if satisfied:
+                now = datetime.now()
+                still_doing = [t for t in node_tasks if t.taskState == 10]
+                if still_doing:
+                    for t in still_doing:
+                        t.abandon(now)
+                        await self.repo.update_task(t)
+                        _sync_task_to_aggregate(inst_after, t)
+                    for node in _follow_edges(flow, cur_node.id):
+                        await self._execute_node(flow, inst_after, node, operator, eval_vars)
+                    return await self.repo.find_instance_by_id(inst_after.id)
+        except Exception as ex:
+            print(f"[RatioCapableEngine] ratio check failed: {ex!r}", file=sys.stderr)
+        return result
 
 
 from spi import SimpleUserProvider, SpiOrgUserProvider, spi_user_search, SPI_USERS, SPI_ROLES, SPI_DICTS
@@ -185,6 +251,18 @@ def _wrap_facade_flow(facade: JeeflowFacade, repo: JdbcRepository) -> None:
                     real = _DEFINE_ORDINAL_CACHE.get(v)
                 if real is not None:
                     args["processDefineId"] = real
+            # Issue D：业务 variables 嵌套解包——startAndExecute 把 args 整体塞到
+            # inst.variables（jeeflow engine.start_process_instance_by_id:69）。
+            # 若调用方传 {variables: {amount: 5000}}，amount 会被嵌套到
+            # inst.variables.variables.amount，decision expr vars_.get("amount")
+            # 永远拿不到 → expr 永远 False → fallback 到 edges[0]。
+            # 此处把 variables 子字典就地展开到 args 顶层（key 不冲突时），
+            # 让 inst.variables = {amount: 5000, ...} 直接可被 expr 访问。
+            nested = args.get("variables")
+            if isinstance(nested, dict):
+                for k, val in nested.items():
+                    if k not in args:
+                        args[k] = val
         return await _orig_flow(action, args)
 
     facade.flow = _safe_flow
@@ -392,7 +470,7 @@ async def lifespan(app: FastAPI):
     idgen = SnowflakeIDGen()
     user_prov = SimpleUserProvider()
     org_prov = SpiOrgUserProvider()
-    engine = EngineImpl(repo, user_prov, idgen, SimpleExprEvaluator())
+    engine = RatioCapableEngine(repo, user_prov, idgen, SimpleExprEvaluator())
     _registry = HandlerRegistry()
     register_builtin_assignments(_registry, user_prov, org_prov)
     engine.set_extensions(EngineExtensions(registry=_registry))
