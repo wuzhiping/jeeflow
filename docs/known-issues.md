@@ -54,6 +54,7 @@
 
 | 章节 | 标题 | 影响范围 |
 |---|---|---|
+| §16 | snaker:custom 节点 Python 引擎未实现 | 自定义节点 |
 | §36 | main.py vs main_pg.py _resolve_interceptors 行为不一致 | 拦截器测试 |
 | §40 | Python surrogate 仅记录不生效 | 委派场景 |
 | §41 | SPI deptId 映射 | DeptLeader handler（**已修复**） |
@@ -2394,3 +2395,155 @@ if handler_name and self.ext and self.ext.registry:
 | 1 | handler 不存在静默 fallback | warning |
 | 2 | roleCode 字段被忽略（用 node.id） | critical |
 | 3 | 错误 FQCN 静默 fallback（FIX-T2 已记 warning） | warning |
+
+---
+
+## §69. startAndExecute 自动跑第一步（Task 02 实测 2026-09-17）
+
+### ⚠️ 陷阱
+
+`/wf/processInstance/startAndExecute` + `submitType=1` 语义：
+- **一次性完成「启动 + 跑第一步」**（apply 节点自动 AGREE）
+- 返回时 active task **已是 task1**（不是 apply）
+- 后续 task.execute 必须用 task1.actor 而非发起人
+
+### 错误 vs 正确
+
+```python
+# 错误
+inst = startAndExecute(submitType=1, operator=user1, ...)
+execute(processTaskId=task1_id, operator=user1)  # ❌ "operator user1 not allowed"
+
+# 正确
+inst = startAndExecute(submitType=1, operator=user1, ...)  # apply auto-done
+execute(processTaskId=task1_id, operator=leader)   # ✅ task1.actor=leader
+```
+
+### 引擎实现
+
+`facade.py` startAndExecute 内部调用 `_engine.start_process_instance_by_id`，传 submitType=1 时：
+- 创建 apply task
+- 立即 execute_process_task(apply, operator=user1)
+- apply.state=DONE，流转到 task1
+
+### 测试报告
+
+- `./tdd/tdd-02-multi-task_20260917152000.md`
+
+---
+
+## §71. performType=0 + 多 actor 是 OR 门控（Task 11 实测 2026-09-17）
+
+### 实测
+
+| 配置 | 行为 |
+|---|---|
+| `performType=0` + `assignee=userA,userB` | **单 task**，actorIds=[userA,userB]，**任一执行即可流转** |
+| `performType=1` + `countersignType=PARALLEL` + `assignee=userA,userB` | 多 task（每 actor 一行），**全部完成流转**（AND 门控） |
+| `performType=1` + `assignee=userA` | 单 task，actorIds=[userA]，与 performType=0 单 actor 相同 |
+
+### 引擎实现（engine.py L415-442）
+
+```python
+for a in assignee.split(","):  # 逗号分割
+    ...
+    actors.append(token)
+return actors  # actorIds 直接当列表
+```
+
+`assignee=userA,userB` 解析为 actors=[userA,userB]，
+actorIds=[userA,userB]，**is_allowed 是 in 检查**。
+
+### 测试报告
+
+- `./tdd/tdd-11-assignee-vars_20260917153000.md`
+
+---
+
+## §72. handler FQCN 双轨制（Task 11-assignment-handler 实测 2026-09-17）
+
+### 实测
+
+`flows/11-assignment-handler.json` 用了简化版 FQCN（无 `$`）：
+- `com.mldong.jeeflow.interceptor.impl.FormFieldAssigneeHandler` ✅ 工作
+- `com.mldong.jeeflow.interceptor.impl.OperatorAssignmentHandler` ❌ 拼写错误
+- `com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandler` ❌ 应是 `$XXXHandler` 子类
+
+### FQCN 双轨制
+
+| 来源 | 格式 | 示例 |
+|---|---|---|
+| Python 引擎（builtin.py） | 简化版 | `com.mldong.jeeflow.interceptor.impl.FormFieldAssigneeHandler` |
+| Java mldong 引擎 | 完整版 | `com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$FormFieldAssigneeHandler` |
+
+### 引擎注册（builtin.py L16）
+
+```python
+HANDLER_FORM_FIELD_ASSIGNEE = "com.mldong.jeeflow.interceptor.impl.FormFieldAssigneeHandler"
+```
+
+Python 引擎用简化版 FQCN 注册，但能同时支持 Java 完整版（Task 57 v4 验证）。
+
+### 推荐用法
+
+```python
+# 优先简化版（与 builtin.py 一致）
+"assignmentHandler": "com.mldong.jeeflow.interceptor.impl.TaskRoleAssigneeHandler"
+
+# Java 完整版也可（Task 57 验证）
+"assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+```
+
+### 测试报告
+
+- `./tdd/tdd-11-assignment-handler_20260917153100.md`
+
+---
+
+## §73. facade submitType 路由优先于 decision expr（Task 14 实测 2026-09-17）
+
+### 实测
+
+`flows/14-decision-submitType.json` 设计意图：用 decision expr 根据 submitType 流转。
+
+实际行为：
+- `submitType=1` → decision expr `submitType==1` 匹配 → 流转到 end ✅
+- `submitType=2` → **facade REJECT 路由直接 execute_and_jump_to_end** → state=45
+- decision expr 完全没被检查
+
+### Engine 实现（facade.py L295-318）
+
+```python
+if submit_type == SUBMIT_REJECT:  # 2
+    await self._engine.execute_and_jump_to_end(...)
+elif submit_type == SUBMIT_ROLLBACK:  # 3
+    await self._engine.execute_and_jump_task(...)
+elif submit_type == SUBMIT_JUMP:  # 4
+    ...
+elif submit_type == SUBMIT_ROLLBACK_TO_OPERATOR:  # 6
+    await self._engine.execute_and_jump_to_first_task_node(...)
+elif submit_type == SUBMIT_COUNTERSIGN_DISAGREE:  # 20
+    ...
+else:  # 0 APPLY / 1 AGREE / 5 RE_APPLY
+    await self._engine.execute_process_task(...)
+```
+
+只有 else 分支（submitType=0/1/5）走到 engine.execute_process_task，
+才触发 decision expr 评估。
+
+### 关键结论
+
+| submitType | 路由 |
+|---|---|
+| 0 APPLY | execute_process_task → decision expr 可生效 |
+| 1 AGREE | execute_process_task → decision expr 可生效 |
+| 2 REJECT | execute_and_jump_to_end（state=45） |
+| 3 ROLLBACK | execute_and_jump_task |
+| 4 JUMP | execute_and_jump_task(taskName) |
+| 5 RE_APPLY | execute_process_task（FIX-T4 monkey patch → ROLLBACK_TO_OPERATOR） |
+| 6 ROLLBACK_TO_OPERATOR | execute_and_jump_to_first_task_node |
+| 20 COUNTERSIGN_DISAGREE | execute_process_task（带 countersignDisagreeFlag） |
+
+### 测试报告
+
+- `./tdd/tdd-14-decision-submitType_20260917153400.md`
