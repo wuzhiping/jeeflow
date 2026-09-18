@@ -1,0 +1,8 @@
+{
+  "name": "weird-id",
+  "title": "测试-节点id含空格",
+  "type": "approval",
+  "node_types": ["start","task","end"],
+  "features": ["节点 id 含空格", "FIX-T34 修复"],
+  "errors": ["FIX-T34: deploy 校验 id 命名规范"]
+}

@@ -242,6 +242,13 @@ class JeeflowFacade:
         dup_ids = sorted({i for i in node_ids if node_ids.count(i) > 1})
         if dup_ids:
             raise ValueError(f"流程节点 id 重复: {dup_ids}（§58 已知 BUG 修复，禁止节点 id 重复）")
+        # FIX-T34 (2026-09-18)：deploy 时校验节点 id 命名规范
+        # 允许字母/数字/下划线（与 Java 端兼容），禁止空格/-/中文/特殊字符（§3.1 docs/flow.md 约束）
+        import re
+        bad_ids = sorted({i for i in node_ids if not re.match(r"^[A-Za-z0-9_]+$", i)})
+        if bad_ids:
+            raise ValueError(f"流程节点 id 含非法字符: {bad_ids}（§3.1 docs/flow.md 约束，"
+                             f"只允许字母/数字/下划线）")
         version = 0
         latest = await self._repo.find_define_by_name(name)
         if latest:

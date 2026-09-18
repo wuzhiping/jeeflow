@@ -1,0 +1,8 @@
+{
+  "name": "self-cc",
+  "title": "测试-ccActors是发起人自己",
+  "type": "approval",
+  "node_types": ["start","task","end"],
+  "features": ["自抄送", "CC actor 是发起人"],
+  "errors": []
+}

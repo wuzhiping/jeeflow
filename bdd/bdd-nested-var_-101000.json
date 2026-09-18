@@ -1,0 +1,8 @@
+{
+  "name": "nested-var",
+  "title": "测试-嵌套对象变量",
+  "type": "approval",
+  "node_types": ["start","task","end"],
+  "features": ["嵌套对象变量", "数组变量"],
+  "errors": []
+}

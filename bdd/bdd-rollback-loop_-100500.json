@@ -1,0 +1,8 @@
+{
+  "name": "rollback-loop",
+  "title": "测试-ROLLBACK循环",
+  "type": "approval",
+  "node_types": ["start","task","task","task","end"],
+  "features": ["ROLLBACK 多轮", "§52 复现"],
+  "errors": ["§52 ROLLBACK actor 错位仍存"]
+}

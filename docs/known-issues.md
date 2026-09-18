@@ -3424,3 +3424,153 @@ parentId=int(args.get("parentId")) if args.get("parentId") is not None else None
 - 本轮仍存 BUG：2 个（§27, §52）
 - 引擎行为正确：42 个章节
 - 已知设计限制：4 个章节
+
+
+## §88 决策节点所有 expr 都为空（task #112）
+
+**结论**：✅ **PASS** — 引擎按 `docs/flow.md §3.4` 走兜底第一条 expr="" 出边
+
+**引擎行为**：
+- `engine._evaluate_decision` 按 edges 顺序评估
+- 所有 expr 都 null/空 → 走第一条
+- 不报错，flow 正常推进
+
+**设计要点**：
+- decision 节点至少 1 条 `expr=""` 出边作为默认路径
+- 测试断言：state=10 → state=20 全程
+
+## §89 ROLLBACK 跳首任务循环（task #113）
+
+**结论**：❌ **§52 复现** — ROLLBACK 跳首任务节点时 actorIds 错位
+
+**流程**：
+- apply (user1) → task1 (leader) → task2 → end
+- leader task1 submitType=3 ROLLBACK taskName=apply
+
+**实测**：
+- apply state=10 但 actorIds=['leader']（应为 ['user1']）
+- user1 todoList 看不到 apply → 流程卡 state=10
+
+**根因**：
+- `vendor/jeeflow/engine.py:174-200` `execute_and_jump_task`
+- `_execute_node(target)` → `_create_task` → `_resolve_actors` 复用前任务 actor
+
+**绕开方案**：用 submitType=6 (REJECT_TO_OPERATOR) 替代
+
+**状态**：§52 仍存 BUG（已记录 BUGS.md）
+
+## §90 嵌套对象/数组变量（task #114）
+
+**结论**：✅ **PASS** — 嵌套对象 + 数组完整保留
+
+**实测**：启动传 `f_meta={"level":3,"tags":["urgent","vip"]}`
+- 引擎 `f_meta` = `{"level": 3, "tags": ["urgent", "vip"]}` ✓
+
+**设计要点**：
+- 顶层 JSON 自动序列化
+- 内存后端 dict 直存
+- PG 后端 JSONB 字段同样支持
+- Unicode emoji 字符串也保留
+
+## §91 决策 expr 引用未定义变量（task #115）
+
+**结论**：✅ **PASS** — 未定义变量静默返回 False，走兜底
+
+**引擎行为**：
+- `SimpleExprEvaluator.eval` 中 `vars.get(key)` 未定义返回 None
+- `None >= 1000` 抛 TypeError → eval 捕获 → False
+- 走兜底 expr="" 边
+
+**风险**：设计时若未传必要变量，引擎不报错但路由可能意外
+**建议**：designer 端做静态检查所有 expr 引用
+
+## §92 自抄送（task #116）
+
+**结论**：✅ **PASS** — `f_ccActors="user1"` 自身抄送正常工作
+
+**流程**：
+- startAndExecute f_ccActors="user1" 启动
+- user1 ccList 含自己 1 条 ✓
+
+**设计要点**：
+- 业务上"自抄送"用于留痕/审计
+- 引擎无去重逻辑
+- `processInstance/ccList` operator=user1 返回 1 条
+
+## §93 节点 id 命名规范（task #117 + FIX-T34）
+
+**结论**：❌→✅ **BUG 已修复** — 含空格/特殊字符 id deploy 拒绝
+
+**问题**：
+- `docs/flow.md §3.1` 规定"节点 id 只允许字母/数字/下划线"
+- 修复前引擎 save/deploy/start 都不阻止
+- "apply node"（含空格）能成功 deploy → state=20 DONE（违反 §3.1）
+
+**修复（FIX-T34 2026-09-18）**：
+- `vendor/jeeflow/facade.py:240-247` deploy 校验：
+  ```python
+  import re
+  bad_ids = sorted({i for i in node_ids if not re.match(r"^[A-Za-z0-9_]+$", i)})
+  if bad_ids:
+      raise ValueError(f"流程节点 id 含非法字符: {bad_ids}（§3.1 docs/flow.md 约束，只允许字母/数字/下划线）")
+  ```
+
+**优先级**：高（已修复）
+
+## §94 taskType=1 SECONDARY 副审（task #118）
+
+**结论**：✅ **PASS** — FIX-T30 修复后 taskType 透传正常
+
+**实测**：
+- apply (taskType=0) → secondary_review (taskType=1) → end
+- 启动后 secondary_review taskType=1 ✓
+
+**关联修复**：FIX-T30 (2026-09-18) `engine._create_task` + `model.create_task` 透传 taskType
+
+## §95 中文 + emoji 变量（task #119）
+
+**结论**：✅ **PASS** — Unicode 完整保留
+
+**实测**：启动传 `f_姓名="张三"` + `f_项目="🔥紧急项目"`
+- detail.f_姓名 = "张三" ✓
+- detail.f_项目 = "🔥紧急项目" ✓
+
+**设计要点**：
+- Python 3 str 天然支持
+- PG JSONB 字段同样支持
+- detail 返回 UTF-8 编码
+
+## §96 空 submitType 默认 0 (task #120)
+
+**结论**：✅ **PASS** — 缺省 submitType=0=APPLY
+
+**引擎行为**：
+- `engine._prepare_execute_task` `args.get("submitType", 0)`
+- `facade._processTask_execute` `args.get("submitType", SUBMIT_APPLY)`
+- 双重兜底，缺省 APPLY
+
+**设计要点**：
+- 测试时建议**显式传 submitType=0**（不依赖默认）
+- 防止 facade/engine 后续版本修改默认值
+
+## §97 surrogate 期间任务流转（task #121）
+
+**结论**：✅ **PASS** — §40 设计限制复现
+
+**实测**：
+- leader 创建 surrogate 委托 manager
+- manager 待办 0 条（§40 不展开）
+- leader 待办 1 条 ✓
+
+**关联限制**：§40 Python 引擎 surrogate 仅记录不展开 todoList
+**绕开方案**：手动 `processTask/addCandidate` 把被委托人加入 task actor
+
+---
+
+## 本轮汇总（2026-09-19）
+
+- BDD 任务：#1-#121 = **121 个**
+- 本轮新发现 BUG：1 个（§58→FIX-T31 已修；§55→FIX-T32 已修；§56→FIX-T33 已修；§58-id 命名→FIX-T34 已修）
+- 本轮仍存 BUG：2 个（§27, §52）
+- 引擎行为正确：53 个章节（§83-§97 + §1-§82 PASS 部分）
+- 已知设计限制：7 个（§16/§20/§30/§32/§34/§40/§46）
