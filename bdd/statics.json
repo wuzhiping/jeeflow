@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-18T14:07:31",
+  "updated": "2026-09-18T14:30:00",
   "tasks": [
     {
       "id": "Task 16",
@@ -2091,10 +2091,48 @@
         "复用 JUMP 路径"
       ],
       "errors": []
+    },
+    {
+      "id": "Task 125",
+      "name": "fix20-decision-ast-evaluator",
+      "time": "20260919-130000",
+      "node_types": [
+        "start",
+        "task",
+        "decision",
+        "task",
+        "end"
+      ],
+      "features": [
+        "§20 修复",
+        "SimpleExprEvaluator 用 ast 解析",
+        "支持 and/or/not/#var",
+        "OGNL 风格兼容（|| / && / !）"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 126",
+      "name": "fix16-custom-handler-registry",
+      "time": "20260919-130100",
+      "node_types": [
+        "start",
+        "task",
+        "custom",
+        "end"
+      ],
+      "features": [
+        "§16 修复",
+        "custom_handler_registry",
+        "按 clazz 查找 handler",
+        "调 handler 写回 vars_[val]",
+        "推进到下游节点"
+      ],
+      "errors": []
     }
   ],
   "summary": {
-    "total_tasks": 43,
+    "total_tasks": 126,
     "node_types_used": [
       "start",
       "end",
@@ -2123,7 +2161,9 @@
       "FIX-T3 v1.6.0 SimpleExprEvaluator 字符串相等",
       "v1.5.3 _fix_log 文件日志",
       "SPI deptId 映射",
-      "MockAuditInterceptor 注册"
+      "MockAuditInterceptor 注册",
+      "FIX-T37 v1.7.0 ast 求值器（§20）",
+      "FIX-T38 §16 custom handler registry"
     ],
     "all_known_issues": [
       "§1-§10 已知引擎约束",
@@ -2156,7 +2196,9 @@
       "§53 字典值 expr 集成",
       "§54 taskVariables vs instance.variables",
       "§55 doneList actorIdList=None",
-      "§56 parentId 参数未生效"
+      "§56 parentId 参数未生效",
+      "§16 custom 节点 handler",
+      "§20 复合表达式"
     ]
   },
   "statistics": {
@@ -2169,7 +2211,7 @@
     },
     "by_feature_category": {
       "countersign": 1,
-      "decision_expr": 6,
+      "decision_expr": 7,
       "submitType_routing": 6,
       "candidate_or_cc": 6,
       "interceptor": 3,
@@ -2182,7 +2224,8 @@
       "applicant_substitution": 1,
       "boundary_test": 1,
       "business_flow": 1,
-      "owner_operator": 1
+      "owner_operator": 1,
+      "custom_node": 1
     },
     "by_error_chapter": {
       "§36": 1,
@@ -2213,7 +2256,9 @@
       "§65": 2,
       "§66": 1,
       "§67": 1,
-      "§68": 2
+      "§68": 2,
+      "§16": 1,
+      "§20": 1
     },
     "by_severity": {
       "critical": [
@@ -2244,7 +2289,10 @@
         "§28",
         "§29",
         "§64",
-        "§65"
+        "§65",
+        "§16",
+        "§20",
+        "§52"
       ],
       "documented_only": [
         "§34",
@@ -2313,7 +2361,9 @@
       "Task 50",
       "Task 51",
       "Task 54",
-      "Task 55"
+      "Task 55",
+      "Task 125",
+      "Task 126"
     ]
   },
   "nodeType_stats": {

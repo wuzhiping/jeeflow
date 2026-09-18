@@ -94,3 +94,7 @@ class EngineExtensions:
     decision_handler: Optional[DecisionHandler] = None
     event_listener: Optional[Callable[[ProcessEvent], Awaitable[None]]] = None
     registry: Optional[HandlerRegistry] = None
+    # custom 节点处理器注册表（FIX-T38 2026-09-19 §16 修复）：
+    # key=properties.clazz 字符串；handler 签名 async def(node, inst, vars_, args) -> Any
+    # 结果写入 vars_[properties.val]
+    custom_handler_registry: dict[str, Callable] = field(default_factory=dict)

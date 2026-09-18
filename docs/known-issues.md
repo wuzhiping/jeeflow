@@ -579,6 +579,37 @@ cs_veto = ct != "" and cs_cond.upper() == "ONE_VOTE_VETO" and \
 - 引擎未实现 Java 风格的「class.forName(clazz).getMethod(methodName).invoke(...)」逻辑
 - `docs/flow.md §3.5` 描述的「custom 不建任务，触发外部处理器」与实测不符
 
+### ✅ FIX-T38（2026-09-19）§16 修复
+
+**方案 B**：custom 节点改为通过 `EngineExtensions.custom_handler_registry` 注册的 callable 调度。
+
+**改动**（4 处）：
+
+1. **`vendor/jeeflow/extensions.py`**：新增 `custom_handler_registry: dict[str, Callable]` 字段
+2. **`vendor/jeeflow/engine.py:_execute_node`**：拆出 `TYPE_CUSTOM` 分支，调用 `_execute_custom_node`
+3. **`vendor/jeeflow/engine.py:_execute_custom_node`**（新增）：
+   - 读 `node.properties.clazz` → 查 registry
+   - `handler(node, inst, vars_, args)` 调 handler（支持 async）
+   - `vars_[val] = result`（`val` 缺省 / `result is None` 不写）
+   - `_follow_edges` 推进下游（不创建 task）
+4. **`main_common.py:build_custom_handlers`**：注册示例 handler `com.mldong.jeeflow.test.TestCustomHandler`（把 args 字符串当 JSON 解析写回 vars_）
+
+**测试验证**：
+- `flows/08-custom-node.json` 完整跑通：apply → custom1 → end，instance state=20（DONE）
+- 17 个 flow 全量回归 PASS=17/17
+- Task 126 BDD 报告：custom_handler_registry 字段查找 / handler 调用 / 写回 vars_ / 推进下游 4 个断言全通过
+
+**handler 签名**：`async def(node: FlowNode, inst: ProcessInstance, vars_: dict, args: str) -> Any`
+
+**字段语义**（v1.9.0+）：
+- `clazz`：必填，handler 注册 key（FQCN 或自定义名）
+- `methodName`：冗余（Python handler 是 callable，无 Java 反射概念）
+- `args`：字符串参数（handler 自行解析为 dict/JSON/逗号分隔）
+- `val`：结果变量名（写入 `vars_[val]`，缺省不写）
+
+**错误处理**：handler 未注册 / clazz 缺省 / `custom_handler_registry` 为空时抛 `ValueError`，不静默卡死。
+
+**位置**：`docs/BUGS.md` §16 改为"已修复 FIX-T38"；`docs/AGENTS.md` §6 约束 #18 移除。
 
 ### §77 FIX-BDD-T1 SPI 热更新 + Task 1 完成（2026-09-18）
 
@@ -823,6 +854,43 @@ if g and self._org_prov is not None:
 ### 测试报告
 
 `./tdd/test_14-decision-submitType_20260917111000.md` ❌ FAIL
+
+### ✅ FIX-T37（2026-09-19）§20 修复
+
+**方案 B**：用 Python `ast` 模块替换 `regex` 解析 decision expr。
+
+**改动**（1 处主代码）：
+
+**`main_common.py:SimpleExprEvaluator`**：
+- 旧版：仅 regex 匹配 `#var op number` / `#var == "string"`
+- 新版：`ast.parse(expr, mode="eval")` 安全求值
+- 语法白名单：`Constant / Name / BinOp / UnaryOp / BoolOp / Compare`
+- 拒绝：`Call / Attribute / Subscript / import / 复合语句`
+- OGNL 风格兼容：预处理 `||`→`or`，`&&`→`and`，`!`→`not`（`!=` 例外），`#var`→`var`
+- 失败兜底：SyntaxError / TypeError / ValueError / 节点类型不在白名单 → 返回 False（保持与旧版一致行为）
+
+**支持的语法**：
+```python
+# 单 expr
+amount > 1000
+status == "approved"
+not #urgent
+#amount >= 5000
+
+# 复合逻辑
+submitType == 0 or submitType == 1
+not #urgent and #days > 3
+(a == 1 or b == 2) and c != 3
+```
+
+**测试验证**：
+- `flows/14-decision-submitType.json` 完整跑通：4 条 expr（`submitType==0 || submitType==1 || ...` 复合条件）全部分流正确
+- `flows/15-decision-amount.json`：单 expr `#amount > 1000` 仍正常
+- `flows/03-decision-expr.json`：OGNL `#var` 兼容
+- 17 个 flow 全量回归 PASS=17/17
+- Task 125 BDD 报告：5 个 AST 表达式 case + OGNL 转换 + 复合条件 4 个断言全通过
+
+**位置**：`docs/BUGS.md` §20 改为"已修复 FIX-T37"；`docs/AGENTS.md` §6 约束 #15 移除。
 
 ---
 

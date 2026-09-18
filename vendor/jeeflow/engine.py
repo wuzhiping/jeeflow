@@ -360,8 +360,19 @@ class EngineImpl(Engine):
     async def _execute_node(self, flow: FlowModel, inst: ProcessInstance, node: FlowNode, operator: str, vars_: dict):
         # 任务创建（对齐 Java CreateTaskHandler：不触发节点拦截器——创建任务 ≠ 节点执行完成；
         # 任务完成的拦截器由 execute_process_task 显式触发，1.8.0 SYNC 同步演进）
-        if node.type in (TYPE_TASK, TYPE_CUSTOM):
+        if node.type == TYPE_TASK:
             await self._create_task(node, inst, operator, vars_)
+            return
+        # §16 修复（2026-09-19 FIX-T38）：custom 节点 — 调注册表中的 handler
+        # 字段语义：clazz=handler key, methodName=冗余（Python 用 callable），args=参数字符串, val=结果变量名
+        # handler 签名：async def(node, inst, vars_, args) -> Any
+        # 行为：触发后调 _follow_edges 推进下游（不创建 task）
+        if node.type == TYPE_CUSTOM:
+            if not await self._fire_pre(node, inst): return
+            try:
+                await self._execute_custom_node(node, inst, operator, vars_, flow)
+            finally:
+                await self._fire_post(node, inst)
             return
         if not await self._fire_pre(node, inst): return
         try:
@@ -389,6 +400,48 @@ class EngineImpl(Engine):
                                  f"（期望 start/task/decision/fork/join/end/custom）")
         finally:
             await self._fire_post(node, inst)
+
+    async def _execute_custom_node(self, node: FlowNode, inst: ProcessInstance, operator: str, vars_: dict, flow=None):
+        """§16 修复（2026-09-19 FIX-T38）：执行 custom 节点 — 调注册表中的 handler
+
+        字段语义：
+        - clazz: handler key（在 EngineExtensions.custom_handler_registry 注册）
+        - methodName: 冗余（Python handler 是 callable，方法名不重要）
+        - args: 字符串参数（handler 自由解析为 dict/JSON/逗号分隔）
+        - val: 结果存入 vars_[val]（None/缺省时不存）
+
+        行为：调 handler → 写回 vars_ → 推进到下游节点（不创建 task）
+        """
+        handler_key = node.properties.get("clazz", "")
+        if not handler_key:
+            raise ValueError(f"custom 节点[{node.id}]缺少 properties.clazz（handler 注册 key）")
+        if not (self.ext and self.ext.custom_handler_registry):
+            raise ValueError(f"custom 节点[{node.id}] handler='{handler_key}' 未注册（"
+                             f"EngineExtensions.custom_handler_registry 为空）")
+        handler = self.ext.custom_handler_registry.get(handler_key)
+        if handler is None:
+            registered = list(self.ext.custom_handler_registry.keys())
+            raise ValueError(f"custom 节点[{node.id}] handler='{handler_key}' 未注册（"
+                             f"已注册: {registered}）")
+        args = node.properties.get("args", "")
+        # 调 handler
+        result = handler(node, inst, vars_, args)
+        if hasattr(result, "__await__"):
+            result = await result
+        # 写回结果
+        val_key = node.properties.get("val", "")
+        if val_key and result is not None:
+            vars_[val_key] = result
+        # 推进到下游（custom 节点不创建 task，只触发 + 推进）
+        if flow is None:
+            from .model import parse_flow_model
+            def_ = await self.repo.find_define_by_id(inst.defineId)
+            if def_:
+                flow = parse_flow_model(json.loads(def_.content))
+        if flow is None:
+            return
+        for n in _follow_edges(flow, node.id):
+            await self._execute_node(flow, inst, n, operator, vars_)
 
     async def _evaluate_decision(self, flow, inst, node, operator, vars_):
         # 收集所有出边

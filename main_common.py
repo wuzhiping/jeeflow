@@ -58,47 +58,116 @@ class SnowflakeIDGen(IDGenerator):
 
 # ─── Expression Evaluator ──────────────────────────────────────────────────────
 class SimpleExprEvaluator(ExpressionEvaluator):
-    """简易 SpEL 表达式：支持 amount >/>=/</<=/== number 和 #var==str；OGNL 风格 #varname 同支持
+    """简易表达式求值器：基于 Python ast 安全求值，支持复合逻辑
 
-    v1.5.1 fix (FIX-T1 2026-09-17)：expr 是数字但 value 是字符串时，原
-    `actual = float(actual)` 抛 ValueError 导致整个 startAndExecute 失败
-    (code=99999999)。修复：捕获 ValueError/TypeError 返回 False，与
-    regex 不匹配、value 为 None 行为一致（走兜底首边）。
+    支持语法（FIX-T37 2026-09-19 §20 修复）：
+    - 比较：==  !=  >  <  >=  <=
+    - 逻辑：and  or  not
+    - 变量：`#var` / `var`（# 前缀兼容 OGNL）
+    - 字面量：int / float / str（单/双引号）/ True / False / None
 
-    v1.6.0 fix (FIX-T3 2026-09-17 BDD Task 32)：支持字符串相等比较
-    `#var==string` / `#var!=string`。原版只支持数字，字符串比较走兜底。
+    示例：
+        #amount >= 5000
+        submitType == 0 or submitType == 1
+        not #urgent and #days > 3
+        status == "approved"
+
+    安全限制（白名单）：
+    - ❌ 函数调用（除 bool/int/float/str）
+    - ❌ 属性访问
+    - ❌ 下标
+    - ❌ 任何 import / 复合语句
+
+    v1.5.1 fix (FIX-T1 2026-09-17)：原 regex 数字比较，遇到字符串值抛 ValueError
+    导致整个 startAndExecute 失败。修复：返回 False，走兜底首边。
+
+    v1.6.0 fix (FIX-T3 2026-09-17)：支持字符串相等比较。
+
+    v1.7.0 fix (FIX-T37 2026-09-19 §20)：用 ast 替换 regex，支持 and/or/not。
     """
+    # 允许的 AST 节点白名单
+    _ALLOWED_BINOPS = {
+        "Add": lambda a, b: a + b,
+        "Sub": lambda a, b: a - b,
+        "Mult": lambda a, b: a * b,
+        "Div": lambda a, b: a / b,
+        "Mod": lambda a, b: a % b,
+    }
+    _ALLOWED_CMPOPS = {
+        "Eq": lambda a, b: a == b,
+        "NotEq": lambda a, b: a != b,
+        "Lt": lambda a, b: a < b,
+        "LtE": lambda a, b: a <= b,
+        "Gt": lambda a, b: a > b,
+        "GtE": lambda a, b: a >= b,
+    }
+    _ALLOWED_UNARYOPS = {
+        "Not": lambda a: not a,
+        "USub": lambda a: -a,
+        "UAdd": lambda a: +a,
+    }
+
     async def eval(self, expr: str, vars: dict):
-        import re
-        # 数字比较: #var op number
-        m_num = re.match(r"^\s*(#?\w+)\s*(>=|<=|!=|==|>|<)\s*(\d+(?:\.\d+)?)\s*$", expr)
-        # 字符串比较: #var == "string" 或 #var == string
-        m_str = re.match(r"""^\s*(#?\w+)\s*(==|!=)\s*['"]?([A-Za-z0-9_]+)['"]?\s*$""", expr)
-        if m_num:
-            key, op, val = m_num.group(1).lstrip("#"), m_num.group(2), float(m_num.group(3))
-            actual = vars.get(key)
-            if actual is None:
-                return False
-            try:
-                actual = float(actual)
-            except (ValueError, TypeError):
-                return False
-            if op == ">": return actual > val
-            if op == ">=": return actual >= val
-            if op == "<": return actual < val
-            if op == "<=": return actual <= val
-            if op == "==": return actual == val
-            if op == "!=": return actual != val
+        import ast
+        if not expr or not expr.strip():
             return False
-        if m_str:
-            key, op, expected = m_str.group(1).lstrip("#"), m_str.group(2), m_str.group(3)
-            actual = vars.get(key)
-            if actual is None:
-                return False
-            actual = str(actual)
-            if op == "==": return actual == expected
-            if op == "!=": return actual != expected
+        # 预处理：OGNL 风格 → Python 风格
+        # 1) #var → var（# 是 Python 注释符）
+        # 2) || → or，&& → and
+        # 3) !  → not（只在 != 之外的 !）
+        normalized = expr
+        import re as _re
+        normalized = _re.sub(r"#(\w+)", r"\1", normalized)
+        normalized = normalized.replace("||", " or ").replace("&&", " and ")
+        # ! 后面不是 = 时替换为 not
+        normalized = _re.sub(r"!(?!=)", "not ", normalized)
+        try:
+            tree = ast.parse(normalized, mode="eval")
+        except SyntaxError:
             return False
+        try:
+            return self._eval_node(tree.body, vars)
+        except (TypeError, ValueError, KeyError, AttributeError):
+            return False
+
+    def _eval_node(self, node, vars):
+        import ast
+        if isinstance(node, ast.Constant):
+            return node.value
+        if isinstance(node, ast.Name):
+            # True / False / None
+            if node.id in ("True", "False", "None"):
+                return {"True": True, "False": False, "None": None}[node.id]
+            # 变量查找（# 前缀兼容）
+            key = node.id
+            if key in vars:
+                return vars[key]
+            return None
+        if isinstance(node, ast.BinOp) and type(node.op).__name__ in self._ALLOWED_BINOPS:
+            left = self._eval_node(node.left, vars)
+            right = self._eval_node(node.right, vars)
+            return self._ALLOWED_BINOPS[type(node.op).__name__](left, right)
+        if isinstance(node, ast.UnaryOp) and type(node.op).__name__ in self._ALLOWED_UNARYOPS:
+            operand = self._eval_node(node.operand, vars)
+            return self._ALLOWED_UNARYOPS[type(node.op).__name__](operand)
+        if isinstance(node, ast.BoolOp):
+            values = [self._eval_node(v, vars) for v in node.values]
+            if isinstance(node.op, ast.And):
+                return all(values)
+            if isinstance(node.op, ast.Or):
+                return any(values)
+        if isinstance(node, ast.Compare):
+            left = self._eval_node(node.left, vars)
+            for op, comparator in zip(node.ops, node.comparators):
+                right = self._eval_node(comparator, vars)
+                op_name = type(op).__name__
+                if op_name not in self._ALLOWED_CMPOPS:
+                    return False
+                if not self._ALLOWED_CMPOPS[op_name](left, right):
+                    return False
+                left = right
+            return True
+        # 不支持的节点类型（函数调用/属性/下标）→ 兜底 False
         return False
 
 
@@ -204,10 +273,39 @@ def build_ic_registry() -> dict:
     }
 
 
-def apply_extensions(engine, registry: HandlerRegistry, ic_registry: Optional[dict] = None):
-    """应用 HandlerRegistry + 拦截器注册表到 engine"""
-    ext = EngineExtensions(registry=registry, interceptor_registry=ic_registry or {})
+def apply_extensions(engine, registry: HandlerRegistry, ic_registry: Optional[dict] = None,
+                     custom_handlers: Optional[dict] = None):
+    """应用 HandlerRegistry + 拦截器注册表 + custom 节点处理器到 engine"""
+    ext = EngineExtensions(
+        registry=registry,
+        interceptor_registry=ic_registry or {},
+        custom_handler_registry=custom_handlers or {},
+    )
     engine.set_extensions(ext)
+
+
+# ─── Built-in Custom Node Handlers（FIX-T38 2026-09-19 §16 修复）───────────────
+async def _builtin_custom_test_handler(node, inst, vars_, args):
+    """示例 custom handler：写入 args 字符串到 vars_[val]
+
+    业务用法：custom 节点触发后，把外部系统返回值（如 API response、计算结果）
+    存到 vars_ 供下游 decision/task 使用。
+    """
+    import json as _json
+    if not args:
+        return None
+    # 尝试 JSON 解析
+    try:
+        return _json.loads(args)
+    except (ValueError, TypeError):
+        return args
+
+
+def build_custom_handlers() -> dict:
+    """注册示例 custom 节点 handler（生产可扩）"""
+    return {
+        "com.mldong.jeeflow.test.TestCustomHandler": _builtin_custom_test_handler,
+    }
 
 
 # ─── Resolve Actors Warning + Raise Wrapper ─────────────────────────────────────

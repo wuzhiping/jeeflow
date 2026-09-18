@@ -40,8 +40,12 @@
 | FIX-T34 | 2026-09-19 | 节点 id 命名规范校验（regex 拦截） | §93 | ✅ 已修复 | — | 高 |
 | FIX-T35 | 2026-09-19 | 多入边 task 节点去重（悲观锁） | §27 | ✅ 已修复 | — | 高 |
 | FIX-T36 | 2026-09-19 | ROLLBACK 跳首任务 actor 修复 | §52 | ✅ 已修复 | — | 中 |
+| FIX-T37 | 2026-09-19 | SimpleExprEvaluator 用 ast 解析（OGNL 风格兼容） | §20 | ✅ 已修复 | — | 高 |
+| FIX-T38 | 2026-09-19 | custom 节点 handler registry 调度 | §16 | ✅ 已修复 | — | 中 |
 | §27 | 2026-09-17 | 多入边 task 节点重复创建 | §27 | ✅ 已修复 | FIX-T35 | 高 |
 | §52 | 2026-09-17 | ROLLBACK 重审 actor 错位 | §52 | ✅ 已修复 | FIX-T36 | 中 |
+| §16 | 2026-09-17 | custom 节点 clazz/methodName 反射调用 | §16 | ✅ 已修复 | FIX-T38 | 中 |
+| §20 | 2026-09-17 | decision expr 不支持 `\|\|` `&&` | §20 | ✅ 已修复 | FIX-T37 | 高 |
 
 ## 仍存在 BUG 详细
 
@@ -295,81 +299,60 @@ await self._execute_node(flow, inst, target, operator, vars_)
 
 | § | 限制能力 | 状态 | 影响范围 | 替代方案 |
 |---|----------|------|----------|----------|
-| §16 | custom 节点 `clazz/methodName` 反射调用 | 未实现 | 流程图设计 | 用 `snaker:task` + `assignmentHandler` 代替 |
-| §20 | decision 表达式 `\|\|` `&&` 复合条件 | 未实现 | 决策路由 | 嵌套 decision 节点 + 单 expr |
 | §30 | join 后 end 节点可能不触发 | 设计缺陷 | 流程图 | 确保 join→task→end 链路完整 |
 | §32 | ROLLBACK_TO_OPERATOR 跳过中间节点 | 设计约束 | 驳回路径 | 用 submitType=6 直接到首任务 |
 | §34 | `preInterceptors` 字段静默 | 未实现 | 拦截器配置 | 用 `postInterceptors` 代替 |
 | §40 | surrogate 不影响 todoList actor | 设计约束 | 委托代办 | 手动 addCandidate 加入 actor |
 | §46 | `decisionHandler` FQCN 未实现 | 未实现 | 决策扩展 | 用嵌套 decision + expr 代替 |
 
+> **v1.9.0 更新（2026-09-19）**：§16（custom 节点）+ §20（decision 复合条件）已修复（FIX-T37/T38），从"已知限制"移至"已修 BUG"。详见 `docs/known-issues.md §16 / §20`。
+
 ---
 
 ## 详细说明
 
-### ⚠️ §16 custom 节点 clazz/methodName 反射调用未实现
+### ✅ §16 custom 节点 clazz/methodName 反射调用（已修复 FIX-T38 2026-09-19）
 
-**引擎行为**：`snaker:custom` 节点当前**与 `snaker:task` 等价**，仅走 `_create_task` 路径；`clazz`/`methodName`/`args`/`val` 四个字段被引擎忽略。
+v1.9.0 起，custom 节点通过 `EngineExtensions.custom_handler_registry` 注册的 callable 调度。详见 `known-issues.md §16` 详细修复方案 + handler 签名。
 
-**不要做**：
+**当前用法**（v1.9.0+）：
 ```json
 {
   "id": "notify_external",
   "type": "snaker:custom",
   "properties": {
-    "clazz": "com.example.NotifyHandler",
-    "methodName": "execute",
-    "args": "param1",
-    "val": "result"
+    "clazz": "com.mldong.jeeflow.test.TestCustomHandler",
+    "args": "{\"url\":\"http://api/notify\"}",
+    "val": "notifyResult"
   }
 }
 ```
 
-**替代方案**：用 `snaker:task` + `assignmentHandler` 让 handler 完成外部调用：
-```json
-{
-  "id": "notify_external",
-  "type": "snaker:task",
-  "properties": {
-    "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
-  }
-}
-```
+在 `main_common.py:build_custom_handlers` 注册 handler，签名 `async def(node, inst, vars_, args) -> Any`，结果自动写入 `vars_[val]`。
+
+**仍生效约束**：`methodName` 字段冗余（Python handler 是 callable，无 Java 反射概念）。
 
 ---
 
-### ⚠️ §20 decision expr 不支持复合条件
+### ✅ §20 decision expr 复合条件（已修复 FIX-T37 2026-09-19）
 
-**引擎限制**：`SimpleExprEvaluator` 正则仅匹配单 key 单 op 数字或字符串字面量：
-```
-^\s*(#?\w+)\s*(>=|<=|!=|==|>|<)\s*(\d+(?:\.\d+)?|"['"]?)\s*$
-```
+v1.9.0 起，`SimpleExprEvaluator` 用 `ast` 模块替换 regex，支持复合逻辑。详见 `known-issues.md §20`。
 
-**不要做**：
-```json
-{"sourceNodeId": "dec1", "targetNodeId": "high",
- "properties": {"expr": "amount>1000 && type=='reimburse'"}}
-```
+**支持的语法**：
+```python
+# OGNL 风格（自动转换）
+submitType==0 || submitType==1
+amount>1000 && #urgent
+!#isDraft
 
-**替代方案**：嵌套 decision 节点，每层单 expr：
-```json
-{"id": "dec_type", "edges": [
-  {"expr": "f_type=='reimburse'", "target": "dec_amount"},
-  {"target": "other_path"}
-]},
-{"id": "dec_amount", "edges": [
-  {"expr": "amount>1000", "target": "high_review"},
-  {"target": "low_review"}
-]}
+# Python 风格（直接写）
+submitType == 0 or submitType == 1
+not #urgent and amount > 1000
 ```
 
-**附加约束**：`submitType=2/3/4/6` 已被 facade 拦截，**不走 decision 节点**。这些值由 facade 路由：
-- 2 (REJECT) → state=45
-- 3 (ROLLBACK) → `execute_and_jump_task`
-- 4 (JUMP) → 跳指定 taskName
-- 6 (ROLLBACK_TO_OPERATOR) → 跳首任务
+**白名单**：`Constant / Name / BinOp / UnaryOp / BoolOp / Compare`；拒绝函数调用 / 属性访问 / 下标 / import。
 
-**决策 expr 仅对 submitType∈{0,1,5,20} 有效**。
+**仍生效约束**：`submitType=2/3/4/6` 仍由 facade 拦截，不走 decision 节点（同修复前）。
 
 ---
 

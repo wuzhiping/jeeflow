@@ -37,7 +37,7 @@ _setup_vendor_path()
 # 优先 vendor
 from main_common import (
     setup_vendor_path, SnowflakeIDGen, SimpleExprEvaluator, RatioCapableEngine,
-    build_ic_registry, apply_extensions, install_resolve_actors_wrapper,
+    build_ic_registry, build_custom_handlers, apply_extensions, install_resolve_actors_wrapper,
     register_routes,
 )
 
@@ -129,7 +129,7 @@ async def lifespan(app: FastAPI):
     engine = RatioCapableEngine(repo, user_prov, idgen, SimpleExprEvaluator())
     _registry = HandlerRegistry()
     register_builtin_assignments(_registry, user_prov, org_prov)
-    apply_extensions(engine, _registry, build_ic_registry())
+    apply_extensions(engine, _registry, build_ic_registry(), build_custom_handlers())
     install_resolve_actors_wrapper(engine)
 
     facade = JeeflowFacade(engine, repo, ext_repo, user_search=None, org_prov=org_prov)
