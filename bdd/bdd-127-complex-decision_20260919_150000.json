@@ -1,0 +1,24 @@
+{
+  "name": "bdd-127-complex-decision",
+  "displayName": "BDD #127 复合 decision 表达式边界",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "apply", "type": "snaker:task", "x": 150, "y": 200, "properties": {"width": 100, "height": 50, "form": "leave-form", "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "申请"}},
+    {"id": "decision1", "type": "snaker:decision", "x": 300, "y": 200, "properties": {"width": 60, "height": 60}, "text": {"value": "决策"}},
+    {"id": "high_review", "type": "snaker:task", "x": 450, "y": 100, "properties": {"width": 100, "height": 50, "form": "", "assignee": "boss", "taskType": 0, "performType": 0}, "text": {"value": "高额"}},
+    {"id": "low_review", "type": "snaker:task", "x": 450, "y": 200, "properties": {"width": 100, "height": 50, "form": "", "assignee": "leader", "taskType": 0, "performType": 0}, "text": {"value": "低额"}},
+    {"id": "emergency_review", "type": "snaker:task", "x": 450, "y": 300, "properties": {"width": 100, "height": 50, "form": "", "assignee": "manager", "taskType": 0, "performType": 0}, "text": {"value": "紧急"}},
+    {"id": "end", "type": "snaker:end", "x": 600, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "decision1", "properties": {}},
+    {"id": "e2", "sourceNodeId": "decision1", "targetNodeId": "high_review", "properties": {"expr": "#amount > 10000 || (#amount > 5000 && #urgent == 1)"}},
+    {"id": "e3", "sourceNodeId": "decision1", "targetNodeId": "emergency_review", "properties": {"expr": "#urgent == 1 && #amount <= 5000"}},
+    {"id": "e4", "sourceNodeId": "decision1", "targetNodeId": "low_review", "properties": {"expr": "#amount > 0"}},
+    {"id": "e5", "sourceNodeId": "high_review", "targetNodeId": "end", "properties": {}},
+    {"id": "e6", "sourceNodeId": "low_review", "targetNodeId": "end", "properties": {}},
+    {"id": "e7", "sourceNodeId": "emergency_review", "targetNodeId": "end", "properties": {}}
+  ]
+}

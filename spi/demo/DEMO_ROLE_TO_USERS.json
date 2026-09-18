@@ -315,5 +315,15 @@
   ],
   "operator": [
     "user1"
+  ],
+  "audit_team": [
+    "userA",
+    "userB",
+    "userC"
+  ],
+  "big_project_reviewers": [
+    "leader",
+    "manager",
+    "director"
   ]
 }

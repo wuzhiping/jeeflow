@@ -2533,6 +2533,63 @@ PG DB 直接查 `wf_process_instance.owner_id` 字段落库正确。`m_EQ_ownerI
 
 ---
 
+## §69 任务委派 delegate 未实现（2026-09-19 BDD #142 确认）
+
+### 现象
+- 仅支持 surrogate（全局授权规则）
+- 不支持 per-instance / per-task 临时委派
+- facade/engine 全文 0 命中 `delegate` 关键词
+
+### surrogate vs delegate 区别
+
+| 维度 | surrogate（已实现） | delegate（未实现） |
+|------|--------------------|--------------------|
+| 范围 | 全局（所有 task 适用） | per-task 临时 |
+| 时效 | 持续生效，需手动撤销 | 一次性 |
+| 配置 | 用户的"长期代理" | instance 内"临时让某人办" |
+| 端点 | `processSurrogate/save` | **无** |
+
+### 业务方临时方案
+1. 用 surrogate 规则（全局，但需事后撤销）
+2. 用 addCandidate 临时增加处理人（不撤回原 actor）
+3. 在 custom 节点编程实现 delegate 业务（call addCandidate + removeActor）
+
+### 报告
+- `./bdd/bdd-142-delegate_20260919_173000.md`
+
+---
+
+## §68 任务过期 expireTime 未实现（2026-09-19 BDD #140 确认）
+
+### 现象
+- `ProcessTask.expireTime` 字段在 model 存在（`vendor/jeeflow/model.py:119`）
+- 节点 `properties.expireTime` 可设置（如 `"2020-01-01 00:00:00"`）
+- 但 `_create_task()` 完全不读 `node.properties.expireTime`，落库时 `expireTime=None`
+- 无任何后台定时任务扫描过期 task
+- 无自动跳过/拒绝/邮件/站内信机制
+
+### 引擎代码
+```python
+# vendor/jeeflow/engine.py:_create_task
+nt = inst.create_task(self._next_id(), node.id, ..., perform_type, task_type)
+# 不读 node.properties.expireTime
+# 无 setattr(nt, "expireTime", ...)
+```
+
+### 业务方需自行实现
+- 用 custom 节点 + 定时器对比当前时间 vs expireTime
+- 或调用 BDD 任务的 `processTask/expire` 自定义端点
+
+### 兼容 Java 端
+- 字段 `expireTime` 保留在 API 响应（`facade.py:1318,1579,1591,1612`）
+- Python 端不设置，永远 None
+- Java 端设置的值在 PG/MySQL 数据库里能读出
+
+### 报告
+- `./bdd/bdd-140-task-expire_20260919_171000.md`
+
+---
+
 ## §67. 多 actor + handler 完整流程（Task 57 修复 2026-09-17）
 
 ### 关键修正

@@ -305,7 +305,31 @@ def build_custom_handlers() -> dict:
     """注册示例 custom 节点 handler（生产可扩）"""
     return {
         "com.mldong.jeeflow.test.TestCustomHandler": _builtin_custom_test_handler,
+        "com.mldong.jeeflow.test.TimestampHandler": _builtin_custom_timestamp_handler,
+        "com.mldong.jeeflow.test.AppendVarsHandler": _builtin_custom_append_vars_handler,
     }
+
+
+async def _builtin_custom_timestamp_handler(node, inst, vars_, args):
+    """示例 handler：返回当前时间戳到 vars_[val]"""
+    from datetime import datetime
+    return datetime.now().isoformat()
+
+
+async def _builtin_custom_append_vars_handler(node, inst, vars_, args):
+    """示例 handler：从 args JSON 读 dict，merge 到 vars_（v1.9.0+ 修改 vars_）"""
+    import json as _json
+    if not args:
+        return None
+    try:
+        data = _json.loads(args)
+    except (ValueError, TypeError):
+        return None
+    if isinstance(data, dict):
+        for k, v in data.items():
+            if k not in vars_:  # 不覆盖已有
+                vars_[k] = v
+    return data
 
 
 # ─── Resolve Actors Warning + Raise Wrapper ─────────────────────────────────────

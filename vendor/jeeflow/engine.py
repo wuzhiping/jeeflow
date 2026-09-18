@@ -91,11 +91,23 @@ class EngineImpl(Engine):
                 await self._execute_node(flow, inst, node, operator, vars_)
         except ValueError as e:
             # FIX-T17 (2026-09-17)：start 路径节点创建失败 → instance 标记 ABANDON
-            from .model import InstanceState
+            from .model import InstanceState, TaskState
             inst.state = InstanceState.ABANDON
             inst.updateTime = datetime.now()
+            # BDD #144 FIX-T44 (2026-09-19)：同步废弃所有 DOING 任务
+            for t in inst.tasks:
+                if t.taskState == TaskState.DOING:
+                    t.taskState = TaskState.ABANDONED
+                    t.updateTime = datetime.now()
+                    t.updateUser = operator
             try:
                 await self.repo.update_instance(inst)
+                for t in inst.tasks:
+                    if t.taskState == TaskState.ABANDONED:
+                        try:
+                            await self.repo.update_task(t)
+                        except Exception:
+                            pass
             except Exception:
                 pass
             raise
@@ -410,7 +422,10 @@ class EngineImpl(Engine):
         - args: 字符串参数（handler 自由解析为 dict/JSON/逗号分隔）
         - val: 结果存入 vars_[val]（None/缺省时不存）
 
-        行为：调 handler → 写回 vars_ → 推进到下游节点（不创建 task）
+        行为：调 handler → 写回 vars_ → 同步到 inst.variables → 推进到下游节点（不创建 task）
+
+        BDD #139 FIX-T41：custom 节点执行后**立即**把 vars_ 合并到 inst.variables
+        （不等到 end），否则下游节点读不到 handler 写入的值。
         """
         handler_key = node.properties.get("clazz", "")
         if not handler_key:
@@ -432,6 +447,10 @@ class EngineImpl(Engine):
         val_key = node.properties.get("val", "")
         if val_key and result is not None:
             vars_[val_key] = result
+        # BDD #139 FIX-T41：custom 节点立即把 vars_ 合并到 inst.variables
+        # 否则下游节点（task/decision）读不到 handler 写入的值
+        inst.variables = _merge_exec_into_instance(inst.variables, vars_)
+        await self.repo.update_instance(inst)
         # 推进到下游（custom 节点不创建 task，只触发 + 推进）
         if flow is None:
             from .model import parse_flow_model

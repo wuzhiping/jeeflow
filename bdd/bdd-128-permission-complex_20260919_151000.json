@@ -1,0 +1,18 @@
+{
+  "name": "bdd-128-permission-complex",
+  "displayName": "BDD #128 复杂表单字段权限 + 跨节点变量",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "apply", "type": "snaker:task", "x": 150, "y": 200, "properties": {"width": 100, "height": 50, "form": "expense-form", "assignee": "user1", "taskType": 0, "performType": 0, "PERMISSION_f_salary": "2", "PERMISSION_f_phone": "3", "PERMISSION_f_address": "1"}, "text": {"value": "申请"}},
+    {"id": "leader_review", "type": "snaker:task", "x": 300, "y": 200, "properties": {"width": 100, "height": 50, "form": "", "assignee": "leader", "taskType": 0, "performType": 0, "PERMISSION_f_salary": "2", "PERMISSION_f_phone": "2", "PERMISSION_f_address": "1"}, "text": {"value": "主管"}},
+    {"id": "manager_review", "type": "snaker:task", "x": 450, "y": 200, "properties": {"width": 100, "height": 50, "form": "", "assignee": "manager", "taskType": 0, "performType": 0, "PERMISSION_f_salary": "1", "PERMISSION_f_phone": "1", "PERMISSION_f_address": "1"}, "text": {"value": "经理"}},
+    {"id": "end", "type": "snaker:end", "x": 600, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "leader_review", "properties": {}},
+    {"id": "e2", "sourceNodeId": "leader_review", "targetNodeId": "manager_review", "properties": {}},
+    {"id": "e3", "sourceNodeId": "manager_review", "targetNodeId": "end", "properties": {}}
+  ]
+}

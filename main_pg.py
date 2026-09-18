@@ -134,6 +134,31 @@ async def lifespan(app: FastAPI):
 
     facade = JeeflowFacade(engine, repo, ext_repo, user_search=None, org_prov=org_prov)
 
+    # BDD #128 FIX：注册 PG-mode meta_reader（v1.9.0+ 业务数据回显）
+    # PG asyncpg 与 JdbcTableReader (sqlite 风格) 接口不兼容，
+    # 用 AsyncJdbcTableReader 包装（meta 库提供），目录 meta_defs/<table>.json
+    from jeeflow.meta import MetaTableReader
+    try:
+        from jeeflow.meta import AsyncJdbcTableReader
+        from jeeflow.meta import JsonMetaProvider
+        meta_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "meta_defs")
+        if os.path.isdir(meta_dir):
+            provider = JsonMetaProvider(meta_dir)
+            reader = AsyncJdbcTableReader(pool)
+            facade.set_meta_reader(MetaTableReader(reader, provider))
+    except ImportError:
+        # AsyncJdbcTableReader 尚未提供，PG bizData 暂不可用（raise 提示）
+        pass
+
+    # BDD #128 FIX：注册 PG-mode meta_reader（v1.9.0+ 业务数据回显）
+    from jeeflow.meta import MetaTableReader, JsonMetaProvider
+    from jeeflow.persist import JdbcTableReader
+    meta_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "meta_defs")
+    if os.path.isdir(meta_dir):
+        provider = JsonMetaProvider(meta_dir)
+        reader = JdbcTableReader(adapter)
+        facade.set_meta_reader(MetaTableReader(reader, provider))
+
     if FLOWS:
         await load_seed_pg(repo)
     if SEEDS:

@@ -10,16 +10,24 @@ from .extensions import HandlerRegistry, IAssignmentHandler
 from .model import FlowNode, ProcessInstance
 from .spi import OrgUserProvider, UserProvider
 
-# ─── 注册名（与 Java 类全限定名一致）────────────────────────────────────────────
+# ─── 注册名（v1.9.0+ Python 独立，简化版为主，完整版保留双注册）─────────────────
 
 HANDLER_OPERATOR_ASSIGNMENT = "com.mldong.jeeflow.interceptor.impl.OperatorAssignmentHandler"
 HANDLER_FORM_FIELD_ASSIGNEE = "com.mldong.jeeflow.interceptor.impl.FormFieldAssigneeHandler"
-_ORG_HANDLERS_PREFIX = "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$"
-HANDLER_DEPT_LEADER = _ORG_HANDLERS_PREFIX + "DeptLeaderAssignmentHandler"
-HANDLER_DEPT_MAIN_LEADER = _ORG_HANDLERS_PREFIX + "DeptMainLeaderAssignmentHandler"
-HANDLER_APPLICANT_DEPT_LEADER = _ORG_HANDLERS_PREFIX + "ApplicantDeptLeaderAssignmentHandler"
-HANDLER_APPLICANT_DEPT_MAIN_LEADER = _ORG_HANDLERS_PREFIX + "ApplicantDeptMainLeaderAssignmentHandler"
-HANDLER_TASK_ROLE_ASSIGNEE = _ORG_HANDLERS_PREFIX + "TaskRoleAssigneeHandler"
+# BDD #131 FIX：Python 引擎独立使用，主注册名改简化版 `com.mldong.jeeflow.interceptor.impl.*`；
+# 完整版 `com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$*` 保留为别名（兼容历史）
+HANDLER_DEPT_LEADER = "com.mldong.jeeflow.interceptor.impl.DeptLeaderAssignmentHandler"
+HANDLER_DEPT_MAIN_LEADER = "com.mldong.jeeflow.interceptor.impl.DeptMainLeaderAssignmentHandler"
+HANDLER_APPLICANT_DEPT_LEADER = "com.mldong.jeeflow.interceptor.impl.ApplicantDeptLeaderAssignmentHandler"
+HANDLER_APPLICANT_DEPT_MAIN_LEADER = "com.mldong.jeeflow.interceptor.impl.ApplicantDeptMainLeaderAssignmentHandler"
+HANDLER_TASK_ROLE_ASSIGNEE = "com.mldong.jeeflow.interceptor.impl.TaskRoleAssigneeHandler"
+# 完整版 FQCN 别名（兼容历史 JSON）
+_ORG_HANDLERS_PREFIX_FULL = "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$"
+HANDLER_DEPT_LEADER_FULL = _ORG_HANDLERS_PREFIX_FULL + "DeptLeaderAssignmentHandler"
+HANDLER_DEPT_MAIN_LEADER_FULL = _ORG_HANDLERS_PREFIX_FULL + "DeptMainLeaderAssignmentHandler"
+HANDLER_APPLICANT_DEPT_LEADER_FULL = _ORG_HANDLERS_PREFIX_FULL + "ApplicantDeptLeaderAssignmentHandler"
+HANDLER_APPLICANT_DEPT_MAIN_LEADER_FULL = _ORG_HANDLERS_PREFIX_FULL + "ApplicantDeptMainLeaderAssignmentHandler"
+HANDLER_TASK_ROLE_ASSIGNEE_FULL = _ORG_HANDLERS_PREFIX_FULL + "TaskRoleAssigneeHandler"
 
 # 表单字段编号后缀正则（task_01 → task）
 _NUMBER_SUFFIX_PATTERN = re.compile(r"^(.+?)_(\d+)$")
@@ -154,11 +162,22 @@ class TaskRoleAssigneeHandler(IAssignmentHandler):
 def register_builtin_assignments(registry: HandlerRegistry,
                                  user_prov: Optional[UserProvider] = None,
                                  org_prov: Optional[OrgUserProvider] = None):
-    """注册内置通用参与者处理器到注册表（组织维度 handler 依赖 user_prov/org_prov）"""
+    """注册内置通用参与者处理器到注册表（组织维度 handler 依赖 user_prov/org_prov）
+
+    BDD #131 FIX (v1.9.0+): Python 引擎独立使用，主注册名改简化版；
+    完整版 FQCN (OrgUserAssignmentHandlers$XXX) 同时注册为别名，兼容历史流程 JSON。
+    """
     registry.register_assignment(HANDLER_OPERATOR_ASSIGNMENT, OperatorAssignmentHandler())
     registry.register_assignment(HANDLER_FORM_FIELD_ASSIGNEE, FormFieldAssigneeHandler())
+    # 简化版（v1.9.0+ 主用）
     registry.register_assignment(HANDLER_DEPT_LEADER, DeptLeaderAssignmentHandler(user_prov, org_prov))
     registry.register_assignment(HANDLER_DEPT_MAIN_LEADER, DeptMainLeaderAssignmentHandler(user_prov, org_prov))
     registry.register_assignment(HANDLER_APPLICANT_DEPT_LEADER, ApplicantDeptLeaderAssignmentHandler(user_prov, org_prov))
     registry.register_assignment(HANDLER_APPLICANT_DEPT_MAIN_LEADER, ApplicantDeptMainLeaderAssignmentHandler(user_prov, org_prov))
     registry.register_assignment(HANDLER_TASK_ROLE_ASSIGNEE, TaskRoleAssigneeHandler(org_prov))
+    # 完整版别名（兼容历史 JSON）
+    registry.register_assignment(HANDLER_DEPT_LEADER_FULL, DeptLeaderAssignmentHandler(user_prov, org_prov))
+    registry.register_assignment(HANDLER_DEPT_MAIN_LEADER_FULL, DeptMainLeaderAssignmentHandler(user_prov, org_prov))
+    registry.register_assignment(HANDLER_APPLICANT_DEPT_LEADER_FULL, ApplicantDeptLeaderAssignmentHandler(user_prov, org_prov))
+    registry.register_assignment(HANDLER_APPLICANT_DEPT_MAIN_LEADER_FULL, ApplicantDeptMainLeaderAssignmentHandler(user_prov, org_prov))
+    registry.register_assignment(HANDLER_TASK_ROLE_ASSIGNEE_FULL, TaskRoleAssigneeHandler(org_prov))

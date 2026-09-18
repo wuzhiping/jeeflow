@@ -1,0 +1,14 @@
+{
+  "name": "bdd-140-task-expire",
+  "displayName": "BDD #140 任务过期 expireTime 边界",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "apply", "type": "snaker:task", "x": 150, "y": 200, "properties": {"width": 100, "height": 50, "form": "c-form", "assignee": "user1", "taskType": 0, "performType": 0, "expireTime": "2020-01-01 00:00:00"}, "text": {"value": "过期任务"}},
+    {"id": "end", "type": "snaker:end", "x": 300, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "end", "properties": {}}
+  ]
+}

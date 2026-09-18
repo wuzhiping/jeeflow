@@ -73,6 +73,10 @@ install_resolve_actors_wrapper(engine)
 
 facade = JeeflowFacade(engine, repo, ext_repo, user_search=None, org_prov=org_prov)
 
+# BDD #128 FIX：注册 memory-mode meta_reader（PG 后端在 main_pg.py 用 MetaTableReader）
+from main_meta import build_meta_reader
+facade.set_meta_reader(build_meta_reader(repo))
+
 
 # ─── Seed: load_flows (sync) ──────────────────────────────────────────────────
 def load_seed_sync():

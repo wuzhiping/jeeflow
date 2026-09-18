@@ -205,10 +205,26 @@ class JeeflowFacade:
                 # FIX-T17 (2026-09-17)：下游 task 创建失败时清理半成品实例
                 # 原代码 exception 吞掉，instance 留在 state=10 DOING 但 active=[]
                 # 现在让上层看到明确错误；实例标记 ABANDON 便于排查
-                from .model import InstanceState
+                # BDD #144 FIX-T44 (2026-09-19)：同步废弃所有 DOING 任务
+                # 否则 instance.state=99 但 task.state=10 → 孤立 todo 待办
+                from .model import InstanceState, TaskState
                 inst.state = InstanceState.ABANDON
                 inst.updateTime = datetime.now()
-                await self._repo.update_instance(inst)
+                for t in inst.tasks:
+                    if t.taskState == TaskState.DOING:
+                        t.taskState = TaskState.ABANDONED
+                        t.updateTime = datetime.now()
+                        t.updateUser = operator
+                try:
+                    await self._repo.update_instance(inst)
+                    for t in inst.tasks:
+                        if t.taskState == TaskState.ABANDONED:
+                            try:
+                                await self._repo.update_task(t)
+                            except Exception:
+                                pass
+                except Exception:
+                    pass
                 raise
         return {"processInstanceId": inst.id}
 
@@ -649,7 +665,11 @@ class JeeflowFacade:
             raise ValueError("流程定义未配置 relTableName")
         if self._meta_reader is None:
             raise ValueError("业务数据读取器未注册（facade.set_meta_reader(MetaTableReader(...))，需引入 jeeflow.meta）")
-        return self._meta_reader.read_by_process_instance(table_name, instance_id)
+        result = self._meta_reader.read_by_process_instance(table_name, instance_id)
+        # BDD #128 FIX：支持 async meta_reader（PG/Memory 都需走 await）
+        if hasattr(result, "__await__"):
+            result = await result
+        return result
 
     @staticmethod
     def _rel_table_name(content) -> Optional[str]:
@@ -1113,6 +1133,15 @@ class JeeflowFacade:
 
     async def _processTask_addCandidate(self, args: dict) -> dict:
         return await self._taskAddActor(args)
+
+    async def _processTask_removeCandidate(self, args: dict) -> dict:
+        """BDD #138 FIX-T40：减签（移除 task actor）"""
+        task_id = self._to_int(args.get("processTaskId"))
+        actor_ids = self._to_str_list(args.get("actorIds"))
+        if not task_id or not actor_ids:
+            raise ValueError("processTaskId/actorIds 缺失")
+        await self._repo.remove_task_actor(task_id, actor_ids)
+        return None
 
     async def _taskAddActor(self, args: dict) -> dict:
         task_id = self._to_int(args.get("processTaskId"))

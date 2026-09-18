@@ -1,0 +1,16 @@
+{
+  "name": "bdd-131-spi-multi-role",
+  "displayName": "BDD #131 SPI role 多用户 + candidateGroups",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "apply", "type": "snaker:task", "x": 150, "y": 200, "properties": {"width": 100, "height": 50, "form": "audit-form", "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "申请"}},
+    {"id": "audit_team", "type": "snaker:task", "x": 300, "y": 200, "properties": {"width": 100, "height": 50, "form": "", "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.TaskRoleAssigneeHandler", "properties_field": {"roleCode": "audit_team"}, "candidateUsers": "userA,userB,userC", "candidateGroups": "audit_team", "taskType": 0, "performType": 0}, "text": {"value": "审核组"}},
+    {"id": "end", "type": "snaker:end", "x": 500, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "audit_team", "properties": {}},
+    {"id": "e2", "sourceNodeId": "audit_team", "targetNodeId": "end", "properties": {}}
+  ]
+}

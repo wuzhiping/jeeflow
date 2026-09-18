@@ -1,0 +1,22 @@
+{
+  "name": "bdd-139-custom-multi",
+  "displayName": "BDD #139 custom 节点 + 多 handler + vars_ 传递",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "apply", "type": "snaker:task", "x": 150, "y": 200, "properties": {"width": 100, "height": 50, "form": "c-form", "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "申请"}},
+    {"id": "ts1", "type": "snaker:custom", "x": 300, "y": 200, "properties": {"width": 100, "height": 50, "clazz": "com.mldong.jeeflow.test.TimestampHandler", "args": "", "val": "ts1"}, "text": {"value": "时间戳1"}},
+    {"id": "ts2", "type": "snaker:custom", "x": 450, "y": 200, "properties": {"width": 100, "height": 50, "clazz": "com.mldong.jeeflow.test.TimestampHandler", "args": "", "val": "ts2"}, "text": {"value": "时间戳2"}},
+    {"id": "av", "type": "snaker:custom", "x": 600, "y": 200, "properties": {"width": 100, "height": 50, "clazz": "com.mldong.jeeflow.test.AppendVarsHandler", "args": "{\"computed\":\"yes\",\"calc\":42}", "val": "computed"}, "text": {"value": "附加变量"}},
+    {"id": "review", "type": "snaker:task", "x": 750, "y": 200, "properties": {"width": 100, "height": 50, "form": "", "assignee": "leader", "taskType": 0, "performType": 0}, "text": {"value": "主管"}},
+    {"id": "end", "type": "snaker:end", "x": 900, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "ts1", "properties": {}},
+    {"id": "e2", "sourceNodeId": "ts1", "targetNodeId": "ts2", "properties": {}},
+    {"id": "e3", "sourceNodeId": "ts2", "targetNodeId": "av", "properties": {}},
+    {"id": "e4", "sourceNodeId": "av", "targetNodeId": "review", "properties": {}},
+    {"id": "e5", "sourceNodeId": "review", "targetNodeId": "end", "properties": {}}
+  ]
+}
