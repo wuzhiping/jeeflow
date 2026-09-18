@@ -17,6 +17,11 @@ RUN uv pip install jeeflow[postgres]
 ENV SPI_FOLDER=demo
 ENV JEEFLOW_PG_DSN=postgresql://uid:pwd@127.0.0.1:5432/jeeflow
 ENV PORT=8101
+# 启动行为开关（main.py / main_pg.py 共用）
+# FLOWS: 启动时是否加载 flows/*.json；默认 true
+# SEEDS: 启动时是否跑业务种子；默认 false（避免冷启动时阻塞请求）
+ENV FLOWS=true
+ENV SEEDS=false
 
 # 服务端口
 EXPOSE 8101

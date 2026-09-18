@@ -39,6 +39,13 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # 让 spi.py / s
 
 FLOWS_DIR = flows_resolver.dir()
 
+# ─── 启动行为开关 ─────────────────────────────────────────────────────────────
+# FLOWS: 是否在启动时加载 flows/*.json 到流程定义表
+# SEEDS: 启动时是否跑业务种子（16 进行中 + 9 已完成 + 8 委托）
+# 都从同名环境变量读，任意一个为 false 则跳过对应动作。
+FLOWS = os.environ.get("FLOWS", "true").lower() in ("1", "true", "yes", "on")
+SEEDS = os.environ.get("SEEDS", "false").lower() in ("1", "true", "yes", "on")
+
 
 # ─── Memory backend setup ──────────────────────────────────────────────────────
 repo = MemoryRepository()
@@ -65,12 +72,14 @@ def load_seed_sync():
         repo.add_define(define)
 
 
-load_seed_sync()
+if FLOWS:
+    load_seed_sync()
 
 
 # ─── run_seed_business (兼容 reload) ──────────────────────────────────────────
 # T003：业务数据种子（引擎真实启动 16 进行中 + 9 已完成 + 8 委托），/api/reset 复跑。
-run_seed_business(facade)
+if SEEDS:
+    run_seed_business(facade)
 
 
 # ─── FastAPI app ───────────────────────────────────────────────────────────────
@@ -90,8 +99,10 @@ async def _reset_memory():
     ext_repo._designHis.clear()
     ext_repo._surrogates.clear()
     ext_repo._seq = 1
-    load_seed_sync()
-    await _seed_business_async(facade)
+    if FLOWS:
+        load_seed_sync()
+    if SEEDS:
+        await _seed_business_async(facade)
 
 
 async def _seed_business_async(facade):

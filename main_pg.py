@@ -52,6 +52,13 @@ PG_DSN = os.environ.get(
     "postgresql://uid:pwd@127.0.0.1:5432/jeeflow",
 )
 
+# ─── 启动行为开关（与 main.py 对齐）────────────────────────────────────────────
+# FLOWS: 是否在 lifespan 启动时加载 flows/*.json
+# SEEDS: 是否在 lifespan 启动时跑业务种子
+# 都从同名环境变量读；任意一个为 false 则跳过。
+FLOWS = os.environ.get("FLOWS", "true").lower() in ("1", "true", "yes", "on")
+SEEDS = os.environ.get("SEEDS", "false").lower() in ("1", "true", "yes", "on")
+
 # 复位时统一清空的 PG 表清单（按 FK 依赖反序）
 PG_TABLES = [
     "wf_process_cc_instance",
@@ -118,8 +125,10 @@ async def lifespan(app: FastAPI):
 
     facade = JeeflowFacade(engine, repo, ext_repo, user_search=None, org_prov=org_prov)
 
-    await load_seed_pg(repo)
-    await seed_business_pg(facade)
+    if FLOWS:
+        await load_seed_pg(repo)
+    if SEEDS:
+        await seed_business_pg(facade)
 
     app.state.pool = pool
     app.state.adapter = adapter
@@ -139,9 +148,13 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 
 
 async def _reset_pg():
-    """PG 端 reset：TRUNCATE + 重 seed + 重跑业务种子。返回 {reloadedDefines: N}"""
+    """PG 端 reset：TRUNCATE + 按 FLOWS/SEEDS 重置种子。返回 {reloadedDefines: N}"""
     await _truncate_all(app.state.adapter)
-    n = await load_seed_pg(app.state.repo)
+    n = 0
+    if FLOWS:
+        n = await load_seed_pg(app.state.repo)
+    if SEEDS:
+        await seed_business_pg(app.state.facade)
     return {"reloadedDefines": n}
 
 
