@@ -2,6 +2,10 @@
 
 本指南面向「流程设计 Agent」与「流程测试 Agent」。所有动作以仓库内已有文档为准，不得自由发挥。
 
+> **📌 2026-09-19 决策**：本项目**独立使用 Python 引擎**功能，**不再考虑与 Java 端兼容**。
+> 历史"对齐 Java"约束（节点 id 命名、handler FQCN 完整版、custom 节点 methodName 反射等）已放宽或标记为冗余。
+> 详见 `vendor/README.md §8` + `docs/flow.md §3.5` 更新。
+
 ---
 
 ## 1. 角色与边界
@@ -88,7 +92,15 @@
 
 ### 3.3 节点 id / 边 id 命名
 
-参见 `./docs/flow.md §4a`。**禁止**节点 id 含空格 / `-` / 中文（引擎底层有部分宽限，但跨语言 Java 端会触发键映射问题）。
+参见 `./docs/flow.md §4a`。**禁止**节点 id 含空格 / `-` / 中文 / 特殊字符（FIX-T34 deploy 校验 `^[A-Za-z0-9_]+$`）。
+
+**理由**（Python 引擎独立使用，无需考虑跨语言兼容）：
+- 防止 JSON key 编码歧义（空格/中文在某些 JSON parser 中行为不一致）
+- 防止 URL 路由冲突（API path 用节点 id 作 path param）
+- 防止 SQL 列名转义问题（v1.0.x `_INSTANCE_WHITELIST` 列名直接拼）
+- 防止审批记录 / highLight historyNodeNames 显示异常
+
+**放宽建议**：如果你明确不需要以上场景，可以提交 issue 申请放宽（目前 v1.9.0 保持严格）。
 
 ---
 
@@ -291,7 +303,7 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 | # | 约束 | 出处 |
 | --- | --- | --- |
 | 1 | 顶层 `name` 全局唯一 | `./docs/flow.md §2` |
-| 2 | 节点 id 不含空格 / `-` / 中文 | Java 端兼容性 |
+| 2 | 节点 id 不含空格 / `-` / 中文（FIX-T34 regex `^[A-Za-z0-9_]+$`） | Python 引擎 JSON key / URL 路由安全 |
 | 3 | 流程图必须 `start` 开 / `end` 收 | `./docs/flow.md §3.1` |
 | 4 | decision 出边按顺序评估，首个真值即流转 | `./docs/flow.md §3.4` |
 | 5 | `performType=1` 必须配 `countersignType` | `./docs/flow.md §3.3` |
@@ -325,7 +337,7 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 | `performType` 字符串 "1" 但 `countersignType` 漏配 | 子任务生成但完成逻辑乱 | 引擎容错解析，但 `countersignType` 必须给 |
 | `countersignCompletionCondition` 写 `field` 但 assignees 全是变量 | 条件永远不评估 | 改用根 `properties` 写，或确保 field.candidateUsers 非空 |
 | `assignmentHandler` 拼写错（大小写） | 引擎走默认 handler = `inst.operator` | 严格照 `./docs/flow.md §6` FQCN |
-| `assignmentHandler` 用 `com.jeeflow.*` 前缀 | **FQCN 错误**：Python 引擎 FQCN 实际为 `com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler`（注意 `$`） | 详见 `known-issues.md §67` |
+| `assignmentHandler` 用未注册 key | **handler 未注册**：Python 引擎仅注册简化版 `com.mldong.jeeflow.interceptor.impl.*`（v1.9.0 起） | 详见 `known-issues.md §67` |
 | `TaskRoleAssigneeHandler` 配置 `properties.roleCode` | **字段被忽略**：handler 实际用 `node.id` 作为 role_code | 节点 id 必须等于 SPI `DEMO_ROLE_TO_USERS.json` 的 key，详见 `known-issues.md §68` |
 | 节点 `form: ""` 但后续字段回写 | `args` 没字段 | 让 form 为 None 或省略，提交时也只给 `u_*` |
 | 发起人 `u_realName` 想每次改 | 引擎恒以发起人为准 | 设计上不覆盖 |
@@ -337,7 +349,7 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 | `assignmentHandler` 用 SPI 角色但 `DEMO_ROLE_TO_USERS.json` 没装该 role | **v1.8.0 FIX-T17 改进**：原静默返回 []，现抛 `ValueError(... SPI 角色匹配为空)` 让 runner 立即定位 | 在 `properties.roleCode` 显式声明，或向 SPI 包补充 role 映射（详见 `known-issues.md §71`） |
 | 流程顶层 `postInterceptors: "XXX"` 但 main.py 没注册 XXX | **vendor/jeeflow/engine.py:_resolve_interceptors** 抛 `ValueError(拦截器未注册: XXX)` | 在 `main.py` `EngineExtensions(interceptor_registry={...})` 注册（详见 `known-issues.md §72`） |
 | custom 节点 handler 未注册 | **v1.9.0 FIX-T38 改进**：原 F1X-T17 静默 raise，现抛 `ValueError(handler 未注册: ...)` 让 runner 立即定位 | 在 `main_common.py:build_custom_handlers` 注册 `EngineExtensions.custom_handler_registry`（详见 `known-issues.md §16`） |
-| `assignmentHandler` 用 `com.jeeflow.*` 前缀（应为 com.mldong.*） | 引擎未注册该 FQCN，raise `handler 未注册` | 严格使用 `com.mldong.jeeflow.interceptor.impl.*` 完整路径（详见 `known-issues.md §67`） |
+| `assignmentHandler` 用未注册 key | 引擎未注册，raise `handler 未注册` | 严格使用 `com.mldong.jeeflow.interceptor.impl.*` 简化版注册名（v1.9.0 起，详见 `known-issues.md §67`） |
 | `decision` 所有出边 `expr` 都为 False | 兜底走第一条边 | 加默认边 `expr=""`（详见 §3.4） |
 | 节点 id 含空格/`-`/中文 | **v1.9.0 FIX-T34 已修复**：deploy 时 regex 拒绝 `^[A-Za-z0-9_]+$` 以外的 id | 用纯字母/数字/下划线命名（详见 `known-issues.md §93`） |
 | 测试中调用 `task/processInstance/start` 而非 `startAndExecute` | API 不在 §5.1 速查表，返回 404 | 严格按 §5.1 action 名调用 |

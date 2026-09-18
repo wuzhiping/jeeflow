@@ -8,6 +8,9 @@
 > - 9 个文件修改
 > - 0 个文件新增 / 0 个文件删除
 
+> **📌 2026-09-19 决策**：本项目**独立使用 Python 引擎**，**不再考虑与 Java 端兼容**。
+> 历史"对齐 Java"代码注释保留作背景说明；新设计不再受 Java 端约束。详见 §8。
+
 ---
 
 ## 1. 目录结构
@@ -117,7 +120,7 @@ vendor/
 **设计思路**：
 - **FIX-T17**：业务语义异常必须 raise，不静默（让 runner 立即定位）
 - **FIX-T22**：未知节点类型 raise ValueError（带期望类型列表）
-- **FIX-T36**：ROLLBACK 跳首任务时显式 `assignee = inst.operator`；跳非首任务时 `assignee = task.actorId`（保留 Java rejectTask 语义）
+- **FIX-T36**：ROLLBACK 跳首任务时显式 `assignee = inst.operator`；跳非首任务时 `assignee = task.actorId`（前任务完成人）
 - **FIX-T38**：`EngineExtensions.custom_handler_registry` 注册表 + `_execute_custom_node` 方法；handler 签名 `async def(node, inst, vars_, args) -> Any`
 
 **位置**：`engine.py`（v1.9.0 核心改动）
@@ -274,7 +277,35 @@ INCLUDE_FIXED=1 python3 /tmp/tdd_flows.py
 
 ---
 
-## 8. 引用
+## 8. Python 引擎独立使用（2026-09-19 决策）
+
+**决策**：本项目独立使用 Python 引擎功能，**不再考虑与 Java 端兼容**。
+
+**影响范围**：
+
+| 项 | 原约束（Java 兼容） | v1.9.0 状态 | 文件 |
+|---|---------------------|-------------|------|
+| 节点 id 命名 | `^[A-Za-z0-9_]+$` 防 Java 端 key 映射 | 保留（理由改为 JSON key / URL 路由安全） | `facade.py` FIX-T34 / `docs/AGENTS.md §6 #2` |
+| handler FQCN | `OrgUserAssignmentHandlers$XXX` 完整版 | 改简化版 `com.mldong.jeeflow.interceptor.impl.XXX` | `builtin.py` / `docs/known-issues.md §67` |
+| custom 节点 `methodName` | Java 反射调用方法名 | 冗余字段，保留兼容 | `engine.py` / `docs/flow.md §3.5` |
+| `assignmentHandler` 注册 key | 兼容 boot2 多语言 | 仅 Python 引擎注册名 | `builtin.py:13-22` |
+
+**保留的"Java 风格"代码注释**（历史背景，**不动**）：
+- `engine.py:119` "对齐 mldong 内置引擎 / Java CountersignHandler" — 行为参考
+- `model.py` "对标 Java domain" — 数据结构参考
+- `repository/base.py` "对齐 Java buildWhere" — 字段名参考
+- `facade.py:1673` "对齐 Java 实体 id 命名" — 命名规范
+
+这些注释是**历史背景说明**，对运行行为无影响。后续如需清理可批量 PR 替换为"对齐 mldong 业务需求"。
+
+**放宽的"Java 兼容"约束**：
+- ✅ 节点 id 可以含中文（**待评审**，v1.9.0 保持严格 `^[A-Za-z0-9_]+$`；如需放宽可提交 issue）
+- ✅ custom 节点可以省略 `methodName`（v1.9.0 已不依赖此字段）
+- ✅ handler 注册 key 可以自定义短名（v1.9.0 `EngineExtensions.registry` 支持任意字符串）
+
+---
+
+## 9. 引用
 
 - 详细问题：`docs/known-issues.md §X`（78 章节）
 - BUG 报表：`docs/BUGS.md`（27 修复）

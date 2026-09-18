@@ -1,6 +1,13 @@
 # Flow JSON 定义规范
 
-本文档定义 jeeFlow 流程模型 JSON 的结构、字段语义与解析路径。JSON 在设计器面板保存、在引擎驱动流转时被解析执行，跨 Python/Java 通用。
+本文档定义 jeeFlow 流程模型 JSON 的结构、字段语义与解析路径。JSON 在设计器面板保存、在引擎驱动流转时被解析执行。
+
+> **📌 2026-09-19 决策**：本项目**独立使用 Python 引擎**，JSON 规范**不再考虑 Java 端兼容**。
+> - `custom.methodName` 字段已标记冗余（v1.9.0+）
+> - `assignmentHandler` 仅注册简化版 FQCN（v1.9.0+）
+> - 节点 id 命名仍保留 `^[A-Za-z0-9_]+$`（理由：JSON key / URL 路由安全，非 Java 兼容）
+>
+> 详见 `vendor/README.md §8` + `docs/AGENTS.md §6 #2`。
 
 ---
 
@@ -115,7 +122,7 @@
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `assignee` | string | 否（与 `assignmentHandler` 互斥） | 处理人解析：`"applicant"`=发起人；`"leader"`=运营占位；逗号分隔多值；或流程变量 token（`f_xxx`/`xxx`，`engine.py:265-275`）|
-| `assignmentHandler` | string | 否 | 处理器全限定类名（Java 类名约定，跨语言通用，见 §6） |
+| `assignmentHandler` | string | 否 | 处理器注册 key（`EngineExtensions.registry` 内 `HandlerRegistry` 注册的 key，FQCN 风格字符串，见 §6） |
 | `form` | string | 否 | 表单 key（前端按 key 渲染；空串合法，见 10-mixed-mode.json task3） |
 | `taskType` | int | 是 | `0`=主审 `1`=副审（旁审）`2`=记录（`TaskType` 枚举，`model.py:80`）；**FIX-T30 (2026-09-18) 透传落库**；样例 `04-fork-join.json` taskB 与 `10-mixed-mode.json` task3 均用 1 |
 | `performType` | int/string | 是 | `0`/ `"0"`=普通，`1`/ `"1"`/`"ALL"`/`"COUNTERSIGN"`=会签；引擎容错解析（`engine.py:382-386`） |
@@ -170,7 +177,9 @@
 
 ### 3.4 decision 节点 properties
 
-`engine._evaluate_decision`（`engine.py:353-375`）按出边 `properties.expr` 依次求值，第一个真值即沿该边。`properties.expr` 可空（默认边），`handleClass` 兼容 Java 扩展点（样例 03-decision-expr.json 与 10-mixed-mode.json 均保留 `"handleClass": ""` 占位，当前未触发，留作后续扩展）。
+`engine._evaluate_decision`（`engine.py:_evaluate_decision`）按出边 `properties.expr` 依次求值，第一个真值即沿该边。`properties.expr` 可空（默认边）。
+
+> **历史字段**：`handleClass` 是 v1.0.x 时期预留的扩展点字段（Java 反射式 decision handler）。Python 引擎 v1.9.0 起**不再使用**该字段；如需扩展决策逻辑，参考 `custom` 节点（§3.5）+ `EngineExtensions.decision_handler`。
 
 > 已知：Python 引擎 `_evaluate_decision` **不调用 `IDecisionHandler`**（register_decision 无效）。详见 `./known-issues.md §46`。要实现多条件路由请用嵌套 decision + expr。
 
@@ -204,16 +213,31 @@
 
 ### 3.5 custom 节点 properties
 
-来源：`flows/08-custom-node.json` + 引擎入口（`TYPE_CUSTOM` 与 `TYPE_TASK` 共用 `_create_task`，但 custom 不建任务，触发外部处理器）。
+来源：`flows/08-custom-node.json` + 引擎入口（`engine.py:_execute_node` 拆出 `TYPE_CUSTOM` 分支 → `_execute_custom_node`）。
 
-> ⚠️ **实测（2026-09-17 复测 08-custom-node）**：引擎**未实现** `clazz/methodName/args/val` 四个字段的反射调用。custom 节点被当 task 处理，要求 `assignee`/`assignmentHandler` 解析 actors；否则 `_create_task` 在 actors=[] 时 return，流程卡死。详见 `./known-issues.md` §16 + `./tdd/test_08-custom-node_20260917101500.md`。
+> ✅ **v1.9.0 FIX-T38 已实现**：custom 节点通过 `EngineExtensions.custom_handler_registry` 调度，handler 签名 `async def(node, inst, vars_, args) -> Any`。详见 `known-issues.md §16` + `tdd/test_fix37_fix38_20260919_143000.md`。
 
-| 字段 | 说明 |
-| --- | --- |
-| `clazz` | 外部处理器类全限定名（Java 约定） |
-| `methodName` | 调用方法名 |
-| `args` | 入参（字符串，可为流程变量） |
-| `val` | 返回值写入变量名 |
+| 字段 | 必填 | 说明 |
+| --- | --- | --- |
+| `clazz` | 是 | handler 注册 key（在 `EngineExtensions.custom_handler_registry` 注册的字符串，可 FQCN 风格或自定义短名） |
+| `methodName` | 否 | 冗余字段（保留向前兼容，无业务语义） |
+| `args` | 否 | 入参字符串（handler 自行解析为 dict/JSON/逗号分隔/任意格式） |
+| `val` | 否 | 返回值写入变量名（缺省不写；`result is None` 也不写） |
+
+**行为**：
+1. 触发前后调 `_fire_pre` / `_fire_post` 拦截器（同其他节点）
+2. 调 `handler(node, inst, vars_, args)` → 写回 `vars_[val]`
+3. **不创建 task**，直接 `_follow_edges` 推进下游
+4. handler 抛错向上冒泡（不静默）
+5. handler 未注册 / `clazz` 缺省 → 抛 `ValueError`（v1.8.0 之前静默，FIX-T17 改进）
+
+**注册示例**（`main_common.py:build_custom_handlers`）：
+```python
+def build_custom_handlers() -> dict:
+    return {
+        "com.mldong.jeeflow.test.TestCustomHandler": _builtin_custom_test_handler,
+    }
+```
 
 ---
 
@@ -336,7 +360,7 @@ if perm is None:
 
 ## 6. 参与者处理器（assignmentHandler）
 
-`flows/11-assignment-handler.json` 给出全部内置处理器全限定名（与 Java 类名一致，`builtin.py:13-22`）：
+`flows/11-assignment-handler.json` 给出全部内置处理器（注册 key 在 `EngineExtensions.registry` / `HandlerRegistry`，`builtin.py:13-22`）：
 
 | 处理器 | 行为 |
 | --- | --- |

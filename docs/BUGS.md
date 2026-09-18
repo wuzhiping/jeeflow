@@ -160,14 +160,14 @@ if existing:
 **修复实施**（FIX-T36 2026-09-19）：复用 JUMP 路径 + 分支处理首/非首任务
 - `vendor/jeeflow/engine.py` `execute_and_jump_task` ROLLBACK 路径重构
 - 检测目标节点 `_is_first_task_node`：
-  - **首任务**：`assignee = inst.operator`（发起人）
-  - **非首任务**：`assignee = task.actorId or operator`（保留 Java rejectTask 语义）
+  - **首任务**：`assignee = inst.operator`（发起人）— 跳回发起人重审
+  - **非首任务**：`assignee = task.actorId or operator`（前任务完成人）— 重审人即原完成人
 - 走 `_execute_node` 替代 `_rollback_actors` + `_create_task_with_actors`
 - 复用 §27 FIX-T35 修复（悲观锁 + task 去重）
 
 **实测**（BDD #124 2026-09-19）：
 - ROLLBACK 跳首任务：user1 apply todo = 1（修复前 0）✓
-- ROLLBACK 跳非首任务：leader task0 todo = 1（保留 Java 语义）✓
+- ROLLBACK 跳非首任务：leader task0 todo = 1（前完成人）✓
 - JUMP 跳首任务：user1 apply todo = 1（无回归）✓
 - ROLLBACK_TO_OPERATOR (submitType=6)：user1 apply todo = 1 ✓
 - 完整跑通：state=20 DONE ✓
@@ -330,7 +330,7 @@ v1.9.0 起，custom 节点通过 `EngineExtensions.custom_handler_registry` 注�
 
 在 `main_common.py:build_custom_handlers` 注册 handler，签名 `async def(node, inst, vars_, args) -> Any`，结果自动写入 `vars_[val]`。
 
-**仍生效约束**：`methodName` 字段冗余（Python handler 是 callable，无 Java 反射概念）。
+**字段语义**：`methodName` 字段冗余（保留向前兼容，无业务语义；Python handler 是 callable，无反射概念）。
 
 ---
 

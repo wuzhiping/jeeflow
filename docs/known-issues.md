@@ -575,9 +575,9 @@ cs_veto = ct != "" and cs_cond.upper() == "ONE_VOTE_VETO" and \
 
 ### 原因
 
-- `engine.py:324-329` `_execute_node` 把 `TYPE_CUSTOM` 与 `TYPE_TASK` 共用 `_create_task`，**没有 custom handler 反射调用分支**
-- 引擎未实现 Java 风格的「class.forName(clazz).getMethod(methodName).invoke(...)」逻辑
-- `docs/flow.md §3.5` 描述的「custom 不建任务，触发外部处理器」与实测不符
+- `engine.py:_execute_node` 把 `TYPE_CUSTOM` 与 `TYPE_TASK` 共用 `_create_task`，**没有 custom handler 调用分支**
+- 引擎未实现「按 clazz 字符串动态调用处理器」逻辑（v1.8.x 之前的 Java 反射式设计在 Python 引擎不适用）
+- `docs/flow.md §3.5` 描述的「custom 不建任务，触发外部处理器」与 v1.8.x 实测不符
 
 ### ✅ FIX-T38（2026-09-19）§16 修复
 
@@ -602,8 +602,8 @@ cs_veto = ct != "" and cs_cond.upper() == "ONE_VOTE_VETO" and \
 **handler 签名**：`async def(node: FlowNode, inst: ProcessInstance, vars_: dict, args: str) -> Any`
 
 **字段语义**（v1.9.0+）：
-- `clazz`：必填，handler 注册 key（FQCN 或自定义名）
-- `methodName`：冗余（Python handler 是 callable，无 Java 反射概念）
+- `clazz`：必填，handler 注册 key（FQCN 风格或自定义短名均可）
+- `methodName`：冗余（保留向前兼容，无业务语义；Python handler 是 callable）
 - `args`：字符串参数（handler 自行解析为 dict/JSON/逗号分隔）
 - `val`：结果变量名（写入 `vars_[val]`，缺省不写）
 
@@ -1640,7 +1640,7 @@ PARALLEL ONE_VOTE_VETO 场景下，任一 task DONE 后，剩余未执行的会�
 
 ### 引擎行为
 
-- `facade.py` **未实现** `_processTask_delegate` 接口（Java boot2 有此接口）
+- `facade.py` **未实现** `_processTask_delegate` 接口（v1.0.x 历史 spec，Python 引擎不实现）
 - `engine.execute_process_task` 严格校验 `operator in repo._actors[task_id]`
 - surrogate 仅作流程级授权记录（用于前端"我的委托"列表），**不修改** task.actorIds
 
@@ -2146,7 +2146,6 @@ manager 驳回到 leader_review：
 
 - `ProcessInstance` 模型有 `parentId` 字段
 - 但 `facade.py` startAndExecute 路径**不读取** args.parentId
-- Java boot2 同步支持该参数
 
 ### 修复建议
 
@@ -2679,28 +2678,20 @@ actorIds=[userA,userB]，**is_allowed 是 in 检查**。
 
 ### FQCN 双轨制
 
-| 来源 | 格式 | 示例 |
-|---|---|---|
-| Python 引擎（builtin.py） | 简化版 | `com.mldong.jeeflow.interceptor.impl.FormFieldAssigneeHandler` |
-| Java mldong 引擎 | 完整版 | `com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$FormFieldAssigneeHandler` |
-
 ### 引擎注册（builtin.py L16）
 
 ```python
 HANDLER_FORM_FIELD_ASSIGNEE = "com.mldong.jeeflow.interceptor.impl.FormFieldAssigneeHandler"
 ```
 
-Python 引擎用简化版 FQCN 注册，但能同时支持 Java 完整版（Task 57 v4 验证）。
-
 ### 推荐用法
 
 ```python
-# 优先简化版（与 builtin.py 一致）
+# 简化版（与 builtin.py 一致，Python 引擎注册名）
 "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.TaskRoleAssigneeHandler"
-
-# Java 完整版也可（Task 57 验证）
-"assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
 ```
+
+> **历史说明**：v1.0.x 时期曾支持 `OrgUserAssignmentHandlers$TaskRoleAssigneeHandler` 完整版 FQCN（兼容 boot2 多语言引擎）。Python 引擎 v1.9.0 起仅使用简化版注册名，不再维护完整版别名映射。
 
 ### 测试报告
 
@@ -3693,14 +3684,14 @@ parentId=int(args.get("parentId")) if args.get("parentId") is not None else None
 **修复实施**：
 - `vendor/jeeflow/engine.py` `execute_and_jump_task` ROLLBACK 路径重构
 - 检测目标节点 `_is_first_task_node`：
-  - **首任务**：`assignee = inst.operator`（发起人）
-  - **非首任务**：`assignee = task.actorId or operator`（保留 Java rejectTask 语义）
+  - **首任务**：`assignee = inst.operator`（发起人）— 跳回发起人重审
+  - **非首任务**：`assignee = task.actorId or operator`（前任务完成人）— 重审人即原完成人
 - 走 `_execute_node` 替代 `_rollback_actors` + `_create_task_with_actors`
 - 复用 §27 FIX-T35 修复（悲观锁 + task 去重）
 
 **实测**（BDD #124 2026-09-19）：
 - ROLLBACK 跳首任务（submitType=3，无 targetTaskName）：user1 apply todo = 1（修复前 0）✓
-- ROLLBACK 跳非首任务：leader task0 todo = 1（保留 Java 语义）✓
+- ROLLBACK 跳非首任务：leader task0 todo = 1（前完成人）✓
 - JUMP 跳首任务（submitType=4+taskName=apply）：user1 apply todo = 1 ✓
 - ROLLBACK_TO_OPERATOR (submitType=6)：user1 apply todo = 1 ✓
 - 完整跑通：state=20 DONE ✓
