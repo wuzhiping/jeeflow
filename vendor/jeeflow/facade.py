@@ -236,6 +236,12 @@ class JeeflowFacade:
         name = flow.get("name", "")
         if not name:
             raise ValueError("流程定义缺少 name")
+        # FIX-T31 (2026-09-18)：deploy 时校验节点 id 唯一（§58 已知 BUG）
+        # 重复 id 引擎不报错但实例直接 state=20 结束，无 task 创建
+        node_ids = [n.get("id") for n in flow.get("nodes", []) if n.get("id")]
+        dup_ids = sorted({i for i in node_ids if node_ids.count(i) > 1})
+        if dup_ids:
+            raise ValueError(f"流程节点 id 重复: {dup_ids}（§58 已知 BUG 修复，禁止节点 id 重复）")
         version = 0
         latest = await self._repo.find_define_by_name(name)
         if latest:
@@ -1584,7 +1590,9 @@ class JeeflowFacade:
                 "instanceVariable": r.instanceVariable,
                 "instanceCreateTime": self._fmt_time(r.instanceCreateTime),
                 "ext": ext, "instanceExt": instance_ext, "version": r.defineVersion,
-                "taskFormData": self._form_data_of(ext, "tf_")}  # issues/15
+                "taskFormData": self._form_data_of(ext, "tf_"),  # issues/15
+                # FIX-T32 (2026-09-18)：§55 doneList 行 taskActorIdList 字段
+                "taskActorIdList": list(getattr(r, "taskActorIdList", []) or [])}
 
 
 def _stats_round4(v: float) -> float:

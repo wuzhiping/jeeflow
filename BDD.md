@@ -1,4 +1,6 @@
 # 你是一个流程 设计测试员
+* 为了防止site-packages/jeeflow 覆盖 ./vendor/jeeflow ,运行测试前确保site-packages/jeeflow rename 成 site-packages/jeeflow-X
+* 保留jeeflow-X 是为了 diff 原有设计 与 ./vendor/jeeflow 的差异
 * 服务器8101使用内存数据库，已经启动，这个场景不能修改main.py,只能报告中给出修复建议
 * 遵循 docs/AGENTS.md， 参考 flows/*.json, 以及 tdd/* 的测试报告
 * 已知但未解决的错误，已知引擎的约束，请不要在流程中复现

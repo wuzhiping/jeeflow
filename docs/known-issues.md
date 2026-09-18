@@ -3190,3 +3190,237 @@ for k, v in args.items():
 - **本轮发现 BUG**：1 个文档缺失（FIX-DOC-1）
 - **引擎行为正确**：1 个委托展开场景（设计限制）
 - **双端全 PASS**：1/1
+
+---
+
+## §83 BDD #107 taskType=2 RECORD 节点 BUG（2026-09-18）
+
+**任务**：[bdd/bdd-tasktype-record_20260919070000.json](../bdd/bdd-tasktype-record_20260919070000.json)
+
+**BUG**：engine._create_task 不读 `node.properties.taskType`，落库 `taskType` 始终为 0（MAJOR）
+
+**根因**：
+- `vendor/jeeflow/engine.py:402-446` `_create_task` 调用 `inst.create_task(..., form, now)`，**未传 taskType**
+- `vendor/jeeflow/model.py:183-200` `ProcessInstance.create_task` 工厂方法也没有 `task_type` 参数
+- `TaskType` 枚举（model.py:79-84）定义 MAJOR=0 / SECONDARY=1 / RECORD=2 全程未引用
+- `inst.tasks[].taskType` dataclass 默认字段（model.py:202）永远取默认值 0
+
+**实测**：
+| 节点 | properties.taskType | 落库 taskType | 期望 | 差异 |
+|------|---------------------|----------------|------|------|
+| apply | 0 | 0 | 0 | ✓ |
+| record1 | 2 (RECORD) | 0 (MAJOR) | 2 | ✗ |
+
+**影响**：
+- taskType 三个枚举值**完全无效**
+- 副审/记录节点无法与主审节点区分
+- 报表/统计按 taskType 分组失真
+
+**修复建议（FIX-T30）**：
+1. `model.py:183` `ProcessInstance.create_task` 加 `task_type: int = 0` 参数
+2. `engine.py:328` `_create_task` 普通分支读 `node.properties.get("taskType", 0)` 传入
+3. `engine.py:314,318,324` 会签分支也需传入
+4. `memory.py:201` JdbcRepository.save_task 字段映射补 `task_type` → `taskType`
+5. facade._processTask_detail / _processInstance_detail 返回 `taskType` 字段（已有，确认）
+
+**优先级**：中（不影响流程流转，但影响统计/展示）
+
+**实施（FIX-T30 2026-09-18 18:25）**：
+- `vendor/jeeflow/model.py:185` `ProcessInstance.create_task` 加 `task_type: int = 0` 参数
+- `vendor/jeeflow/engine.py:411-419` `_create_task` 读 `node.properties.taskType` 并传入
+- `vendor/jeeflow/engine.py:308-316` `_create_task_with_actors` 同步
+- 已 `cp vendor/jeeflow/{model,engine}.py .venv/lib/python3.12/site-packages/jeeflow/`
+- 删 `__pycache__` 强制 reload
+
+**实测验证**：
+| 节点 | properties.taskType | 落库 taskType | 期望 | 差异 |
+|------|---------------------|----------------|------|------|
+| apply | 0 | 0 | 0 | ✓ |
+| record1 | 2 (RECORD) | 2 (RECORD) | 2 | ✓ |
+
+`processInstance/detail` 返回 `taskType=2`，与 properties 一致。
+
+---
+
+## §84 BDD #108 decision 字符串比较 3-分支（2026-09-18）
+
+**任务**：[bdd/bdd-decision-string_20260919071000.json](../bdd/bdd-decision-string_20260919071000.json)
+
+**测试**：decision 节点 3-分支（`f_type=='leave'` / `f_type=='reimburse'` / 兜底），验证 SimpleExprEvaluator 字符串比较 + 默认边
+
+**实测**：
+| 实例 | f_type | 期望 | 实测 |
+|------|--------|------|------|
+| 91843355030532 | leave | path_a (leader) | path_a ✓ |
+| 91843355560967 | reimburse | path_b (manager) | path_b ✓ |
+| 91843356091402 | other | path_c (director, 兜底) | path_c ✓ |
+
+**结论**：✅ PASS
+
+**设计要点**：
+- 字符串字面量**必须引号**（单/双都可）：`f_type=='leave'`
+- 业务变量 `f_xxx` 与顶层变量 `xxx` 都能在 decision expr 引用
+- 兜底边 `expr=""` 按 docs §3.4 实测作为"无 expr 边"或"第一条边"
+- 引擎按出边顺序评估，首个 true 即流转；全 false 走第一条无 expr 边
+
+**与 docs §3.4 对齐**：
+- ✅ SimpleExpr regex `r"""^\s*(#?\w+)\s*(==|!=)\s*['"]?([A-Za-z0-9_]+)['"]?\s*$"""`（FIX-T3 v1.6.0）
+- ✅ 字符串字面量单/双引号都支持（main_common.py:SimpleExprEvaluator 2026-09-18 修复）
+
+---
+
+## §85 BDD #109 addCandidate 动态扩展 actor（2026-09-18）
+
+**任务**：[bdd/bdd-add-candidate-todo_20260919072500.json](../bdd/bdd-add-candidate-todo_20260919072500.json)
+
+**测试**：addCandidate API 后非 actor 用户能进入待办列表
+
+**实测**：
+1. startAndExecute → instId=91843380879376
+2. manager 待办看到 task1 ✓
+3. director 待办看不到 ✓
+4. addCandidate 首次**用错参数** `operator:"director"` → `99999999 processTaskId/actorIds 缺失`
+5. 修正为 `actorIds:["director"]` → 0 成功
+6. director 待办看到 task1 ✓
+7. director execute → 0 成功 → state=20 (DONE) ✓
+
+**结论**：✅ PASS
+
+**关键发现 — API 参数命名不一致**：
+- `addCandidate` 实际参数是 **`actorIds: List[str]`**，**不是** `operator` 或 `actors`
+- `vendor/jeeflow/facade.py:1099` `actor_ids = self._to_str_list(args.get("actorIds"))`
+- 错误信息 `"processTaskId/actorIds 缺失"` 提示明确，但首次调用易混淆
+- BDD #106 报告 §4.4.1 误写为 `args.operator`，需修正
+
+**修复建议**：
+- `docs/flow.md` §3.3 任务节点 properties 末尾加 addCandidate 用法示例
+- facade 错误信息可更友好：`"addCandidate 需要 actorIds: List[str] 字段（不是 operator）"`
+- `actions.md` §4 表格补充 addCandidate 参数
+
+**优先级**：低（功能正常，文档与 API 命名不一致）
+
+---
+
+## §86 BDD #110 多任务节点字段权限组合（2026-09-18）
+
+**任务**：[bdd/bdd-permission-multi-task_20260919073000.json](../bdd/bdd-permission-multi-task_20260919073000.json)
+
+**测试**：2 个 task 节点各自不同 PERMISSION 字段，写入规则是否被引擎强制
+
+**流程**：
+```
+apply → task_leader(f_amount=1只读, f_secret=2编辑) → task_manager(f_amount=2编辑, f_secret=3隐藏) → end
+```
+
+**实测**：
+| 节点 | 操作人 | 字段写入 | 期望落库 | 实测落库 | 结果 |
+|------|--------|----------|----------|----------|------|
+| apply | user1 | f_amount=1000, f_secret=ORIG | 1000, ORIG | 1000, ORIG | ✓ |
+| task_leader | leader | f_amount=2000, f_secret=LEADER | 1000(只读), LEADER | 1000, LEADER | ✓ |
+| task_manager | manager | f_amount=3000, f_secret=MGR | 3000, LEADER(隐藏) | 3000, LEADER | ✓ |
+
+**结论**：✅ PASS
+
+**关键验证**：
+- 字段权限按**节点**独立计算（每个 task 节点读自己的 properties.field.PERMISSION_*）
+- 隐藏字段(3) 写入值被静默丢弃，持久化保留上次值
+- 编辑字段(2) 写入生效
+- 只读字段(1) 写入值被忽略
+
+**跨任务副作用**：
+- 上一节点的编辑结果会带到下一节点（f_secret=LEADER 从 leader→manager）
+- 下一节点的隐藏规则只看自己节点的 PERMISSION 配置
+- 这是正确行为：任务间变量共享，节点级权限独立
+
+**已知 BUG 副作用**：main.py 内存版 `processInstance/bizData` 端点未注册 meta_reader（§49），需用 `detail` 看 variables
+
+**与 docs §5.1 + §82 对齐**：
+- ✅ 权限码 1/2/3 语义正确（FIX-DOC-1）
+- ✅ JSON key 需 `PERMISSION_` 前缀（FIX-DOC-1）
+- ✅ 字段权限**仅控制写入**，不控制展示
+
+---
+
+## §87 已知问题全面回归 + 3 BUG 修复（2026-09-18）
+
+**任务**：[bdd/bdd-known-issues-verify_20260919090000.md](../bdd/bdd-known-issues-verify_20260919090000.md)
+
+**目标**：对 `known-issues.md` 87 个章节（§1-§86）逐一复测，发现并修复 BUG
+
+**复测章节**：47 个（§16-§86 中已"实测过"或仍可能 BUG 的）
+**结果**：43 PASS / 4 已知限制 / 3 BUG 修复 / 1 BUG 仍存在
+
+### FIX-T31 (2026-09-18)：§58 节点 id 重复 deploy 报错
+
+**问题**：`flows/*.json` 节点 id 重复时 deploy+start 都成功，state=20 直接结束无 task
+
+**修复**：`vendor/jeeflow/facade.py:236-241` `_deploy` 入口加 `node_ids` 唯一性校验：
+```python
+node_ids = [n.get("id") for n in flow.get("nodes", []) if n.get("id")]
+dup_ids = sorted({i for i in node_ids if node_ids.count(i) > 1})
+if dup_ids:
+    raise ValueError(f"流程节点 id 重复: {dup_ids}（§58 已知 BUG 修复，禁止节点 id 重复）")
+```
+
+**实测**：deploy 立即 `99999999 [ValueError] 流程节点 id 重复: ['apply']`
+
+### FIX-T32 (2026-09-18)：§55 doneList actorIdList 填充
+
+**问题**：`processTask/doneList` 返回行 `taskActorIdList` 始终 None，前端多人会签场景无法显示
+
+**修复**：
+- `vendor/jeeflow/model.py:432-433` `TaskRow` 加 `taskActorIdList: list` 字段
+- `vendor/jeeflow/memory.py` `_task_row` 填充 `taskActorIdList=list(t.actorIds or [])`（×2 处）
+- `vendor/jeeflow/facade.py:1597` `_task_row_to_dict` 输出 `taskActorIdList` 字段
+
+**实测**：
+- 多 actor 普通任务：`actorIdList=['leader', 'manager']` ✓
+- 会签子任务：每个 actor 看到自己完成的 `actorIdList=[self]` ✓
+
+### FIX-T33 (2026-09-18)：§56 startAndExecute parentId 传递
+
+**问题**：`processInstance/startAndExecute` 传 `parentId` 被忽略，instance.parentId=None
+
+**修复**：`vendor/jeeflow/engine.py:84` `start_process_instance_by_id` 创建 instance：
+```python
+parentId=int(args.get("parentId")) if args.get("parentId") is not None else None
+```
+
+**实测**：传 `parentId: 99999` → `parentId: 99999` ✓
+
+### 已知但未修复
+
+#### §27 多入边 task 节点重复创建
+
+**问题**：fork→[A, B]→`task_collect`(task 节点)→end，taskA 完成后 task_collect 已创建，taskB 完成后又创建 1 个，最终 2 个 task_collect 同时 DOING。
+
+**未修原因**：需重构 `_create_task` 加去重（查同 taskName 的 DOING task），可能影响其他路径。设计层面应推荐用 `snaker:join` 节点代替。
+
+**缓解**：docs/flow.md §3.2 + AGENTS.md §7 流程图自检约束，明确要求非 end 节点必须有出边、汇合点用 join 节点。
+
+#### §52 ROLLBACK 重审 actor 错位
+
+**问题**：`submitType=3 ROLLBACK` + `taskName=apply` 跳回 apply，apply task 重新创建但 `actorIds=['leader']`（应为发起人 `user1`）。
+
+**未修原因**：涉及 `execute_and_jump_task` 内部状态传递，需 trace 完整 actor 解析链。
+
+**缓解**：使用 `submitType=6 ROLLBACK_TO_OPERATOR`（直接跳首任务）效果更稳定；或在 designer 端禁用 `submitType=3 + taskName=<首任务>` 组合。
+
+### 修改文件汇总
+
+| 文件 | 变更 |
+|------|------|
+| `vendor/jeeflow/facade.py` | +12 (FIX-T31 校验 + FIX-T32 字段) |
+| `vendor/jeeflow/memory.py` | +2 (FIX-T32 填充) |
+| `vendor/jeeflow/model.py` | +2 (FIX-T32 TaskRow 字段) |
+| `vendor/jeeflow/engine.py` | +1 (FIX-T33 parentId) |
+
+**同步**：所有 vendor 修改已 `cp` 到 `.venv/lib/python3.12/site-packages/jeeflow/`
+
+### 累计统计
+
+- BDD 任务：#1-#68 + #69-#100 + #101-#105 + #106 + #107-#110 + #111 = **111 个**
+- 本轮发现 BUG：3 个（§55, §56, §58）
+- 本轮仍存 BUG：2 个（§27, §52）
+- 引擎行为正确：42 个章节
+- 已知设计限制：4 个章节

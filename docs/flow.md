@@ -117,7 +117,7 @@
 | `assignee` | string | 否（与 `assignmentHandler` 互斥） | 处理人解析：`"applicant"`=发起人；`"leader"`=运营占位；逗号分隔多值；或流程变量 token（`f_xxx`/`xxx`，`engine.py:265-275`）|
 | `assignmentHandler` | string | 否 | 处理器全限定类名（Java 类名约定，跨语言通用，见 §6） |
 | `form` | string | 否 | 表单 key（前端按 key 渲染；空串合法，见 10-mixed-mode.json task3） |
-| `taskType` | int | 是 | `0`=主审 `1`=副审（旁审）`2`=记录（`TaskType` 枚举，`model.py:80`）；样例 `04-fork-join.json` taskB 与 `10-mixed-mode.json` task3 均用 1 |
+| `taskType` | int | 是 | `0`=主审 `1`=副审（旁审）`2`=记录（`TaskType` 枚举，`model.py:80`）；**FIX-T30 (2026-09-18) 透传落库**；样例 `04-fork-join.json` taskB 与 `10-mixed-mode.json` task3 均用 1 |
 | `performType` | int/string | 是 | `0`/ `"0"`=普通，`1`/ `"1"`/`"ALL"`/`"COUNTERSIGN"`=会签；引擎容错解析（`engine.py:382-386`） |
 | `countersignType` | string | 会签时必填 | `"PARALLEL"` 并行；`"SEQUENTIAL"` 串行（`engine.py:282, 387`） |
 | `countersignCompletionCondition` | string | 否 | 会签完成条件；可放 `properties` 根下，也可放 `properties.field` 内。两种取值：① Activiti 表达式，如 `"#nrOfCompletedInstances==2"`（`flows/07`）；② 常量 `"ONE_VOTE_VETO"` 一票否决（`flows/13`） |

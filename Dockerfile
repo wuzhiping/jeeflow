@@ -14,6 +14,8 @@ COPY . .
 RUN uv sync --frozen
 RUN uv pip install jeeflow[postgres]
 
+# RUN mv ./.venv/lib/python3.12/site-packages/jeeflow ./.venv/lib/python3.12/site-packages/jeeflow-X
+
 ENV SPI_FOLDER=demo
 ENV JEEFLOW_PG_DSN=postgresql://uid:pwd@127.0.0.1:5432/jeeflow
 ENV PORT=8101

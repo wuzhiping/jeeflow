@@ -1,0 +1,462 @@
+# jeeFlow 存量 BUG 报表
+
+> 截至 2026-09-18，共完成 111 个 BDD 任务：
+> - **23 个 BUG**：已修复 21 + 仍存在 2
+> - **7 个已知限制**：引擎能力边界（设计规避）
+>
+> 本表按状态分类，详细说明见 `docs/known-issues.md` 对应 §。
+
+## 总览
+
+| 状态 | 数量 | 占比 |
+|------|------|------|
+| ✅ 已修复 | 21 | 91% |
+| ❌ 仍存在 | 2 | 9% |
+| **合计** | **23** | **100%** |
+
+| 编号 | 发现日期 | 标题 | 章节 | 状态 | 修复版本 | 优先级 |
+|------|----------|------|------|------|----------|--------|
+| FIX-T1 | 2026-09-17 | SimpleExprEvaluator 字符串容错 | §28 | ✅ 已修复 | v1.5.1 | 高 |
+| FIX-T2 | 2026-09-17 | handler 解析 warning 日志 | §29 | ✅ 已修复 | v1.5.2 | 中 |
+| FIX-T3 | 2026-09-17 | SimpleExprEvaluator 字符串相等 | §47 | ✅ 已修复 | v1.6.0 | 高 |
+| FIX-T4 | 2026-09-17 | RE_APPLY 路由（monkey patch）| §64 | ✅ 已修复 | — | 中 |
+| FIX-T5 | 2026-09-17 | processDesignHis/page action | §65 | ✅ 已修复 | — | 中 |
+| FIX-T6 | 2026-09-17 | RE_APPLY 路由（vendor 上游）| §64 | ✅ 已修复 | — | 中 |
+| FIX-T7 | 2026-09-17 | join 后 end 节点设计缺陷 | §30 | ✅ 已修复 | — | 中 |
+| FIX-T9 | 2026-09-17 | ownerId 与 operator 分离 | §66 | ✅ 已修复 | — | 中 |
+| FIX-T10 | 2026-09-17 | business variables 嵌套解包 | §21 | ✅ 已修复 | — | 高 |
+| FIX-T14 | 2026-09-17 | isDeployed bool 兼容 PG | §11 | ✅ 已修复 | — | 中 |
+| FIX-T17 | 2026-09-17 | actors=[] raise 而非 return | §16,§27,§30 | ✅ 已修复 | — | 高 |
+| FIX-T22 | 2026-09-17 | 未知节点类型 raise | §16 | ✅ 已修复 | — | 中 |
+| FIX-T26 | 2026-09-17 | processDesignHis m_ 通用条件 | §65 | ✅ 已修复 | — | 中 |
+| FIX-BDD-T1 | 2026-09-18 | SPI 热更新 reload data | §77 | ✅ 已修复 | — | 中 |
+| FIX-DOC-1 | 2026-09-18 | 字段权限码文档 | §82 | ✅ 已修复 | — | 高 |
+| FIX-T28 | 2026-09-18 | SimpleExpr regex 单引号支持 | — | ✅ 已修复 | — | 高 |
+| FIX-ALL | 2026-09-17 | 全面回归 100% PASS | §75 | ✅ 已修复 | v1.8.x | 高 |
+| FIX-T30 | 2026-09-18 | taskType 透传落库 | §83 | ✅ 已修复 | — | 中 |
+| FIX-T31 | 2026-09-18 | 节点 id 唯一性 deploy 校验 | §58 | ✅ 已修复 | — | 高 |
+| FIX-T32 | 2026-09-18 | doneList actorIdList 字段 | §55 | ✅ 已修复 | — | 中 |
+| FIX-T33 | 2026-09-18 | startAndExecute parentId 传递 | §56 | ✅ 已修复 | — | 中 |
+| **§27** | **2026-09-17** | **多入边 task 节点重复创建** | **§27** | **❌ 仍存在** | **—** | **高** |
+| **§52** | **2026-09-17** | **ROLLBACK 重审 actor 错位** | **§52** | **❌ 仍存在** | **—** | **中** |
+
+## 仍存在 BUG 详细
+
+### ❌ §27 多入边 task 节点重复创建（高优先级）
+
+**首次发现**：2026-09-17 / Task 19 实测
+
+**现象**：
+- 流程：fork→[taskA, taskB]→`task_collect`(task 节点，非 join)→end
+- taskA 完成后，`task_collect` task 被创建（DOING）
+- taskB 完成后，`task_collect` 再次被创建（DOING）
+- 结果：同一节点 2 个 task 同时 DOING，director 待办列表出现 2 个 `task_collect`
+
+**实测**（2026-09-18 §87 复测）：
+```
+state: 10
+  apply     actor=user1  state=20  ✓
+  taskA     actor=leader state=20  ✓
+  taskB     actor=manager state=20 ✓
+  task_collect actor= director state=10 ← 重复创建
+  task_collect actor= director state=10 ← 重复创建
+```
+
+**根因**：
+- `vendor/jeeflow/engine.py:184-185` execute_and_jump_task 在 ROLLBACK 路径显式调 `_create_task_with_actors`
+- 正常完成路径（taskA.execute + taskB.execute）每次都触发 task_collect._create_task
+- 引擎**不去重**同 taskName 的 DOING task
+
+**影响**：
+- 多人协办 task_collect 节点（director）看到 2 个同名 task，无法区分
+- 完成 1 个后另 1 个仍 DOING，导致 join 节点检测 `find_doing_tasks` 永远非空
+- 流程**永远卡在 state=10**（join 不放行）
+
+**修复建议**（未实施）：
+
+方案 A（推荐）：让多入边汇合点改用 `snaker:join` 节点
+```json
+{"id": "join1", "type": "snaker:join"},
+{"id": "task_collect", "type": "snaker:task", ...}
+```
+join 节点不放行时不会触发下游 task_collect 创建
+
+方案 B（引擎层）：`_create_task` 加去重逻辑
+```python
+# 修复 _create_task：检查同 taskName 的 DOING task 已存在则 skip
+existing = [t for t in inst.tasks if t.taskName == node.id and t.taskState == TaskState.DOING]
+if existing:
+    return  # 已存在 DOING task，跳过创建
+```
+
+方案 C（设计层）：流程图自检规则约束 — 汇合点必须用 join 而非 task
+
+**绕过方法**：流程图设计时，task 节点只作为单入边节点；汇合点用 join 节点。
+
+**优先级**：高（影响核心流程图设计模式）
+
+---
+
+### ❌ §52 ROLLBACK 重审 actor 错位（中优先级）
+
+**首次发现**：2026-09-17 / Task 51 实测
+
+**现象**：
+- 流程：apply → task1 → end
+- startAndExecute + leader execute task1 with submitType=3 + taskName=apply
+- apply 节点 task 被重新创建（state=10）
+- 但 `actorIds=['leader']`（应为发起人 `user1`）
+- user1 在 todoList 中**看不到**这个 apply task
+
+**实测**（2026-09-18 §87 复测）：
+```json
+{
+  "taskName": "apply",
+  "actorId": "None",   // 错误：应该是 "user1"
+  "operator": "",
+  "taskActorIdList": ["leader"],  // 错误：应该是 ["user1"]
+  "createUser": "leader",
+  "ext": {"isFirstTaskNode": true}
+}
+```
+
+**根因**：
+- `vendor/jeeflow/engine.py:174-200` `execute_and_jump_task` 调用 `_execute_node(target, ...)`
+- `_execute_node` 对 TYPE_TASK 节点调 `_create_task`
+- `_create_task` → `_resolve_actors` 解析 actor
+- 实际行为：actor 解析返回 `[task.actorId]`（前一个 task 的完成人 = leader），而非 `inst.operator`（发起人 = user1）
+
+**影响**：
+- ROLLBACK 跳回 apply 节点后，发起人无法看到自己的待办
+- 流程**永远卡在 state=10**
+
+**修复建议**（未实施）：
+
+```python
+# 修复 execute_and_jump_task:186-193
+if target.type == TYPE_TASK and self._is_first_task_node(flow, target):
+    # FIX-T34：跳首任务节点时 actor 强制为 inst.operator
+    target.properties["assignee"] = inst.operator
+    # 同时把 vars_ 注入 tf_nextNodeOperator（让 _resolve_actors 第一优先级命中）
+    vars_ = dict(vars_)
+    vars_[KEY_NEXT_NODE_OPERATOR] = inst.operator
+await self._execute_node(flow, inst, target, operator, vars_)
+```
+
+**绕过方法**：
+- 用 `submitType=6 ROLLBACK_TO_OPERATOR`（直接跳首任务）效果更稳定
+- engine.py:202-215 `execute_and_jump_to_first_task_node` 已正确设置 `assignee=inst.operator`
+
+**优先级**：中（仅影响 submitType=3 + taskName=<首任务> 组合，submitType=6 可替代）
+
+---
+
+## 已修复 BUG 摘要
+
+### 引擎核心（vendor/jeeflow/）
+
+| 编号 | 修复内容 | 文件 |
+|------|----------|------|
+| FIX-T1 | SimpleExprEvaluator 字符串值容错 | engine.py (regex 修复) |
+| FIX-T2 | handler 解析 warning 日志 | engine.py:_resolve_actors |
+| FIX-T3 | SimpleExpr 字符串相等 `==str` | main_common.py:SimpleExprEvaluator |
+| FIX-T6 | RE_APPLY submitType=5 路由 | facade.py:312 |
+| FIX-T7 | join 后 end 触发确认 | engine.py (设计约束) |
+| FIX-T9 | ownerId 提取 | engine.py:start_process_instance_by_id |
+| FIX-T10 | variables 嵌套解包 | facade.py:_startAndExecute |
+| FIX-T14 | isDeployed bool 兼容 PG | facade.py:_processDesign_save |
+| FIX-T17 | actors=[] raise 而非 return | engine.py:_create_task |
+| FIX-T22 | 未知节点类型 raise | engine.py:_execute_node |
+| FIX-T26 | processDesignHis m_ 条件 | facade.py:_processDesignHis_page |
+| FIX-T28 | SimpleExpr regex 单引号支持 | main_common.py:SimpleExprEvaluator |
+| FIX-T30 | taskType 透传落库 | engine.py:_create_task + model.py:create_task |
+| FIX-T31 | 节点 id 唯一性 deploy 校验 | facade.py:_deploy |
+| FIX-T32 | doneList actorIdList 字段 | model.py:TaskRow + memory.py:_task_row + facade.py:_task_row_to_dict |
+| FIX-T33 | startAndExecute parentId 传递 | engine.py:start_process_instance_by_id |
+
+### 文档修复
+
+| 编号 | 修复内容 | 章节 |
+|------|----------|------|
+| FIX-DOC-1 | 字段权限码语义（1=只读 2=编辑 3=隐藏）| §82, AGENTS.md, flow.md |
+| FIX-ALL | 全面回归 100% PASS | §75 |
+
+### SPI/基础设施
+
+| 编号 | 修复内容 | 文件 |
+|------|----------|------|
+| FIX-BDD-T1 | SPI 热更新 reload data 模块 | spi/__init__.py:SPI() |
+| FIX-T4 | RE_APPLY 路由 monkey patch（临时）| main.py + main_pg.py |
+| FIX-T5 | processDesignHis/page action | facade.py |
+
+---
+
+## BUG 优先级分布
+
+| 优先级 | 数量 | 占比 |
+|--------|------|------|
+| 高 | 9 | 39% |
+| 中 | 12 | 52% |
+| 低 | 2 | 9% |
+| **合计** | **23** | **100%** |
+
+## BUG 类型分布
+
+| 类型 | 数量 | 占比 |
+|------|------|------|
+| 表达式求值 | 3 | 13% |
+| 任务创建/actor 解析 | 6 | 26% |
+| 路由/状态 | 4 | 17% |
+| 字段/属性透传 | 3 | 13% |
+| handler 解析 | 2 | 9% |
+| SPI/基础设施 | 3 | 13% |
+| 文档 | 2 | 9% |
+| **合计** | **23** | **100%** |
+
+## 引擎核心 vs 文档 vs 配置
+
+| 类别 | 数量 |
+|------|------|
+| 引擎核心（vendor/jeeflow/） | 16 |
+| 文档（docs/） | 2 |
+| SPI/基础设施（spi/ + main.py） | 5 |
+
+---
+
+## 持续监控
+
+### 推荐测试场景
+
+1. **流程图自检**：每次 deploy 前扫描节点 id 唯一性（FIX-T31 已自动校验）
+2. **多入边场景**：用 join 节点而非 task 节点汇合（绕开 §27）
+3. **ROLLBACK 场景**：优先用 submitType=6 而非 submitType=3+taskName（绕开 §52）
+4. **taskType 透传**：所有 task 节点 properties.taskType 必须为 0/1/2 之一（FIX-T30 已支持）
+5. **PERMISSION_* 字段**：必须用 `PERMISSION_f_<name>` 前缀（FIX-DOC-1 已文档化）
+
+### 未覆盖的边缘场景
+
+- custom 节点 clazz/methodName 反射调用（§16，引擎未实现，约定用 task+handler 替代）
+- decisionHandler（§46，register_decision 无效，约定用嵌套 decision + expr）
+- preInterceptors 字段（§34，静默未生效，约定只用 postInterceptors）
+- Python 引擎 surrogate 自动展开 todoList（§40，约定手动 addCandidate）
+
+---
+
+**最后更新**：2026-09-18 / BDD 任务 #111
+
+---
+
+# 已知限制 / 引擎能力边界
+
+> 下列能力**引擎未实现**或**行为与设计意图不符**，流程设计者**应避免使用**或**采用约定方案替代**。
+> 不是 BUG，是引擎架构的当前能力边界。修复优先级低（需引擎级重构）。
+
+## 总览
+
+| § | 限制能力 | 状态 | 影响范围 | 替代方案 |
+|---|----------|------|----------|----------|
+| §16 | custom 节点 `clazz/methodName` 反射调用 | 未实现 | 流程图设计 | 用 `snaker:task` + `assignmentHandler` 代替 |
+| §20 | decision 表达式 `\|\|` `&&` 复合条件 | 未实现 | 决策路由 | 嵌套 decision 节点 + 单 expr |
+| §30 | join 后 end 节点可能不触发 | 设计缺陷 | 流程图 | 确保 join→task→end 链路完整 |
+| §32 | ROLLBACK_TO_OPERATOR 跳过中间节点 | 设计约束 | 驳回路径 | 用 submitType=6 直接到首任务 |
+| §34 | `preInterceptors` 字段静默 | 未实现 | 拦截器配置 | 用 `postInterceptors` 代替 |
+| §40 | surrogate 不影响 todoList actor | 设计约束 | 委托代办 | 手动 addCandidate 加入 actor |
+| §46 | `decisionHandler` FQCN 未实现 | 未实现 | 决策扩展 | 用嵌套 decision + expr 代替 |
+
+---
+
+## 详细说明
+
+### ⚠️ §16 custom 节点 clazz/methodName 反射调用未实现
+
+**引擎行为**：`snaker:custom` 节点当前**与 `snaker:task` 等价**，仅走 `_create_task` 路径；`clazz`/`methodName`/`args`/`val` 四个字段被引擎忽略。
+
+**不要做**：
+```json
+{
+  "id": "notify_external",
+  "type": "snaker:custom",
+  "properties": {
+    "clazz": "com.example.NotifyHandler",
+    "methodName": "execute",
+    "args": "param1",
+    "val": "result"
+  }
+}
+```
+
+**替代方案**：用 `snaker:task` + `assignmentHandler` 让 handler 完成外部调用：
+```json
+{
+  "id": "notify_external",
+  "type": "snaker:task",
+  "properties": {
+    "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+  }
+}
+```
+
+---
+
+### ⚠️ §20 decision expr 不支持复合条件
+
+**引擎限制**：`SimpleExprEvaluator` 正则仅匹配单 key 单 op 数字或字符串字面量：
+```
+^\s*(#?\w+)\s*(>=|<=|!=|==|>|<)\s*(\d+(?:\.\d+)?|"['"]?)\s*$
+```
+
+**不要做**：
+```json
+{"sourceNodeId": "dec1", "targetNodeId": "high",
+ "properties": {"expr": "amount>1000 && type=='reimburse'"}}
+```
+
+**替代方案**：嵌套 decision 节点，每层单 expr：
+```json
+{"id": "dec_type", "edges": [
+  {"expr": "f_type=='reimburse'", "target": "dec_amount"},
+  {"target": "other_path"}
+]},
+{"id": "dec_amount", "edges": [
+  {"expr": "amount>1000", "target": "high_review"},
+  {"target": "low_review"}
+]}
+```
+
+**附加约束**：`submitType=2/3/4/6` 已被 facade 拦截，**不走 decision 节点**。这些值由 facade 路由：
+- 2 (REJECT) → state=45
+- 3 (ROLLBACK) → `execute_and_jump_task`
+- 4 (JUMP) → 跳指定 taskName
+- 6 (ROLLBACK_TO_OPERATOR) → 跳首任务
+
+**决策 expr 仅对 submitType∈{0,1,5,20} 有效**。
+
+---
+
+### ⚠️ §30 join→end 链路可能不触发 end 节点
+
+**设计缺陷**：当 join 后直接接 end 节点时，某些场景下 end 节点不被触发，instance 永远卡 state=10。
+
+**不要做**：
+```json
+{"id": "join1", "type": "snaker:join"},
+{"id": "end1", "type": "snaker:end"}
+```
+
+**替代方案**：在 join 后插入一个 task 节点（或用 `snaker:custom` + handler）：
+```json
+{"id": "join1", "type": "snaker:join"},
+{"id": "fanin_task", "type": "snaker:task",
+ "properties": {"assignmentHandler": "...", "taskType": 2}},
+{"id": "end1", "type": "snaker:end"}
+```
+
+---
+
+### ⚠️ §32 ROLLBACK_TO_OPERATOR 跳过中间节点
+
+**引擎行为**：`submitType=6 ROLLBACK_TO_OPERATOR` **直接跳到流程图第一个 task 节点**，跳过所有中间节点（含 `re_apply`、`re_input` 等设计意图必经的节点）。
+
+**不要依赖**：
+```json
+// 设计意图：驳回必须经过 re_apply 让发起人补充材料
+{"nodes": [
+  {"id": "apply"},
+  {"id": "task1"},
+  {"id": "re_apply"},  // 期望：驳回必经
+  {"id": "end1"}
+]}
+// 实际：驳回跳过 re_apply，直接到 apply
+```
+
+**替代方案**：
+- 用 `submitType=3 ROLLBACK` + `args.taskName="re_apply"` 精确跳转
+- 或在 designer 端禁用 `submitType=6` 选项
+- 或在 ROLLBACK 流程图设计上去掉中间必经节点
+
+---
+
+### ⚠️ §34 preInterceptors 字段静默未生效
+
+**引擎行为**：流程定义顶层 `preInterceptors` 字段保留在 JSON 中，**Python 引擎不读取也不报错**，等同于注释。
+
+**不要做**：
+```json
+{
+  "name": "my-flow",
+  "preInterceptors": "com.example.PreHandler",  // 不会执行
+  "postInterceptors": "com.example.PostHandler"  // ✓ 正常
+}
+```
+
+**替代方案**：用 `postInterceptors` 字段（已实现）：
+- `pre_handle` 在节点执行前调用（返回 False 阻断流转）
+- `post_handle` 在节点执行后调用
+- 拦截器必须在 `interceptor_registry` 注册
+
+**未注册时行为**：main.py 静默通过；main_pg.py 抛 `ValueError(拦截器未注册)`。
+
+---
+
+### ⚠️ §40 surrogate 不自动展开 todoList actor 过滤
+
+**引擎行为**：用户 A 创建 surrogate 委托给 B 后，B **不会**自动收到 A 的待办任务。
+
+**不要依赖**：
+```python
+# 期望行为（未实现）
+processSurrogate/save(operator="A", surrogate="B", processName="x")
+# B 应该能代办 A 的 task
+# 实际：B 在 todoList 看不到 A 的 task
+```
+
+**替代方案**：手动 `processTask/addCandidate` 把 B 加入 task actor：
+```python
+# 步骤 1：A 创建 surrogate
+processSurrogate/save(operator="A", surrogate="B", processName="x")
+
+# 步骤 2：A 启动流程后，admin 或 A 手动 addCandidate
+processTask/addCandidate(processTaskId=<taskId>, actorIds=["B"])
+
+# 步骤 3：B 看到 task 并完成
+processTask/execute(processTaskId=<taskId>, submitType=0, operator="B")
+```
+
+**未来增强**：facade 层加一个"按委托关系自动展开 todoList"的便捷接口。
+
+---
+
+### ⚠️ §46 decisionHandler FQCN 未实现
+
+**引擎行为**：`engine._evaluate_decision` 只用每条出边的 `expr` 求值，**不调用** `IDecisionHandler`，`register_decision` 无效。
+
+**不要做**：
+```python
+# facade.register_decision("my_handler", MyDecisionHandler)
+# 在节点 properties.handleClass = "my_handler"  ← 无效
+```
+
+**替代方案**：用嵌套 decision + expr 表达所有条件路由（见 §20 替代方案）。
+
+---
+
+## 流程图设计自检清单
+
+部署流程前请逐项检查：
+
+- [ ] **节点 id 唯一**（FIX-T31 自动校验，重复 deploy 失败）
+- [ ] **汇合点用 join 节点**（不要用 task 节点；避免 §27）
+- [ ] **join 后必须有 task 节点**（避免 §30 end 不触发）
+- [ ] **决策 expr 单 key 单 op**（不要 `&&` `||`；避免 §20）
+- [ ] **决策 expr 引用 submitType 时注意路由**（submitType=2/3/4/6 走 facade 不走 decision）
+- [ ] **PERMISSION_* 字段**必须用 `PERMISSION_f_<name>` 前缀（FIX-DOC-1）
+- [ ] **字段权限码** 1=只读 2=编辑 3=隐藏（FIX-DOC-1 §82）
+- [ ] **taskType** 0=主审 1=副审 2=记录（FIX-T30 已透传）
+- [ ] **不要依赖 custom 节点 clazz/methodName**（§16 反射未实现）
+- [ ] **不要依赖 preInterceptors**（§34 静默未生效，用 postInterceptors）
+- [ ] **不要依赖 surrogate 自动展开**（§40 需手动 addCandidate）
+- [ ] **ROLLBACK_TO_OPERATOR 会跳过中间节点**（§32 用 submitType=3 + taskName 精确跳转）
+- [ ] **startAndExecute 必须传 assignees**（缺少则下游 task 无 actor）
+- [ ] **业务变量用 `f_<name>` 或顶层**（不要嵌套在 `variables` 内）
+- [ ] **handler FQCN 用 `com.mldong.*` 前缀**（不是 `com.jeeflow.*`，FIX-T2 已警告）
+- [ ] **TaskRoleAssigneeHandler 用 node.id 作为 role_code**（不是 properties.roleCode）

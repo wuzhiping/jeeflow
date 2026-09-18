@@ -202,7 +202,9 @@ class MemoryRepository(ProcessRepository):
             taskState=t.taskState, operator=t.actorId, finishTime=t.finishTime,
             expireTime=t.expireTime, formKey=t.formKey, taskParentId=t.parentTaskId,
             variables=deepcopy(t.variables), createTime=t.createTime, createUser=t.createUser,
-            updateTime=t.updateTime, updateUser=t.updateUser)
+            updateTime=t.updateTime, updateUser=t.updateUser,
+            # FIX-T32 (2026-09-18)：§55 doneList 行 taskActorIdList 字段
+            taskActorIdList=list(t.actorIds or []))
         inst = self._instances.get(t.processInstanceId)
         if inst:
             row.instanceCreateTime = inst.createTime
@@ -782,7 +784,9 @@ class MemoryExtRepository(ProcessExtRepository):
             taskState=t.taskState, operator=t.actorId, finishTime=t.finishTime,
             expireTime=t.expireTime, formKey=t.formKey, taskParentId=t.parentTaskId,
             variables=deepcopy(t.variables), createTime=t.createTime, createUser=t.createUser,
-            updateTime=t.updateTime, updateUser=t.updateUser)
+            updateTime=t.updateTime, updateUser=t.updateUser,
+            # FIX-T32 (2026-09-18)：§55 doneList 行 taskActorIdList 字段
+            taskActorIdList=list(t.actorIds or []))
         inst = self._instances.get(t.processInstanceId)
         if inst:
             row.instanceCreateTime = inst.createTime

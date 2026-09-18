@@ -48,10 +48,12 @@
 | --- | --- | --- |
 | `./docs/flow.md` | 流程 JSON 完整规范（10 节 + 速查） | 设计前读全文；测试中遇到歧义回查 §3-§7 |
 | `./docs/actions.md` | 47 action + 路由解析 + curl 模板（端口 8101） | 测试时按 action 名查表 |
+| **`./docs/BUGS.md`** | **23 BUG（已修 21+仍存 2）+ 7 已知限制 + 16 项自检清单** | **设计前必读，避开引擎能力边界** |
 | `./flows/*.json` | 15 个真实样例（01-13） | 设计时挑最相似的样例 fork（**只读模板，不得改写**） |
 | `./tdd/*.json` | WIP 流程 JSON | 当前会话要开发的新流程；测试通过后再决定是否晋升到 `./flows/` |
 | `./tdd/README.md` | TDD 目录使用约定 | 写新流程前必读 |
 | `./docs/pg_schema.sql` | 真实 PostgreSQL 表 DDL（仅参考） | 查字段含义 |
+| `./docs/known-issues.md` | 87 个章节详细问题（§1-§86） | 测试中遇到具体问题时按 §X 索引 |
 
 ---
 
@@ -300,6 +302,16 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 | 10 | 字段权限码 `1`=只读 `2`=编辑 `3`=隐藏 | `./docs/flow.md §5.1` |
 | 11 | `instanceUrl` 用于前端发起跳转 | `./docs/flow.md §2` |
 | 12 | 顶层 `type` 默认 `approval`，`business` 见样例 10 | `./docs/flow.md §2` |
+| 13 | **节点 id 唯一**（FIX-T31 自动校验） | `./docs/BUGS.md §58` |
+| 14 | **汇合点用 join 节点**（避免 §27 + §30） | `./docs/BUGS.md §27,§30` |
+| 15 | **决策 expr 单 key 单 op**（不要 `&&`/`\|\|`，避免 §20） | `./docs/BUGS.md §20` |
+| 16 | **`PERMISSION_*` 字段必须用 `PERMISSION_f_<name>` 前缀** | `./docs/BUGS.md FIX-DOC-1` |
+| 17 | **`submitType=2/3/4/6` 走 facade 不走 decision** | `./docs/BUGS.md §20` |
+| 18 | **不要依赖 custom 节点 clazz/methodName**（§16 未实现） | `./docs/BUGS.md §16` |
+| 19 | **`preInterceptors` 静默未生效，用 `postInterceptors`** | `./docs/BUGS.md §34` |
+| 20 | **surrogate 不自动展开 todoList**（手动 addCandidate） | `./docs/BUGS.md §40` |
+
+> ⚠️ 约束 #13-#20 来自 `./docs/BUGS.md`，是 BDD 实战中**反复踩坑**的约束。设计前**必读**。
 
 ---
 
@@ -367,6 +379,67 @@ sleep 1
 | TDD 目录使用约定 | `./tdd/README.md` |
 | 47 个 action 路由 + curl | `./docs/actions.md §X` |
 | 一键重置测试环境 | §5.2.5（`/api/reset`，不在 action 清单） |
+| **存量 BUG + 已知限制** | **`./docs/BUGS.md`（设计前必读！）** |
+| **流程图自检清单** | **`./docs/BUGS.md` 末尾（部署前逐项检查）** |
+| 已知问题详细说明 | `./docs/known-issues.md §X` |
+
+---
+
+## 9.5 BUGS.md 使用指南
+
+`./docs/BUGS.md` 是**流程设计者的必读文档**，分三部分：
+
+### 第一部分：23 个 BUG 报表
+
+| 内容 | 用途 |
+|------|------|
+| **21 个已修复 BUG**（FIX-T1~T33） | 知道引擎已支持的能力 + 修复时间 |
+| **2 个仍存 BUG**（§27, §52） | 设计时主动绕开 |
+
+### 第二部分：7 个已知限制
+
+**不是 BUG，但**引擎能力边界**，设计时必须避开：
+
+| § | 限制 | 必看理由 |
+|---|------|----------|
+| §16 | custom 节点 clazz/methodName 反射未实现 | 不要设计"自动通知外部系统"用 custom |
+| §20 | decision 不支持 `&&` `\|\|` | 嵌套 decision，不要写复合条件 |
+| §30 | join→end 链路可能不触发 | join 后必须接 task 节点 |
+| §32 | ROLLBACK_TO_OPERATOR 跳首任务 | 不要依赖"驳回必经中间节点" |
+| §34 | preInterceptors 静默 | 用 postInterceptors 代替 |
+| §40 | surrogate 不展开 todoList | 委托后手动 addCandidate |
+| §46 | decisionHandler FQCN 未实现 | 嵌套 decision 代替 |
+
+**每个限制都附"不要做"反例 + "替代方案"正例**，照搬正例即可安全设计。
+
+### 第三部分：16 项流程图设计自检清单
+
+部署前**逐项勾选**：
+- 节点 id 唯一（FIX-T31 deploy 自动校验，但有错先报）
+- 汇合点用 join 节点（避免 §27 + §30）
+- 决策 expr 单 key 单 op
+- PERMISSION_* 前缀
+- 字段权限码 1/2/3
+- handler FQCN 用 `com.mldong.*`
+- TaskRoleAssigneeHandler 用 node.id 作为 role_code
+- 等等
+
+### 使用时机
+
+| 阶段 | 必读章节 |
+|------|----------|
+| **设计前** | 已知限制（§16-§46）+ 自检清单 |
+| **写 JSON 时** | 自检清单 16 项 |
+| **测试中遇 BUG** | 存量 BUG 报表（找类似 FIX-T 编号） |
+| **测试仍失败** | 详细 `./docs/known-issues.md §X` |
+
+### 错误用法（禁止）
+
+- ❌ **不读 BUGS.md 直接写流程**：必然撞到 §16/§20/§27/§30 等限制
+- ❌ **遇到 BUG 不查 BUGS.md**：可能用已修复的旧 workaround 重新踩坑
+- ❌ **自检清单不勾选就 deploy**：可能因节点 id 重复/权限 key 错等问题被拒
+
+---
 
 ---
 
@@ -374,6 +447,8 @@ sleep 1
 
 设计 Agent 自检清单（提交前必检）：
 
+- [ ] **已读 `./docs/BUGS.md`**：避开了 7 个已知限制（§16/§20/§30/§32/§34/§40/§46）
+- [ ] **已勾选 BUGS.md 自检清单 16 项**：节点 id 唯一 / 汇合点用 join / 决策 expr 单 key / PERMISSION_* 前缀 / handler FQCN `com.mldong.*` 等
 - [ ] JSON 文件落在 `./tdd/<key>.json`（**不是** `./flows/`）
 - [ ] JSON 通过 `python -m json.tool` 校验
 - [ ] 节点 id / 边 id 符合命名约定

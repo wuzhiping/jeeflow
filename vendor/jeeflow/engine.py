@@ -78,6 +78,7 @@ class EngineImpl(Engine):
         )
         inst = ProcessInstance(id=self._next_id(), defineId=define_id, operator=operator,
                                ownerId=owner_id,
+                               parentId=int(args.get("parentId")) if args.get("parentId") is not None else None,  # FIX-T33 (2026-09-18) §56
                                variables=vars_, createTime=datetime.now(), updateTime=datetime.now(),
                                createUser=operator, updateUser=operator,
                                businessNo=str(vars_.get(KEY_BUSINESS_NO, "")))
@@ -308,24 +309,30 @@ class EngineImpl(Engine):
             perform_type = 1 if str(_pt).strip().upper() in ("ALL", "COUNTERSIGN") else 0
         now = datetime.now()
         form = node.properties.get("form", "")
+        # FIX-T30 (2026-09-18)：透传 taskType 字段（与 _create_task 对齐）
+        _tt = node.properties.get("taskType", 0)
+        try:
+            task_type = int(_tt)
+        except (ValueError, TypeError):
+            task_type = 0
         if perform_type == 1 and ct:
             if ct in ("PARALLEL", ""):
                 for a in actors:
-                    nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), a, operator, form, now, 1)
+                    nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), a, operator, form, now, 1, task_type)
                     await self.repo.save_task(nt)
                     await self._fire_event(ProcessEvent(EventType.TASK_CREATE, inst.id, nt.id, node.id, operator))
             elif ct == "SEQUENTIAL":
-                nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), actors[0], operator, form, now, 1)
+                nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), actors[0], operator, form, now, 1, task_type)
                 nt.variables = {f"operatorList_{node.id}": actors, f"loopCounter_{node.id}": 0, f"nrOfInstances_{node.id}": len(actors)}
                 await self.repo.save_task(nt)
                 await self._fire_event(ProcessEvent(EventType.TASK_CREATE, inst.id, nt.id, node.id, operator))
             else:
                 for a in actors:
-                    nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), a, operator, form, now, 1)
+                    nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), a, operator, form, now, 1, task_type)
                     await self.repo.save_task(nt)
                     await self._fire_event(ProcessEvent(EventType.TASK_CREATE, inst.id, nt.id, node.id, operator))
         else:
-            nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), actors[0], operator, form, now)
+            nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), actors[0], operator, form, now, 0, task_type)
             if len(actors) > 1:
                 nt.actorIds = actors
             await self.repo.save_task(nt)
@@ -416,26 +423,33 @@ class EngineImpl(Engine):
         ct = node.properties.get("countersignType", "")
         now = datetime.now()
         form = node.properties.get("form", "")
+        # FIX-T30 (2026-09-18)：透传 taskType 字段（0 主审 / 1 副审 / 2 记录）
+        # 原代码不读 node.properties.taskType，落库始终为 0，导致 taskType 枚举完全无效
+        _tt = node.properties.get("taskType", 0)
+        try:
+            task_type = int(_tt)
+        except (ValueError, TypeError):
+            task_type = 0
         if perform_type == 1 and ct:
             if ct == "PARALLEL":
                 for a in actors:
-                    nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), a, operator, form, now, 1)
+                    nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), a, operator, form, now, 1, task_type)
                     await self.repo.save_task(nt)
                     # TASK_CREATE：任务落库后 fire（会签多任务逐个，对齐 Java CreateTaskHandler）
                     await self._fire_event(ProcessEvent(EventType.TASK_CREATE, inst.id, nt.id, node.id, operator))
             elif ct == "SEQUENTIAL":
-                nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), actors[0], operator, form, now, 1)
+                nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), actors[0], operator, form, now, 1, task_type)
                 nt.variables = {f"operatorList_{node.id}": actors, f"loopCounter_{node.id}": 0, f"nrOfInstances_{node.id}": len(actors)}
                 await self.repo.save_task(nt)
                 await self._fire_event(ProcessEvent(EventType.TASK_CREATE, inst.id, nt.id, node.id, operator))
             else:
                 for a in actors:
-                    nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), a, operator, form, now, 1)
+                    nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), a, operator, form, now, 1, task_type)
                     await self.repo.save_task(nt)
                     await self._fire_event(ProcessEvent(EventType.TASK_CREATE, inst.id, nt.id, node.id, operator))
         else:
             # 普通任务：一个任务承载全部参与者（对齐 boot3 createTask + addTaskActor，多参与者任一可办）
-            nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), actors[0], operator, form, now)
+            nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), actors[0], operator, form, now, 0, task_type)
             if len(actors) > 1:
                 nt.actorIds = actors
             await self.repo.save_task(nt)

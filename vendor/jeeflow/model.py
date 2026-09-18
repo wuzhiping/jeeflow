@@ -181,12 +181,15 @@ class ProcessInstance:
         return not any(t.is_doing() for t in self.tasks)
 
     def create_task(self, task_id: int, task_name: str, display_name: str, actor: str,
-                    operator: str, form_key: str, now, perform_type: int = 0) -> "ProcessTask":
-        """创建任务（子实体工厂）——perform_type：0 普通 / 1 会签（issues/52 E24 落库对齐 Java）"""
+                    operator: str, form_key: str, now, perform_type: int = 0,
+                    task_type: int = 0) -> "ProcessTask":
+        """创建任务（子实体工厂）——perform_type：0 普通 / 1 会签（issues/52 E24 落库对齐 Java）
+        task_type：0 主审 / 1 副审 / 2 记录（FIX-T30 2026-09-18 透传 node.properties.taskType）"""
         task = ProcessTask(id=task_id, processInstanceId=self.id,
                            taskName=task_name, displayName=display_name,
                            taskState=TaskState.DOING, actorIds=[actor],
                            formKey=form_key, performType=perform_type,
+                           taskType=task_type,
                            createTime=now, updateTime=now,
                            createUser=operator, updateUser=operator)
         self.tasks.append(task)
@@ -421,6 +424,9 @@ class TaskRow:
     defineVersion: int = 0
     instanceVariable: str = ""
     instanceCreateTime: Any = None
+    # FIX-T32 (2026-09-18)：§55 doneList 行 taskActorIdList 字段
+    # 原字段缺失，导致前端无法显示"我的已办"多人协办场景
+    taskActorIdList: list = field(default_factory=list)
 
 
 # ─── 统计查询 DTO（v1.8.25，issues/103） ─────────────────────────────────────

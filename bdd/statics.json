@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-18T00:34:39",
+  "updated": "2026-09-18T08:53:41",
   "tasks": [
     {
       "id": "Task 16",
@@ -1779,6 +1779,92 @@
         "surrogate_addCandidate",
         "ccList",
         "form_writeback"
+      ]
+    },
+    {
+      "id": "Task 107",
+      "name": "tasktype-record",
+      "time": "20260919070000",
+      "node_types": [
+        "start",
+        "task",
+        "task",
+        "end"
+      ],
+      "features": [
+        "taskType RECORD",
+        "BUG 发现"
+      ],
+      "errors": [
+        "FIX-T30: engine._create_task 不读 node.properties.taskType"
+      ]
+    },
+    {
+      "id": "Task 108",
+      "name": "decision-string",
+      "time": "20260919071000",
+      "node_types": [
+        "start",
+        "task",
+        "decision",
+        "task",
+        "task",
+        "task",
+        "end"
+      ],
+      "features": [
+        "decision string compare",
+        "3-分支",
+        "default 边"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 109",
+      "name": "add-candidate-todo",
+      "time": "20260919072500",
+      "node_types": [
+        "start",
+        "task",
+        "task",
+        "end"
+      ],
+      "features": [
+        "addCandidate 越权",
+        "actor 动态扩展"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 110",
+      "name": "permission-multi-task",
+      "time": "20260919073000",
+      "node_types": [
+        "start",
+        "task",
+        "task",
+        "task",
+        "end"
+      ],
+      "features": [
+        "PERMISSION 多任务",
+        "字段只读/编辑/隐藏"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 111",
+      "name": "known-issues-verify",
+      "time": "20260919090000",
+      "node_types": [],
+      "features": [
+        "全面回归 known-issues",
+        "3 BUG 修复"
+      ],
+      "errors": [
+        "FIX-T31",
+        "FIX-T32",
+        "FIX-T33"
       ]
     }
   ],
