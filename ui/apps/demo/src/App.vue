@@ -17,7 +17,7 @@
       <!-- 用户切换：下拉用户卡（头像+姓名+岗位，SPA 热切换） -->
       <div class="demo-userbox" @click.stop>
         <button class="demo-usercard" @click="userOpen = !userOpen">
-          <span class="demo-avatar" :style="{ background: avatarColor(currentUser) }">{{ avatarChar(currentUser) }}</span>
+          <span class="demo-avatar" :style="{ background: avatarColor(currentUser?.userId) }">{{ avatarChar(currentUser) }}</span>
           <span class="demo-usercard__meta">
             <span class="demo-usercard__name">{{ currentUser?.realName || '?' }}</span>
             <span class="demo-usercard__post">{{ currentUser?.postName || '-' }}</span>
@@ -26,7 +26,7 @@
         </button>
         <div v-if="userOpen" class="demo-usermenu">
           <div
-            v-for="u in DEMO_USERS"
+            v-for="u in usersList"
             :key="u.userId"
             class="demo-usermenu__item"
             :class="{ active: currentUser?.userId === u.userId }"
@@ -54,7 +54,7 @@ import {
   JfWorkbenchPage, JfApplyListPage, JfMyInstancePage, JfTodoPage, JfDonePage, JfCcListPage,
   JfProcessDefinePage, JfProcessDesignPage, JfSurrogatePage,
 } from '@mldong/jeeflow-ui'
-import { DEMO_USERS } from './main.js'
+import { DEMO_USERS } from './demo-state.js'
 
 // ── demo 特性状态（从 .env 读取后端路径和 disabled 状态）──
 const proUrl = import.meta.env.VITE_PRO_URL || ''
@@ -83,8 +83,11 @@ if (langBackend && backends.some(b => b.value === langBackend && !b.disabled)) {
 // localStorage 仍只存 userId（避免后端用户属性变化时脏数据），对象从 DEMO_USERS 实时查找
 const currentUserId = ref(localStorage.getItem('jeeflow_user') || null)
 const currentUser = computed(() =>
-  DEMO_USERS.find((u) => u.userId === currentUserId.value) || null
+  DEMO_USERS.value.find((u) => u.userId === currentUserId.value) || null
 )
+// DEMO_USERS 是从 main.js import 来的 ref；template 中 v-for 自动解包对 import ref 偶尔失效
+// 用 computed 包一层保底 — 双保险（也帮 main.js 的 fetchUsers 改写 DEMO_USERS.value 时强制触发响应）
+const usersList = computed(() => DEMO_USERS.value || [])
 const userOpen = ref(false)
 const refreshTick = ref(0)
 

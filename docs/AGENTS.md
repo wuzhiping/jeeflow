@@ -265,9 +265,11 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 
 ### 5.7 字段权限核验
 
-启动实例时传 `PERMISSION_f_<field>=1`（只读）或 `2`（隐藏）。完成后查 `bizData`：
+启动实例时传 `PERMISSION_f_<field>=1`（只读）/`2`（编辑）/`3`（隐藏）。完成后查 `bizData`：
 - 只读字段：值回传，但任务行不允许再写
 - 隐藏字段：值丢弃，前端不可见
+
+> ⚠️ **FIX-DOC-1（2026-09-18）**：原文档误写"2=隐藏"，实测 2=编辑，3=隐藏。详见 `known-issues.md §82` + `flow.md §5.1`。
 
 ### 5.8 会签测试
 
@@ -295,7 +297,7 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 | 7 | `assignmentHandler` 与 `assignee` 互斥；同时写则 handler 优先 | `./docs/flow.md §6` |
 | 8 | 操作人 `u_*` 只进执行上下文，不写回实例 | `./docs/flow.md §7` |
 | 9 | 实例变量 `f_*`（发起时） vs `tf_*`（执行时）分工 | `./docs/flow.md §7` |
-| 10 | 字段权限码 `1`=只读 `2`=隐藏 | `./docs/flow.md §5` |
+| 10 | 字段权限码 `1`=只读 `2`=编辑 `3`=隐藏 | `./docs/flow.md §5.1` |
 | 11 | `instanceUrl` 用于前端发起跳转 | `./docs/flow.md §2` |
 | 12 | 顶层 `type` 默认 `approval`，`business` 见样例 10 | `./docs/flow.md §2` |
 

@@ -1,0 +1,124 @@
+{
+  "name": "cc-perm-surrogate-flow",
+  "displayName": "抄送权限委托流程",
+  "type": "approval",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "submit",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "cp-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_title": "",
+          "f_amount": "",
+          "f_secret": "",
+          "f_ccActors": ""
+        }
+      },
+      "text": {
+        "value": "提交申请"
+      }
+    },
+    {
+      "id": "leader_review",
+      "type": "snaker:task",
+      "x": 300,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "assignee": "leader",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_title": "",
+          "PERMISSION_f_amount": "1",
+          "PERMISSION_f_secret": "2"
+        }
+      },
+      "text": {
+        "value": "领导审批（f_amount只读）"
+      }
+    },
+    {
+      "id": "manager_review",
+      "type": "snaker:task",
+      "x": 450,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "assignee": "manager",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_title": "",
+          "PERMISSION_f_amount": "2",
+          "PERMISSION_f_secret": "3"
+        }
+      },
+      "text": {
+        "value": "经理审批（f_secret隐藏）"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 600,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "submit",
+      "properties": {}
+    },
+    {
+      "id": "e1",
+      "sourceNodeId": "submit",
+      "targetNodeId": "leader_review",
+      "properties": {}
+    },
+    {
+      "id": "e2",
+      "sourceNodeId": "leader_review",
+      "targetNodeId": "manager_review",
+      "properties": {}
+    },
+    {
+      "id": "e3",
+      "sourceNodeId": "manager_review",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

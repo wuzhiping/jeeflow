@@ -3,9 +3,7 @@ import App from './App.vue'
 import { createJeeflowUi, JeeflowUiKey } from '@mldong/jeeflow-ui'
 import ApplyForm from './forms/apply-form.vue'
 import ExpenseForm from './forms/expense-form.vue'
-
-// 演示用户（与四后端同一套 8 个具名用户）：启动时从后端 /api/users 拉取，本地缓存复用
-export const DEMO_USERS = []
+import { DEMO_USERS } from './demo-state.js'
 
 function currentBaseUrl() {
   return localStorage.getItem('jeeflow_backend')
@@ -24,7 +22,7 @@ export function fetchUsers() {
     .then((r) => r.json())
     .then((res) => {
       const list = Array.isArray(res?.data) ? res.data : []
-      DEMO_USERS.splice(0, DEMO_USERS.length, ...list)
+      DEMO_USERS.value.splice(0, DEMO_USERS.value.length, ...list)
       // FIX-UI-1 (2026-09-18)：本地无 jeeflow_user 时，默认取后端返回的第一个用户，
       // 避免 SPI_FOLDER 切换后硬编码 'user1' 找不到对应账号。
       // dispatch event 传完整 user 对象（App.vue 的 currentUser 是 computed 从 DEMO_USERS 查表），
@@ -33,11 +31,11 @@ export function fetchUsers() {
         localStorage.setItem('jeeflow_user', list[0].userId)
         window.dispatchEvent(new CustomEvent('jeeflow_user_changed', { detail: list[0] }))
       }
-      return DEMO_USERS
+      return DEMO_USERS.value
     })
     .catch((e) => {
       console.error('fetch /api/users failed:', e)
-      return DEMO_USERS
+      return DEMO_USERS.value
     })
   return usersPromise
 }

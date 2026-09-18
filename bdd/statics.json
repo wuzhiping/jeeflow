@@ -1757,6 +1757,29 @@
         "join",
         "countersign"
       ]
+    },
+    {
+      "id": 106,
+      "name": "抄送权限委托综合",
+      "ts": "20260919060000",
+      "flows": [
+        "bdd-cc-perm-surrogate_20260919060000.json"
+      ],
+      "scenario": "字段权限+委托代理+抄送+表单回写 4 大能力",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager",
+        "director"
+      ],
+      "key_nodes": [
+        "PERMISSION_field",
+        "surrogate_addCandidate",
+        "ccList",
+        "form_writeback"
+      ]
     }
   ],
   "summary": {

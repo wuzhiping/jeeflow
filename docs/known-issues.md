@@ -3085,3 +3085,108 @@ function switchUser(user) {        // 之前: switchUser(userId)
 ```
 
 模板 `@click="switchUser(u)"` 传整个 user 对象（之前是 `switchUser(u.userId)`）。
+
+---
+
+## §82 BDD #106 引擎 BUG 发现（2026-09-18）
+
+### 概述
+
+1 次 BDD 任务（#106），涉及 4 大能力：字段权限 + 委托代理 + 抄送 + 表单回写。
+测试发现 1 个**设计器/JSON 约定 BUG**（文档缺失导致）+ 1 个**引擎行为正确但易误用**的场景。
+
+### BUG #1：字段权限 JSON key 拼写约定无文档（FIX-DOC-1）
+
+**问题**：`docs/flow.md` §3.3 描述"字段权限"时只说明 `1=只读 2=编辑 3=隐藏`，
+但**未明确 JSON key 必须是 `PERMISSION_f_<fieldname>` 格式**。直接写 `f_amount: 1` 不会生效。
+
+**引擎代码**（`vendor/jeeflow/engine.py:_filter_field_by_perm`）：
+
+```python
+for k, v in args.items():
+    if k.startswith("f_") and len(k) > 2:
+        name = k[2:]
+        perm = field_perm.get(f"PERMISSION_f_{name}")  # 必须是 PERMISSION_f_xxx
+        if perm is None:
+            perm = field_perm.get(f"PERMISSION_{name}")  # 兼容 PERMISSION_xxx
+        if perm is not None and int(perm) != 2:
+            continue  # 1=只读 / 3=隐藏 → 剔除
+```
+
+实测：流程设计器导出 JSON 时，`field` 节点形如：
+```json
+{
+  "field": {
+    "f_title": "",
+    "f_amount": "1",
+    "f_secret": "2"
+  }
+}
+```
+这种格式 `perm = field_perm.get("PERMISSION_f_amount")` 返回 `None`，**剔除逻辑不触发**。
+
+**正确格式**（引擎实际预期）：
+```json
+{
+  "field": {
+    "f_title": "",
+    "PERMISSION_f_amount": "1",
+    "PERMISSION_f_secret": "2"
+  }
+}
+```
+
+**影响**：流程设计器若用错误格式，字段权限完全失效（任何字段都可被所有人修改）。
+
+**修复**（`docs/flow.md`）：在 §3.3 字段权限节补充 PERMISSION_ 前缀规范。
+
+### BUG #2：委托（surrogate）不影响 todoList actor 过滤（DESIGN）
+
+**问题**：用户 A 委托给 B，B 应能代 A 处理任务。但当前实现：
+
+- `page_todo_tasks(actor_id=B)` 只查 `wf_process_task_actor.actor_id = B`，**不**查 A 委托给 B 的关系
+- 委托需要走两步：先创建委托记录，再用 `/wf/processTask/surrogate` 把 B **手动加入**任务 actor 表
+
+引擎不自动展开委托关系。
+
+**测试流程**（#106）：
+1. user1 委托给 manager（surrogate 表写入 user1→manager）
+2. user1 启动流程，leader_review 任务 actor=leader
+3. 调用 `/wf/processTask/surrogate` 把 director 加入 actor
+4. director 能看到 leader_review 任务并完成
+
+**实测**：✅ 委托 addCandidate 流程跑通。
+
+**遗留**：facade 层缺一个"按委托关系自动展开 todoList"的便捷接口。
+
+### 6 项字段权限断言（双端）
+
+| 节点 | 字段 | 操作人 | 操作 | 期望 | 实测 |
+|------|------|--------|------|------|------|
+| leader_review | f_title (无 PERMISSION) | leader | 改 | LEADER_NEW | ✅ LEADER_NEW |
+| leader_review | f_amount (PERMISSION=1 只读) | leader | 改 1111→2222 | 1111 | ✅ 1111 |
+| leader_review | f_secret (PERMISSION=2 编辑) | leader | 改 ORIG→LEADER_S | LEADER_S | ✅ LEADER_S |
+| manager_review | f_title | manager | 改 | MGR_FINAL | ✅ MGR_FINAL |
+| manager_review | f_amount (PERMISSION=2 编辑) | manager | 改 1111→8888 | 8888 | ✅ 8888 |
+| manager_review | f_secret (PERMISSION=3 隐藏) | manager | 改 LEADER_S→MGR_S | LEADER_S | ✅ LEADER_S |
+
+### 4 大能力汇总
+
+| 能力 | API | 测试结果 |
+|------|-----|----------|
+| 字段权限 | `properties.field.PERMISSION_f_<name>` | ✅ 6/6 双端 PASS |
+| 委托代理 | `/wf/processSurrogate/save` + `/wf/processTask/surrogate` | ✅ addCandidate 跑通 |
+| 抄送 | `startAndExecute` 的 `variables.f_ccActors` (string 或 list) | ✅ director ccList 收到实例 |
+| 表单回写 | `processTask/execute` 的 `f_*` args | ✅ 变量持久化到 instance.variables |
+
+### BDD 文件
+
+- `bdd/bdd-cc-perm-surrogate_20260919060000.json` — 4 节点流程
+- `bdd/bdd-cc-perm-surrogate_20260919060000.md` — 测试报告（含 BUG #1 发现过程）
+
+### 累计统计
+
+- **BDD 任务**：#1-#68 + #69-#100 + #101-#105 + #106 = 106 个
+- **本轮发现 BUG**：1 个文档缺失（FIX-DOC-1）
+- **引擎行为正确**：1 个委托展开场景（设计限制）
+- **双端全 PASS**：1/1

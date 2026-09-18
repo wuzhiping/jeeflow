@@ -283,6 +283,55 @@
 
 引擎在 `execute_process_task`（`engine.py:200-203`）按 `PERMISSION_` 前缀过滤提交入参 `_filter_field_by_perm`，只读/隐藏字段不进入实例变量。
 
+### 5.1 权限码语义（FIX-DOC-1 2026-09-18）
+
+| 权限码 | 含义 | 引擎行为 |
+|--------|------|----------|
+| `1` | 只读 | 提交时该字段被剔除，实例变量保留原值 |
+| `2` | 编辑 | 提交时该字段正常写入实例变量 |
+| `3` | 隐藏 | 提交时该字段被剔除，**实例变量也不可见**（前端不回传） |
+
+### 5.2 JSON key 规范（FIX-DOC-1）
+
+⚠️ **关键**：`field` 节点下 key **必须**以 `PERMISSION_` 前缀开头，否则引擎**完全忽略**该字段。
+
+```json
+// ✅ 正确格式
+"field": {
+  "PERMISSION_f_amount": "1",  // 只读
+  "PERMISSION_f_secret": "2"   // 编辑
+}
+
+// ❌ 错误格式（直接写 f_xxx：引擎不识别，权限完全失效）
+"field": {
+  "f_amount": "1",
+  "f_secret": "2"
+}
+```
+
+引擎代码 `engine.py:_filter_field_by_perm`：
+
+```python
+perm = field_perm.get(f"PERMISSION_f_{name}")  # 必须是 PERMISSION_f_xxx
+if perm is None:
+    perm = field_perm.get(f"PERMISSION_{name}")  # 兼容 PERMISSION_xxx（去 f_ 前缀）
+```
+
+实测 6 项断言（双端 PASS）见 `./known-issues.md §82`。
+
+### 5.3 委托代理（surrogate）
+
+> ⚠️ 当前实现缺自动展开：委托关系**不影响** `processTask/todoList` 的 actor 过滤，需手动 `processTask/surrogate` addCandidate。
+
+**API**：
+- 创建委托：`/wf/processSurrogate/save` `{operator, surrogate, processName, startTime, endTime, enabled}`
+- 我的委托：`/wf/processSurrogate/page` `{operator, pageNum, pageSize}`
+- 委托 addCandidate：`/wf/processTask/surrogate` `{processTaskId, actorIds}`（与 `addCandidate` 等价）
+
+**委托 ≠ 自动代办**：userA 委托给 userB 后，userB 仍需调用 surrogate addCandidate 才能在 todoList 看到 userA 的任务。
+
+详细测试见 `./known-issues.md §82`。
+
 ---
 
 ## 6. 参与者处理器（assignmentHandler）
