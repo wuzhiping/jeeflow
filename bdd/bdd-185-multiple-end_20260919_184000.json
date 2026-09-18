@@ -1,0 +1,16 @@
+{
+  "name": "bdd-185-multiple-end",
+  "displayName": "BDD #185 多 end 节点 (end 重复)",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "apply", "type": "snaker:task", "x": 130, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "申请"}},
+    {"id": "end_a", "type": "snaker:end", "x": 300, "y": 100, "properties": {"width": 50, "height": 50}, "text": {"value": "结束A"}},
+    {"id": "end_b", "type": "snaker:end", "x": 300, "y": 300, "properties": {"width": 50, "height": 50}, "text": {"value": "结束B"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "end_a", "properties": {}},
+    {"id": "e2", "sourceNodeId": "apply", "targetNodeId": "end_b", "properties": {}}
+  ]
+}

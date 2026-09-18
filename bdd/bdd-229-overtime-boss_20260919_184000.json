@@ -1,0 +1,21 @@
+{
+  "name": "bdd-229-overtime-boss",
+  "displayName": "BDD #229 加班申请 (数字+天数 → 总经理)",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "apply", "type": "snaker:task", "x": 130, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "加班"}},
+    {"id": "d", "type": "snaker:decision", "x": 260, "y": 200, "properties": {"width": 80, "height": 50}, "text": {"value": "类型"}},
+    {"id": "weekday", "type": "snaker:task", "x": 400, "y": 100, "properties": {"width": 100, "height": 50, "assignee": "leader", "taskType": 0, "performType": 0}, "text": {"value": "工作日"}},
+    {"id": "weekend", "type": "snaker:task", "x": 400, "y": 300, "properties": {"width": 100, "height": 50, "assignee": "boss", "taskType": 0, "performType": 0}, "text": {"value": "周末"}},
+    {"id": "end", "type": "snaker:end", "x": 550, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "d", "properties": {}},
+    {"id": "e2", "sourceNodeId": "d", "targetNodeId": "weekday", "properties": {"expr": "type==\"工作日\""}},
+    {"id": "e3", "sourceNodeId": "d", "targetNodeId": "weekend", "properties": {}},
+    {"id": "e4", "sourceNodeId": "weekday", "targetNodeId": "end", "properties": {}},
+    {"id": "e5", "sourceNodeId": "weekend", "targetNodeId": "end", "properties": {}}
+  ]
+}

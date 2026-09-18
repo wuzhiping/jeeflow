@@ -1,0 +1,16 @@
+{
+  "name": "bdd-188-spi-task-role",
+  "displayName": "BDD #188 SPI TaskRoleAssignee (按 role_code 找人)",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "apply", "type": "snaker:task", "x": 130, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "申请"}},
+    {"id": "role_node", "type": "snaker:task", "x": 280, "y": 200, "properties": {"width": 100, "height": 50, "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.TaskRoleAssigneeHandler", "taskType": 0, "performType": 0, "roleCode": "finance"}, "text": {"value": "财务角色"}},
+    {"id": "end", "type": "snaker:end", "x": 430, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "role_node", "properties": {}},
+    {"id": "e2", "sourceNodeId": "role_node", "targetNodeId": "end", "properties": {}}
+  ]
+}

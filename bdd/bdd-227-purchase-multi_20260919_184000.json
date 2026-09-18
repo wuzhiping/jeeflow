@@ -1,0 +1,26 @@
+{
+  "name": "bdd-227-purchase-multi",
+  "displayName": "BDD #227 采购申请 (供应商 + 金额 → 决策)",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "apply", "type": "snaker:task", "x": 130, "y": 200, "properties": {"width": 100, "height": 50, "form": "purchase-form", "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "采购申请"}},
+    {"id": "d", "type": "snaker:decision", "x": 260, "y": 200, "properties": {"width": 80, "height": 50}, "text": {"value": "金额"}},
+    {"id": "leader", "type": "snaker:task", "x": 400, "y": 100, "properties": {"width": 100, "height": 50, "assignee": "leader", "taskType": 0, "performType": 0}, "text": {"value": "组长"}},
+    {"id": "d2", "type": "snaker:decision", "x": 530, "y": 200, "properties": {"width": 80, "height": 50}, "text": {"value": "供应商类型"}},
+    {"id": "manager", "type": "snaker:task", "x": 660, "y": 100, "properties": {"width": 100, "height": 50, "assignee": "manager", "taskType": 0, "performType": 0}, "text": {"value": "经理"}},
+    {"id": "boss", "type": "snaker:task", "x": 660, "y": 300, "properties": {"width": 100, "height": 50, "assignee": "boss", "taskType": 0, "performType": 0}, "text": {"value": "总经理"}},
+    {"id": "end", "type": "snaker:end", "x": 800, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "d", "properties": {}},
+    {"id": "e2", "sourceNodeId": "d", "targetNodeId": "leader", "properties": {"expr": "amount<5000"}},
+    {"id": "e3", "sourceNodeId": "d", "targetNodeId": "d2", "properties": {}},
+    {"id": "e4", "sourceNodeId": "d2", "targetNodeId": "manager", "properties": {"expr": "vendor==\"长期\""}},
+    {"id": "e5", "sourceNodeId": "d2", "targetNodeId": "boss", "properties": {}},
+    {"id": "e6", "sourceNodeId": "leader", "targetNodeId": "end", "properties": {}},
+    {"id": "e7", "sourceNodeId": "manager", "targetNodeId": "end", "properties": {}},
+    {"id": "e8", "sourceNodeId": "boss", "targetNodeId": "end", "properties": {}}
+  ]
+}

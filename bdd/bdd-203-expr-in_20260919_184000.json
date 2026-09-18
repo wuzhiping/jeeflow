@@ -1,0 +1,21 @@
+{
+  "name": "bdd-203-expr-in",
+  "displayName": "BDD #203 expr 字符串等于 (== \"a\")",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "apply", "type": "snaker:task", "x": 130, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "申请"}},
+    {"id": "d", "type": "snaker:decision", "x": 260, "y": 200, "properties": {"width": 80, "height": 50}, "text": {"value": "类别"}},
+    {"id": "vip", "type": "snaker:task", "x": 400, "y": 100, "properties": {"width": 100, "height": 50, "assignee": "leader", "taskType": 0, "performType": 0}, "text": {"value": "VIP"}},
+    {"id": "normal", "type": "snaker:task", "x": 400, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "manager", "taskType": 0, "performType": 0}, "text": {"value": "普通"}},
+    {"id": "end", "type": "snaker:end", "x": 550, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "d", "properties": {}},
+    {"id": "e2", "sourceNodeId": "d", "targetNodeId": "vip", "properties": {"expr": "type==\"VIP\""}},
+    {"id": "e3", "sourceNodeId": "d", "targetNodeId": "normal", "properties": {}},
+    {"id": "e4", "sourceNodeId": "vip", "targetNodeId": "end", "properties": {}},
+    {"id": "e5", "sourceNodeId": "normal", "targetNodeId": "end", "properties": {}}
+  ]
+}

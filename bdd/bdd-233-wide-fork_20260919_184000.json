@@ -1,0 +1,32 @@
+{
+  "name": "bdd-233-wide-fork",
+  "displayName": "BDD #233 5 路 fork",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "apply", "type": "snaker:task", "x": 130, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "申请"}},
+    {"id": "fork1", "type": "snaker:fork", "x": 260, "y": 200, "properties": {"width": 60, "height": 50}, "text": {"value": "分支"}},
+    {"id": "a", "type": "snaker:task", "x": 380, "y": 30, "properties": {"width": 80, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "a"}},
+    {"id": "b", "type": "snaker:task", "x": 380, "y": 110, "properties": {"width": 80, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "b"}},
+    {"id": "c", "type": "snaker:task", "x": 380, "y": 190, "properties": {"width": 80, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "c"}},
+    {"id": "d", "type": "snaker:task", "x": 380, "y": 270, "properties": {"width": 80, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "d"}},
+    {"id": "e", "type": "snaker:task", "x": 380, "y": 350, "properties": {"width": 80, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "e"}},
+    {"id": "join1", "type": "snaker:join", "x": 510, "y": 200, "properties": {"width": 60, "height": 50}, "text": {"value": "汇合"}},
+    {"id": "end", "type": "snaker:end", "x": 620, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "fork1", "properties": {}},
+    {"id": "e2", "sourceNodeId": "fork1", "targetNodeId": "a", "properties": {}},
+    {"id": "e3", "sourceNodeId": "fork1", "targetNodeId": "b", "properties": {}},
+    {"id": "e4", "sourceNodeId": "fork1", "targetNodeId": "c", "properties": {}},
+    {"id": "e5", "sourceNodeId": "fork1", "targetNodeId": "d", "properties": {}},
+    {"id": "e6", "sourceNodeId": "fork1", "targetNodeId": "e", "properties": {}},
+    {"id": "e7", "sourceNodeId": "a", "targetNodeId": "join1", "properties": {}},
+    {"id": "e8", "sourceNodeId": "b", "targetNodeId": "join1", "properties": {}},
+    {"id": "e9", "sourceNodeId": "c", "targetNodeId": "join1", "properties": {}},
+    {"id": "e10", "sourceNodeId": "d", "targetNodeId": "join1", "properties": {}},
+    {"id": "e11", "sourceNodeId": "e", "targetNodeId": "join1", "properties": {}},
+    {"id": "e12", "sourceNodeId": "join1", "targetNodeId": "end", "properties": {}}
+  ]
+}

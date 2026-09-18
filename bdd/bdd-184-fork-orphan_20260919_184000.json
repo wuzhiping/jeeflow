@@ -1,0 +1,21 @@
+{
+  "name": "bdd-184-fork-orphan",
+  "displayName": "BDD #184 fork 后无 join (断裂)",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "apply", "type": "snaker:task", "x": 130, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "申请"}},
+    {"id": "fork1", "type": "snaker:fork", "x": 260, "y": 200, "properties": {"width": 60, "height": 50}, "text": {"value": "分支"}},
+    {"id": "a", "type": "snaker:task", "x": 400, "y": 100, "properties": {"width": 100, "height": 50, "assignee": "leader", "taskType": 0, "performType": 0}, "text": {"value": "A"}},
+    {"id": "b", "type": "snaker:task", "x": 400, "y": 300, "properties": {"width": 100, "height": 50, "assignee": "manager", "taskType": 0, "performType": 0}, "text": {"value": "B"}},
+    {"id": "end", "type": "snaker:end", "x": 600, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "fork1", "properties": {}},
+    {"id": "e2", "sourceNodeId": "fork1", "targetNodeId": "a", "properties": {}},
+    {"id": "e3", "sourceNodeId": "fork1", "targetNodeId": "b", "properties": {}},
+    {"id": "e4", "sourceNodeId": "a", "targetNodeId": "end", "properties": {}},
+    {"id": "e5", "sourceNodeId": "b", "targetNodeId": "end", "properties": {}}
+  ]
+}

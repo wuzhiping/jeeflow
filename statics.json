@@ -1,0 +1,12 @@
+{
+  "version": "v1.9.0",
+  "total_bdd_tasks": 251,
+  "tasks": "BDD #127-#250 + BDD #251 verify system + BDD #256 W009",
+  "tdd_flows_total": 17,
+  "tdd_passing": 17,
+  "verify_rules_count": 24,
+  "verify_rules_breakdown": "11E + 9W + 4P (含 W009)",
+  "fixed_bugs": 51,
+  "open_known_issues": 13,
+  "last_update": "2026-09-19T19:00:00"
+}

@@ -2533,6 +2533,21 @@ PG DB 直接查 `wf_process_instance.owner_id` 字段落库正确。`m_EQ_ownerI
 
 ---
 
+## §70 实例/任务扩展操作未实现（2026-09-19 BDD #192-#195 确认）
+- `processInstance/suspend` - 实例挂起（state=50）→ 未实现
+- `processTask/transfer` - 任务转交 → 未实现
+- `processTask/comment` - 任务评论 → 未实现
+- `processTask/extra` - 任务额外信息 → 未实现
+
+**绕过方法**：
+- 挂起：直接更新 inst.state=50（自实现 endpoint）
+- 转交：先 `removeCandidate` + `addCandidate`（已实现）
+- 评论/额外信息：通过 `processTask/execute` 的 `comment` 字段写入
+
+**报告**：`./bdd/bdd-191-195-ops_20260919_184000.md`
+
+---
+
 ## §69 任务委派 delegate 未实现（2026-09-19 BDD #142 确认）
 
 ### 现象

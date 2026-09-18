@@ -1,0 +1,16 @@
+{
+  "name": "bdd-242-after-error",
+  "displayName": "BDD #242 错误实例后启动新实例",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "apply", "type": "snaker:task", "x": 130, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "申请"}},
+    {"id": "broken", "type": "snaker:task", "x": 280, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "", "taskType": 0, "performType": 0}, "text": {"value": "空 assignee"}},
+    {"id": "end", "type": "snaker:end", "x": 430, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "broken", "properties": {}},
+    {"id": "e2", "sourceNodeId": "broken", "targetNodeId": "end", "properties": {}}
+  ]
+}

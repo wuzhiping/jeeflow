@@ -1,0 +1,21 @@
+{
+  "name": "bdd-154-decision-empty",
+  "displayName": "BDD #154 决策 expr 缺省 + 空字符串处理",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "apply", "type": "snaker:task", "x": 130, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "申请"}},
+    {"id": "d", "type": "snaker:decision", "x": 260, "y": 200, "properties": {"width": 80, "height": 50}, "text": {"value": "默认值决策"}},
+    {"id": "path1", "type": "snaker:task", "x": 400, "y": 100, "properties": {"width": 100, "height": 50, "assignee": "leader", "taskType": 0, "performType": 0}, "text": {"value": "有值分支"}},
+    {"id": "path2", "type": "snaker:task", "x": 400, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "manager", "taskType": 0, "performType": 0}, "text": {"value": "默认分支"}},
+    {"id": "end", "type": "snaker:end", "x": 550, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "d", "properties": {}},
+    {"id": "e2", "sourceNodeId": "d", "targetNodeId": "path1", "properties": {"expr": "category!=null"}},
+    {"id": "e3", "sourceNodeId": "d", "targetNodeId": "path2", "properties": {}},
+    {"id": "e4", "sourceNodeId": "path1", "targetNodeId": "end", "properties": {}},
+    {"id": "e5", "sourceNodeId": "path2", "targetNodeId": "end", "properties": {}}
+  ]
+}

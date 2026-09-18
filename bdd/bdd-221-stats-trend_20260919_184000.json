@@ -1,0 +1,12 @@
+{
+  "name": "bdd-221-stats-trend",
+  "displayName": "BDD #221 stats/trend 趋势接口",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "end", "type": "snaker:end", "x": 300, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "end", "properties": {}}
+  ]
+}

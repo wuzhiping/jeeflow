@@ -301,12 +301,26 @@ async def _builtin_custom_test_handler(node, inst, vars_, args):
         return args
 
 
+
+class RaiseHandler:
+    """测试：handler 主动抛异常"""
+    def __init__(self, name="com.mldong.jeeflow.test.RaiseHandler"):
+        self._name = name
+    @property
+    def name(self): return self._name
+    @property
+    def order(self): return 0
+    async def __call__(self, node, inst, vars_, args):
+        raise ValueError(f"RaiseHandler 故意抛错: node={node.id}")
+
+
 def build_custom_handlers() -> dict:
     """注册示例 custom 节点 handler（生产可扩）"""
     return {
         "com.mldong.jeeflow.test.TestCustomHandler": _builtin_custom_test_handler,
         "com.mldong.jeeflow.test.TimestampHandler": _builtin_custom_timestamp_handler,
         "com.mldong.jeeflow.test.AppendVarsHandler": _builtin_custom_append_vars_handler,
+        "com.mldong.jeeflow.test.RaiseHandler": RaiseHandler(),
     }
 
 

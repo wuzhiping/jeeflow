@@ -19,6 +19,7 @@ from .engine import Engine, KEY_NEXT_NODE_OPERATOR, KEY_PROCESS_START_NEXT_NODE_
 from .extensions import EventType, ProcessEvent
 from .model import ProcessDefine, ProcessDesign, ProcessDesignHis, ProcessSurrogate, TaskState, InstanceState
 from .spi import ProcessExtRepository, ProcessRepository, QueryCondition
+from .verify import verify_flow, format_issues, VerifyIssue
 
 # submitType 枚举（对齐 boot3）
 SUBMIT_APPLY = 0
@@ -73,6 +74,33 @@ class JeeflowFacade:
             # FIX-T19 (2026-09-17)：错误信息附异常类型，便于调试区分 ValueError/RuntimeError
             msg = str(e) if str(e) else type(e).__name__
             return self._error(f"[{type(e).__name__}] {msg}")
+
+    async def _verify(self, args: dict) -> dict:
+        """BDD #251 (2026-09-19)：流程 verify 预检接口
+
+        请求: { "content": "<json string>", "variables": {...} (可选) }
+        响应: { "valid": bool, "errors": [...], "warnings": [...], "patterns": [...] }
+
+        不会写入设计, 仅预检
+        """
+        content = self._content(args)
+        try:
+            flow = json.loads(content)
+        except Exception as e:
+            raise ValueError(f"content JSON 解析失败: {e}")
+        variables = args.get("variables") or {}
+        errors, warnings, patterns = verify_flow(flow, variables)
+        return {
+            "valid": len(errors) == 0,
+            "errors": [i.to_dict() for i in errors],
+            "warnings": [i.to_dict() for i in warnings],
+            "patterns": [i.to_dict() for i in patterns],
+            "summary": {
+                "errorCount": len(errors),
+                "warningCount": len(warnings),
+                "patternCount": len(patterns),
+            },
+        }
 
     # ── 流程定义 / 实例 ─────────────────────────────────────────────────────
 
@@ -240,35 +268,64 @@ class JeeflowFacade:
         his_list = await ext.list_design_his(design_id)
         if not his_list:
             raise ValueError("流程设计没有内容，无法发布")
+        # BDD #251: 透传 skipVerify 给 _deploy
         define_id = await self._deploy({
             "content": his_list[0].content,
             "operator": args.get("operator", "system"),
+            "skipVerify": bool(args.get("skipVerify")),
         })
         design.isDeployed = True
         design.updateUser = str(args.get("operator", "system"))
         await ext.update_design(design)
         return define_id
 
+    def _verify_or_raise(self, content: str, args: dict, variables: dict = None):
+        """流程定义 verify 入口（2026-09-19 规则库）
+
+        - 解析 content 为 flow dict
+        - 跑 verify_flow 得到 errors / warnings / patterns
+        - 错误：raise ValueError（阻塞 save/deploy）
+        - 警告/反模式：写入 design.remark（不阻塞, 但可见）
+        - 跳过：args.skipVerify=True 时仅打 info 日志, 不 raise
+        """
+        skip = bool(args.get("skipVerify"))
+        try:
+            flow = json.loads(content)
+        except Exception:
+            return  # 内容不合法由 deploy 后续的 JSON 解析承担
+
+        errors, warnings, patterns = verify_flow(flow, variables)
+
+        if errors:
+            if skip:
+                import logging
+                logging.warning(f"[verify SKIP] {len(errors)} errors ignored: {format_issues(errors)}")
+            else:
+                msg = f"流程 verify 失败 ({len(errors)} 个错误):\n{format_issues(errors)}"
+                if warnings:
+                    msg += f"\n额外警告 ({len(warnings)} 个):\n{format_issues(warnings)}"
+                if patterns:
+                    msg += f"\n反模式建议 ({len(patterns)} 个):\n{format_issues(patterns)}"
+                raise ValueError(msg)
+
+        # 警告/反模式：可继续, 但记录到 remark 提示
+        if (warnings or patterns) and not skip:
+            import logging
+            logging.info(f"[verify] {len(warnings)} warnings, {len(patterns)} patterns: {format_issues(warnings + patterns)}")
+
     async def _deploy(self, args: dict) -> dict:
         """deploy 版本管理（对齐 boot3）：按 name 查最新定义，存在 version+1 插新记录，否则从 0 起"""
         content = self._content(args)
+        # BDD #251 (2026-09-19)：deploy 也跑 verify（兜底二次校验）
+        # 即使 processDesign/save 已校验过, deploy 入口仍要校验
+        # 防止 processDesign/save 被 skipVerify=true 跳过而直接 deploy
+        self._verify_or_raise(content, args)
         flow = json.loads(content)
         name = flow.get("name", "")
         if not name:
             raise ValueError("流程定义缺少 name")
-        # FIX-T31 (2026-09-18)：deploy 时校验节点 id 唯一（§58 已知 BUG）
-        # 重复 id 引擎不报错但实例直接 state=20 结束，无 task 创建
-        node_ids = [n.get("id") for n in flow.get("nodes", []) if n.get("id")]
-        dup_ids = sorted({i for i in node_ids if node_ids.count(i) > 1})
-        if dup_ids:
-            raise ValueError(f"流程节点 id 重复: {dup_ids}（§58 已知 BUG 修复，禁止节点 id 重复）")
-        # FIX-T34 (2026-09-19)：deploy 时校验节点 id 命名规范
-        # 允许字母/数字/下划线（与 Java 端兼容），禁止空格/-/中文/特殊字符（§3.1 docs/flow.md 约束）
-        import re
-        bad_ids = sorted({i for i in node_ids if not re.match(r"^[A-Za-z0-9_]+$", i)})
-        if bad_ids:
-            raise ValueError(f"流程节点 id 含非法字符: {bad_ids}（§3.1 docs/flow.md 约束，"
-                             f"只允许字母/数字/下划线）")
+        # 注：旧的 id 唯一 / 命名规范 / 环 校验已迁移到 verify_flow
+        # (_verify_or_raise 内部) ——保留 verify 模块统一管理
         version = 0
         latest = await self._repo.find_define_by_name(name)
         if latest:
@@ -370,8 +427,9 @@ class JeeflowFacade:
             elif submit_type == SUBMIT_ROLLBACK:
                 await self._engine.execute_and_jump_task(task_id, operator, flow_args)
             elif submit_type == SUBMIT_JUMP:
-                await self._engine.execute_and_jump_task(task_id, operator, flow_args,
-                                                         str(args.get("taskName", "")))
+                # BDD #173 FIX-T49 (2026-09-19)：兼容 targetTaskName 别名（与 pageNo 类似）
+                target = str(args.get("taskName") or args.get("targetTaskName") or "")
+                await self._engine.execute_and_jump_task(task_id, operator, flow_args, target)
             elif submit_type == SUBMIT_ROLLBACK_TO_OPERATOR:
                 await self._engine.execute_and_jump_to_first_task_node(task_id, operator, flow_args)
             elif submit_type == 5:  # SUBMIT_RE_APPLY — FIX-T6 2026-09-17：boot3 同义于跳回首个 task 节点
@@ -481,6 +539,11 @@ class JeeflowFacade:
     async def _processDesign_save(self, args: dict) -> dict:
         ext = self._ext_repo()
         operator = str(args.get("operator", "user1"))
+        # BDD #251 (2026-09-19)：save 入口先跑 verify
+        # 错误阻塞 save (除非 skipVerify=True)
+        content_for_verify = self._content(args, required=False)
+        if content_for_verify:
+            self._verify_or_raise(content_for_verify, args)
         design_id = self._to_int(args.get("id"))
         if not design_id:
             # BDD #141 FIX-T42 (2026-09-19)：按 name UPSERT（同一 name 复用同一行 id）
@@ -541,6 +604,10 @@ class JeeflowFacade:
     async def _processDesign_update(self, args: dict) -> dict:
         """修改流程设计基本信息（对齐 boot3 ProcessDesignController.update，不写设计稿快照）"""
         ext = self._ext_repo()
+        # BDD #251：update 入口 verify（如提供 content）
+        content_for_verify = self._content(args, required=False)
+        if content_for_verify:
+            self._verify_or_raise(content_for_verify, args)
         design_id = self._to_int(args.get("id"))
         if not design_id:
             raise ValueError("id 缺失或非法")
@@ -564,13 +631,16 @@ class JeeflowFacade:
     async def _processDesign_updateDefine(self, args: dict) -> dict:
         """更新流程设计定义（设计稿保存，issues/08）：content 快照入库 + 同步基本信息 + 置未部署"""
         ext = self._ext_repo()
+        # BDD #251：updateDefine 入口 verify
+        content = self._content(args, required=False)
+        if content:
+            self._verify_or_raise(content, args)
         design_id = self._to_int(args.get("processDesignId"))
         if not design_id:
             raise ValueError("processDesignId 缺失或非法")
         design = await ext.find_design_by_id(design_id)
         if not design:
             raise ValueError("流程设计不存在")
-        content = self._content(args, required=False)
         if not content:
             raise ValueError("content 缺失")
         # 与最新一条相同则不重复入库（对齐 boot3 updateDefine）
@@ -599,6 +669,9 @@ class JeeflowFacade:
     async def _processDesign_redeploy(self, args: dict) -> dict:
         """重新部署流程定义（issues/08）：替换最新定义内容 + 置已部署（对齐 boot3 redeploy）"""
         ext = self._ext_repo()
+        # BDD #251：redeploy 入口 verify
+        # 由于 redeploy 用 his[0].content 部署, 先验证再走原逻辑
+        # 实际验证在下面 his[0].content 拿到后再做
         design_id = self._to_int(args.get("id"))
         if not design_id:
             raise ValueError("id 缺失或非法")
@@ -609,6 +682,8 @@ class JeeflowFacade:
         if not his_list:
             raise ValueError("流程设计没有内容，无法发布")
         content = his_list[0].content
+        # BDD #251：redeploy 内容验证
+        self._verify_or_raise(content, args)
         import json as _json
         try:
             flow = _json.loads(content)

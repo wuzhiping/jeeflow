@@ -1,0 +1,32 @@
+{
+  "name": "bdd-232-deep-chain",
+  "displayName": "BDD #232 10 节点深链",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "n1", "type": "snaker:task", "x": 150, "y": 200, "properties": {"width": 50, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "1"}},
+    {"id": "n2", "type": "snaker:task", "x": 230, "y": 200, "properties": {"width": 50, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "2"}},
+    {"id": "n3", "type": "snaker:task", "x": 310, "y": 200, "properties": {"width": 50, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "3"}},
+    {"id": "n4", "type": "snaker:task", "x": 390, "y": 200, "properties": {"width": 50, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "4"}},
+    {"id": "n5", "type": "snaker:task", "x": 470, "y": 200, "properties": {"width": 50, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "5"}},
+    {"id": "n6", "type": "snaker:task", "x": 550, "y": 200, "properties": {"width": 50, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "6"}},
+    {"id": "n7", "type": "snaker:task", "x": 630, "y": 200, "properties": {"width": 50, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "7"}},
+    {"id": "n8", "type": "snaker:task", "x": 710, "y": 200, "properties": {"width": 50, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "8"}},
+    {"id": "n9", "type": "snaker:task", "x": 790, "y": 200, "properties": {"width": 50, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "9"}},
+    {"id": "n10", "type": "snaker:task", "x": 870, "y": 200, "properties": {"width": 50, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "10"}},
+    {"id": "end", "type": "snaker:end", "x": 950, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "n1", "properties": {}},
+    {"id": "e1", "sourceNodeId": "n1", "targetNodeId": "n2", "properties": {}},
+    {"id": "e2", "sourceNodeId": "n2", "targetNodeId": "n3", "properties": {}},
+    {"id": "e3", "sourceNodeId": "n3", "targetNodeId": "n4", "properties": {}},
+    {"id": "e4", "sourceNodeId": "n4", "targetNodeId": "n5", "properties": {}},
+    {"id": "e5", "sourceNodeId": "n5", "targetNodeId": "n6", "properties": {}},
+    {"id": "e6", "sourceNodeId": "n6", "targetNodeId": "n7", "properties": {}},
+    {"id": "e7", "sourceNodeId": "n7", "targetNodeId": "n8", "properties": {}},
+    {"id": "e8", "sourceNodeId": "n8", "targetNodeId": "n9", "properties": {}},
+    {"id": "e9", "sourceNodeId": "n9", "targetNodeId": "n10", "properties": {}},
+    {"id": "e10", "sourceNodeId": "n10", "targetNodeId": "end", "properties": {}}
+  ]
+}

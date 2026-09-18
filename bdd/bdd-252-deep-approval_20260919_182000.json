@@ -1,0 +1,22 @@
+{
+  "name": "bdd-252-deep-approval",
+  "displayName": "BDD #252 多层级审批 + 变量累加",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "apply", "type": "snaker:task", "x": 130, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "申请"}},
+    {"id": "leader", "type": "snaker:task", "x": 260, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "leader", "taskType": 0, "performType": 0}, "text": {"value": "组长"}},
+    {"id": "manager", "type": "snaker:task", "x": 390, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "manager", "taskType": 0, "performType": 0}, "text": {"value": "经理"}},
+    {"id": "director", "type": "snaker:task", "x": 520, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "director", "taskType": 0, "performType": 0}, "text": {"value": "总监"}},
+    {"id": "boss", "type": "snaker:task", "x": 650, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "boss", "taskType": 0, "performType": 0}, "text": {"value": "总经理"}},
+    {"id": "end", "type": "snaker:end", "x": 780, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "leader", "properties": {}},
+    {"id": "e2", "sourceNodeId": "leader", "targetNodeId": "manager", "properties": {}},
+    {"id": "e3", "sourceNodeId": "manager", "targetNodeId": "director", "properties": {}},
+    {"id": "e4", "sourceNodeId": "director", "targetNodeId": "boss", "properties": {}},
+    {"id": "e5", "sourceNodeId": "boss", "targetNodeId": "end", "properties": {}}
+  ]
+}

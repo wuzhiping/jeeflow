@@ -1,0 +1,16 @@
+{
+  "name": "bdd-165-cs-parallel-empty",
+  "displayName": "BDD #165 并行会签 - assignee 空",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "apply", "type": "snaker:task", "x": 130, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "申请"}},
+    {"id": "cs", "type": "snaker:task", "x": 280, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "", "taskType": 0, "performType": 1, "countersignType": "PARALLEL", "countersignCompletionCondition": "ALL"}, "text": {"value": "空会签"}},
+    {"id": "end", "type": "snaker:end", "x": 430, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "cs", "properties": {}},
+    {"id": "e2", "sourceNodeId": "cs", "targetNodeId": "end", "properties": {}}
+  ]
+}

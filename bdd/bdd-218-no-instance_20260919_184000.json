@@ -1,0 +1,12 @@
+{
+  "name": "bdd-218-exception-no-instance",
+  "displayName": "BDD #218 detail 不存在的 instance",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "end", "type": "snaker:end", "x": 300, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "end", "properties": {}}
+  ]
+}

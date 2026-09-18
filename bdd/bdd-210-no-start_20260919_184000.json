@@ -1,0 +1,12 @@
+{
+  "name": "bdd-210-no-start",
+  "displayName": "BDD #210 无 start 节点 (deploy 拒绝)",
+  "type": "approval",
+  "nodes": [
+    {"id": "apply", "type": "snaker:task", "x": 130, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "申请"}},
+    {"id": "end", "type": "snaker:end", "x": 300, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "apply", "targetNodeId": "end", "properties": {}}
+  ]
+}
