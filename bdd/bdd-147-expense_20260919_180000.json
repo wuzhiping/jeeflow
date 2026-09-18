@@ -1,0 +1,34 @@
+{
+  "name": "bdd-147-expense",
+  "displayName": "BDD #147 复杂费用报销",
+  "type": "approval",
+  "instanceUrl": "/form/expense",
+  "preInterceptors": "",
+  "postInterceptors": "",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "apply", "type": "snaker:task", "x": 150, "y": 200, "properties": {"width": 100, "height": 50, "form": "expense-form", "assignee": "applicant", "taskType": 0, "performType": 0}, "text": {"value": "填写报销单"}},
+    {"id": "d_route", "type": "snaker:decision", "x": 280, "y": 200, "properties": {"width": 80, "height": 50}, "text": {"value": "金额路由"}},
+    {"id": "d_type", "type": "snaker:decision", "x": 410, "y": 100, "properties": {"width": 80, "height": 50}, "text": {"value": "类型路由"}},
+    {"id": "leader_review", "type": "snaker:task", "x": 540, "y": 30, "properties": {"width": 100, "height": 50, "assignee": "leader", "taskType": 0, "performType": 0, "form": "review-form"}, "text": {"value": "直属组长审批"}},
+    {"id": "manager_review", "type": "snaker:task", "x": 540, "y": 130, "properties": {"width": 100, "height": 50, "assignee": "manager", "taskType": 0, "performType": 0, "form": "review-form"}, "text": {"value": "经理审批"}},
+    {"id": "director_review", "type": "snaker:task", "x": 540, "y": 230, "properties": {"width": 100, "height": 50, "assignee": "director", "taskType": 0, "performType": 0, "form": "review-form"}, "text": {"value": "总监审批"}},
+    {"id": "boss_review", "type": "snaker:task", "x": 670, "y": 130, "properties": {"width": 100, "height": 50, "assignee": "boss", "taskType": 0, "performType": 0, "form": "review-form"}, "text": {"value": "总经理审批"}},
+    {"id": "finance_pay", "type": "snaker:task", "x": 800, "y": 130, "properties": {"width": 100, "height": 50, "assignee": "cashier", "taskType": 0, "performType": 0, "form": "payment-form"}, "text": {"value": "财务付款"}},
+    {"id": "end", "type": "snaker:end", "x": 950, "y": 130, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "d_route", "properties": {}},
+    {"id": "e2", "sourceNodeId": "d_route", "targetNodeId": "leader_review", "properties": {"expr": "amount<=500"}},
+    {"id": "e3", "sourceNodeId": "d_route", "targetNodeId": "d_type", "properties": {"expr": "amount>500"}},
+    {"id": "e4", "sourceNodeId": "d_type", "targetNodeId": "manager_review", "properties": {"expr": "expenseType==\"差旅\""}},
+    {"id": "e5", "sourceNodeId": "d_type", "targetNodeId": "director_review", "properties": {"expr": "expenseType==\"采购\""}},
+    {"id": "e6", "sourceNodeId": "d_type", "targetNodeId": "boss_review", "properties": {"expr": "expenseType==\"其他\""}},
+    {"id": "e7", "sourceNodeId": "leader_review", "targetNodeId": "finance_pay", "properties": {}},
+    {"id": "e8", "sourceNodeId": "manager_review", "targetNodeId": "boss_review", "properties": {}},
+    {"id": "e9", "sourceNodeId": "director_review", "targetNodeId": "boss_review", "properties": {}},
+    {"id": "e10", "sourceNodeId": "boss_review", "targetNodeId": "finance_pay", "properties": {}},
+    {"id": "e11", "sourceNodeId": "finance_pay", "targetNodeId": "end", "properties": {}}
+  ]
+}

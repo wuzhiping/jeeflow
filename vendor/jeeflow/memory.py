@@ -100,6 +100,11 @@ class MemoryRepository(ProcessRepository):
     async def remove_task_actor(self, task_id, actors):
         remove = set(actors)
         self._actors[task_id] = [a for a in self._actors.get(task_id, []) if a not in remove]
+        # BDD #150 FIX-T48 (2026-09-19)：减签后检查是否还有 actor，无则 raise
+        if not self._actors.get(task_id):
+            raise ValueError(
+                f"减签后 task[{task_id}] 已无 actor，不能继续操作（请保留至少 1 个处理人或 abandon task）"
+            )
     async def create_cc_instance(self, instance_id: int, creator: str, *actor_ids: str):
         self._cc[instance_id] = list(dict.fromkeys([*self._cc.get(instance_id, []), *actor_ids]))
     async def update_cc_status(self, instance_id: int, actor_id: str): pass
@@ -544,6 +549,19 @@ class MemoryExtRepository(ProcessExtRepository):
 
     async def find_design_by_id(self, id): return deepcopy(self._designs.get(id))
 
+    async def find_design_by_name(self, name: str) -> Optional["ProcessDesign"]:
+        """BDD #141 FIX-T42 (2026-09-19)：按 name 查 design（用于 UPSERT）
+
+        name 唯一约束：processDesign/save 同一 name 应复用同一行 id
+        返回最新一条（同 name 可能多版本，取 id 最大）
+        """
+        if not name:
+            return None
+        candidates = [deepcopy(d) for d in self._designs.values() if d.name == name]
+        if not candidates:
+            return None
+        return max(candidates, key=lambda d: d.id or 0)
+
     async def save_design(self, d: ProcessDesign):
         d.id = d.id or self._seq; self._seq += 1
         now = datetime.now()
@@ -638,6 +656,19 @@ class MemoryExtRepository(ProcessExtRepository):
     # ── 流程设计 ──
 
     async def find_design_by_id(self, id): return deepcopy(self._designs.get(id))
+
+    async def find_design_by_name(self, name: str) -> Optional["ProcessDesign"]:
+        """BDD #141 FIX-T42 (2026-09-19)：按 name 查 design（用于 UPSERT）
+
+        name 唯一约束：processDesign/save 同一 name 应复用同一行 id
+        返回最新一条（同 name 可能多版本，取 id 最大）
+        """
+        if not name:
+            return None
+        candidates = [deepcopy(d) for d in self._designs.values() if d.name == name]
+        if not candidates:
+            return None
+        return max(candidates, key=lambda d: d.id or 0)
 
     async def save_design(self, d: ProcessDesign):
         d.id = d.id or self._seq; self._seq += 1

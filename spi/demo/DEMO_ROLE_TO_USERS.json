@@ -325,5 +325,11 @@
     "leader",
     "manager",
     "director"
+  ],
+  "hr": [
+    "cashier"
+  ],
+  "dept_lead": [
+    "manager"
   ]
 }

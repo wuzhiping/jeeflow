@@ -52,6 +52,21 @@ class JdbcProcessExtRepository(ProcessExtRepository):
             return None
         return self._map_design(row)
 
+    async def find_design_by_name(self, name: str) -> Optional[ProcessDesign]:
+        """BDD #141 FIX-T42 (2026-09-19)：按 name 查 design（用于 UPSERT）
+
+        name 唯一约束：processDesign/save 同一 name 应复用同一行 id（与 AGENTS.md §5.3 描述一致）
+        """
+        if not name:
+            return None
+        async with self._conn() as conn:
+            row = await conn.fetchone(
+                self._sql(f"SELECT {self._DESIGN_COLS} FROM wf_process_design WHERE name = ? ORDER BY id DESC LIMIT 1"),
+                (name,))
+        if not row:
+            return None
+        return self._map_design(row)
+
     async def save_design(self, d: ProcessDesign) -> None:
         import sys; print(f"ext.save_design path={sys.path[0]} isDeployed={d.isDeployed!r} type={type(d.isDeployed).__name__}", file=sys.stderr)
         if not d.id:

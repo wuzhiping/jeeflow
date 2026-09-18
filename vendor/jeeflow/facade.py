@@ -78,7 +78,7 @@ class JeeflowFacade:
 
     async def _processDefine_page(self, args: dict) -> dict:
         """流程定义分页（v1.5.0 补齐）"""
-        page_num = self._to_int(args.get("pageNum")) or 1
+        page_num = self._to_int(args.get("pageNum") or args.get("pageNo")) or 1
         page_size = self._to_int(args.get("pageSize")) or 10
         rows, total = await self._repo.page_defines(page_num, page_size, self._parse_m_query(args))
         return self._page_data([self._define_row_to_dict(r) for r in rows], total, page_num, page_size)
@@ -100,7 +100,7 @@ class JeeflowFacade:
 
     async def _processInstance_page(self, args: dict) -> dict:
         """我发起的流程实例分页（operator 过滤，v1.5.0 补齐）"""
-        page_num = self._to_int(args.get("pageNum")) or 1
+        page_num = self._to_int(args.get("pageNum") or args.get("pageNo")) or 1
         page_size = self._to_int(args.get("pageSize")) or 10
         operator = str(args.get("operator", "user1"))
         rows, total = await self._repo.page_instances(page_num, page_size, operator, self._parse_m_query(args))
@@ -339,7 +339,7 @@ class JeeflowFacade:
 
     async def _processTask_todoList(self, args: dict) -> dict:
         """我的待办分页（operator 作为待办人过滤，v1.5.0 补齐）"""
-        page_num = self._to_int(args.get("pageNum")) or 1
+        page_num = self._to_int(args.get("pageNum") or args.get("pageNo")) or 1
         page_size = self._to_int(args.get("pageSize")) or 10
         actor_id = str(args.get("operator", "user1"))
         rows, total = await self._repo.page_todo_tasks(page_num, page_size, actor_id, self._parse_m_query(args))
@@ -347,7 +347,7 @@ class JeeflowFacade:
 
     async def _processTask_doneList(self, args: dict) -> dict:
         """我的已办分页（operator 过滤，v1.5.0 补齐）"""
-        page_num = self._to_int(args.get("pageNum")) or 1
+        page_num = self._to_int(args.get("pageNum") or args.get("pageNo")) or 1
         page_size = self._to_int(args.get("pageSize")) or 10
         operator = str(args.get("operator", "user1"))
         rows, total = await self._repo.page_done_tasks(page_num, page_size, operator, self._parse_m_query(args))
@@ -389,7 +389,7 @@ class JeeflowFacade:
     async def _processDesign_page(self, args: dict) -> dict:
         # issues/50 E22：行转 dict（模型对象直接透传则出口 stringify 不生效，id 为数字）
         ext = self._ext_repo()
-        page_num = self._to_int(args.get("pageNum")) or 1
+        page_num = self._to_int(args.get("pageNum") or args.get("pageNo")) or 1
         page_size = self._to_int(args.get("pageSize")) or 10
         rows, total = await ext.page_designs(page_num, page_size,
                                               conditions=self._parse_m_query(args))
@@ -405,7 +405,7 @@ class JeeflowFacade:
         # FIX-T7 (2026-09-17)：设计历史分页（v1.1.0 wf_process_design_his 表）
         # 累积读所有 design 的 list_design_his，支持 m_processDesignId / m_designId 过滤
         ext = self._ext_repo()
-        page_num = self._to_int(args.get("pageNum")) or 1
+        page_num = self._to_int(args.get("pageNum") or args.get("pageNo")) or 1
         page_size = self._to_int(args.get("pageSize")) or 10
         m_design_id = args.get("m_processDesignId") or args.get("m_designId")
         design_id_filter = self._to_int(m_design_id) if m_design_id else None
@@ -483,14 +483,37 @@ class JeeflowFacade:
         operator = str(args.get("operator", "user1"))
         design_id = self._to_int(args.get("id"))
         if not design_id:
-            design = ProcessDesign(name=str(args.get("name", "")),
-                                   displayName=str(args.get("displayName", "")),
-                                   type=str(args.get("type", "approval")),
-                                   icon=str(args.get("icon", "")),
-                                   remark=str(args.get("remark", "")),
-                                   isDeployed=False,  # FIX-T14 (2026-09-17) bool 兼容 PG
-                                   createUser=operator, updateUser=operator)
-            await ext.save_design(design)
+            # BDD #141 FIX-T42 (2026-09-19)：按 name UPSERT（同一 name 复用同一行 id）
+            # 修复前：连续 save 同 name 每次创建新行（designId 累积）
+            # 修复后：复用现有行（id 不变），仅更新 displayName/type/content 等字段
+            name = str(args.get("name", ""))
+            existing = None
+            if name and hasattr(ext, "find_design_by_name"):
+                existing = await ext.find_design_by_name(name)
+            if existing is not None:
+                # 命中已有 design：复用 id + 走更新路径
+                design = existing
+                if args.get("displayName") is not None:
+                    design.displayName = str(args["displayName"])
+                if args.get("type") is not None:
+                    design.type = str(args["type"])
+                if args.get("icon") is not None:
+                    design.icon = str(args["icon"])
+                if args.get("remark") is not None:
+                    design.remark = str(args["remark"])
+                design.updateUser = operator
+                if self._content(args, required=False):
+                    design.isDeployed = False
+                await ext.update_design(design)
+            else:
+                design = ProcessDesign(name=name,
+                                       displayName=str(args.get("displayName", "")),
+                                       type=str(args.get("type", "approval")),
+                                       icon=str(args.get("icon", "")),
+                                       remark=str(args.get("remark", "")),
+                                       isDeployed=False,  # FIX-T14 (2026-09-17) bool 兼容 PG
+                                       createUser=operator, updateUser=operator)
+                await ext.save_design(design)
         else:
             design = await ext.find_design_by_id(design_id)
             if not design:
@@ -624,7 +647,7 @@ class JeeflowFacade:
         设计全量 → 按 type 分组 → 组内每 name 取最新 define 的 {processDefineId, name,
         displayName, icon, remark, jsonObject}。"""
         ext = self._ext_repo()
-        page_num = self._to_int(args.get("pageNum")) or 1
+        page_num = self._to_int(args.get("pageNum") or args.get("pageNo")) or 1
         page_size = self._to_int(args.get("pageSize")) or 10000
         rows, _total = await ext.page_designs(page_num, page_size, self._parse_m_query(args))
         # 每 name 最新 define（version 最大）
@@ -689,7 +712,7 @@ class JeeflowFacade:
 
     async def _processSurrogate_page(self, args: dict) -> dict:
         ext = self._ext_repo()
-        page_num = self._to_int(args.get("pageNum")) or 1
+        page_num = self._to_int(args.get("pageNum") or args.get("pageNo")) or 1
         page_size = self._to_int(args.get("pageSize")) or 10
         rows, total = await ext.page_surrogates(page_num, page_size,
                                                 filters={"operator": str(args["operator"])}
@@ -984,7 +1007,7 @@ class JeeflowFacade:
 
     async def _processInstance_ccList(self, args: dict) -> dict:
         """我的抄送分页（v1.3.0）：operator 作为抄送人过滤"""
-        page_num = self._to_int(args.get("pageNum")) or 1
+        page_num = self._to_int(args.get("pageNum") or args.get("pageNo")) or 1
         page_size = self._to_int(args.get("pageSize")) or 10
         actor_id = str(args.get("operator", "user1"))
         rows, total = await self._repo.page_cc_instances(page_num, page_size, actor_id, self._parse_m_query(args))
@@ -1053,7 +1076,7 @@ class JeeflowFacade:
         return rows
 
     async def _processTask_candidatePage(self, args: dict) -> dict:
-        page_num = self._to_int(args.get("pageNum")) or 1
+        page_num = self._to_int(args.get("pageNum") or args.get("pageNo")) or 1
         page_size = self._to_int(args.get("pageSize")) or 10
         task_id = self._to_int(args.get("processTaskId")) or self._to_int(args.get("id"))
         if not task_id:

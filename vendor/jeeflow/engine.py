@@ -164,6 +164,27 @@ class EngineImpl(Engine):
                     t.abandon(now)
                     await self.repo.update_task(t)
                     _sync_task_to_aggregate(inst, t)
+                # BDD #129 FIX-T46 (2026-09-19)：ONE_VOTE_VETO REJECT 路径
+                # 一票否决触发后立即将 instance 标记为 REJECT (state=45)
+                # 否则下游走到 end 节点会调用 inst.finish() → state=20 DONE
+                # 与"否决"语义不符（业务方期望 state=45 REJECTED）
+                if cs_veto:
+                    from .model import InstanceState
+                    inst.state = InstanceState.REJECT
+                    inst.updateTime = now
+                    # BDD #148 FIX-T47 (2026-09-19)：废弃 instance 全部 DOING 任务
+                    # 不限于当前节点（fork 出来的其他分支 task 也得清，否则孤立 todo）
+                    all_remaining = await self.repo.find_doing_tasks(inst.id)
+                    for t in all_remaining:
+                        t.taskState = TaskState.ABANDONED
+                        t.updateTime = now
+                        t.updateUser = operator
+                        await self.repo.update_task(t)
+                        _sync_task_to_aggregate(inst, t)
+                    await self.repo.update_instance(inst)
+                    await self._fire_event(ProcessEvent(EventType.PROCESS_REJECT, inst.id, task_id, operator=operator))
+                    # FIX-T46：否决后不往下游推进（end 节点会覆盖 state=20 DONE）
+                    return await self.repo.find_instance_by_id(inst.id)
 
             for node in _follow_edges(flow, cur_node.id):
                 # 统一走 _execute_node：结束节点也经节点执行链（拦截器/事件完整触发），

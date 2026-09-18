@@ -1,0 +1,30 @@
+{
+  "name": "bdd-148-mixed-countersign",
+  "displayName": "BDD #148 混合会签（并行+串行+一票通过）",
+  "type": "approval",
+  "instanceUrl": "/form/mixed-countersign",
+  "preInterceptors": "",
+  "postInterceptors": "",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "apply", "type": "snaker:task", "x": 130, "y": 200, "properties": {"width": 100, "height": 50, "form": "mixed-form", "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "申请人"}},
+    {"id": "fork1", "type": "snaker:fork", "x": 260, "y": 200, "properties": {"width": 60, "height": 50}, "text": {"value": "分支"}},
+    {"id": "parallel_review", "type": "snaker:task", "x": 380, "y": 100, "properties": {"width": 100, "height": 50, "form": "", "assignee": "userA,userB,userC", "taskType": 0, "performType": 1, "countersignType": "PARALLEL", "countersignCompletionCondition": "ALL"}, "text": {"value": "并行会签（3人）"}},
+    {"id": "veto_review", "type": "snaker:task", "x": 380, "y": 280, "properties": {"width": 100, "height": 50, "form": "", "assignee": "leader,manager,director", "taskType": 0, "performType": 1, "countersignType": "PARALLEL", "countersignCompletionCondition": "ONE_VOTE_VETO"}, "text": {"value": "一票否决"}},
+    {"id": "join1", "type": "snaker:join", "x": 510, "y": 200, "properties": {"width": 60, "height": 50}, "text": {"value": "汇合"}},
+    {"id": "seq_review", "type": "snaker:task", "x": 620, "y": 200, "properties": {"width": 100, "height": 50, "form": "", "assignee": "user1,userA,userB", "taskType": 0, "performType": 1, "countersignType": "SEQUENTIAL", "countersignCompletionCondition": ""}, "text": {"value": "串行会签"}},
+    {"id": "boss_final", "type": "snaker:task", "x": 760, "y": 200, "properties": {"width": 100, "height": 50, "form": "", "assignee": "boss", "taskType": 0, "performType": 0}, "text": {"value": "总经理"}},
+    {"id": "end", "type": "snaker:end", "x": 880, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "fork1", "properties": {}},
+    {"id": "e2", "sourceNodeId": "fork1", "targetNodeId": "parallel_review", "properties": {}},
+    {"id": "e3", "sourceNodeId": "fork1", "targetNodeId": "veto_review", "properties": {}},
+    {"id": "e4", "sourceNodeId": "parallel_review", "targetNodeId": "join1", "properties": {}},
+    {"id": "e5", "sourceNodeId": "veto_review", "targetNodeId": "join1", "properties": {}},
+    {"id": "e6", "sourceNodeId": "join1", "targetNodeId": "seq_review", "properties": {}},
+    {"id": "e7", "sourceNodeId": "seq_review", "targetNodeId": "boss_final", "properties": {}},
+    {"id": "e8", "sourceNodeId": "boss_final", "targetNodeId": "end", "properties": {}}
+  ]
+}

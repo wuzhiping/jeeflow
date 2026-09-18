@@ -192,6 +192,34 @@ await self._execute_node(flow, inst, target, operator, vars_)
 
 ---
 
+## BDD #127-#146 第二轮 BUG 狩猎（2026-09-19）
+
+20 个 BDD 任务发现 6 个 BUG，全部已修：
+
+| BDD | BUG | 修复 |
+|-----|-----|------|
+| #128 | bizData 端点未注册 meta_reader | MemoryMetaReader + set_meta_reader |
+| #129 | ONE_VOTE_VETO REJECT 跳到 20 不 45 | **FIX-T46** cs_veto 路径 return + 标记 REJECT |
+| #131 | handler FQCN 简化版 + 完整版双注册 | **FIX-T39** HANDLER_* + HANDLER_*_FULL 别名 |
+| #138 | removeCandidate 端点缺失 | **FIX-T40** _processTask_removeCandidate |
+| #141 | processDesign/save 不按 name UPSERT | **FIX-T42** find_design_by_name + 复用 id |
+| #144 | ABANDON 不废弃 DOING 任务 | **FIX-T44** facade + engine 两路径 |
+
+外加 2 个非 BUG 修复（防御性）：
+- **FIX-T41**（BDD #139）custom 节点 vars_ 立即写回 inst.variables
+- **FIX-T45**（BDD #146）pageNo 字段 fallback 兼容（10 处）
+
+### 4 个限制确认（不修）
+
+| BDD | 限制 | docs 节 |
+|-----|------|---------|
+| #137 | surrogate 不自动展开 todoList | §40（已知） |
+| #140 | 任务过期 expireTime 未实现 | §68（新增） |
+| #142 | 委派 delegate 未实现 | §69（新增） |
+| #146 部分 | 分页性能（无瓶颈） | — |
+
+---
+
 ## 已修复 BUG 摘要
 
 ### 引擎核心（vendor/jeeflow/）
@@ -217,6 +245,15 @@ await self._execute_node(flow, inst, target, operator, vars_)
 | FIX-T34 | 节点 id 命名规范校验 | facade.py:_deploy (regex `^[A-Za-z0-9_]+$`) |
 | FIX-T35 | 多入边 task 节点去重 | engine.py:_create_task + repository/base.py + facade.py:with_tx |
 | FIX-T36 | ROLLBACK 跳首任务 actor 修复 | engine.py:execute_and_jump_task (复用 JUMP 路径) |
+| FIX-T37 | decision expr 复合条件 ast 解析 | main_common.py:SimpleExprEvaluator (替换 regex) |
+| FIX-T38 | custom 节点 handler 注册表 | engine.py + extensions.py:custom_handler_registry |
+| FIX-T39 | handler FQCN 简化版 + 完整版双注册 | builtin.py:HANDLER_* + HANDLER_*_FULL 别名 |
+| FIX-T40 | removeCandidate 端点缺失 | facade.py:_processTask_removeCandidate |
+| FIX-T41 | custom 节点 vars_ 写回 inst.variables | engine.py:_execute_custom_node |
+| FIX-T42 | processDesign/save 按 name UPSERT | facade.py + memory.py + repository/ext.py:find_design_by_name |
+| FIX-T44 | ABANDON 同步废弃 DOING 任务 | engine.py + facade.py:_startAndExecute 失败路径 |
+| FIX-T45 | pageNo 字段 fallback 兼容 | facade.py (10 处 pageNum 解析) |
+| FIX-T46 | ONE_VOTE_VETO REJECT 标记 state=45 | engine.py:execute_process_task (cs_veto 路径 return) |
 
 ### 文档修复
 
@@ -483,3 +520,21 @@ processTask/execute(processTaskId=<taskId>, submitType=0, operator="B")
 - [ ] **业务变量用 `f_<name>` 或顶层**（不要嵌套在 `variables` 内）
 - [ ] **handler FQCN 用 `com.mldong.*` 前缀**（不是 `com.jeeflow.*`，FIX-T2 已警告）
 - [ ] **TaskRoleAssigneeHandler 用 node.id 作为 role_code**（不是 properties.roleCode）
+
+### BDD #147-#150 第三轮 BUG 狩猎（2026-09-19）
+
+4 个独立 BDD 任务发现 2 个 BUG，全部已修：
+
+| BDD | 场景 | BUG | 修复 |
+|-----|------|-----|------|
+| #147 | 嵌套 decision 路由（金额+类型 4 路） | — | 0 BUG |
+| #148 | fork/join + PARALLEL ALL + ONE_VOTE_VETO + SEQUENTIAL 混合 | 一票否决只清本节点 DOING | **FIX-T47** |
+| #149 | SPI RoleAssigneeHandler + 部门负责人 + 跨角色委托 | — | 0 BUG |
+| #150 | addCandidate / removeCandidate + 变量传递 | 减签最后一个 actor 不校验 | **FIX-T48** |
+
+### 累计 v1.9.0+（2026-09-19）
+
+- 39 个 FIX 编号（T1-T48）覆盖 3 轮 BUG 狩猎
+- 0 个仍存 BUG
+- 11 个已知限制（含 §30/§32/§34/§40/§46/§68/§69）
+- **stable 16/17 flow 回归 PASS**

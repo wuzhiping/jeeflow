@@ -476,9 +476,18 @@ class JdbcRepository(ProcessRepository):
         if not actors:
             return
         async with self._conn() as conn:
+            # BDD #150 FIX-T48 (2026-09-19)：减签后检查是否还有 actor，无则 raise
+            # 防止 task 变 "无主 DOING"（state=10 但 actorIds=空）
             await conn.execute(self._sql(
                 f"DELETE FROM wf_process_task_actor WHERE process_task_id = ? AND actor_id IN ({repeat_ph(len(actors))})"),
                 [task_id, *actors])
+            remaining = await conn.fetchall(self._sql(
+                "SELECT actor_id FROM wf_process_task_actor WHERE process_task_id = ?"),
+                (task_id,))
+            if not remaining:
+                raise ValueError(
+                    f"减签后 task[{task_id}] 已无 actor，不能继续操作（请保留至少 1 个处理人或 abandon task）"
+                )
 
     # ── CcInstance（抄送）──────────────────────────────────────────────────
 
