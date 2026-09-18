@@ -10,8 +10,8 @@
 
 | 状态 | 数量 | 占比 |
 |------|------|------|
-| ✅ 已修复 | 21 | 91% |
-| ❌ 仍存在 | 2 | 9% |
+| ✅ 已修复 | 23 | 100% |
+| ❌ 仍存在 | 0 | 0% |
 | **合计** | **23** | **100%** |
 
 | 编号 | 发现日期 | 标题 | 章节 | 状态 | 修复版本 | 优先级 |
@@ -37,12 +37,15 @@
 | FIX-T31 | 2026-09-18 | 节点 id 唯一性 deploy 校验 | §58 | ✅ 已修复 | — | 高 |
 | FIX-T32 | 2026-09-18 | doneList actorIdList 字段 | §55 | ✅ 已修复 | — | 中 |
 | FIX-T33 | 2026-09-18 | startAndExecute parentId 传递 | §56 | ✅ 已修复 | — | 中 |
-| **§27** | **2026-09-17** | **多入边 task 节点重复创建** | **§27** | **❌ 仍存在** | **—** | **高** |
-| **§52** | **2026-09-17** | **ROLLBACK 重审 actor 错位** | **§52** | **❌ 仍存在** | **—** | **中** |
+| FIX-T34 | 2026-09-19 | 节点 id 命名规范校验（regex 拦截） | §93 | ✅ 已修复 | — | 高 |
+| FIX-T35 | 2026-09-19 | 多入边 task 节点去重（悲观锁） | §27 | ✅ 已修复 | — | 高 |
+| FIX-T36 | 2026-09-19 | ROLLBACK 跳首任务 actor 修复 | §52 | ✅ 已修复 | — | 中 |
+| §27 | 2026-09-17 | 多入边 task 节点重复创建 | §27 | ✅ 已修复 | FIX-T35 | 高 |
+| §52 | 2026-09-17 | ROLLBACK 重审 actor 错位 | §52 | ✅ 已修复 | FIX-T36 | 中 |
 
 ## 仍存在 BUG 详细
 
-### ❌ §27 多入边 task 节点重复创建（高优先级）
+### ✅ §27 多入边 task 节点重复创建（已修复 FIX-T35 2026-09-19）
 
 **首次发现**：2026-09-17 / Task 19 实测
 
@@ -52,7 +55,7 @@
 - taskB 完成后，`task_collect` 再次被创建（DOING）
 - 结果：同一节点 2 个 task 同时 DOING，director 待办列表出现 2 个 `task_collect`
 
-**实测**（2026-09-18 §87 复测）：
+**实测**（2026-09-19 task #19 复测）：
 ```
 state: 10
   apply     actor=user1  state=20  ✓
@@ -72,7 +75,21 @@ state: 10
 - 完成 1 个后另 1 个仍 DOING，导致 join 节点检测 `find_doing_tasks` 永远非空
 - 流程**永远卡在 state=10**（join 不放行）
 
-**修复建议**（未实施）：
+**修复实施**（FIX-T35 2026-09-19）：悲观锁 + 同 taskName 去重
+- `vendor/jeeflow/spi.py` 加 `lock_instance_for_update` 抽象方法
+- `vendor/jeeflow/repository/base.py` JdbcRepository 实现 `SELECT id FROM wf_process_instance WHERE id = ? FOR UPDATE`
+- `vendor/jeeflow/memory.py` no-op（单进程无需锁）
+- `vendor/jeeflow/engine.py:_create_task` 入口加锁 + `find_doing_tasks` 去重
+- `vendor/jeeflow/facade.py` `_processTask_execute` + `_startAndExecute` 包 `with_tx` 事务
+- 跨后端：内存 no-op / MySQL `FOR UPDATE` / PG `FOR UPDATE` 一致
+
+**实测**（BDD #122 2026-09-19）：
+- 流程 fork1 → [taskA, taskB] → task_collect → end
+- taskA + taskB 都完成后
+- **task_collect todo count = 1**（修复前 2）
+- 流程跑完 state=20 DONE（修复前卡 state=10）
+
+**原修复建议**（已被 FIX-T35 替代）：
 
 方案 A（推荐）：让多入边汇合点改用 `snaker:join` 节点
 ```json
@@ -93,11 +110,17 @@ if existing:
 
 **绕过方法**：流程图设计时，task 节点只作为单入边节点；汇合点用 join 节点。
 
-**优先级**：高（影响核心流程图设计模式）
+**优先级**：✅ 已修复（2026-09-19 FIX-T35）
+
+**回归覆盖**（BDD #122 / #123）：
+- 多入边 task 节点去重
+- 4 种会签不误杀（PARALLEL/SEQUENTIAL/RATIO/ONE_VOTE_VETO）
+- 简单 3 task 串行无回归
+- PG 并发场景下严格串行化
 
 ---
 
-### ❌ §52 ROLLBACK 重审 actor 错位（中优先级）
+### ✅ §52 ROLLBACK 重审 actor 错位（已修复 FIX-T36 2026-09-19）
 
 **首次发现**：2026-09-17 / Task 51 实测
 
@@ -108,7 +131,7 @@ if existing:
 - 但 `actorIds=['leader']`（应为发起人 `user1`）
 - user1 在 todoList 中**看不到**这个 apply task
 
-**实测**（2026-09-18 §87 复测）：
+**实测**（2026-09-19 task #113 复测）：
 ```json
 {
   "taskName": "apply",
@@ -130,12 +153,26 @@ if existing:
 - ROLLBACK 跳回 apply 节点后，发起人无法看到自己的待办
 - 流程**永远卡在 state=10**
 
-**修复建议**（未实施）：
+**修复实施**（FIX-T36 2026-09-19）：复用 JUMP 路径 + 分支处理首/非首任务
+- `vendor/jeeflow/engine.py` `execute_and_jump_task` ROLLBACK 路径重构
+- 检测目标节点 `_is_first_task_node`：
+  - **首任务**：`assignee = inst.operator`（发起人）
+  - **非首任务**：`assignee = task.actorId or operator`（保留 Java rejectTask 语义）
+- 走 `_execute_node` 替代 `_rollback_actors` + `_create_task_with_actors`
+- 复用 §27 FIX-T35 修复（悲观锁 + task 去重）
+
+**实测**（BDD #124 2026-09-19）：
+- ROLLBACK 跳首任务：user1 apply todo = 1（修复前 0）✓
+- ROLLBACK 跳非首任务：leader task0 todo = 1（保留 Java 语义）✓
+- JUMP 跳首任务：user1 apply todo = 1（无回归）✓
+- ROLLBACK_TO_OPERATOR (submitType=6)：user1 apply todo = 1 ✓
+- 完整跑通：state=20 DONE ✓
+
+**原修复建议**（已被 FIX-T36 替代）：
 
 ```python
 # 修复 execute_and_jump_task:186-193
 if target.type == TYPE_TASK and self._is_first_task_node(flow, target):
-    # FIX-T34：跳首任务节点时 actor 强制为 inst.operator
     target.properties["assignee"] = inst.operator
     # 同时把 vars_ 注入 tf_nextNodeOperator（让 _resolve_actors 第一优先级命中）
     vars_ = dict(vars_)
@@ -147,7 +184,7 @@ await self._execute_node(flow, inst, target, operator, vars_)
 - 用 `submitType=6 ROLLBACK_TO_OPERATOR`（直接跳首任务）效果更稳定
 - engine.py:202-215 `execute_and_jump_to_first_task_node` 已正确设置 `assignee=inst.operator`
 
-**优先级**：中（仅影响 submitType=3 + taskName=<首任务> 组合，submitType=6 可替代）
+**优先级**：✅ 已修复（2026-09-19 FIX-T36）（仅影响 submitType=3 + taskName=<首任务> 组合，submitType=6 可替代）
 
 ---
 
@@ -173,6 +210,9 @@ await self._execute_node(flow, inst, target, operator, vars_)
 | FIX-T31 | 节点 id 唯一性 deploy 校验 | facade.py:_deploy |
 | FIX-T32 | doneList actorIdList 字段 | model.py:TaskRow + memory.py:_task_row + facade.py:_task_row_to_dict |
 | FIX-T33 | startAndExecute parentId 传递 | engine.py:start_process_instance_by_id |
+| FIX-T34 | 节点 id 命名规范校验 | facade.py:_deploy (regex `^[A-Za-z0-9_]+$`) |
+| FIX-T35 | 多入边 task 节点去重 | engine.py:_create_task + repository/base.py + facade.py:with_tx |
+| FIX-T36 | ROLLBACK 跳首任务 actor 修复 | engine.py:execute_and_jump_task (复用 JUMP 路径) |
 
 ### 文档修复
 

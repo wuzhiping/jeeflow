@@ -52,15 +52,6 @@ class ProcessRepository(ABC):
     @abstractmethod
     async def add_task_actor(self, task_id: int, actors: list[str]) -> None: ...
     @abstractmethod
-    async def lock_instance_for_update(self, instance_id: int) -> None:
-        """§27 修复（2026-09-19）：悲观锁锁定 process_instance 行（FOR UPDATE）
-
-        防止多入边 task 节点在并发场景下重复创建 task（PG/MySQL 后端实现为
-        `SELECT ... FOR UPDATE`；内存后端单进程无需锁；SQLite 单线程不严格）。
-        **必须在 with_tx 事务内调用才有效**——事务提交/回滚时自动释放。
-        """
-        ...
-    @abstractmethod
     async def remove_task_actor(self, task_id: int, actors: list[str]) -> None: ...
     @abstractmethod
     async def create_cc_instance(self, instance_id: int, creator: str, *actor_ids: str) -> None: ...

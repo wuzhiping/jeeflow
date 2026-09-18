@@ -12,7 +12,7 @@ COPY . .
 
 # 安装 Python 依赖
 RUN uv sync --frozen
-RUN uv pip install jeeflow[postgres]
+# RUN uv pip install jeeflow[postgres]
 
 # RUN mv ./.venv/lib/python3.12/site-packages/jeeflow ./.venv/lib/python3.12/site-packages/jeeflow-X
 

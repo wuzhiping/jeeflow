@@ -1,0 +1,8 @@
+{
+  "name": "fix27-concurrent",
+  "title": "FIX-§27-PG并发验证",
+  "type": "approval",
+  "node_types": ["start","task","fork","task","task","task","end"],
+  "features": ["§27 修复", "PG 悲观锁", "并发场景"],
+  "errors": []
+}

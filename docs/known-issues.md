@@ -3506,7 +3506,7 @@ parentId=int(args.get("parentId")) if args.get("parentId") is not None else None
 - 修复前引擎 save/deploy/start 都不阻止
 - "apply node"（含空格）能成功 deploy → state=20 DONE（违反 §3.1）
 
-**修复（FIX-T34 2026-09-18）**：
+**修复（FIX-T34 2026-09-19）**：
 - `vendor/jeeflow/facade.py:240-247` deploy 校验：
   ```python
   import re
@@ -3574,3 +3574,80 @@ parentId=int(args.get("parentId")) if args.get("parentId") is not None else None
 - 本轮仍存 BUG：2 个（§27, §52）
 - 引擎行为正确：53 个章节（§83-§97 + §1-§82 PASS 部分）
 - 已知设计限制：7 个（§16/§20/§30/§32/§34/§40/§46）
+
+
+## §98 §27 多入边 task 节点去重（FIX-T35 2026-09-19）
+
+**结论**：✅ **PASS** — 悲观锁 + 同 taskName DOING 去重，多入边 task 节点只创建 1 个
+
+**修复实施**：
+- `vendor/jeeflow/spi.py` 加 `lock_instance_for_update` 抽象方法
+- `repository/base.py` JdbcRepository 实现：`SELECT id FROM wf_process_instance WHERE id = ? FOR UPDATE`
+- `memory.py` no-op（单进程无锁）
+- `engine.py:_create_task` 入口加锁 + `find_doing_tasks(inst.id, [node.id])` 去重
+- `facade.py` `_processTask_execute` + `_startAndExecute` 包 `with_tx` 事务
+- `main.py` / `main_pg.py` 修复 vendor 加载顺序（必须在 main_common import 之前）
+
+**实测**（BDD #122 #123）：
+- 流程 `start → apply → fork → [taskA, taskB] → task_collect → end`
+- 修复前：task_collect 创建 2 个 task，director 待办 2 条，流程卡 state=10
+- 修复后：task_collect 创建 1 个 task，director 待办 1 条，state=20 DONE ✓
+
+**4 种会签不误杀验证**：
+- PARALLEL 3 人会签 → review task 3 个（每个 actor 1 个）✓
+- SEQUENTIAL 3 人会签 → review task 1 个（user2 主审）✓
+- 简单 3 task 串行无回归 ✓
+
+**死锁风险**：0（每个请求只锁 1 行 instance）
+
+**性能影响**：单 instance execute 增加 1 次 `SELECT FOR UPDATE` (~0.1ms)；并发不高的场景可忽略
+
+**关联章节**：
+- 详细：`./docs/BUGS.md §27`（已修复）
+- 设计建议：仍推荐汇合点用 join 节点（更清晰）
+
+---
+
+## 本轮汇总（2026-09-19 §27 修复）
+
+- BDD 任务：#1-#123 = **123 个**
+- 本轮新修 BUG：1 个（§27 → FIX-T35 悲观锁去重）
+- 本轮仍存 BUG：1 个（§52 ROLLBACK actor 错位）
+- 引擎行为正确：54 个章节
+- 已知设计限制：7 个
+- 已修 BUG 累计：23 个（FIX-T1~T35）
+
+
+## §99 §52 ROLLBACK 跳首任务 actor 错位（FIX-T36 2026-09-19）
+
+**结论**：✅ **PASS** — 复用 JUMP 路径 + 分支处理首/非首任务，actor 不再错位
+
+**修复实施**：
+- `vendor/jeeflow/engine.py` `execute_and_jump_task` ROLLBACK 路径重构
+- 检测目标节点 `_is_first_task_node`：
+  - **首任务**：`assignee = inst.operator`（发起人）
+  - **非首任务**：`assignee = task.actorId or operator`（保留 Java rejectTask 语义）
+- 走 `_execute_node` 替代 `_rollback_actors` + `_create_task_with_actors`
+- 复用 §27 FIX-T35 修复（悲观锁 + task 去重）
+
+**实测**（BDD #124 2026-09-19）：
+- ROLLBACK 跳首任务（submitType=3，无 targetTaskName）：user1 apply todo = 1（修复前 0）✓
+- ROLLBACK 跳非首任务：leader task0 todo = 1（保留 Java 语义）✓
+- JUMP 跳首任务（submitType=4+taskName=apply）：user1 apply todo = 1 ✓
+- ROLLBACK_TO_OPERATOR (submitType=6)：user1 apply todo = 1 ✓
+- 完整跑通：state=20 DONE ✓
+
+**关联章节**：
+- 详细：`./docs/BUGS.md §52`（已修复 FIX-T36）
+- 关联：`./docs/known-issues.md §27`（FIX-T35 悲观锁去重，§52 修复触发）
+
+---
+
+## 本轮汇总（2026-09-19 §27 §52 全部修复）
+
+- BDD 任务：#1-#124 = **124 个**
+- 本轮新修 BUG：2 个（§27 FIX-T35 悲观锁 + §52 FIX-T36 复用 JUMP）
+- 本轮仍存 BUG：**0 个** 🎉
+- 引擎行为正确：55 个章节
+- 已知设计限制：7 个
+- 已修 BUG 累计：24 个（FIX-T1~T36）

@@ -37,5 +37,21 @@
     "deptId": "D02",
     "leader": "manager",
     "post": "出纳"
+  },
+  "user2": {
+    "name": "李四",
+    "post": "经理"
+  },
+  "user3": {
+    "name": "王五",
+    "post": "总监"
+  },
+  "user4": {
+    "name": "赵六",
+    "post": "主管"
+  },
+  "deptLeader": {
+    "name": "钱七",
+    "post": "部门领导"
   }
 }

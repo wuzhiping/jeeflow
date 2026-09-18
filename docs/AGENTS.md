@@ -303,13 +303,14 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 | 11 | `instanceUrl` 用于前端发起跳转 | `./docs/flow.md §2` |
 | 12 | 顶层 `type` 默认 `approval`，`business` 见样例 10 | `./docs/flow.md §2` |
 | 13 | **节点 id 唯一**（FIX-T31 自动校验） | `./docs/BUGS.md §58` |
-| 14 | **汇合点用 join 节点**（避免 §27 + §30） | `./docs/BUGS.md §27,§30` |
+| 14 | **汇合点用 join 节点**（FIX-T35 修复后可选；join 仍推荐） | `./docs/BUGS.md §27,§30` |
 | 15 | **决策 expr 单 key 单 op**（不要 `&&`/`\|\|`，避免 §20） | `./docs/BUGS.md §20` |
 | 16 | **`PERMISSION_*` 字段必须用 `PERMISSION_f_<name>` 前缀** | `./docs/BUGS.md FIX-DOC-1` |
 | 17 | **`submitType=2/3/4/6` 走 facade 不走 decision** | `./docs/BUGS.md §20` |
 | 18 | **不要依赖 custom 节点 clazz/methodName**（§16 未实现） | `./docs/BUGS.md §16` |
 | 19 | **`preInterceptors` 静默未生效，用 `postInterceptors`** | `./docs/BUGS.md §34` |
 | 20 | **surrogate 不自动展开 todoList**（手动 addCandidate） | `./docs/BUGS.md §40` |
+| 21 | **节点 id 命名规范**（FIX-T34 deploy 自动校验） | `./docs/BUGS.md §93` |
 
 > ⚠️ 约束 #13-#20 来自 `./docs/BUGS.md`，是 BDD 实战中**反复踩坑**的约束。设计前**必读**。
 
@@ -338,6 +339,7 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 | custom 节点 `clazz/methodName` 未实现 | **vendor/jeeflow/engine.py:_execute_node**：F1X-T17 raise（之前静默 return）让流程卡死 | 当前引擎不支持 custom 节点，跳过或 fallback 到 task 节点（详见 `known-issues.md §16`） |
 | `assignmentHandler` 用 `com.jeeflow.*` 前缀（应为 com.mldong.*） | 引擎未注册该 FQCN，raise `handler 未注册` | 严格使用 `com.mldong.jeeflow.interceptor.impl.*` 完整路径（详见 `known-issues.md §67`） |
 | `decision` 所有出边 `expr` 都为 False | 兜底走第一条边 | 加默认边 `expr=""`（详见 §3.4） |
+| 节点 id 含空格/`-`/中文 | **v1.9.0 FIX-T34 已修复**：deploy 时 regex 拒绝 `^[A-Za-z0-9_]+$` 以外的 id | 用纯字母/数字/下划线命名（详见 `known-issues.md §93`） |
 | 测试中调用 `task/processInstance/start` 而非 `startAndExecute` | API 不在 §5.1 速查表，返回 404 | 严格按 §5.1 action 名调用 |
 
 ---
@@ -381,6 +383,7 @@ sleep 1
 | 一键重置测试环境 | §5.2.5（`/api/reset`，不在 action 清单） |
 | **存量 BUG + 已知限制** | **`./docs/BUGS.md`（设计前必读！）** |
 | **流程图自检清单** | **`./docs/BUGS.md` 末尾（部署前逐项检查）** |
+| **节点 id 命名规范** | **`./docs/known-issues.md §93`（FIX-T34）** |
 | 已知问题详细说明 | `./docs/known-issues.md §X` |
 
 ---

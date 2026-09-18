@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-18T09:19:29",
+  "updated": "2026-09-18T14:07:31",
   "tasks": [
     {
       "id": "Task 16",
@@ -2030,6 +2030,65 @@
       "features": [
         "surrogate 委托",
         "actor 过滤"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 122",
+      "name": "fix27-fanin-task",
+      "time": "20260919-110000",
+      "node_types": [
+        "start",
+        "task",
+        "fork",
+        "task",
+        "task",
+        "task",
+        "end"
+      ],
+      "features": [
+        "§27 修复",
+        "悲观锁",
+        "task 去重",
+        "with_tx 事务"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 123",
+      "name": "fix27-concurrent",
+      "time": "20260919-110500",
+      "node_types": [
+        "start",
+        "task",
+        "fork",
+        "task",
+        "task",
+        "task",
+        "end"
+      ],
+      "features": [
+        "§27 修复",
+        "PG 悲观锁",
+        "并发场景"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 124",
+      "name": "fix52-rollback-first",
+      "time": "20260919-120000",
+      "node_types": [
+        "start",
+        "task",
+        "task",
+        "end"
+      ],
+      "features": [
+        "§52 修复",
+        "ROLLBACK 跳首任务",
+        "actor=发起人",
+        "复用 JUMP 路径"
       ],
       "errors": []
     }

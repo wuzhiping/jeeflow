@@ -69,16 +69,7 @@ class EngineImpl(Engine):
         vars_ = {**(args or {})}
         await self._add_user_info(operator, vars_)
         self._add_auto_gen_title(def_.displayName, vars_)
-        # FIX-T9 (2026-09-17) §66 ownerId 提取：显式 ownerId > 发起时 u_userId > operator
-        # 必须 _add_user_info 之后再取（_add_user_info 会用 user_prov 覆盖 u_userId）
-        owner_id = (
-            str(args.get("ownerId", "") or "").strip()
-            or str(args.get("u_userId", "") or "").strip()  # 发起时传的原始 u_userId（不被 user_prov 覆盖）
-            or operator
-        )
         inst = ProcessInstance(id=self._next_id(), defineId=define_id, operator=operator,
-                               ownerId=owner_id,
-                               parentId=int(args.get("parentId")) if args.get("parentId") is not None else None,  # FIX-T33 (2026-09-18) §56
                                variables=vars_, createTime=datetime.now(), updateTime=datetime.now(),
                                createUser=operator, updateUser=operator,
                                businessNo=str(vars_.get(KEY_BUSINESS_NO, "")))
@@ -86,19 +77,8 @@ class EngineImpl(Engine):
         await self._fire_event(ProcessEvent(type=EventType.PROCESS_START, instanceId=inst.id, operator=operator))
         start_node = _find_by_type(flow, TYPE_START)
         if not start_node: raise ValueError("no start node")
-        try:
-            for node in _follow_edges(flow, start_node.id):
-                await self._execute_node(flow, inst, node, operator, vars_)
-        except ValueError as e:
-            # FIX-T17 (2026-09-17)：start 路径节点创建失败 → instance 标记 ABANDON
-            from .model import InstanceState
-            inst.state = InstanceState.ABANDON
-            inst.updateTime = datetime.now()
-            try:
-                await self.repo.update_instance(inst)
-            except Exception:
-                pass
-            raise
+        for node in _follow_edges(flow, start_node.id):
+            await self._execute_node(flow, inst, node, operator, vars_)
         return await self.repo.find_instance_by_id(inst.id)
 
     # ─── Execute ──────────────────────────────────────────────────────────────
@@ -175,22 +155,14 @@ class EngineImpl(Engine):
                                      target_task_name: str = None) -> ProcessInstance:
         task, inst, flow, vars_ = await self._prepare_execute_task(task_id, operator, args)
         if not target_task_name:
-            # issues/79：ROLLBACK 对齐 Java rejectTask——退回上一任务节点（首条输入边 source）；
-            # §52 修复（2026-09-19 FIX-T36）：根据"是否首任务节点"分支：
-            #   - 跳首任务：actor=inst.operator（发起人），避免 §52 错位
-            #   - 跳非首任务：actor=前任务完成人（保留 Java rejectTask 语义）
-            # 走 _execute_node 复用 §27 FIX-T35 修复（悲观锁+去重）
+            # issues/79：ROLLBACK 对齐 Java rejectTask——退回上一任务节点（首条输入边 source），
+            # 新任务 actor=当前任务完成人（退回操作人）；无上一任务节点则不产生新待办
             prev_name = self._previous_task_name(flow, task.taskName)
             if prev_name:
                 prev = _find_node(flow, prev_name)
                 if prev:
-                    if prev.type == TYPE_TASK:
-                        if self._is_first_task_node(flow, prev):
-                            prev.properties["assignee"] = inst.operator
-                        else:
-                            # 跳非首任务：assignee 改为前任务完成人（对齐 Java rejectTask）
-                            prev.properties["assignee"] = task.actorId or operator
-                    await self._execute_node(flow, inst, prev, operator, vars_)
+                    actors = self._rollback_actors(prev, inst, operator, task)
+                    await self._create_task_with_actors(prev, inst, operator, vars_, actors)
         else:
             # issues/79：对齐 Java——目标节点不存在显式报错（前端 JUMP 无效 taskName 不再静默空操作）
             target = _find_node(flow, target_task_name)
@@ -306,9 +278,7 @@ class EngineImpl(Engine):
     async def _create_task_with_actors(self, node: FlowNode, inst: ProcessInstance, operator: str,
                                         vars_: dict, actors: list[str]):
         """以显式参与者建任务（会签节点拆分为逐人任务，对齐 Java 会签创建语义）"""
-        # FIX-T17 (2026-09-17)：ROLLBACK 路径显式传 actors，empty raise 与 _create_task 保持一致
-        if not actors:
-            raise ValueError(f"节点[{node.id}] ROLLBACK 路径未解析出处理人")
+        if not actors: return
         ct = node.properties.get("countersignType", "")
         _pt = node.properties.get("performType", 0)
         try:
@@ -317,30 +287,24 @@ class EngineImpl(Engine):
             perform_type = 1 if str(_pt).strip().upper() in ("ALL", "COUNTERSIGN") else 0
         now = datetime.now()
         form = node.properties.get("form", "")
-        # FIX-T30 (2026-09-18)：透传 taskType 字段（与 _create_task 对齐）
-        _tt = node.properties.get("taskType", 0)
-        try:
-            task_type = int(_tt)
-        except (ValueError, TypeError):
-            task_type = 0
         if perform_type == 1 and ct:
             if ct in ("PARALLEL", ""):
                 for a in actors:
-                    nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), a, operator, form, now, 1, task_type)
+                    nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), a, operator, form, now, 1)
                     await self.repo.save_task(nt)
                     await self._fire_event(ProcessEvent(EventType.TASK_CREATE, inst.id, nt.id, node.id, operator))
             elif ct == "SEQUENTIAL":
-                nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), actors[0], operator, form, now, 1, task_type)
+                nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), actors[0], operator, form, now, 1)
                 nt.variables = {f"operatorList_{node.id}": actors, f"loopCounter_{node.id}": 0, f"nrOfInstances_{node.id}": len(actors)}
                 await self.repo.save_task(nt)
                 await self._fire_event(ProcessEvent(EventType.TASK_CREATE, inst.id, nt.id, node.id, operator))
             else:
                 for a in actors:
-                    nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), a, operator, form, now, 1, task_type)
+                    nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), a, operator, form, now, 1)
                     await self.repo.save_task(nt)
                     await self._fire_event(ProcessEvent(EventType.TASK_CREATE, inst.id, nt.id, node.id, operator))
         else:
-            nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), actors[0], operator, form, now, 0, task_type)
+            nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), actors[0], operator, form, now)
             if len(actors) > 1:
                 nt.actorIds = actors
             await self.repo.save_task(nt)
@@ -383,10 +347,6 @@ class EngineImpl(Engine):
                 inst.variables = _merge_exec_into_instance(inst.variables, vars_)
                 await self.repo.update_instance(inst)
                 await self._fire_event(ProcessEvent(EventType.PROCESS_FINISH, inst.id, operator=operator))
-            else:
-                # FIX-T22 (2026-09-17)：未知节点类型不应静默 return（流程卡死无错误）
-                raise ValueError(f"未知节点类型: node_id='{node.id}' type='{node.type}' "
-                                 f"（期望 start/task/decision/fork/join/end/custom）")
         finally:
             await self._fire_post(node, inst)
 
@@ -415,21 +375,9 @@ class EngineImpl(Engine):
             if target: return await self._execute_node(flow, inst, target, operator, vars_)
 
     async def _create_task(self, node: FlowNode, inst: ProcessInstance, operator: str, vars_: dict):
-        # §27 修复（2026-09-19）：悲观锁 + 去重，防止多入边 task 节点重复创建
-        # 1. 锁定 process_instance 行（PG/MySQL 用 SELECT FOR UPDATE；内存 no-op）
-        # 2. 同 taskName + DOING 已有则跳过（汇合点 task 节点去重）
-        # 调用方（facade）必须包 with_tx 事务，否则锁无效；事务内同 instance 串行化
-        await self.repo.lock_instance_for_update(inst.id)
-        existing_doing = await self.repo.find_doing_tasks(inst.id, [node.id])
-        if existing_doing:
-            return  # 多入边汇合：已存在 DOING task，跳过创建
         actors = await self._resolve_actors(node, inst, operator, vars_)
-        # FIX-T17 (2026-09-17)：actors=[] 不再静默 return（流程卡住无错误）
-        # 原代码 return → 流程在此节点终止不报错；raise ValueError 让 facade 报清晰错误
-        if not actors:
-            raise ValueError(f"节点[{node.id}]无法解析任何处理人：assignee/handler/SPI 角色均未匹配，"
-                             f"请检查 properties.assignee、assignmentHandler FQCN、SPI role_code")
-        # performType 容错解析（对齐 java codeOf，issue 42）：int 优先；
+        if not actors: return
+        # performType 容错解析（对齐 Java codeOf，issue 42）：int 优先；
         # 字符串 'ALL'/'COUNTERSIGN'（设计器面板格式，大小写不敏感）映射为会签；未知回落 0
         _pt = node.properties.get("performType", 0)
         try:
@@ -439,33 +387,26 @@ class EngineImpl(Engine):
         ct = node.properties.get("countersignType", "")
         now = datetime.now()
         form = node.properties.get("form", "")
-        # FIX-T30 (2026-09-18)：透传 taskType 字段（0 主审 / 1 副审 / 2 记录）
-        # 原代码不读 node.properties.taskType，落库始终为 0，导致 taskType 枚举完全无效
-        _tt = node.properties.get("taskType", 0)
-        try:
-            task_type = int(_tt)
-        except (ValueError, TypeError):
-            task_type = 0
         if perform_type == 1 and ct:
             if ct == "PARALLEL":
                 for a in actors:
-                    nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), a, operator, form, now, 1, task_type)
+                    nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), a, operator, form, now, 1)
                     await self.repo.save_task(nt)
                     # TASK_CREATE：任务落库后 fire（会签多任务逐个，对齐 Java CreateTaskHandler）
                     await self._fire_event(ProcessEvent(EventType.TASK_CREATE, inst.id, nt.id, node.id, operator))
             elif ct == "SEQUENTIAL":
-                nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), actors[0], operator, form, now, 1, task_type)
+                nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), actors[0], operator, form, now, 1)
                 nt.variables = {f"operatorList_{node.id}": actors, f"loopCounter_{node.id}": 0, f"nrOfInstances_{node.id}": len(actors)}
                 await self.repo.save_task(nt)
                 await self._fire_event(ProcessEvent(EventType.TASK_CREATE, inst.id, nt.id, node.id, operator))
             else:
                 for a in actors:
-                    nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), a, operator, form, now, 1, task_type)
+                    nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), a, operator, form, now, 1)
                     await self.repo.save_task(nt)
                     await self._fire_event(ProcessEvent(EventType.TASK_CREATE, inst.id, nt.id, node.id, operator))
         else:
             # 普通任务：一个任务承载全部参与者（对齐 boot3 createTask + addTaskActor，多参与者任一可办）
-            nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), actors[0], operator, form, now, 0, task_type)
+            nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), actors[0], operator, form, now)
             if len(actors) > 1:
                 nt.actorIds = actors
             await self.repo.save_task(nt)
@@ -507,10 +448,6 @@ class EngineImpl(Engine):
             result = self.ext.assignment_handler(handler_name, node, inst)
             if hasattr(result, '__await__'): return await result
             return result
-        # FIX-T28 (2026-09-17)：custom 节点 fallback [operator]（之前 FIX-T17 raise 让 08-custom-node 永不过）
-        # 注意：仅当节点 type 为 snaker:custom 时回落（task 节点继续 raise 提示错误）
-        if node.type == TYPE_CUSTOM:
-            return [operator]
         return []
 
     def _is_allowed(self, task: ProcessTask, operator: str) -> bool:
@@ -535,16 +472,10 @@ class EngineImpl(Engine):
         if u.postName: vars_[KEY_POST_NAME] = u.postName
 
     def _add_auto_gen_title(self, display_name: str, vars_: dict):
-        """issue 29：自动生成标题（对齐 boot3 FlowUtil.addAutoGenTitle）
-        FIX-T18 (2026-09-17)：title 优先级——显式 args.title > autoGenTitle
-        """
+        """issue 29：自动生成标题（对齐 boot3 FlowUtil.addAutoGenTitle）"""
         real_name = vars_.get(KEY_REAL_NAME, "")
         title = f"{real_name}的{display_name}-{datetime.now().strftime('%Y-%m-%d %H:%M')}"
-        # FIX-T18：只有 args.title 未显式提供时才用 autoGenTitle（设计器前端可覆盖）
-        if "title" not in vars_ or not vars_["title"]:
-            vars_[KEY_AUTO_GEN_TITLE] = title
-        else:
-            vars_[KEY_AUTO_GEN_TITLE] = vars_["title"]
+        vars_[KEY_AUTO_GEN_TITLE] = title
 
     def _next_id(self) -> int:
         if self.id_gen: return self.id_gen.next_id()

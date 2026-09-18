@@ -1,0 +1,8 @@
+{
+  "name": "fix27-fanin-task",
+  "title": "FIX-§27-多入边task节点去重",
+  "type": "approval",
+  "node_types": ["start","task","fork","task","task","task","end"],
+  "features": ["§27 修复", "悲观锁", "task 去重", "with_tx 事务"],
+  "errors": []
+}

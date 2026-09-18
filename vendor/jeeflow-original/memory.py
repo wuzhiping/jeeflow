@@ -81,12 +81,6 @@ class MemoryRepository(ProcessRepository):
                 cp = deepcopy(t); cp.actorIds = self._actors.get(t.id, t.actorIds)
                 result.append(cp)
         return result
-    async def lock_instance_for_update(self, instance_id: int) -> None:
-        """§27 修复（2026-09-19）：内存后端单进程，无需锁（no-op）"""
-        return
-    async def with_tx(self, fn):
-        """§27 修复（2026-09-19）：内存后端无事务概念（单进程），直接调 fn 即可"""
-        return await fn()
     async def find_done_tasks(self, instance_id, task_names=None):
         return [deepcopy(t) for t in self._tasks.values() if t.processInstanceId == instance_id and t.taskState == TaskState.DONE]
     async def find_history_tasks(self, instance_id):
@@ -118,8 +112,7 @@ class MemoryRepository(ProcessRepository):
                 parentNodeName=inst.parentNodeName, businessNo=inst.businessNo, operator=inst.operator,
                 expireTime=inst.expireTime, variables=deepcopy(inst.variables),
                 createTime=inst.createTime, createUser=inst.createUser,
-                updateTime=inst.updateTime, updateUser=inst.updateUser,
-                ownerId=getattr(inst, "ownerId", "") or "")  # FIX-T9 §66
+                updateTime=inst.updateTime, updateUser=inst.updateUser)
             defn = self._defines.get(inst.defineId)
             if defn:
                 row.defineName = defn.name
@@ -162,8 +155,7 @@ class MemoryRepository(ProcessRepository):
                 parentNodeName=inst.parentNodeName, businessNo=inst.businessNo, operator=inst.operator,
                 expireTime=inst.expireTime, variables=deepcopy(inst.variables),
                 createTime=inst.createTime, createUser=inst.createUser,
-                updateTime=inst.updateTime, updateUser=inst.updateUser,
-                ownerId=getattr(inst, "ownerId", "") or "")  # FIX-T9 §66
+                updateTime=inst.updateTime, updateUser=inst.updateUser)
             defn = self._defines.get(inst.defineId)
             if defn:
                 row.defineName = defn.name
@@ -208,9 +200,7 @@ class MemoryRepository(ProcessRepository):
             taskState=t.taskState, operator=t.actorId, finishTime=t.finishTime,
             expireTime=t.expireTime, formKey=t.formKey, taskParentId=t.parentTaskId,
             variables=deepcopy(t.variables), createTime=t.createTime, createUser=t.createUser,
-            updateTime=t.updateTime, updateUser=t.updateUser,
-            # FIX-T32 (2026-09-18)：§55 doneList 行 taskActorIdList 字段
-            taskActorIdList=list(t.actorIds or []))
+            updateTime=t.updateTime, updateUser=t.updateUser)
         inst = self._instances.get(t.processInstanceId)
         if inst:
             row.instanceCreateTime = inst.createTime
@@ -313,18 +303,6 @@ class MemoryRepository(ProcessRepository):
                 if ft and ft <= exp:
                     on_time += 1
         return total, countersign, on_time, on_time_denom
-
-    async def stats_active_users_count(self, start=None, end=None) -> int:
-        # FIX-T27 (2026-09-17)：活跃操作人数（指定窗口内不同 operator 数）
-        sd = self._to_dt(start); ed = self._to_dt(end)
-        seen: set = set()
-        for inst in self._instances.values():
-            if not inst.operator: continue
-            ct = self._to_dt(inst.createTime)
-            if sd and ct and ct < sd: continue
-            if ed and ct and ct > ed: continue
-            seen.add(inst.operator)
-        return len(seen)
 
     async def stats_avg_completed_duration_seconds(self, start=None, end=None) -> int:
         sd = self._to_dt(start)
@@ -447,7 +425,7 @@ _TASK_FIELDS = {
 _INSTANCE_FIELDS = {
     "t.id": "id", "t.parent_id": "parentId", "t.process_define_id": "defineId",
     "t.state": "state", "t.parent_node_name": "parentNodeName", "t.business_no": "businessNo",
-    "t.operator": "operator", "t.owner_id": "ownerId", "t.expire_time": "expireTime", "t.create_time": "createTime",  # FIX-T9 §66 ownerId
+    "t.operator": "operator", "t.expire_time": "expireTime", "t.create_time": "createTime",
     "pd.name": "defineName", "pd.display_name": "defineDisplayName", "pd.version": "defineVersion",
 }
 
@@ -518,14 +496,9 @@ def _match_conditions(conditions, fields: dict) -> bool:
                 return False
         elif op == "IN":
             # IN 值应为列表；标量列判断"列值在列表内"（对齐 Java/Go：列表才过滤，否则放行）
-            # FIX-T23 (2026-09-17)：IN/NIN 字符串逗号分隔兼容（设计器传 "1,2,3" 而非 list）
-            if isinstance(expect, str):
-                expect = [e.strip() for e in expect.split(",") if e.strip()]
             if isinstance(expect, (list, tuple)) and str(v) not in [str(x) for x in expect]:
                 return False
         elif op == "NIN":
-            if isinstance(expect, str):
-                expect = [e.strip() for e in expect.split(",") if e.strip()]
             if isinstance(expect, (list, tuple)) and str(v) in [str(x) for x in expect]:
                 return False
     return True
@@ -562,8 +535,7 @@ class MemoryExtRepository(ProcessExtRepository):
     async def page_designs(self, page_num=1, page_size=10, filters=None, conditions=None):
         rows = [d for d in self._designs.values()
                 if _match_conditions(conditions, _pick_fields(d, _DESIGN_FIELDS))]
-        # FIX-T24 (2026-09-17)：设计分页补齐切片（之前返全集，前端分页混乱）
-        return self._slice(rows, page_num, page_size)
+        return rows, len(rows)
 
     # ── 设计历史 ──
 
@@ -607,8 +579,7 @@ class MemoryExtRepository(ProcessExtRepository):
                     break
             if ok and _match_conditions(conditions, _pick_fields(s, _SURROGATE_FIELDS)):
                 rows.append(deepcopy(s))
-        # FIX-T25 (2026-09-17)：委托代理分页补齐切片（同 FIX-T24 设计分页）
-        return self._slice(rows, page_num, page_size)
+        return rows, len(rows)
 
     async def get_surrogate(self, operator: str, process_name: str, at=None):
         at = at or datetime.now()
@@ -657,8 +628,7 @@ class MemoryExtRepository(ProcessExtRepository):
     async def page_designs(self, page_num=1, page_size=10, filters=None, conditions=None):
         rows = [d for d in self._designs.values()
                 if _match_conditions(conditions, _pick_fields(d, _DESIGN_FIELDS))]
-        # FIX-T24 (2026-09-17)：设计分页补齐切片（之前返全集，前端分页混乱）
-        return self._slice(rows, page_num, page_size)
+        return rows, len(rows)
 
     # ── 设计历史 ──
 
@@ -702,8 +672,7 @@ class MemoryExtRepository(ProcessExtRepository):
                     break
             if ok and _match_conditions(conditions, _pick_fields(s, _SURROGATE_FIELDS)):
                 rows.append(deepcopy(s))
-        # FIX-T25 (2026-09-17)：委托代理分页补齐切片（同 FIX-T24 设计分页）
-        return self._slice(rows, page_num, page_size)
+        return rows, len(rows)
 
     async def get_surrogate(self, operator: str, process_name: str, at=None):
         at = at or datetime.now()
@@ -744,8 +713,7 @@ class MemoryExtRepository(ProcessExtRepository):
                 parentNodeName=inst.parentNodeName, businessNo=inst.businessNo, operator=inst.operator,
                 expireTime=inst.expireTime, variables=deepcopy(inst.variables),
                 createTime=inst.createTime, createUser=inst.createUser,
-                updateTime=inst.updateTime, updateUser=inst.updateUser,
-                ownerId=getattr(inst, "ownerId", "") or "")  # FIX-T9 §66
+                updateTime=inst.updateTime, updateUser=inst.updateUser)
             defn = self._defines.get(inst.defineId)
             if defn:
                 row.defineName = defn.name
@@ -790,9 +758,7 @@ class MemoryExtRepository(ProcessExtRepository):
             taskState=t.taskState, operator=t.actorId, finishTime=t.finishTime,
             expireTime=t.expireTime, formKey=t.formKey, taskParentId=t.parentTaskId,
             variables=deepcopy(t.variables), createTime=t.createTime, createUser=t.createUser,
-            updateTime=t.updateTime, updateUser=t.updateUser,
-            # FIX-T32 (2026-09-18)：§55 doneList 行 taskActorIdList 字段
-            taskActorIdList=list(t.actorIds or []))
+            updateTime=t.updateTime, updateUser=t.updateUser)
         inst = self._instances.get(t.processInstanceId)
         if inst:
             row.instanceCreateTime = inst.createTime

@@ -25,6 +25,15 @@ try:
 except Exception:
     pass
 
+# 优先 vendor（项目内嵌）— 必须在 main_common import 之前调，否则 main_common 内部
+# 的 `from jeeflow import ...` 会先命中 .venv site-packages 而非 vendor
+def _setup_vendor_path():
+    _VENDOR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "vendor")
+    if _VENDOR not in sys.path:
+        sys.path.insert(0, _VENDOR)
+    return _VENDOR
+_setup_vendor_path()
+
 # 优先 vendor
 from main_common import (
     setup_vendor_path, SnowflakeIDGen, SimpleExprEvaluator, RatioCapableEngine,

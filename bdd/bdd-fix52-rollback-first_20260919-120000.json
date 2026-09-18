@@ -1,0 +1,8 @@
+{
+  "name": "fix52-rollback-first",
+  "title": "FIX-§52-ROLLBACK跳首任务actor错位",
+  "type": "approval",
+  "node_types": ["start","task","task","end"],
+  "features": ["§52 修复", "ROLLBACK 跳首任务", "actor=发起人", "复用 JUMP 路径"],
+  "errors": []
+}

@@ -2,7 +2,8 @@ version: '2'
 services:
 
   jeeflow:
-    image: shawoo/jeeflow
+    image: shawoo/jeeflow:dev
+    build: .
     restart: always
     #command: ["uv", "run", "main_pg.py"]
     command: ["uv", "run", "main.py"]
@@ -13,4 +14,6 @@ services:
       - /etc/timezone:/etc/timezone:ro
     environment:
       - SPI_FOLDER=demo
+      - FLOWS=true
+      - SEEDS=true
       - JEEFLOW_PG_DSN=postgresql://uid:pwd@127.0.0.1:5432/jeeflow

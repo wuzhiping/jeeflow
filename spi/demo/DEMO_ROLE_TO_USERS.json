@@ -294,5 +294,26 @@
   ],
   "custom1": [
     "leader"
+  ],
+  "applicant": [
+    "user1"
+  ],
+  "checker": [
+    "user2"
+  ],
+  "reviewer": [
+    "user3"
+  ],
+  "deptLeader": [
+    "user4"
+  ],
+  "userA": [
+    "userA"
+  ],
+  "userB": [
+    "userB"
+  ],
+  "operator": [
+    "user1"
   ]
 }
