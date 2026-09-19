@@ -1,0 +1,145 @@
+{
+  "batch": "data",
+  "results": [
+    {
+      "bdd_id": "BDD#731",
+      "name": "单据号",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "f_biz_no=BIZ-2026-001"
+    },
+    {
+      "bdd_id": "BDD#731",
+      "name": "单据号",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "f_biz_no=BIZ-2026-001"
+    },
+    {
+      "bdd_id": "BDD#732",
+      "name": "唯一性",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "unique=True"
+    },
+    {
+      "bdd_id": "BDD#732",
+      "name": "唯一性",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "unique=True"
+    },
+    {
+      "bdd_id": "BDD#733",
+      "name": "CC 多级",
+      "host": "http://127.0.0.1:8101",
+      "status": "INFO",
+      "detail": "cc=[1, 1, 1]"
+    },
+    {
+      "bdd_id": "BDD#733",
+      "name": "CC 多级",
+      "host": "http://127.0.0.1:8102",
+      "status": "INFO",
+      "detail": "cc=[1, 1, 1]"
+    },
+    {
+      "bdd_id": "BDD#734",
+      "name": "跨实例",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "f1=X, f2=Y"
+    },
+    {
+      "bdd_id": "BDD#734",
+      "name": "跨实例",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "f1=X, f2=Y"
+    },
+    {
+      "bdd_id": "BDD#735",
+      "name": "版本回滚",
+      "host": "http://127.0.0.1:8101",
+      "status": "INFO",
+      "detail": "redeploy=0"
+    },
+    {
+      "bdd_id": "BDD#735",
+      "name": "版本回滚",
+      "host": "http://127.0.0.1:8102",
+      "status": "INFO",
+      "detail": "redeploy=0"
+    },
+    {
+      "bdd_id": "BDD#736",
+      "name": "模板导出",
+      "host": "http://127.0.0.1:8101",
+      "status": "INFO",
+      "detail": "content len=0"
+    },
+    {
+      "bdd_id": "BDD#736",
+      "name": "模板导出",
+      "host": "http://127.0.0.1:8102",
+      "status": "INFO",
+      "detail": "content len=0"
+    },
+    {
+      "bdd_id": "BDD#737",
+      "name": "历史归档",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "records=2"
+    },
+    {
+      "bdd_id": "BDD#737",
+      "name": "历史归档",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "records=2"
+    },
+    {
+      "bdd_id": "BDD#738",
+      "name": "分类标签",
+      "host": "http://127.0.0.1:8101",
+      "status": "INFO",
+      "detail": "count=0"
+    },
+    {
+      "bdd_id": "BDD#738",
+      "name": "分类标签",
+      "host": "http://127.0.0.1:8102",
+      "status": "INFO",
+      "detail": "count=0"
+    },
+    {
+      "bdd_id": "BDD#739",
+      "name": "搜索",
+      "host": "http://127.0.0.1:8101",
+      "status": "INFO",
+      "detail": "total=N/A"
+    },
+    {
+      "bdd_id": "BDD#739",
+      "name": "搜索",
+      "host": "http://127.0.0.1:8102",
+      "status": "INFO",
+      "detail": "total=N/A"
+    },
+    {
+      "bdd_id": "BDD#740",
+      "name": "统计",
+      "host": "http://127.0.0.1:8101",
+      "status": "INFO",
+      "detail": "keys=['total', 'inProgress', 'completed']"
+    },
+    {
+      "bdd_id": "BDD#740",
+      "name": "统计",
+      "host": "http://127.0.0.1:8102",
+      "status": "INFO",
+      "detail": "keys=['total', 'inProgress', 'completed']"
+    }
+  ]
+}

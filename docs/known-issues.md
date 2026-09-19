@@ -3953,3 +3953,27 @@ if operator_in.lower() not in ("flow.auto", "flow.admin", "admin"):
 - userA 撤回自己的实例 → 成功 ✓
 
 **报告**：`./bdd/bdd-551-575-edge-cases_20260919_230000.json`
+
+## §106 FIX-T61 + FIX-T62 expireTime + surrogate 修复（2026-09-19）
+
+### FIX-T61 expireTime 读取
+**位置**: vendor/jeeflow/engine.py:_create_task
+**问题**: 节点 `properties.expireTime` 完全不读取，task.expireTime 永远 None
+**修复**: `_create_task` 末尾解析 node.properties.expireTime 并 setattr 到创建的 task
+
+**测试**: 节点 properties.expireTime="2099-12-31 23:59:59"
+- task.expireTime = "2099-12-31T23:59:59" ✓
+
+### FIX-T62 surrogate 期间被委托人可代办
+**位置**: vendor/jeeflow/engine.py:_is_surrogate_allowed
+**问题**: §40 Python 引擎 surrogate 仅记录不生效，被委托人无法代办
+**修复**:
+- `engine.set_ext_repo(ext_repo)` 注入 ext_repo 引用
+- `_load_and_check` 检查失败时 fallback 到 `_is_surrogate_allowed`
+- `_is_surrogate_allowed` 查询 ext_repo.page_surrogates 检查 operator 是否被委托
+- 检查 enabled 和时间范围 (startTime, endTime)
+
+**测试**:
+- surrogate: leader → userC
+- userC 办 leader 任务 → 0 成功 ✓
+- TDD 17/17 PASS

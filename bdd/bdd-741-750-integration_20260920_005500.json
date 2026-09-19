@@ -1,0 +1,145 @@
+{
+  "batch": "integration",
+  "results": [
+    {
+      "bdd_id": "BDD#741",
+      "name": "webhook",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#741",
+      "name": "webhook",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#742",
+      "name": "邮件",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#742",
+      "name": "邮件",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#743",
+      "name": "短信",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#743",
+      "name": "短信",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#744",
+      "name": "IM",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#744",
+      "name": "IM",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#745",
+      "name": "附件",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#745",
+      "name": "附件",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#746",
+      "name": "签章",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#746",
+      "name": "签章",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#747",
+      "name": "编号",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#747",
+      "name": "编号",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#748",
+      "name": "业务表",
+      "host": "http://127.0.0.1:8101",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#748",
+      "name": "业务表",
+      "host": "http://127.0.0.1:8102",
+      "status": "INFO",
+      "detail": "code=99999999"
+    },
+    {
+      "bdd_id": "BDD#749",
+      "name": "跨流程",
+      "host": "http://127.0.0.1:8101",
+      "status": "INFO",
+      "detail": "state=10"
+    },
+    {
+      "bdd_id": "BDD#749",
+      "name": "跨流程",
+      "host": "http://127.0.0.1:8102",
+      "status": "INFO",
+      "detail": "state=10"
+    },
+    {
+      "bdd_id": "BDD#750",
+      "name": "自定义审批人",
+      "host": "http://127.0.0.1:8101",
+      "status": "INFO",
+      "detail": "active=[('leader', ['leader'])]"
+    },
+    {
+      "bdd_id": "BDD#750",
+      "name": "自定义审批人",
+      "host": "http://127.0.0.1:8102",
+      "status": "INFO",
+      "detail": "active=[('leader', ['leader'])]"
+    }
+  ]
+}

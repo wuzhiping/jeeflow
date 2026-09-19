@@ -1,17 +1,16 @@
 {
   "version": "v1.9.0",
-  "total_bdd_tasks": 700,
-  "tasks": "BDD #127-#700 (双端 #651-#700 含 50 任务 × 2 后端)",
+  "total_bdd_tasks": 800,
+  "tasks": "BDD #127-#800 (业务场景 #751-#800)",
   "tdd_flows_total": 17,
   "tdd_passing": 17,
   "verify_rules_count": 24,
   "verify_rules_breakdown": "11E + 9W + 4P (含 W009)",
-  "fixed_bugs": 60,
-  "open_known_issues": 13,
-  "last_update": "2026-09-20T00:30:00",
+  "fixed_bugs": 62,
+  "open_known_issues": 11,
+  "last_update": "2026-09-20T01:40:00",
   "recent_fixes": [
-    "FIX-T52~T58 (v1.10.0)",
-    "FIX-T59 withdraw 权限",
-    "FIX-T60 PG 端 org_prov"
+    "FIX-T61 expireTime 读取",
+    "FIX-T62 surrogate 期间被委托人可代办"
   ]
 }

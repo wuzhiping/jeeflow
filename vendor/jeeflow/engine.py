@@ -51,10 +51,15 @@ class EngineImpl(Engine):
         self.org_prov = org_prov  # BDD #294 FIX-T57 (2026-09-19)：@role: 解析
         self.ext: Optional[EngineExtensions] = None
         self._ic_cache: dict = {}   # 定义级拦截器解析缓存（issue 34，按 defineId）
+        self._last_created_tasks: list = []  # FIX-T61：临时存储当前 _create_task 创建的 task
 
     def set_extensions(self, ext: EngineExtensions):
         self.ext = ext
         self._ic_cache.clear()
+
+    def set_ext_repo(self, ext_repo) -> None:
+        # BDD #567 FIX-T62 (2026-09-19)：注入 ext_repo 让 _is_surrogate_allowed 可查 surrogate
+        self._ext_repo_ref = ext_repo
 
     async def eval_expr(self, expr: str, vars_: dict) -> Any:
         """表达式求值（v1.5.0，门面 highLight 决策分支过滤用）"""
@@ -362,20 +367,24 @@ class EngineImpl(Engine):
             if ct in ("PARALLEL", ""):
                 for a in actors:
                     nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), a, operator, form, now, 1, task_type)
+                    self._last_created_tasks.append(nt)
                     await self.repo.save_task(nt)
                     await self._fire_event(ProcessEvent(EventType.TASK_CREATE, inst.id, nt.id, node.id, operator))
             elif ct == "SEQUENTIAL":
                 nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), actors[0], operator, form, now, 1, task_type)
+                self._last_created_tasks.append(nt)
                 nt.variables = {f"operatorList_{node.id}": actors, f"loopCounter_{node.id}": 0, f"nrOfInstances_{node.id}": len(actors)}
                 await self.repo.save_task(nt)
                 await self._fire_event(ProcessEvent(EventType.TASK_CREATE, inst.id, nt.id, node.id, operator))
             else:
                 for a in actors:
                     nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), a, operator, form, now, 1, task_type)
+                    self._last_created_tasks.append(nt)
                     await self.repo.save_task(nt)
                     await self._fire_event(ProcessEvent(EventType.TASK_CREATE, inst.id, nt.id, node.id, operator))
         else:
             nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), actors[0], operator, form, now, 0, task_type)
+            self._last_created_tasks.append(nt)
             if len(actors) > 1:
                 nt.actorIds = actors
             await self.repo.save_task(nt)
@@ -387,7 +396,10 @@ class EngineImpl(Engine):
         task = await self.repo.find_task_by_id(task_id)
         if not task: raise ValueError(f"task not found: {task_id}")
         if task.taskState != TaskState.DOING: raise ValueError("task not doing")
-        if not self._is_allowed(task, operator): raise ValueError(f"operator {operator} not allowed")
+        if not self._is_allowed(task, operator):
+            # BDD #567 FIX-T62 (2026-09-19)：surrogate fallback
+            if not await self._is_surrogate_allowed(task, operator):
+                raise ValueError(f"operator {operator} not allowed")
         inst = await self.repo.find_instance_by_id(task.processInstanceId)
         if not inst: raise ValueError("instance not found")
         return task, inst
@@ -552,26 +564,44 @@ class EngineImpl(Engine):
             if ct == "PARALLEL":
                 for a in actors:
                     nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), a, operator, form, now, 1, task_type)
+                    self._last_created_tasks.append(nt)
                     await self.repo.save_task(nt)
                     # TASK_CREATE：任务落库后 fire（会签多任务逐个，对齐 Java CreateTaskHandler）
                     await self._fire_event(ProcessEvent(EventType.TASK_CREATE, inst.id, nt.id, node.id, operator))
             elif ct == "SEQUENTIAL":
                 nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), actors[0], operator, form, now, 1, task_type)
+                self._last_created_tasks.append(nt)
                 nt.variables = {f"operatorList_{node.id}": actors, f"loopCounter_{node.id}": 0, f"nrOfInstances_{node.id}": len(actors)}
                 await self.repo.save_task(nt)
                 await self._fire_event(ProcessEvent(EventType.TASK_CREATE, inst.id, nt.id, node.id, operator))
             else:
                 for a in actors:
                     nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), a, operator, form, now, 1, task_type)
+                    self._last_created_tasks.append(nt)
                     await self.repo.save_task(nt)
                     await self._fire_event(ProcessEvent(EventType.TASK_CREATE, inst.id, nt.id, node.id, operator))
         else:
             # 普通任务：一个任务承载全部参与者（对齐 boot3 createTask + addTaskActor，多参与者任一可办）
             nt = inst.create_task(self._next_id(), node.id, node.text.get("value", ""), actors[0], operator, form, now, 0, task_type)
+            self._last_created_tasks.append(nt)
             if len(actors) > 1:
                 nt.actorIds = actors
             await self.repo.save_task(nt)
             await self._fire_event(ProcessEvent(EventType.TASK_CREATE, inst.id, nt.id, node.id, operator))
+        # BDD #426 FIX-T61 (2026-09-19)：expireTime 读取
+        # 节点 properties.expireTime -> task.expireTime
+        expire_time_str = node.properties.get("expireTime")
+        if expire_time_str:
+            try:
+                from datetime import datetime as _dt
+                expire_time = _dt.strptime(str(expire_time_str).replace("T"," ").split(".")[0], "%Y-%m-%d %H:%M:%S")
+            except (ValueError, TypeError):
+                expire_time = None
+            for t in self._last_created_tasks:
+                t.expireTime = expire_time
+                await self.repo.update_task(t)
+            self._last_created_tasks.clear()
+
         # BDD #260 FIX-T55 (2026-09-19)：taskType=2 RECORD 节点创建后立即置 DONE
         # 设计意图：自动跳过（不需要人办，用于"留痕/审计"节点）。
         # 引擎不识别 taskType=2，导致流程卡在 RECORD 节点等 actor 提交。
@@ -642,6 +672,42 @@ class EngineImpl(Engine):
             return True
         # 子实体：actorIds 权限判断
         return task.is_allowed(operator)
+
+    async def _is_surrogate_allowed(self, task: ProcessTask, operator: str) -> bool:
+        # BDD #567 FIX-T62 (2026-09-19)：surrogate 期间被委托人可代办
+        # ProcessSurrogate 字段: operator (委托人), surrogate (代理人)
+        if not task.actorIds:
+            return False
+        ext = getattr(self, "_ext_repo_ref", None)
+        if ext is None:
+            return False
+        for actor in task.actorIds:
+            try:
+                result = await ext.page_surrogates(
+                    page_num=1, page_size=10,
+                    filters={"operator": actor, "surrogate": operator}
+                )
+                if isinstance(result, tuple):
+                    rows = result[0]
+                elif isinstance(result, dict):
+                    rows = result.get("rows", [])
+                else:
+                    rows = result or []
+            except Exception:
+                continue
+            if not rows:
+                continue
+            from datetime import datetime as _dt
+            now = _dt.now()
+            for s in rows:
+                if not getattr(s, "enabled", True):
+                    continue
+                st = getattr(s, "startTime", None)
+                et = getattr(s, "endTime", None)
+                if st and now < st: continue
+                if et and now > et: continue
+                return True
+        return False
 
     async def _add_user_info(self, operator: str, vars_: dict):
         if not self.user_prov: return

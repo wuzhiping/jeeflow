@@ -1,0 +1,145 @@
+{
+  "batch": "expense",
+  "results": [
+    {
+      "bdd_id": "BDD#701",
+      "name": "差旅 5000",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#701",
+      "name": "差旅 5000",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#702",
+      "name": "差旅 5万",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#702",
+      "name": "差旅 5万",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#703",
+      "name": "招待费",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#703",
+      "name": "招待费",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#704",
+      "name": "采购 10万",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#704",
+      "name": "采购 10万",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#705",
+      "name": "采购 50万",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#705",
+      "name": "采购 50万",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#706",
+      "name": "机票 5000",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#706",
+      "name": "机票 5000",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#707",
+      "name": "分摊",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#707",
+      "name": "分摊",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#708",
+      "name": "跨年度",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#708",
+      "name": "跨年度",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#709",
+      "name": "小数精度",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "f_amount=1234.56"
+    },
+    {
+      "bdd_id": "BDD#709",
+      "name": "小数精度",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "f_amount=1234.56"
+    },
+    {
+      "bdd_id": "BDD#710",
+      "name": "REJECT 后重新",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=45, new=10"
+    },
+    {
+      "bdd_id": "BDD#710",
+      "name": "REJECT 后重新",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=45, new=10"
+    }
+  ]
+}

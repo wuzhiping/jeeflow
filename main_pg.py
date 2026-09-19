@@ -130,6 +130,7 @@ async def lifespan(app: FastAPI):
     _registry = HandlerRegistry()
     register_builtin_assignments(_registry, user_prov, org_prov)
     apply_extensions(engine, _registry, build_ic_registry(), build_custom_handlers())
+    engine.set_ext_repo(ext_repo)
     install_resolve_actors_wrapper(engine)
 
     facade = JeeflowFacade(engine, repo, ext_repo, user_search=None, org_prov=org_prov)
