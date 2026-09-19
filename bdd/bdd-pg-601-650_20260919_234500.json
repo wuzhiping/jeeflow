@@ -1,0 +1,306 @@
+{
+  "batch": "pg-50",
+  "results": [
+    {
+      "bdd_id": "BDD#601",
+      "name": "完整流程",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#602",
+      "name": "PG 流程 602",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#603",
+      "name": "PG 流程 603",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#604",
+      "name": "PG 流程 604",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#605",
+      "name": "PG 流程 605",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#606",
+      "name": "PG 流程 606",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#607",
+      "name": "PG 流程 607",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#608",
+      "name": "PG 流程 608",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#609",
+      "name": "PG 流程 609",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#610",
+      "name": "PG 流程 610",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#611",
+      "name": "PG 决策 200",
+      "status": "PASS",
+      "detail": "x=200 -> ['a']"
+    },
+    {
+      "bdd_id": "BDD#612",
+      "name": "PG 决策 50",
+      "status": "PASS",
+      "detail": "x=50 -> ['b']"
+    },
+    {
+      "bdd_id": "BDD#613",
+      "name": "PG 决策 100",
+      "status": "PASS",
+      "detail": "x=100 -> ['b']"
+    },
+    {
+      "bdd_id": "BDD#614",
+      "name": "PG 决策 0",
+      "status": "PASS",
+      "detail": "x=0 -> ['b']"
+    },
+    {
+      "bdd_id": "BDD#615",
+      "name": "PG 决策 -10",
+      "status": "PASS",
+      "detail": "x=-10 -> ['b']"
+    },
+    {
+      "bdd_id": "BDD#616",
+      "name": "PARALLEL REJECT",
+      "status": "PASS",
+      "detail": "state=45"
+    },
+    {
+      "bdd_id": "BDD#617",
+      "name": "withdraw",
+      "status": "PASS",
+      "detail": "code=0, state=30"
+    },
+    {
+      "bdd_id": "BDD#618",
+      "name": "非发起人 withdraw",
+      "status": "PASS",
+      "detail": "code=99999999, msg=[ValueError] 非发起人不可撤回 (inst.operator=userA, 当前 ope"
+    },
+    {
+      "bdd_id": "BDD#619",
+      "name": "suspend 后 execute",
+      "status": "PASS",
+      "detail": "suspend code=0, execute code=99999999"
+    },
+    {
+      "bdd_id": "BDD#620",
+      "name": "@role 解析",
+      "status": "INFO",
+      "detail": "actors=['@role:audit_team']"
+    },
+    {
+      "bdd_id": "BDD#621",
+      "name": "嵌套 dict",
+      "status": "PASS",
+      "detail": "f_meta={'a': {'b': {'c': 1}}}"
+    },
+    {
+      "bdd_id": "BDD#622",
+      "name": "嵌套 list",
+      "status": "PASS",
+      "detail": "f_list=[1, [2, [3]]]"
+    },
+    {
+      "bdd_id": "BDD#623",
+      "name": "emoji",
+      "status": "PASS",
+      "detail": "f_emoji=🔥"
+    },
+    {
+      "bdd_id": "BDD#624",
+      "name": "中文变量",
+      "status": "PASS",
+      "detail": "f_中文=测试"
+    },
+    {
+      "bdd_id": "BDD#625",
+      "name": "100KB",
+      "status": "PASS",
+      "detail": "len=100000"
+    },
+    {
+      "bdd_id": "BDD#626",
+      "name": "detail 不存在",
+      "status": "INFO",
+      "detail": "code=99999999"
+    },
+    {
+      "bdd_id": "BDD#627",
+      "name": "bizData",
+      "status": "INFO",
+      "detail": "code=99999999"
+    },
+    {
+      "bdd_id": "BDD#628",
+      "name": "approvalRecord",
+      "status": "INFO",
+      "detail": "records=2"
+    },
+    {
+      "bdd_id": "BDD#629",
+      "name": "highLight",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#630",
+      "name": "page",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#631",
+      "name": "todoList",
+      "status": "INFO",
+      "detail": "todo=0"
+    },
+    {
+      "bdd_id": "BDD#632",
+      "name": "doneList",
+      "status": "INFO",
+      "detail": "done=6"
+    },
+    {
+      "bdd_id": "BDD#633",
+      "name": "surrogate save",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#634",
+      "name": "surrogate remove",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#635",
+      "name": "ccList",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#636",
+      "name": "createCCInstance",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#637",
+      "name": "candidatePage",
+      "status": "INFO",
+      "detail": "code=99999999"
+    },
+    {
+      "bdd_id": "BDD#638",
+      "name": "jumpAbleTaskNameList",
+      "status": "INFO",
+      "detail": "code=99999999"
+    },
+    {
+      "bdd_id": "BDD#639",
+      "name": "processTask/latest",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#640",
+      "name": "surrogate detail",
+      "status": "INFO",
+      "detail": "code=99999999"
+    },
+    {
+      "bdd_id": "BDD#641",
+      "name": "多个 instance",
+      "status": "INFO",
+      "detail": "states=[10, 10, 10]"
+    },
+    {
+      "bdd_id": "BDD#642",
+      "name": "业务环 PG",
+      "status": "PASS",
+      "detail": "active=['apply']"
+    },
+    {
+      "bdd_id": "BDD#643",
+      "name": "fork join PG",
+      "status": "PASS",
+      "detail": "t1+t2 并行"
+    },
+    {
+      "bdd_id": "BDD#644",
+      "name": "custom node PG",
+      "status": "PASS",
+      "detail": "f_injected=42"
+    },
+    {
+      "bdd_id": "BDD#645",
+      "name": "RECORD 自动 PG",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#646",
+      "name": "JUMP targetTaskName PG",
+      "status": "PASS",
+      "detail": "active=['apply']"
+    },
+    {
+      "bdd_id": "BDD#647",
+      "name": "ROLLBACK target PG",
+      "status": "PASS",
+      "detail": "active=['apply']"
+    },
+    {
+      "bdd_id": "BDD#648",
+      "name": "REJECT PG",
+      "status": "PASS",
+      "detail": "state=45"
+    },
+    {
+      "bdd_id": "BDD#649",
+      "name": "嵌套 dict expr PG",
+      "status": "PASS",
+      "detail": "active=['a']"
+    },
+    {
+      "bdd_id": "BDD#650",
+      "name": "comment/extra PG",
+      "status": "INFO",
+      "detail": "comment=0, extra=0"
+    }
+  ],
+  "backend": "PostgreSQL"
+}

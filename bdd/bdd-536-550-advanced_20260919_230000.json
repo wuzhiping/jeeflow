@@ -1,0 +1,95 @@
+{
+  "batch": "advanced",
+  "results": [
+    {
+      "bdd_id": "BDD#536",
+      "name": "嵌套变量",
+      "status": "INFO",
+      "detail": "f_meta={'a': {'b': {'c': 'd'}}}"
+    },
+    {
+      "bdd_id": "BDD#537",
+      "name": "循环引用",
+      "status": "INFO",
+      "detail": "HTTP body 无法传递循环引用 (Python 限制)"
+    },
+    {
+      "bdd_id": "BDD#538",
+      "name": "深拷贝",
+      "status": "INFO",
+      "detail": "f_x={'items': [1, 2, 3]}"
+    },
+    {
+      "bdd_id": "BDD#539",
+      "name": "日期",
+      "status": "INFO",
+      "detail": "f_date=2026-09-19"
+    },
+    {
+      "bdd_id": "BDD#540",
+      "name": "datetime",
+      "status": "INFO",
+      "detail": "f_datetime=2026-09-19T12:00:00"
+    },
+    {
+      "bdd_id": "BDD#541",
+      "name": "bool True",
+      "status": "INFO",
+      "detail": "f_active=True"
+    },
+    {
+      "bdd_id": "BDD#542",
+      "name": "6 决策",
+      "status": "INFO",
+      "detail": "got []"
+    },
+    {
+      "bdd_id": "BDD#543",
+      "name": "3 fork",
+      "status": "INFO",
+      "detail": "active=['t1', 't2', 't3']"
+    },
+    {
+      "bdd_id": "BDD#544",
+      "name": "10 会签",
+      "status": "INFO",
+      "detail": "cs tasks=10"
+    },
+    {
+      "bdd_id": "BDD#545",
+      "name": "3 custom 并行",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#546",
+      "name": "状态机",
+      "status": "PASS",
+      "detail": "state=30"
+    },
+    {
+      "bdd_id": "BDD#547",
+      "name": "5 instance 同时活跃",
+      "status": "INFO",
+      "detail": "states=[20, 20, 20, 20, 20]"
+    },
+    {
+      "bdd_id": "BDD#548",
+      "name": "业务回退环",
+      "status": "PASS",
+      "detail": "decision→apply (业务)"
+    },
+    {
+      "bdd_id": "BDD#549",
+      "name": "决策全部空 expr",
+      "status": "INFO",
+      "detail": "state=10, active=['a']"
+    },
+    {
+      "bdd_id": "BDD#550",
+      "name": "0 actor",
+      "status": "INFO",
+      "detail": "state=20"
+    }
+  ]
+}

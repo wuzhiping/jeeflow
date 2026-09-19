@@ -3931,3 +3931,25 @@ for n in node_ids:
 - 14-decision-submitType（task1→decision→apply 业务环）：允许 ✓
 
 **报告**：`./bdd/bdd-359-373-boundaries_20260919_210000.json`
+
+## §105 FIX-T59 withdraw 权限校验（task #562 2026-09-19）
+
+**结论**：✅ **PASS** — 非发起人撤回实例被拒绝
+
+**BUG 历史**：
+- v1.9.0 之前：`processInstance/withdraw` 不校验 operator，任何人都能撤回任意实例
+- 安全风险：恶意用户可撤回他人流程
+- v1.10.0（FIX-T59）：校验 inst.operator == args.operator
+
+**修复**：`facade._processInstance_withdraw` 加：
+```python
+if operator_in.lower() not in ("flow.auto", "flow.admin", "admin"):
+    if inst.operator != operator_in:
+        raise ValueError(f"非发起人不可撤回 (inst.operator={inst.operator}, 当前 operator={operator_in})")
+```
+
+**测试**（BDD #562）：
+- userB 撤回 userA 的实例 → raise ValueError ✓
+- userA 撤回自己的实例 → 成功 ✓
+
+**报告**：`./bdd/bdd-551-575-edge-cases_20260919_230000.json`

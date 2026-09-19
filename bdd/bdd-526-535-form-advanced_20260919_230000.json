@@ -1,0 +1,65 @@
+{
+  "batch": "form-advanced",
+  "results": [
+    {
+      "bdd_id": "BDD#526",
+      "name": "特殊字符",
+      "status": "PASS",
+      "detail": "f_x=<>'\"&"
+    },
+    {
+      "bdd_id": "BDD#527",
+      "name": "emoji",
+      "status": "INFO",
+      "detail": "f_x=🔥中文"
+    },
+    {
+      "bdd_id": "BDD#528",
+      "name": "list",
+      "status": "INFO",
+      "detail": "f_x=[1, 2, 3]"
+    },
+    {
+      "bdd_id": "BDD#529",
+      "name": "dict",
+      "status": "INFO",
+      "detail": "f_x={'k': 'v'}"
+    },
+    {
+      "bdd_id": "BDD#530",
+      "name": "PERMISSION=3 write",
+      "status": "INFO",
+      "detail": "f_x=100"
+    },
+    {
+      "bdd_id": "BDD#531",
+      "name": "f_x=None",
+      "status": "INFO",
+      "detail": "f_x=None"
+    },
+    {
+      "bdd_id": "BDD#532",
+      "name": "100K 字符",
+      "status": "INFO",
+      "detail": "len=100000"
+    },
+    {
+      "bdd_id": "BDD#533",
+      "name": "SQL 注入测试",
+      "status": "PASS",
+      "detail": "f_x=SELECT * FROM users; DROP TABL"
+    },
+    {
+      "bdd_id": "BDD#534",
+      "name": "HTML",
+      "status": "INFO",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#535",
+      "name": "JSON 字符串",
+      "status": "INFO",
+      "detail": "f_x={\"a\":1,\"b\":[1,2]}"
+    }
+  ]
+}

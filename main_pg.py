@@ -126,7 +126,7 @@ async def lifespan(app: FastAPI):
     from spi import SimpleUserProvider, SpiOrgUserProvider
     user_prov = SimpleUserProvider()
     org_prov = SpiOrgUserProvider()
-    engine = RatioCapableEngine(repo, user_prov, idgen, SimpleExprEvaluator())
+    engine = RatioCapableEngine(repo, user_prov, idgen, SimpleExprEvaluator(), org_prov)
     _registry = HandlerRegistry()
     register_builtin_assignments(_registry, user_prov, org_prov)
     apply_extensions(engine, _registry, build_ic_registry(), build_custom_handlers())
@@ -152,7 +152,7 @@ async def lifespan(app: FastAPI):
 
     # BDD #128 FIX：注册 PG-mode meta_reader（v1.9.0+ 业务数据回显）
     from jeeflow.meta import MetaTableReader, JsonMetaProvider
-    from jeeflow.persist import JdbcTableReader
+    from jeeflow.meta import JdbcTableReader
     meta_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "meta_defs")
     if os.path.isdir(meta_dir):
         provider = JsonMetaProvider(meta_dir)

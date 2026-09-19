@@ -374,6 +374,12 @@ class JeeflowFacade:
         inst = await self._repo.find_instance_by_id(instance_id)
         if not inst:
             raise ValueError("流程实例不存在")
+        # BDD #562 FIX-T59 (2026-09-19)：撤回权限校验
+        # 仅发起人 (inst.operator) 或 system/admin 可撤回
+        operator_in = str(args.get("operator", "user1"))
+        if operator_in.lower() not in ("flow.auto", "flow.admin", "admin"):
+            if inst.operator != operator_in:
+                raise ValueError(f"非发起人不可撤回 (inst.operator={inst.operator}, 当前 operator={operator_in})")
         # 撤回：废弃全部 doing 任务 + 实例状态（v1.0.1：update_instance 级联落库）
         # 注意：find_instance_by_id 现水合 tasks（issues/110），此处仍按实例单独查 doing 任务废弃，
         # 且必须把聚合副本重置为仅被废弃项（见下方 inst.tasks = abandoned），防级联回写多余任务
