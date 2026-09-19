@@ -1,20 +1,21 @@
 {
   "version": "v1.9.0",
-  "total_bdd_tasks": 300,
-  "tasks": "BDD #127-#300 (本轮 #261-#300 为 40 任务)",
+  "total_bdd_tasks": 400,
+  "tasks": "BDD #127-#400 (本轮 #301-#400 为 100 任务)",
   "tdd_flows_total": 17,
   "tdd_passing": 17,
   "verify_rules_count": 24,
   "verify_rules_breakdown": "11E + 9W + 4P (含 W009)",
-  "fixed_bugs": 57,
+  "fixed_bugs": 58,
   "open_known_issues": 13,
-  "last_update": "2026-09-19T21:00:00",
+  "last_update": "2026-09-19T22:00:00",
   "recent_fixes": [
     "FIX-T52 SimpleExprEvaluator 嵌套访问",
-    "FIX-T53 实例/任务扩展 endpoint (suspend/resume/transfer/comment/extra)",
-    "FIX-T54 ROLLBACK targetTaskName 支持",
+    "FIX-T53 实例/任务扩展 endpoint",
+    "FIX-T54 ROLLBACK targetTaskName",
     "FIX-T55 taskType=2 RECORD 自动完成",
     "FIX-T56 PENDING 实例禁止 execute",
-    "FIX-T57 SPI @role: 角色解析"
+    "FIX-T57 SPI @role: 角色解析",
+    "FIX-T58 cycle 检测加强 (task→task)"
   ]
 }

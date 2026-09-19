@@ -1,0 +1,83 @@
+{
+  "batch": "completion",
+  "results": [
+    {
+      "bdd_id": "BDD#388",
+      "name": "getAssigneeTextData",
+      "status": "INFO",
+      "detail": "type=list"
+    },
+    {
+      "bdd_id": "BDD#389",
+      "name": "stats/trend",
+      "status": "INFO",
+      "detail": "99999999"
+    },
+    {
+      "bdd_id": "BDD#390",
+      "name": "stats/group",
+      "status": "INFO",
+      "detail": "0"
+    },
+    {
+      "bdd_id": "BDD#391",
+      "name": "processDesignHis/page",
+      "status": "INFO",
+      "detail": "0"
+    },
+    {
+      "bdd_id": "BDD#392",
+      "name": "processSurrogate/detail",
+      "status": "INFO",
+      "detail": "99999999"
+    },
+    {
+      "bdd_id": "BDD#393",
+      "name": "整体 API",
+      "status": "INFO",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#394",
+      "name": "同名重复",
+      "status": "INFO",
+      "detail": "1=0 2=0"
+    },
+    {
+      "bdd_id": "BDD#395",
+      "name": "name 含空格",
+      "status": "INFO",
+      "detail": "0 成功"
+    },
+    {
+      "bdd_id": "BDD#396",
+      "name": "deploy 失败",
+      "status": "INFO",
+      "detail": "0"
+    },
+    {
+      "bdd_id": "BDD#397",
+      "name": "instance 操作",
+      "status": "INFO",
+      "detail": "已通过 #393"
+    },
+    {
+      "bdd_id": "BDD#398",
+      "name": "with_tx 事务",
+      "status": "INFO",
+      "detail": "已通过 TDD 验证"
+    },
+    {
+      "bdd_id": "BDD#399",
+      "name": "ID 超长",
+      "status": "INFO",
+      "detail": "内存后端用整数 ID"
+    },
+    {
+      "bdd_id": "BDD#400",
+      "name": "suspend 后再 suspend",
+      "status": "INFO",
+      "detail": "1=99999999 2=99999999 [ValueError] 实例 state=20 不可挂起"
+    }
+  ]
+}

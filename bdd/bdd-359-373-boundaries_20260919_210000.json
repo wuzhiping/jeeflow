@@ -1,0 +1,95 @@
+{
+  "batch": "boundaries",
+  "results": [
+    {
+      "bdd_id": "BDD#359",
+      "name": "无 assignee",
+      "status": "PASS",
+      "detail": "save: [ValueError] 流程 verify 失败 (1 个错误):\n  - [E011/error] task 节点[ghost] 无 assignee 也无"
+    },
+    {
+      "bdd_id": "BDD#360",
+      "name": "中文 node id",
+      "status": "INFO",
+      "detail": "save: [ValueError] 流程 verify 失败 (1 个错误):\n  - [E003/error] 节点 id 含非法字符: ['申请']（只允"
+    },
+    {
+      "bdd_id": "BDD#361",
+      "name": "空格 node id",
+      "status": "INFO",
+      "detail": "save: [ValueError] 流程 verify 失败 (1 个错误):\n  - [E003/error] 节点 id 含非法字符: ['my task"
+    },
+    {
+      "bdd_id": "BDD#362",
+      "name": "连字符禁",
+      "status": "PASS",
+      "detail": "verify 拦截"
+    },
+    {
+      "bdd_id": "BDD#363",
+      "name": "自环",
+      "status": "PASS",
+      "detail": "save: [ValueError] 流程 verify 失败 (1 个错误):\n  - [E004/error] 流程含环（cycle），会死循环或无界 ta"
+    },
+    {
+      "bdd_id": "BDD#364",
+      "name": "短环 A→B→A",
+      "status": "FAIL",
+      "detail": "未拦截"
+    },
+    {
+      "bdd_id": "BDD#365",
+      "name": "长环 A→B→C→A",
+      "status": "FAIL",
+      "detail": "未拦截"
+    },
+    {
+      "bdd_id": "BDD#366",
+      "name": "无 task",
+      "status": "FAIL",
+      "detail": "未拦截"
+    },
+    {
+      "bdd_id": "BDD#367",
+      "name": "无 end",
+      "status": "PASS",
+      "detail": "save: [ValueError] 流程 verify 失败 (1 个错误):\n  - [E006/error] 流程无 end 节点"
+    },
+    {
+      "bdd_id": "BDD#368",
+      "name": "无 start",
+      "status": "PASS",
+      "detail": "save: [ValueError] 流程 verify 失败 (1 个错误):\n  - [E005/error] 流程无 start 节点"
+    },
+    {
+      "bdd_id": "BDD#369",
+      "name": "多 end",
+      "status": "INFO",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#370",
+      "name": "多 start",
+      "status": "INFO",
+      "detail": "deploy OK"
+    },
+    {
+      "bdd_id": "BDD#371",
+      "name": "decision 无出边",
+      "status": "INFO",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#372",
+      "name": "decision 1 出边",
+      "status": "INFO",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#373",
+      "name": "orphan task",
+      "status": "INFO",
+      "detail": "state=20"
+    }
+  ]
+}

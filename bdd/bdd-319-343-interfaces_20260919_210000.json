@@ -1,0 +1,95 @@
+{
+  "batch": "interfaces",
+  "results": [
+    {
+      "bdd_id": "BDD#319",
+      "name": "processInstance/page",
+      "status": "INFO",
+      "detail": "keys=['pageNum', 'pageSize', 'recordCount'], total=N/A"
+    },
+    {
+      "bdd_id": "BDD#320",
+      "name": "processInstance/page 分页",
+      "status": "INFO",
+      "detail": "page 1: 0 rows"
+    },
+    {
+      "bdd_id": "BDD#321",
+      "name": "todoList 多 instance",
+      "status": "INFO",
+      "detail": "todo=0"
+    },
+    {
+      "bdd_id": "BDD#322",
+      "name": "doneList 多 instance",
+      "status": "INFO",
+      "detail": "done=0"
+    },
+    {
+      "bdd_id": "BDD#333",
+      "name": "surrogate endpoint",
+      "status": "INFO",
+      "detail": "99999999 [ValueError] processTaskId/actorIds 缺失"
+    },
+    {
+      "bdd_id": "BDD#334",
+      "name": "surrogate 重复",
+      "status": "INFO",
+      "detail": "1=0 2=0"
+    },
+    {
+      "bdd_id": "BDD#335",
+      "name": "surrogate remove",
+      "status": "INFO",
+      "detail": "0"
+    },
+    {
+      "bdd_id": "BDD#336",
+      "name": "surrogate update",
+      "status": "INFO",
+      "detail": "0"
+    },
+    {
+      "bdd_id": "BDD#337",
+      "name": "surrogate page",
+      "status": "INFO",
+      "detail": "keys=['pageNum', 'pageSize', 'recordCount'], total=N/A"
+    },
+    {
+      "bdd_id": "BDD#338",
+      "name": "CC actorIds",
+      "status": "INFO",
+      "detail": "0"
+    },
+    {
+      "bdd_id": "BDD#339",
+      "name": "ccList",
+      "status": "INFO",
+      "detail": "1 rows"
+    },
+    {
+      "bdd_id": "BDD#340",
+      "name": "updateCCStatus",
+      "status": "INFO",
+      "detail": "0"
+    },
+    {
+      "bdd_id": "BDD#341",
+      "name": "processDefine/page",
+      "status": "INFO",
+      "detail": "total=N/A"
+    },
+    {
+      "bdd_id": "BDD#342",
+      "name": "processDefine/detail",
+      "status": "INFO",
+      "detail": "0"
+    },
+    {
+      "bdd_id": "BDD#343",
+      "name": "processDesign/listByType",
+      "status": "INFO",
+      "detail": "1 rows"
+    }
+  ]
+}

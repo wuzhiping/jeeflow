@@ -114,15 +114,20 @@ class VerifyIssue:
         return f"[{self.code}/{self.level}] {self.msg}{ids}"
 
 
-def _check_cycle(node_ids: list, edges: list) -> bool:
+def _check_cycle(node_ids: list, edges: list, node_types: dict = None) -> bool:
     """检测会导致死循环的环
 
-    策略: 检测"start 出发能回到 start" 的环（这种环无法终止）
-    不检测 decision 路由回上游 task 的业务环（业务需要）
+    策略 BDD #364/#365 FIX-T58 (2026-09-19)：
+    - 仅检测 task 节点构成的环（task→task→...→task）
+    - 自环 / 短环 / 长环都拦截
+    - decision→task 回退 (业务环) 不拦截（如 14-decision-submitType 用例）
 
     BDD #209 #213: 自环 / start→mid→start → 死循环
-    BDD 14-decision-submitType: decision1→apply (回退) → 业务允许
     """
+    # FIX-T58 v2 (2026-09-19)：仅 task→task cycle 视为死循环
+    # 但 task 直接/间接回到 start 也算
+    task_nodes = set()  # 需调用方传 node_types
+
     adj = {nid: [] for nid in node_ids}
     for e in edges:
         s, t = e.get("sourceNodeId"), e.get("targetNodeId")
@@ -147,24 +152,29 @@ def _check_cycle(node_ids: list, edges: list) -> bool:
         # 找不到自然 start, 用入度最小的节点
         starts = [min(node_ids, key=lambda n: in_deg.get(n, 999))]
 
-    # 从每个 start 出发, 若能回到 start → 死循环
-    for start in starts:
-        # DFS 检查: 从 start 出发能否再回到 start (除了直接 self-loop)
-        visited = set()
-        def dfs(u):
-            if u == start and len(visited) > 0:
-                return True
-            if u in visited:
-                return False
-            visited.add(u)
-            for v in adj[u]:
-                if dfs(v):
-                    return True
-            return False
+    # FIX-T58 v3 (2026-09-19)：仅检测"task 直接构成的环"或"自环"
+    # 业务回退（decision→task）允许（如 14-decision-submitType 用例）
+    # 直接 task→task cycle 才拦截（如 a→b→a）
+    is_task = lambda n: node_types.get(n, "") == TYPE_TASK if node_types else True
 
-        if dfs(start):
+    def has_cycle(u, stack):
+        if u in stack:
             return True
+        if u not in adj:
+            return False
+        stack.add(u)
+        for v in adj[u]:
+            if v in adj and is_task(v) and has_cycle(v, stack):
+                return True
+        stack.remove(u)
+        return False
 
+    # 仅从 task 节点出发，且中间必须全是 task 节点
+    for n in node_ids:
+        if not is_task(n):
+            continue
+        if has_cycle(n, set()):
+            return True
     return False
 
 
@@ -195,6 +205,9 @@ def verify_flow(flow: dict, variables: dict = None) -> Tuple[List[VerifyIssue], 
             continue
         node_ids.append(nid)
         node_by_id[nid] = n
+
+    # FIX-T58 v2 (2026-09-19)：构造 node_types 用于 cycle 检测
+    node_types = {nid: n.get("type", "") for nid, n in node_by_id.items()}
 
     # E002 - 节点 id 重复
     seen: dict = {}
@@ -242,7 +255,7 @@ def verify_flow(flow: dict, variables: dict = None) -> Tuple[List[VerifyIssue], 
                                        f"end 节点[{eid}] 不应有出边", node_ids=[eid]))
 
     # E004 - 环
-    if _check_cycle(node_ids, edges):
+    if _check_cycle(node_ids, edges, node_types):
         errors.append(VerifyIssue(E_CYCLE, "error",
                                    f"流程含环（cycle），会死循环或无界 task 创建"))
 

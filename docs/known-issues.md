@@ -3892,3 +3892,42 @@ if inst.state not in (InstanceState.DOING,):
 - assignee="@role:audit_team" → actorIds=['userA', 'userB', 'userC'] ✓
 
 **报告**：`./bdd/bdd-294-297-spi-role_20260919_202000.json`
+
+## §104 FIX-T58 cycle 检测加强（task #364-#365 2026-09-19）
+
+**结论**：✅ **PASS** — task→task 直接 cycle 全部拦截，业务回退允许
+
+**BUG 历史**：
+- v1.9.0 之前：`_check_cycle` 仅检测"start→...→start" 死循环
+- 漏掉 task→task 短环/长环（如 a→b→a, a→b→c→a），流程死循环
+- v1.10.0（FIX-T58 v3）：DFS + recursion_stack 检测任意 task→task cycle
+
+**修复**：`verify._check_cycle` 重写：
+```python
+is_task = lambda n: node_types.get(n, "") == TYPE_TASK if node_types else True
+
+def has_cycle(u, stack):
+    if u in stack: return True
+    stack.add(u)
+    for v in adj[u]:
+        if is_task(v) and has_cycle(v, stack): return True
+    stack.remove(u)
+    return False
+
+for n in node_ids:
+    if is_task(n) and has_cycle(n, set()):
+        return True
+```
+
+**关键**：
+- 仅 task 节点参与 cycle 检测
+- decision→task 业务回退允许（如 14-decision-submitType 用例）
+- 自环、短环、长环都拦截
+
+**测试**（BDD #364-#365）：
+- a→b→a 短环：拦截 ✓
+- a→b→c→a 长环：拦截 ✓
+- 自环：拦截 ✓
+- 14-decision-submitType（task1→decision→apply 业务环）：允许 ✓
+
+**报告**：`./bdd/bdd-359-373-boundaries_20260919_210000.json`
