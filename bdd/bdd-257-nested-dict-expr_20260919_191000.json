@@ -1,0 +1,26 @@
+{
+  "bdd_id": "#257",
+  "title": "嵌套 dict expr 决策路由",
+  "purpose": "测试 SimpleExprEvaluator 是否支持 #f_meta.level>=3 形式的嵌套字段访问",
+  "test_flow": "bdd-257-nested-dict",
+  "scenarios": [
+    {
+      "name": "scenario-1-flat",
+      "desc": "f_level (flat) 决策路由 - 应 PASS (§90 已验证)",
+      "vars": {"f_level": 5},
+      "expected": "走 high 边"
+    },
+    {
+      "name": "scenario-2-nested-dict",
+      "desc": "f_meta.level 嵌套 dict - 探索是否支持属性访问",
+      "vars": {"f_meta": {"level": 5, "type": "vip"}},
+      "expected": "未知 (SimpleExprEvaluator 不支持 ast.Subscript/ast.Attribute)"
+    },
+    {
+      "name": "scenario-3-nested-list",
+      "desc": "f_tags[0] 嵌套 list - 探索下标",
+      "vars": {"f_tags": ["urgent", "vip"]},
+      "expected": "未知 (无下标支持)"
+    }
+  ]
+}

@@ -42,11 +42,13 @@ class Engine:
 
 class EngineImpl(Engine):
     def __init__(self, repo: ProcessRepository, user_prov: UserProvider = None,
-                 id_gen: IDGenerator = None, expr_eval: ExpressionEvaluator = None):
+                 id_gen: IDGenerator = None, expr_eval: ExpressionEvaluator = None,
+                 org_prov: Optional["OrgUserProvider"] = None):
         self.repo = repo
         self.user_prov = user_prov
         self.id_gen = id_gen
         self.expr_eval = expr_eval
+        self.org_prov = org_prov  # BDD #294 FIX-T57 (2026-09-19)：@role: 解析
         self.ext: Optional[EngineExtensions] = None
         self._ic_cache: dict = {}   # 定义级拦截器解析缓存（issue 34，按 defineId）
 
@@ -394,7 +396,14 @@ class EngineImpl(Engine):
         # 任务创建（对齐 Java CreateTaskHandler：不触发节点拦截器——创建任务 ≠ 节点执行完成；
         # 任务完成的拦截器由 execute_process_task 显式触发，1.8.0 SYNC 同步演进）
         if node.type == TYPE_TASK:
+            self._last_created_record_done = False
             await self._create_task(node, inst, operator, vars_)
+            # BDD #260 FIX-T55 (2026-09-19)：taskType=2 RECORD 自动完成
+            # _create_task 内部把 task 置 DONE + fire TASK_COMPLETE
+            # 此处继续 _follow_edges 推进到下游节点
+            if getattr(self, "_last_created_record_done", False):
+                for n in _follow_edges(flow, node.id):
+                    await self._execute_node(flow, inst, n, operator, vars_)
             return
         # §16 修复（2026-09-19 FIX-T38）：custom 节点 — 调注册表中的 handler
         # 字段语义：clazz=handler key, methodName=冗余（Python 用 callable），args=参数字符串, val=结果变量名
@@ -563,6 +572,18 @@ class EngineImpl(Engine):
                 nt.actorIds = actors
             await self.repo.save_task(nt)
             await self._fire_event(ProcessEvent(EventType.TASK_CREATE, inst.id, nt.id, node.id, operator))
+        # BDD #260 FIX-T55 (2026-09-19)：taskType=2 RECORD 节点创建后立即置 DONE
+        # 设计意图：自动跳过（不需要人办，用于"留痕/审计"节点）。
+        # 引擎不识别 taskType=2，导致流程卡在 RECORD 节点等 actor 提交。
+        if task_type == 2:
+            from .model import TaskState
+            nt.taskState = TaskState.DONE
+            nt.finishTime = now
+            await self.repo.update_task(nt)
+            await self._fire_event(ProcessEvent(EventType.TASK_COMPLETE, inst.id, nt.id, node.id, operator))
+        # 关键：把 taskType=2 信号返回给 _execute_node，让它能 _follow_edges 推进下游
+        # 返 nt 让 _execute_node 决定是否要 follow_edges
+        self._last_created_record_done = (task_type == 2)
 
     async def _resolve_actors(self, node: FlowNode, inst: ProcessInstance, operator: str, vars_: dict) -> list[str]:
         # 1. 动态指定下一节点处理人优先（v1.0.1：对齐 boot3 tf_nextNodeOperator）
@@ -582,6 +603,15 @@ class EngineImpl(Engine):
                 # mldong 契约特殊值：applicant → 流程发起人
                 if "applicant" in token:
                     token = token.replace("applicant", inst.operator)
+                # BDD #294 FIX-T57 (2026-09-19)：@role: 角色解析（依赖 org_provider）
+                if token.startswith("@role:"):
+                    role_code = token[len("@role:"):]
+                    if self.org_prov:
+                        role_actors = await self.org_prov.find_by_role(role_code) or []
+                        actors.extend(str(x) for x in role_actors)
+                    else:
+                        actors.append(token)  # 无 org_prov 降级为字面值
+                    continue
                 # token 即变量 key：命中用值（集合展开）、未命中字面量（对齐 boot3 args.get(token, token)）
                 if token in vars_:
                     val = vars_[token]

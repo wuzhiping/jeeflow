@@ -1,0 +1,35 @@
+{
+  "batch": "variables",
+  "results": [
+    {
+      "bdd_id": "BDD#279",
+      "name": "100KB 字符串",
+      "status": "PASS",
+      "detail": "长度 100000"
+    },
+    {
+      "bdd_id": "BDD#280",
+      "name": "XSS 字符串",
+      "status": "PASS",
+      "detail": "完整保留"
+    },
+    {
+      "bdd_id": "BDD#281",
+      "name": "0 == 0 决策",
+      "status": "PASS",
+      "detail": "f_x=0 -> zero"
+    },
+    {
+      "bdd_id": "BDD#282",
+      "name": "list 变量",
+      "status": "INFO",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#283",
+      "name": "ROLLBACK 保留变量",
+      "status": "INFO",
+      "detail": "f_x=100, active=['apply']"
+    }
+  ]
+}

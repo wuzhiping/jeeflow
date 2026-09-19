@@ -1,0 +1,35 @@
+{
+  "batch": "decision-routing",
+  "results": [
+    {
+      "bdd_id": "BDD#261",
+      "name": "嵌套 and 比较",
+      "status": "PASS",
+      "detail": "f_meta.x='a' and f_y=10 -> ['a']"
+    },
+    {
+      "bdd_id": "BDD#262",
+      "name": "多边全 True 优先级",
+      "status": "PASS",
+      "detail": "5>0 first -> a"
+    },
+    {
+      "bdd_id": "BDD#263",
+      "name": "0 触发 == 0 边",
+      "status": "PASS",
+      "detail": "f_x=0 -> ['zero']"
+    },
+    {
+      "bdd_id": "BDD#264",
+      "name": "函数调用禁止",
+      "status": "PASS",
+      "detail": "len() 走兜底 -> b"
+    },
+    {
+      "bdd_id": "BDD#265",
+      "name": "import 禁止",
+      "status": "PASS",
+      "detail": "__import__ 走兜底 -> b"
+    }
+  ]
+}

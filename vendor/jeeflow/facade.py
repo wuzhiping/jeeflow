@@ -419,13 +419,29 @@ class JeeflowFacade:
         flow_args = {k: v for k, v in args.items() if k not in ("processTaskId", "operator")}
         flow_args["submitType"] = submit_type
 
+        # BDD #276 FIX-T56 (2026-09-19)：instance PENDING/WITHDRAW/ABANDON 状态禁止 execute
+        # 之前: state=50 (PENDING) 后 execute 仍 0 成功，应禁止
+        task = await self._repo.find_task_by_id(task_id)
+        if not task:
+            raise ValueError(f"任务不存在: {task_id}")
+        inst = await self._repo.find_instance_by_id(task.processInstanceId)
+        if not inst:
+            raise ValueError(f"实例不存在: {task.processInstanceId}")
+        from .model import InstanceState
+        if inst.state not in (InstanceState.DOING,):
+            raise ValueError(f"实例 state={inst.state} 不可执行任务（仅 DOING=10 可执行）")
+
         # §27 修复（2026-09-19）：包 with_tx 事务，保证 lock_instance_for_update 在事务内有效
         # 整个 execute 链路在事务内，PG 同 instance 串行化；REJECT/ROLLBACK/JUMP 路径同样
         async def _dispatch():
             if submit_type == SUBMIT_REJECT:
                 await self._engine.execute_and_jump_to_end(task_id, operator, flow_args)
             elif submit_type == SUBMIT_ROLLBACK:
-                await self._engine.execute_and_jump_task(task_id, operator, flow_args)
+                # BDD #259 FIX-T54 (2026-09-19)：ROLLBACK 也支持 targetTaskName
+                # - 有 targetTaskName → 跳指定节点（与 JUMP 一致）
+                # - 无 targetTaskName → 退回上一任务节点（Snaker/Java 默认）
+                target = str(args.get("taskName") or args.get("targetTaskName") or "")
+                await self._engine.execute_and_jump_task(task_id, operator, flow_args, target)
             elif submit_type == SUBMIT_JUMP:
                 # BDD #173 FIX-T49 (2026-09-19)：兼容 targetTaskName 别名（与 pageNo 类似）
                 target = str(args.get("taskName") or args.get("targetTaskName") or "")
@@ -1459,6 +1475,114 @@ class JeeflowFacade:
             if isinstance(n, dict) and n.get("type") == "snaker:task":
                 return n.get("id")
         return None
+
+    # ── 实例/任务扩展操作（BDD #258 FIX-T53 2026-09-19） ───────────────────
+    async def _processInstance_suspend(self, args: dict) -> dict:
+        """挂起实例 (state=50 PENDING)"""
+        inst_id = self._to_int(args.get("id")) or self._to_int(args.get("processInstanceId"))
+        if not inst_id:
+            raise ValueError("id 缺失")
+        operator = str(args.get("operator", "admin"))
+        async def _do():
+            inst = await self._repo.find_instance_by_id(inst_id)
+            if not inst: raise ValueError(f"实例不存在: {inst_id}")
+            if inst.state not in (InstanceState.DOING, InstanceState.PENDING):
+                raise ValueError(f"实例 state={inst.state} 不可挂起")
+            inst.state = InstanceState.PENDING
+            inst.updateUser = operator
+            await self._repo.update_instance(inst)
+        await self._repo.with_tx(_do)
+        return {"id": inst_id, "state": InstanceState.PENDING.value}
+
+    async def _processInstance_resume(self, args: dict) -> dict:
+        """恢复实例 (state=10 DOING)"""
+        inst_id = self._to_int(args.get("id")) or self._to_int(args.get("processInstanceId"))
+        if not inst_id:
+            raise ValueError("id 缺失")
+        operator = str(args.get("operator", "admin"))
+        async def _do():
+            inst = await self._repo.find_instance_by_id(inst_id)
+            if not inst: raise ValueError(f"实例不存在: {inst_id}")
+            if inst.state != InstanceState.PENDING:
+                raise ValueError(f"实例 state={inst.state} 不可恢复（仅 PENDING 可恢复）")
+            inst.state = InstanceState.DOING
+            inst.updateUser = operator
+            await self._repo.update_instance(inst)
+        await self._repo.with_tx(_do)
+        return {"id": inst_id, "state": InstanceState.DOING.value}
+
+    async def _processTask_transfer(self, args: dict) -> dict:
+        """任务转交：修改 task actorIds + 记录到 task variables"""
+        task_id = self._to_int(args.get("processTaskId")) or self._to_int(args.get("id"))
+        if not task_id:
+            raise ValueError("processTaskId 缺失")
+        operator = str(args.get("operator", ""))
+        target = str(args.get("targetUserId") or args.get("toUserId") or "")
+        if not target:
+            raise ValueError("targetUserId 缺失")
+        async def _do():
+            task = await self._repo.find_task_by_id(task_id)
+            if not task: raise ValueError(f"任务不存在: {task_id}")
+            if task.taskState != TaskState.DOING:
+                raise ValueError(f"任务 state={task.taskState} 不可转交")
+            old_actors = list(task.actorIds or [])
+            task.actorIds = [a.strip() for a in target.split(",") if a.strip()]
+            task.updateUser = operator
+            await self._repo.update_task(task)
+            return {"oldActors": old_actors, "newActors": list(task.actorIds)}
+        result = await self._repo.with_tx(_do)
+        return {"taskId": task_id, **result}
+
+    async def _processTask_comment(self, args: dict) -> dict:
+        """任务评论：追加到 task variables['_comments'] 列表"""
+        task_id = self._to_int(args.get("processTaskId")) or self._to_int(args.get("id"))
+        if not task_id:
+            raise ValueError("processTaskId 缺失")
+        operator = str(args.get("operator", ""))
+        comment = str(args.get("comment") or args.get("content") or "")
+        if not comment:
+            raise ValueError("comment 缺失")
+        async def _do():
+            task = await self._repo.find_task_by_id(task_id)
+            if not task: raise ValueError(f"任务不存在: {task_id}")
+            var = dict(task.variables or {})
+            comments = list(var.get("_comments", []))
+            comments.append({
+                "operator": operator,
+                "comment": comment,
+                "time": datetime.now().isoformat()
+            })
+            var["_comments"] = comments
+            task.variables = var
+            task.updateUser = operator
+            await self._repo.update_task(task)
+            return {"count": len(comments)}
+        result = await self._repo.with_tx(_do)
+        return {"taskId": task_id, **result}
+
+    async def _processTask_extra(self, args: dict) -> dict:
+        """任务额外信息：合并到 task variables (key-value)"""
+        task_id = self._to_int(args.get("processTaskId")) or self._to_int(args.get("id"))
+        if not task_id:
+            raise ValueError("processTaskId 缺失")
+        operator = str(args.get("operator", ""))
+        kv = {k: v for k, v in args.items()
+              if k not in ("processTaskId", "id", "operator")}
+        if not kv:
+            raise ValueError("至少传一个额外字段")
+        async def _do():
+            task = await self._repo.find_task_by_id(task_id)
+            if not task: raise ValueError(f"任务不存在: {task_id}")
+            var = dict(task.variables or {})
+            extra = dict(var.get("_extra", {}))
+            extra.update(kv)
+            var["_extra"] = extra
+            task.variables = var
+            task.updateUser = operator
+            await self._repo.update_task(task)
+            return extra
+        result = await self._repo.with_tx(_do)
+        return {"taskId": task_id, "extra": result}
 
     # ── 统计（v1.8.25，issues/103） ──────────────────────────────────────────
 

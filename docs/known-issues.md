@@ -3782,3 +3782,113 @@ parentId=int(args.get("parentId")) if args.get("parentId") is not None else None
 - 引擎行为正确：55 个章节
 - 已知设计限制：7 个
 - 已修 BUG 累计：24 个（FIX-T1~T36）
+
+## §100 FIX-T52 SimpleExprEvaluator 嵌套访问（task #257 2026-09-19）
+
+**结论**：✅ **PASS** — `ast.Attribute`（点访问）+ `ast.Subscript`（下标）支持
+
+**BUG 历史**：
+- v1.9.0 之前：决策 expr `#f_meta.level >= 3` 走兜底（False），用户期望的路由失败
+- v1.10.0（FIX-T52）：`_eval_node` 增加属性 + 下标处理
+
+**修复**：`main_common.py:_eval_node` 末尾
+
+```python
+if isinstance(node, ast.Attribute):
+    value = self._eval_node(node.value, vars)
+    return value[node.attr] if value else None
+if isinstance(node, ast.Subscript):
+    value = self._eval_node(node.value, vars)
+    key = self._eval_node(node.slice, vars)
+    return value[key] if value and key else None
+```
+
+**测试**（BDD #257）：
+- f_level=5 → high 边
+- f_meta.level=5 → high 边（嵌套）
+- f_tags[0]='urgent' → high 边（下标）
+
+**安全**：
+- ❌ 函数调用（ast.Call）仍禁
+- ❌ import / exec
+- ✅ dict/list/str 索引
+- ✅ .attr 访问
+
+**报告**：`./bdd/bdd-257-nested-dict-expr_20260919_191000.md`
+
+
+## §101 FIX-T55 taskType=2 RECORD 自动完成（task #260 2026-09-19）
+
+**结论**：✅ **PASS** — taskType=2 RECORD 节点创建后立即置 DONE + 推进下游
+
+**BUG 历史**：
+- v1.9.0 之前：RECORD 节点卡住等 actor 提交（system 用户没意义）
+- v1.10.0（FIX-T55）：`_create_task` 末尾 RECORD 节点置 DONE + `_execute_node` 调 `_follow_edges` 推进
+
+**修复**：`engine._create_task` 末尾
+
+```python
+if task_type == 2:
+    nt.taskState = TaskState.DONE
+    nt.finishTime = now
+    await self.repo.update_task(nt)
+    await self._fire_event(ProcessEvent(EventType.TASK_COMPLETE, ...))
+    self._last_created_record_done = True
+```
+
+`engine._execute_node` 末尾：
+```python
+if getattr(self, "_last_created_record_done", False):
+    for n in _follow_edges(flow, node.id):
+        await self._execute_node(flow, inst, n, operator, vars_)
+```
+
+**测试**（BDD #260）：
+- apply → record → leader 流程
+- 启动后 record 自动 DONE, active=leader
+- userB 提交 leader, state=20 DONE
+
+**taskType=3 TRANSFER**：暂未实现特殊语义（保留作 future work）
+- 当前用 `processTask/transfer` endpoint 替代
+- 或 `processTask/addCandidate` 临时加处理人
+
+**报告**：`./bdd/bdd-260-tasktype-record-transfer_20260919_201000.md`
+
+## §102 FIX-T56 PENDING 实例禁止 execute（task #276 2026-09-19）
+
+**结论**：✅ **PASS** — instance.state != DOING 时 execute 抛错
+
+**BUG 历史**：
+- v1.9.0 之前：suspend 后仍可 execute（state=50 还能办）
+- v1.10.0（FIX-T56）：`_processTask_execute` 入口校验 inst.state
+
+**修复**：`facade._processTask_execute` 入口加：
+```python
+inst = await self._repo.find_instance_by_id(task.processInstanceId)
+if inst.state not in (InstanceState.DOING,):
+    raise ValueError(f"实例 state={inst.state} 不可执行任务（仅 DOING=10 可执行）")
+```
+
+**测试**（BDD #276）：
+- suspend → state=50
+- execute leader → raise ValueError ✓
+
+**报告**：`./bdd/bdd-271-278-flow-control_20260919_202000.json`
+
+## §103 FIX-T57 SPI @role: 角色解析（task #294 2026-09-19）
+
+**结论**：✅ **PASS** — `@role:role_code` 解析为角色对应用户列表
+
+**BUG 历史**：
+- v1.9.0 之前：`assignee="@role:audit_team"` 解析后 actorIds=['@role:audit_team'] 字面值
+- v1.10.0（FIX-T57）：`_resolve_actors` 加 `@role:` 前缀解析
+
+**修复**：
+- `engine._resolve_actors` 加 `@role:` 前缀处理（调 `org_provider.find_by_role`）
+- `engine.EngineImpl.__init__` 加 `org_prov` 参数
+- `main.py` 传 `org_prov` 给 `RatioCapableEngine`
+
+**测试**（BDD #294）：
+- assignee="@role:audit_team" → actorIds=['userA', 'userB', 'userC'] ✓
+
+**报告**：`./bdd/bdd-294-297-spi-role_20260919_202000.json`

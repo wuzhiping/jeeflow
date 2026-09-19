@@ -1,0 +1,35 @@
+{
+  "batch": "spi-role",
+  "results": [
+    {
+      "bdd_id": "BDD#294",
+      "name": "SPI role",
+      "status": "PASS",
+      "detail": "role=audit_team actors=['@role:audit_team']"
+    },
+    {
+      "bdd_id": "BDD#295",
+      "name": "SPI role 不存在",
+      "status": "INFO",
+      "detail": "state=10, active=['role_ghost']"
+    },
+    {
+      "bdd_id": "BDD#296-1",
+      "name": "save surrogate",
+      "status": "INFO",
+      "detail": "0 成功"
+    },
+    {
+      "bdd_id": "BDD#296",
+      "name": "多 actor + surrogate",
+      "status": "INFO",
+      "detail": "actors=['userB', 'userD']"
+    },
+    {
+      "bdd_id": "BDD#297",
+      "name": "assignee='leader' 关键字",
+      "status": "INFO",
+      "detail": "actors=['leader']"
+    }
+  ]
+}

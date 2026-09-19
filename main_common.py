@@ -167,7 +167,26 @@ class SimpleExprEvaluator(ExpressionEvaluator):
                     return False
                 left = right
             return True
-        # 不支持的节点类型（函数调用/属性/下标）→ 兜底 False
+        if isinstance(node, ast.Attribute):
+            value = self._eval_node(node.value, vars)
+            if value is None:
+                return None
+            try:
+                return value[node.attr]
+            except (KeyError, TypeError, IndexError):
+                return None
+        if isinstance(node, ast.Subscript):
+            value = self._eval_node(node.value, vars)
+            if value is None:
+                return None
+            key = self._eval_node(node.slice, vars)
+            if key is None:
+                return None
+            try:
+                return value[key]
+            except (KeyError, TypeError, IndexError):
+                return None
+        # 不支持的节点类型（函数调用）→ 兜底 False
         return False
 
 
