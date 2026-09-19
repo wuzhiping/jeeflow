@@ -1,14 +1,14 @@
 {
   "version": "v1.9.0",
-  "total_bdd_tasks": 800,
-  "tasks": "BDD #127-#800 (业务场景 #751-#800)",
+  "total_bdd_tasks": 1000,
+  "tasks": "BDD #127-#1000 (累计 1000 任务)",
   "tdd_flows_total": 17,
   "tdd_passing": 17,
   "verify_rules_count": 24,
   "verify_rules_breakdown": "11E + 9W + 4P (含 W009)",
   "fixed_bugs": 62,
   "open_known_issues": 11,
-  "last_update": "2026-09-20T01:40:00",
+  "last_update": "2026-09-20T02:20:00",
   "recent_fixes": [
     "FIX-T61 expireTime 读取",
     "FIX-T62 surrogate 期间被委托人可代办"

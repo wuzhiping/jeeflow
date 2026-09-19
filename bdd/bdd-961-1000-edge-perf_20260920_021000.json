@@ -1,0 +1,523 @@
+{
+  "batch": "edge-perf",
+  "results": [
+    {
+      "bdd_id": "BDD#961",
+      "name": "边界值",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#961",
+      "name": "边界值",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#962",
+      "name": "极端数据",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#962",
+      "name": "极端数据",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#963",
+      "name": "空值",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#963",
+      "name": "空值",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#964",
+      "name": "null",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#964",
+      "name": "null",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#965",
+      "name": "超长字符串",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#965",
+      "name": "超长字符串",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#966",
+      "name": "Unicode",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#966",
+      "name": "Unicode",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#967",
+      "name": "emoji",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#967",
+      "name": "emoji",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#968",
+      "name": "SQL 注入",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#968",
+      "name": "SQL 注入",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#969",
+      "name": "XSS",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#969",
+      "name": "XSS",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#970",
+      "name": "跨域",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#970",
+      "name": "跨域",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#971",
+      "name": "CSRF",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#971",
+      "name": "CSRF",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#972",
+      "name": "加密",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#972",
+      "name": "加密",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#973",
+      "name": "签名",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#973",
+      "name": "签名",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#974",
+      "name": "时间戳",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#974",
+      "name": "时间戳",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#975",
+      "name": "时区",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#975",
+      "name": "时区",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#976",
+      "name": "闰年",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#976",
+      "name": "闰年",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#977",
+      "name": "DST",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#977",
+      "name": "DST",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#978",
+      "name": "节假日",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#978",
+      "name": "节假日",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#979",
+      "name": "周末",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#979",
+      "name": "周末",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#980",
+      "name": "工作时间",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#980",
+      "name": "工作时间",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#981",
+      "name": "20 启动",
+      "host": "http://127.0.0.1:8101",
+      "status": "FAIL",
+      "detail": "started 20 instances"
+    },
+    {
+      "bdd_id": "BDD#982",
+      "name": "20 detail",
+      "host": "http://127.0.0.1:8101",
+      "status": "INFO",
+      "detail": "0.62s"
+    },
+    {
+      "bdd_id": "BDD#983",
+      "name": "execute",
+      "host": "http://127.0.0.1:8101",
+      "status": "INFO",
+      "detail": "0.00s"
+    },
+    {
+      "bdd_id": "BDD#984",
+      "name": "todoList",
+      "host": "http://127.0.0.1:8101",
+      "status": "INFO",
+      "detail": "todo=0"
+    },
+    {
+      "bdd_id": "BDD#985",
+      "name": "page",
+      "host": "http://127.0.0.1:8101",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#986",
+      "name": "bizData",
+      "host": "http://127.0.0.1:8101",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#987",
+      "name": "approvalRecord",
+      "host": "http://127.0.0.1:8101",
+      "status": "INFO",
+      "detail": "records=2"
+    },
+    {
+      "bdd_id": "BDD#988",
+      "name": "stats",
+      "host": "http://127.0.0.1:8101",
+      "status": "INFO",
+      "detail": "keys=['total', 'inProgress', 'completed']"
+    },
+    {
+      "bdd_id": "BDD#989",
+      "name": "highLight",
+      "host": "http://127.0.0.1:8101",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#990",
+      "name": "candidatePage",
+      "host": "http://127.0.0.1:8101",
+      "status": "INFO",
+      "detail": "code=99999999"
+    },
+    {
+      "bdd_id": "BDD#991",
+      "name": "jumpAble",
+      "host": "http://127.0.0.1:8101",
+      "status": "INFO",
+      "detail": "code=99999999"
+    },
+    {
+      "bdd_id": "BDD#992",
+      "name": "latest",
+      "host": "http://127.0.0.1:8101",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#993",
+      "name": "surrogate",
+      "host": "http://127.0.0.1:8101",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#994",
+      "name": "ccList",
+      "host": "http://127.0.0.1:8101",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#995",
+      "name": "createCC",
+      "host": "http://127.0.0.1:8101",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#999",
+      "name": "状态",
+      "host": "http://127.0.0.1:8101",
+      "status": "INFO",
+      "detail": "state=10"
+    },
+    {
+      "bdd_id": "BDD#1000",
+      "name": "引擎综合",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "health=200"
+    },
+    {
+      "bdd_id": "BDD#981",
+      "name": "20 启动",
+      "host": "http://127.0.0.1:8102",
+      "status": "FAIL",
+      "detail": "started 20 instances"
+    },
+    {
+      "bdd_id": "BDD#982",
+      "name": "20 detail",
+      "host": "http://127.0.0.1:8102",
+      "status": "INFO",
+      "detail": "0.72s"
+    },
+    {
+      "bdd_id": "BDD#983",
+      "name": "execute",
+      "host": "http://127.0.0.1:8102",
+      "status": "INFO",
+      "detail": "0.00s"
+    },
+    {
+      "bdd_id": "BDD#984",
+      "name": "todoList",
+      "host": "http://127.0.0.1:8102",
+      "status": "INFO",
+      "detail": "todo=0"
+    },
+    {
+      "bdd_id": "BDD#985",
+      "name": "page",
+      "host": "http://127.0.0.1:8102",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#986",
+      "name": "bizData",
+      "host": "http://127.0.0.1:8102",
+      "status": "INFO",
+      "detail": "code=99999999"
+    },
+    {
+      "bdd_id": "BDD#987",
+      "name": "approvalRecord",
+      "host": "http://127.0.0.1:8102",
+      "status": "INFO",
+      "detail": "records=2"
+    },
+    {
+      "bdd_id": "BDD#988",
+      "name": "stats",
+      "host": "http://127.0.0.1:8102",
+      "status": "INFO",
+      "detail": "keys=['total', 'inProgress', 'completed']"
+    },
+    {
+      "bdd_id": "BDD#989",
+      "name": "highLight",
+      "host": "http://127.0.0.1:8102",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#990",
+      "name": "candidatePage",
+      "host": "http://127.0.0.1:8102",
+      "status": "INFO",
+      "detail": "code=99999999"
+    },
+    {
+      "bdd_id": "BDD#991",
+      "name": "jumpAble",
+      "host": "http://127.0.0.1:8102",
+      "status": "INFO",
+      "detail": "code=99999999"
+    },
+    {
+      "bdd_id": "BDD#992",
+      "name": "latest",
+      "host": "http://127.0.0.1:8102",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#993",
+      "name": "surrogate",
+      "host": "http://127.0.0.1:8102",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#994",
+      "name": "ccList",
+      "host": "http://127.0.0.1:8102",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#995",
+      "name": "createCC",
+      "host": "http://127.0.0.1:8102",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#999",
+      "name": "状态",
+      "host": "http://127.0.0.1:8102",
+      "status": "INFO",
+      "detail": "state=10"
+    },
+    {
+      "bdd_id": "BDD#1000",
+      "name": "引擎综合",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "health=200"
+    }
+  ]
+}

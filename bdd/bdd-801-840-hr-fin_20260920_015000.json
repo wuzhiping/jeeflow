@@ -1,0 +1,565 @@
+{
+  "batch": "hr-fin",
+  "results": [
+    {
+      "bdd_id": "BDD#801",
+      "name": "入职申请",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#801",
+      "name": "入职申请",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#802",
+      "name": "转正申请",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#802",
+      "name": "转正申请",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#803",
+      "name": "离职申请",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#803",
+      "name": "离职申请",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#804",
+      "name": "调岗申请",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#804",
+      "name": "调岗申请",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#805",
+      "name": "调薪申请",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#805",
+      "name": "调薪申请",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#806",
+      "name": "晋升申请",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#806",
+      "name": "晋升申请",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#807",
+      "name": "绩效申诉",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#807",
+      "name": "绩效申诉",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#808",
+      "name": "培训申请",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#808",
+      "name": "培训申请",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#809",
+      "name": "学历认证",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#809",
+      "name": "学历认证",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#810",
+      "name": "职称评审",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#810",
+      "name": "职称评审",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#811",
+      "name": "出差申请",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#811",
+      "name": "出差申请",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#812",
+      "name": "加班调休",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#812",
+      "name": "加班调休",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#813",
+      "name": "年假申请",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#813",
+      "name": "年假申请",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#814",
+      "name": "病假申请",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#814",
+      "name": "病假申请",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#815",
+      "name": "事假申请",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#815",
+      "name": "事假申请",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#816",
+      "name": "婚假申请",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#816",
+      "name": "婚假申请",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#817",
+      "name": "产假申请",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#817",
+      "name": "产假申请",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#818",
+      "name": "陪产假申请",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#818",
+      "name": "陪产假申请",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#819",
+      "name": "哺乳假",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#819",
+      "name": "哺乳假",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#820",
+      "name": "丧假",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#820",
+      "name": "丧假",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#821",
+      "name": "差旅报销",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#821",
+      "name": "差旅报销",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#822",
+      "name": "招待报销",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#822",
+      "name": "招待报销",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#823",
+      "name": "办公报销",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#823",
+      "name": "办公报销",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#824",
+      "name": "通讯报销",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#824",
+      "name": "通讯报销",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#825",
+      "name": "培训报销",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#825",
+      "name": "培训报销",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#826",
+      "name": "会议报销",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#826",
+      "name": "会议报销",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#827",
+      "name": "出版报销",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#827",
+      "name": "出版报销",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#828",
+      "name": "付款申请",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#828",
+      "name": "付款申请",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#829",
+      "name": "退款申请",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#829",
+      "name": "退款申请",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#830",
+      "name": "借款申请",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#830",
+      "name": "借款申请",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#831",
+      "name": "还款申请",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#831",
+      "name": "还款申请",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#832",
+      "name": "调拨申请",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#832",
+      "name": "调拨申请",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#833",
+      "name": "预付申请",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#833",
+      "name": "预付申请",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#834",
+      "name": "票务申请",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#834",
+      "name": "票务申请",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#835",
+      "name": "押金申请",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#835",
+      "name": "押金申请",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#836",
+      "name": "招标申请",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#836",
+      "name": "招标申请",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#837",
+      "name": "询价申请",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#837",
+      "name": "询价申请",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#838",
+      "name": "比价申请",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#838",
+      "name": "比价申请",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#839",
+      "name": "议价申请",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#839",
+      "name": "议价申请",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#840",
+      "name": "定价申请",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#840",
+      "name": "定价申请",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    }
+  ]
+}
