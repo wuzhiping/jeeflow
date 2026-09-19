@@ -6,6 +6,7 @@ from typing import Any, Optional
 from .model import (
     FlowModel, FlowNode, FlowEdge,
     TYPE_START, TYPE_END, TYPE_TASK, TYPE_DECISION, TYPE_FORK, TYPE_JOIN, TYPE_CUSTOM,
+    TYPE_CALL_ACTIVITY,  # BDD #1102 FIX-T73 §3.1.2
     ProcessInstance, ProcessTask, ProcessDefine,
     InstanceState, TaskState, SubmitType, PerformType,
     parse_flow_model,
@@ -52,6 +53,18 @@ class EngineImpl(Engine):
         self.ext: Optional[EngineExtensions] = None
         self._ic_cache: dict = {}   # 定义级拦截器解析缓存（issue 34，按 defineId）
         self._last_created_tasks: list = []  # FIX-T61：临时存储当前 _create_task 创建的 task
+        # BDD #1107 FIX-T78 (2026-09-20) §3.3.2：流程定义缓存 (LRU, max=100)
+        # 避免每次 startAndExecute 都从 repo 读完整 flow JSON + parse
+        # 部署 (processDefine/deploy / processDefine/redeploy) 时 facade._deploy_invalidate_cache 失效
+        self._def_cache: "collections.OrderedDict[int, ProcessDefine]" = __import__("collections").OrderedDict()
+        self._DEF_CACHE_MAX = 100
+
+    def invalidate_define_cache(self, define_id: int = None):
+        """失效流程定义缓存 (deploy/redeploy 时调用)"""
+        if define_id is None:
+            self._def_cache.clear()
+        else:
+            self._def_cache.pop(define_id, None)
 
     def set_extensions(self, ext: EngineExtensions):
         self.ext = ext
@@ -282,6 +295,25 @@ class EngineImpl(Engine):
         # complete_task 改的是外部任务对象，需同步回聚合根
         _sync_task_to_aggregate(inst, task)
         await self._fire_event(ProcessEvent(EventType.TASK_COMPLETE, inst.id, task.id, task.taskName, operator))
+        # BDD #1205 FIX-T83 (2026-09-20) §4.1.3：Prometheus histogram 记录 task 执行时长
+        # 用 try/except 防止 metrics 采集失败影响主流程
+        try:
+            from main_common import metrics_histogram, metrics_counter
+            if task.createTime and task.finishTime:
+                dur = (task.finishTime - task.createTime).total_seconds()
+                metrics_histogram(
+                    "wf_task_duration_seconds",
+                    "任务执行耗时",
+                    labels={"taskName": task.taskName},
+                    value=max(0, dur),
+                )
+            metrics_counter(
+                "wf_task_completed_total",
+                "已完成任务总数 (按 taskName 分组)",
+                labels={"taskName": task.taskName},
+            )
+        except Exception:
+            pass
         # issues/97：实例变量写回排除操作人 u_*，保留 start 注入的发起人 u_*（u_realName 恒为发起人）
         inst.variables = _merge_exec_into_instance(base_vars, vars_)
         await self.repo.update_instance(inst)
@@ -398,7 +430,9 @@ class EngineImpl(Engine):
         if task.taskState != TaskState.DOING: raise ValueError("task not doing")
         if not self._is_allowed(task, operator):
             # BDD #567 FIX-T62 (2026-09-19)：surrogate fallback
-            if not await self._is_surrogate_allowed(task, operator):
+            # BDD #142 FIX-T69 (2026-09-20)：delegate fallback (per-task 临时委派)
+            if not await self._is_surrogate_allowed(task, operator) \
+               and not self._is_delegate_allowed(task, operator):
                 raise ValueError(f"operator {operator} not allowed")
         inst = await self.repo.find_instance_by_id(task.processInstanceId)
         if not inst: raise ValueError("instance not found")
@@ -428,6 +462,17 @@ class EngineImpl(Engine):
             finally:
                 await self._fire_post(node, inst)
             return
+        # BDD #1102 FIX-T73 (2026-09-20) §3.1.2：callActivity 子流程触发
+        # 字段语义：properties.processDefineName=子流程 name, properties.assignee=子流程发起人
+        # 行为：启动子实例 + 记录 childInstanceId 到 vars_ + 立即推进到下游（不阻塞主流程）
+        # 主流程可继续推进；子实例终止时通过 §3.1.1 parentStatus 通知主实例
+        if node.type == TYPE_CALL_ACTIVITY:
+            if not await self._fire_pre(node, inst): return
+            try:
+                await self._execute_call_activity(node, inst, operator, vars_)
+            finally:
+                await self._fire_post(node, inst)
+            return
         if not await self._fire_pre(node, inst): return
         try:
             if node.type == TYPE_DECISION:
@@ -440,7 +485,8 @@ class EngineImpl(Engine):
             elif node.type == TYPE_END:
                 # 对齐 Java EndProcessHandler：submitType=REJECT → reject，否则 finish
                 submit_type = inst.variables.get(KEY_SUBMIT_TYPE)
-                if submit_type is not None and int(submit_type) == int(SubmitType.REJECT):
+                is_reject = submit_type is not None and int(submit_type) == int(SubmitType.REJECT)
+                if is_reject:
                     inst.reject(datetime.now())
                 else:
                     inst.finish(datetime.now())
@@ -448,6 +494,25 @@ class EngineImpl(Engine):
                 inst.variables = _merge_exec_into_instance(inst.variables, vars_)
                 await self.repo.update_instance(inst)
                 await self._fire_event(ProcessEvent(EventType.PROCESS_FINISH, inst.id, operator=operator))
+                # BDD #1101 FIX-T72 (2026-09-20) §3.1.1：主子状态联动
+                # 子实例 DONE/REJECT → 回写主实例 parentStatus
+                parent_status_value = "CHILD_REJECT" if is_reject else "CHILD_DONE"
+                if inst.parentId:
+                    try:
+                        parent = await self.repo.find_instance_by_id(inst.parentId)
+                        if parent and parent.state in (InstanceState.DOING, InstanceState.PENDING):
+                            parent.parentStatus = parent_status_value
+                            parent.updateTime = datetime.now()
+                            parent.updateUser = operator
+                            await self.repo.update_instance(parent)
+                            await self._fire_event(ProcessEvent(
+                                type=EventType.PROCESS_START,  # 复用事件类型，CC 用 ccActorId
+                                instanceId=parent.id, operator=operator,
+                                ccActorId=f"child_{inst.id}_{parent_status_value}",
+                            ))
+                    except Exception as _e:
+                        # 主子联动失败不应阻断子实例完成
+                        pass
             else:
                 # FIX-T22 (2026-09-17)：未知节点类型不应静默 return（流程卡死无错误）
                 raise ValueError(f"未知节点类型: node_id='{node.id}' type='{node.type}' "
@@ -504,10 +569,67 @@ class EngineImpl(Engine):
         for n in _follow_edges(flow, node.id):
             await self._execute_node(flow, inst, n, operator, vars_)
 
+    async def _execute_call_activity(self, node: FlowNode, inst: ProcessInstance, operator: str, vars_: dict):
+        """BDD #1102 FIX-T73 (2026-09-20) §3.1.2：callActivity 子流程触发
+
+        字段语义：
+        - properties.processDefineName: 子流程 name（必填）
+        - properties.assignee: 子流程发起人 userId（缺省 = 主流程 operator）
+
+        行为：
+        1. 查找子流程定义 (wf_process_define)
+        2. 启动子实例 (parentId=主实例.id)
+        3. 记录 childInstanceId 到 vars_[node.id+"_childInstanceId"]
+        4. 不阻塞主流程，立即推进到下游节点
+        5. 子实例完成时通过 §3.1.1 parentStatus 通知主实例
+        """
+        from .model import parse_flow_model
+        child_name = node.properties.get("processDefineName", "")
+        if not child_name:
+            raise ValueError(f"callActivity 节点[{node.id}]缺少 properties.processDefineName")
+        # 查找子流程定义（按 name 取最新一版）
+        child_def = await self.repo.find_define_by_name(child_name)
+        if not child_def:
+            raise ValueError(f"callActivity 节点[{node.id}]子流程 '{child_name}' 未部署")
+        child_assignee = node.properties.get("assignee", operator)
+        # 启动子实例（不走 startAndExecute, 直接 start_process_instance_by_id）
+        child_args = {**vars_, "operator": child_assignee, "parentId": inst.id,
+                       "parentNodeName": node.id}
+        child_inst = await self.start_process_instance_by_id(child_def.id, child_assignee, child_args)
+        # 记录 childInstanceId 到主实例 vars_
+        vars_[f"{node.id}_childInstanceId"] = child_inst.id
+        inst.variables = _merge_exec_into_instance(inst.variables, vars_)
+        await self.repo.update_instance(inst)
+        await self._fire_event(ProcessEvent(
+            type=EventType.PROCESS_START,
+            instanceId=inst.id, operator=operator,
+            ccActorId=f"callActivity_{node.id}_child_{child_inst.id}",
+        ))
+        # callActivity 不阻塞主流程, 立即推进到下游节点
+        flow = parse_flow_model(json.loads((await self.repo.find_define_by_id(inst.defineId)).content))
+        for n in _follow_edges(flow, node.id):
+            await self._execute_node(flow, inst, n, operator, vars_)
+
     async def _evaluate_decision(self, flow, inst, node, operator, vars_):
         # 收集所有出边
         edges = [e for e in flow.edges if e.sourceNodeId == node.id]
         if not edges: return
+        # BDD #32 FIX-T46 (2026-09-20)：decisionHandler 调用链
+        # node.properties.decisionHandler 名 → Registry.resolve_decision → handler.decide()
+        # 优先级高于 expr (业务方写 handler 优先)
+        dh_name = node.properties.get("decisionHandler", "") if isinstance(node.properties, dict) else ""
+        if dh_name and self.ext and getattr(self.ext, "registry", None):
+            handler = self.ext.registry.resolve_decision(dh_name)
+            if handler:
+                try:
+                    target_id = await handler.decide(node, inst, vars_)
+                except Exception as e:
+                    raise ValueError(f"decisionHandler {dh_name} 调用失败: {e}")
+                target = _find_node(flow, target_id)
+                if target:
+                    return await self._execute_node(flow, inst, target, operator, vars_)
+                # handler 返回的 id 找不到节点 → 抛错，不静默 fallback
+                raise ValueError(f"decisionHandler {dh_name} 返回未知节点: {target_id}")
         # 先尝试表达式求值
         if self.expr_eval:
             for edge in edges:
@@ -709,6 +831,16 @@ class EngineImpl(Engine):
                 return True
         return False
 
+    def _is_delegate_allowed(self, task: ProcessTask, operator: str) -> bool:
+        # BDD #142 FIX-T69 (2026-09-20)：per-task 临时委派检查
+        # task.variables._delegate_of = {原actor: targetUser}
+        # 如果 operator 是被委派的目标用户, 放行
+        var = task.variables or {}
+        delegate_of = var.get("_delegate_of", {})
+        if not isinstance(delegate_of, dict):
+            return False
+        return operator in delegate_of.values()
+
     async def _add_user_info(self, operator: str, vars_: dict):
         if not self.user_prov: return
         # v1.0.1：系统代执行（flow.auto）/超级管理员（flow.admin）非真实用户，跳过注入（对齐 boot3）
@@ -803,6 +935,25 @@ class EngineImpl(Engine):
                     await result
             except Exception:  # noqa: BLE001 —— 引擎侧兜底，异常不外溢
                 logging.exception("[jeeflow] process event listener error: type=%s", evt.type)
+
+    async def find_define_cached(self, define_id: int):
+        """BDD #1107 FIX-T78 (2026-09-20) §3.3.2：流程定义缓存读取
+
+        LRU 缓存 (max=100), 避免每次 startAndExecute 都从 repo 读 + parse JSON.
+        命中: O(1) dict access; miss: 调用 repo.find_define_by_id + 加入缓存尾部.
+        """
+        cache = self._def_cache
+        if define_id in cache:
+            cache.move_to_end(define_id)
+            return cache[define_id]
+        def_ = await self.repo.find_define_by_id(define_id)
+        if def_ is not None:
+            cache[define_id] = def_
+            cache.move_to_end(define_id)
+            # LRU 淘汰
+            while len(cache) > self._DEF_CACHE_MAX:
+                cache.popitem(last=False)
+        return def_
 
 # ─── Pure Functions ─────────────────────────────────────────────────────────────
 

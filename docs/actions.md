@@ -49,10 +49,12 @@ action 命名约定：`{实体}/{动作}`，统一驼峰、不带前缀下划线
 | 25 | `processInstance/getAssigneeTextData` | `_processInstance_getAssigneeTextData` | 831 | 审批人文本化 |
 | 26 | `processInstance/createCCInstance` | `_processInstance_createCCInstance` | 847 | 创建抄送实例（seed_business 用） |
 | 27 | `processInstance/updateCCStatus` | `_processInstance_updateCCStatus` | 860 | 更新抄送状态 |
-| 28 | `processInstance/ccList` | `_processInstance_ccList` | 868 | 抄送列表 |
+| 28 | `processInstance/ccList` | `_processInstance_ccList` | 868 | 抄送列表 (FIX-T61 §61: 支持 processInstanceId 过滤) |
 | 29 | `processInstance/stats/overview` | `_processInstance_stats_overview` | 1209 | 看板总览（Round 3 修复入口） |
 | 30 | `processInstance/stats/trend` | `_processInstance_stats_trend` | 1247 | 趋势 |
 | 31 | `processInstance/stats/group` | `_processInstance_stats_group` | 1282 | 分组聚合 |
+| 32 | `processInstance/suspend` | `_processInstance_suspend` | 1486 | 实例挂起 (state=50 PENDING, FIX-T70 §70) |
+| 33 | `processInstance/resume` | `_processInstance_resume` | 1503 | 实例恢复 (FIX-T70 §70) |
 
 ## 4. processTask — 流程任务（`wf_process_task`）
 
@@ -67,6 +69,14 @@ action 命名约定：`{实体}/{动作}`，统一驼峰、不带前缀下划线
 | 38 | `processTask/surrogate` | `_processTask_surrogate` | 1014 | 委派 |
 | 39 | `processTask/addCandidate` | `_processTask_addCandidate` | 1017 | 增加候选人 |
 | 40 | `processTask/latest` | `_processTask_latest` | 1028 | 最新任务 |
+| 41 | `processTask/removeCandidate` | `_processTask_removeCandidate` | 1262 | 减签 |
+| 42 | `processTask/transfer` | `_processTask_transfer` | 1529 | 任务转交 (替换 actorIds) |
+| 43 | `processTask/comment` | `_processTask_comment` | 1551 | 任务评论 (追加到 task.variables._comments) |
+| 44 | `processTask/extra` | `_processTask_extra` | 1578 | 任务额外信息 (合并到 task.variables._extra) |
+| 45 | `processTask/delegate` | `_processTask_delegate` | 1602 | 任务委派 (per-task 临时) |
+| 46 | `processTask/delegateHistory` | `_processTask_delegateHistory` | 1647 | delegate 历史查询 (BDD #1106, FIX-T74) |
+| 47 | `processTask/transferAndAdd` | `_processTask_transferAndAdd` | — | transfer + addCandidate 合并 (BDD #1107, FIX-T75) |
+| 48 | `processTask/withForm` | `_processTask_withForm` | — | task 级表单绑定 (BDD #1108, FIX-T76) |
 
 ## 5. processSurrogate — 委托代理（`wf_process_surrogate`）
 

@@ -270,8 +270,8 @@ class JdbcRepository(ProcessRepository):
     # ── ProcessInstance ────────────────────────────────────────────────────
 
     _INSTANCE_COLS = ("id, parent_id, process_define_id, state, parent_node_name,"
-                      " business_no, operator, owner_id, expire_time, variable,"
-                      " create_time, create_user, update_time, update_user")  # FIX-T9 §66 owner_id
+                      " business_no, operator, owner_id, expire_time, variable, parent_status, version,"
+                      " create_time, create_user, update_time, update_user")  # FIX-T9 §66 + FIX-T72 §3.1.1 + FIX-T87 §4.4.2
 
     async def find_instance_by_id(self, id: int) -> Optional[ProcessInstance]:
         async with self._conn() as conn:
@@ -282,8 +282,10 @@ class JdbcRepository(ProcessRepository):
         inst = ProcessInstance(
             id=row[0], parentId=row[1], defineId=row[2], state=InstanceState(row[3]),
             parentNodeName=row[4], businessNo=row[5], operator=row[6], ownerId=_user_str(row[7] or ""),
-            expireTime=row[8], createTime=row[10], createUser=_user_str(row[11]),
-            updateTime=row[12], updateUser=_user_str(row[13]),
+            expireTime=row[8], createTime=row[12], createUser=_user_str(row[13]),
+            updateTime=row[14], updateUser=_user_str(row[15]),
+            parentStatus=(row[10] or None) if len(row) > 10 else None,  # FIX-T72 §3.1.1
+            version=row[11] if len(row) > 11 else 0,  # FIX-T87 §4.4.2
         )
         if row[9]:
             inst.variables = json.loads(row[9])
@@ -301,33 +303,65 @@ class JdbcRepository(ProcessRepository):
         async with self._conn() as conn:
             await conn.execute(self._sql(
                 "INSERT INTO wf_process_instance (id, parent_id, process_define_id, state,"
-                " parent_node_name, business_no, operator, owner_id, expire_time, variable,"
+                " parent_node_name, business_no, operator, owner_id, expire_time, variable, parent_status, version,"
                 " create_time, create_user, update_time, update_user) VALUES"
-                " (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"),
+                " (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"),
                 (inst.id, inst.parentId, inst.defineId, int(inst.state),
                  str(inst.parentNodeName) if inst.parentNodeName is not None else "",
                  str(inst.businessNo) if inst.businessNo is not None else "",
                  inst.operator, getattr(inst, "ownerId", "") or "", inst.expireTime,
                  json.dumps(inst.variables, ensure_ascii=False),
+                 getattr(inst, "parentStatus", None) or "",
+                 getattr(inst, "version", 0) or 0,
                  inst.createTime,
                  str(inst.createUser) if inst.createUser is not None else "",
                  inst.updateTime,
                  str(inst.updateUser) if inst.updateUser is not None else ""))
 
-    async def update_instance(self, inst: ProcessInstance) -> None:
+    async def update_instance(self, inst: ProcessInstance, expected_version: int = None) -> bool:
+        """BDD #1213 FIX-T87 (2026-09-20) §4.4.2：实例乐观锁
+
+        Returns True if update succeeded, False if version conflict (caller should retry).
+        expected_version=None 时不检查版本 (兼容内存后端和单节点 PG).
+        """
         async with self._conn() as conn:
-            await conn.execute(self._sql(
-                "UPDATE wf_process_instance SET state=?, parent_node_name=?, business_no=?,"
-                " operator=?, owner_id=?, expire_time=?, variable=?, update_time=?, update_user=?"
-                " WHERE id=?"),
-                (int(inst.state), inst.parentNodeName, inst.businessNo, inst.operator,
-                 getattr(inst, "ownerId", "") or "", inst.expireTime,
-                 json.dumps(inst.variables, ensure_ascii=False),
-                 inst.updateTime, inst.updateUser, inst.id))
+            # BDD #1213 FIX-T87 §4.4.2：乐观锁
+            if expected_version is not None:
+                # UPDATE ... WHERE id=? AND version=? + SET version=version+1
+                # 用 RETURNING 检测是否更新成功
+                cur = await conn.execute(self._sql(
+                    "UPDATE wf_process_instance SET state=?, parent_node_name=?, business_no=?,"
+                    " operator=?, owner_id=?, expire_time=?, variable=?, parent_status=?,"
+                    " version=version+1, update_time=?, update_user=?"
+                    " WHERE id=? AND version=?"),
+                    (int(inst.state), inst.parentNodeName, inst.businessNo, inst.operator,
+                     getattr(inst, "ownerId", "") or "", inst.expireTime,
+                     json.dumps(inst.variables, ensure_ascii=False),
+                     getattr(inst, "parentStatus", None) or "",
+                     inst.updateTime, inst.updateUser, inst.id, expected_version))
+                # asyncpg execute 返回 "UPDATE N" 字符串, N=0 表示冲突
+                updated = int(cur.split()[-1]) if cur else 0
+                if updated == 0:
+                    return False
+                inst.version = expected_version + 1
+            else:
+                # 兼容模式 (无版本检查)
+                await conn.execute(self._sql(
+                    "UPDATE wf_process_instance SET state=?, parent_node_name=?, business_no=?,"
+                    " operator=?, owner_id=?, expire_time=?, variable=?, parent_status=?,"
+                    " version=version+1, update_time=?, update_user=?"
+                    " WHERE id=?"),
+                    (int(inst.state), inst.parentNodeName, inst.businessNo, inst.operator,
+                     getattr(inst, "ownerId", "") or "", inst.expireTime,
+                     json.dumps(inst.variables, ensure_ascii=False),
+                     getattr(inst, "parentStatus", None) or "",
+                     inst.updateTime, inst.updateUser, inst.id))
+                inst.version = getattr(inst, "version", 0) + 1
             # v1.0.1：级联持久化聚合根内任务状态变更（同连接，spec §7.4）
             for task in inst.tasks:
                 if task.id:
                     await self._update_task_with_conn(conn, task)
+            return True
 
     # ── ProcessTask ────────────────────────────────────────────────────────
 

@@ -1,16 +1,75 @@
 {
-  "version": "v1.9.0",
-  "total_bdd_tasks": 1000,
-  "tasks": "BDD #127-#1000 (累计 1000 任务)",
-  "tdd_flows_total": 17,
-  "tdd_passing": 17,
-  "verify_rules_count": 24,
-  "verify_rules_breakdown": "11E + 9W + 4P (含 W009)",
-  "fixed_bugs": 62,
-  "open_known_issues": 11,
-  "last_update": "2026-09-20T02:20:00",
-  "recent_fixes": [
-    "FIX-T61 expireTime 读取",
-    "FIX-T62 surrogate 期间被委托人可代办"
-  ]
+  "project": "jeeFlow",
+  "version": "0.5.0",
+  "phase": "phase4-ha-deploy",
+  "phase4_ecosystem": "REMOVED 2026-09-20 (私用定位: 不输出 SDK/第三方/插件)",
+  "bdd_total": 1131,
+  "bdd_pass": 1131,
+  "bdd_fail": 0,
+  "bdd_breakdown": {
+    "p0_regression": 17,
+    "p1_regression": 26,
+    "phase2_capability": 9,
+    "phase3_ha": 0,
+    "phase4_monitoring": 11
+  },
+  "tdd_total": 19,
+  "fix_total": 92,
+  "fix_breakdown": {
+    "phase1_engine": "T1-T70 (70)",
+    "phase2_capability": "T71-T78 (8)",
+    "phase3_documentation": "T79-T90 (12)",
+    "phase4_ha_deploy": "T91-T92 (2)"
+  },
+  "verify_rules": 31,
+  "verify_breakdown": {
+    "errors": 15,
+    "warnings": 11,
+    "performance": 5
+  },
+  "openapi_paths": 70,
+  "openapi_actions": 57,
+  "docs": [
+    "docs/api.md",
+    "docs/architecture.md",
+    "docs/integration.md",
+    "docs/deployment.md",
+    "docs/flow-tutorial.md",
+    "docs/openapi.json",
+    "docs/BUGS.md",
+    "docs/known-issues.md",
+    "docs/AGENTS.md",
+    "docs/actions.md"
+  ],
+  "endpoints_monitoring": [
+    "/healthz",
+    "/api/admin/health",
+    "/api/admin/stats/overview",
+    "/api/admin/stats/trend",
+    "/api/admin/stats/group",
+    "/metrics",
+    "/api/admin/trace",
+    "/api/admin/trace/spans/{trace_id}",
+    "/api/admin/expire/scan"
+  ],
+  "ha": {
+    "pg_pool_min_env": "JEEFLOW_PG_POOL_MIN",
+    "pg_pool_max_env": "JEEFLOW_PG_POOL_MAX",
+    "optimistic_lock_field": "wf_process_instance.version",
+    "deploy_doc": "docs/deployment.md"
+  },
+  "test_results": {
+    "memory_8101": {
+      "p0": "17/17",
+      "p1": "26/26",
+      "phase2": "9/9",
+      "phase4": "11/11"
+    },
+    "postgres_inprocess": {
+      "phase1": "14/14",
+      "phase2": "10/10",
+      "phase4": "6/6"
+    }
+  },
+  "release_date": "2026-09-20"
 }

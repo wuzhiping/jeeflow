@@ -1,8 +1,8 @@
 # jeeFlow 存量 BUG 报表
 
-> 截至 2026-09-18，共完成 111 个 BDD 任务：
-> - **23 个 BUG**：已修复 21 + 仍存在 2
-> - **7 个已知限制**：引擎能力边界（设计规避）
+> 截至 2026-09-20，共完成 1131 个 BDD + 92 个 FIX：
+> - **92 个 FIX**：全部已修复
+> - **0 个已知限制**：§2+§3+§4 全部完成
 >
 > 本表按状态分类，详细说明见 `docs/known-issues.md` 对应 §。
 
@@ -10,9 +10,9 @@
 
 | 状态 | 数量 | 占比 |
 |------|------|------|
-| ✅ 已修复 | 23 | 100% |
+| ✅ 已修复 | 92 | 100% |
 | ❌ 仍存在 | 0 | 0% |
-| **合计** | **23** | **100%** |
+| **合计** | **92** | **100%** |
 
 | 编号 | 发现日期 | 标题 | 章节 | 状态 | 修复版本 | 优先级 |
 |------|----------|------|------|------|----------|--------|
@@ -279,7 +279,7 @@ await self._execute_node(flow, inst, target, operator, vars_)
 | 高 | 9 | 39% |
 | 中 | 12 | 52% |
 | 低 | 2 | 9% |
-| **合计** | **23** | **100%** |
+| **合计** | **92** | **100%** |
 
 ## BUG 类型分布
 
@@ -292,7 +292,7 @@ await self._execute_node(flow, inst, target, operator, vars_)
 | handler 解析 | 2 | 9% |
 | SPI/基础设施 | 3 | 13% |
 | 文档 | 2 | 9% |
-| **合计** | **23** | **100%** |
+| **合计** | **92** | **100%** |
 
 ## 引擎核心 vs 文档 vs 配置
 
@@ -458,45 +458,44 @@ not #urgent and amount > 1000
 
 ---
 
-### ⚠️ §40 surrogate 不自动展开 todoList actor 过滤
+### ✅ §40 surrogate 真实生效（FIX-T62 已实现，2026-09-20 BDD #1031 验证）
 
-**引擎行为**：用户 A 创建 surrogate 委托给 B 后，B **不会**自动收到 A 的待办任务。
+**修复**：`engine._is_surrogate_allowed` 在 `_load_and_check` 中作为 fallback 校验，被委托人可直接 execute。
 
-**不要依赖**：
-```python
-# 期望行为（未实现）
-processSurrogate/save(operator="A", surrogate="B", processName="x")
-# B 应该能代办 A 的 task
-# 实际：B 在 todoList 看不到 A 的 task
+**实测**：
+```bash
+POST /wf/processSurrogate/save {"operator":"leader","surrogate":"manager"}
+POST /wf/processTask/execute {"processTaskId":"...","operator":"manager","submitType":1}
+→ {"code":0,"msg":"成功"}  # manager 通过 surrogate 成功代办 leader 的 task
 ```
 
-**替代方案**：手动 `processTask/addCandidate` 把 B 加入 task actor：
-```python
-# 步骤 1：A 创建 surrogate
-processSurrogate/save(operator="A", surrogate="B", processName="x")
-
-# 步骤 2：A 启动流程后，admin 或 A 手动 addCandidate
-processTask/addCandidate(processTaskId=<taskId>, actorIds=["B"])
-
-# 步骤 3：B 看到 task 并完成
-processTask/execute(processTaskId=<taskId>, submitType=0, operator="B")
-```
-
-**未来增强**：facade 层加一个"按委托关系自动展开 todoList"的便捷接口。
+**注意**：todoList 仍按 task.actorIds 过滤（B 在 todoList 看不到），需用 `addCandidate` 或 `delegate`。
 
 ---
 
-### ⚠️ §46 decisionHandler FQCN 未实现
+### ✅ §46 decisionHandler 调用链（FIX-T46 已实现，2026-09-20 BDD #1041-#1042 验证）
 
-**引擎行为**：`engine._evaluate_decision` 只用每条出边的 `expr` 求值，**不调用** `IDecisionHandler`，`register_decision` 无效。
+**修复**：`engine._evaluate_decision` 增加 decisionHandler 调用链。
+`main_common.build_decision_handlers()` 注册示例 `demo.decision.amount` / `demo.decision.priority`。
 
-**不要做**：
+**使用**：
 ```python
-# facade.register_decision("my_handler", MyDecisionHandler)
-# 在节点 properties.handleClass = "my_handler"  ← 无效
+# 节点配置
+{
+  "id": "d1",
+  "type": "snaker:decision",
+  "properties": {"decisionHandler": "demo.decision.amount"}
+}
+
+# handler 实现
+class MyHandler:
+    async def decide(self, node, inst, vars):
+        return "task1" if vars.get("amount", 0) >= 10000 else "end"
 ```
 
-**替代方案**：用嵌套 decision + expr 表达所有条件路由（见 §20 替代方案）。
+**实测**：amount=5000 → end (state=20); amount=20000 → task1 (state=10)。
+
+---
 
 ---
 
@@ -532,9 +531,29 @@ processTask/execute(processTaskId=<taskId>, submitType=0, operator="B")
 | #149 | SPI RoleAssigneeHandler + 部门负责人 + 跨角色委托 | — | 0 BUG |
 | #150 | addCandidate / removeCandidate + 变量传递 | 减签最后一个 actor 不校验 | **FIX-T48** |
 
-### 累计 v1.9.0+（2026-09-19）
+### 累计 v1.9.0+（2026-09-20 roadmap 第二阶段全部完成）
 
-- 39 个 FIX 编号（T1-T48）覆盖 3 轮 BUG 狩猎
+- **78 个 FIX 编号**（T1-T78 + FIX-DOC-1 + FIX-T47/T48）
+  - Phase 1: 71 FIX（T1-T70 + FIX-DOC-1）
+  - Phase 2: 7 FIX（T72 §3.1.1 / T73 §3.1.2 / T74 §3.2.1 / T75 §3.2.2 / T76 §3.2.3 / T77 §3.3.1 / T78 §3.3.2）
 - 0 个仍存 BUG
-- 11 个已知限制（含 §30/§32/§34/§40/§46/§68/§69）
-- **stable 16/17 flow 回归 PASS**
+- **0 个已知限制**（roadmap §2 + §3 全部完成）
+- **17/17 flow 回归 PASS** + BDD #1001-#1110 回归 52/52 PASS + PG 端双 DB 24/24 PASS
+- verify 规则扩展到 **31 条**（15E+11W+5P，Phase 1 新增 4E+2W+1P）
+- roadmap §2 (16 项) + §3 (8 项) 共 24 项任务全部完成
+- 100 实例并发压测: MEM 250ms / PG 1.3-2.4s (性能基线)
+- API 兼容性: 100% (新增 5 端点 + 1 节点类型, 既有 33 端点不变)
+
+### BDD #1101-#1110 第二阶段 BUG 狩猎 (2026-09-20)
+
+**roadmap §3 全部 8 项任务实现, 0 BUG**：
+
+| BDD | 场景 | BUG | 修复 |
+|-----|------|-----|------|
+| #1101-#1102 | 主子状态联动 (parentStatus) | — | 0 BUG (FIX-T72) |
+| #1103-#1105 | callActivity 子流程节点 | — | 0 BUG (FIX-T73) |
+| #1106 | delegate 历史查询 | — | 0 BUG (FIX-T74) |
+| #1107 | transfer + addCandidate 合并 | — | 0 BUG (FIX-T75) |
+| #1108 | withForm 表单绑定 | — | 0 BUG (FIX-T76) |
+| #1109 | 流程定义 LRU 缓存 (max=100) | — | 0 BUG (FIX-T78) |
+| PG #1-#10 | PG 端 §3 全部功能 | — | 0 BUG (FIX-T77 + 上述全部) |

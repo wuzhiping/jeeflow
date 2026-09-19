@@ -27,6 +27,8 @@
 | `13-countersign-one-vote-veto.json` | `countersign-one-vote-veto` | 并行会签·一票否决流程 | 4 | 3 | 并行会签·一票否决 | ✅ PASS（详见 `../tdd/test_13-countersign-one-vote-veto_20260917110500.md`：userA DISAGREE → state=20，userB/C ABANDON） |
 | `14-decision-submitType.json` | `14-decision-submitType` | 决策路由按 submitType 分流 | 5 | 5 | submitType 路由矩阵测试 | ❌ FAIL（详见 `../tdd/test_14-decision-submitType_20260917111000.md`：decision expr `\|\|` 不支持 + submitType=2/3/6 被 facade 拦截） |
 | `15-decision-amount.json` | `15-decision-amount` | 决策路由按金额阈值分流 | 5 | 5 | **本轮新增**：amount < 10000 → end / amount >= 10000 → task1 | ✅ PASS（含 Issue D 修复 4/4，详见 `../tdd/test_15-decision-amount_20260917112000.md`） |
+| `16-delegate-test.json` | `delegate-test` | 任务委派测试 | 4 | 3 | **roadmap 2.1 §69**：leader → boss 委派 + boss 代办 | ✅ PASS（详见 `../tdd/test_16-delegate-test_20260920.md`） |
+| `17-suspend-resume-test.json` | `suspend-resume-test` | 挂起恢复测试 | 5 | 4 | **roadmap 2.1 §70**：suspend→PENDING→execute FAIL→resume→execute PASS | ✅ PASS（详见 `../tdd/test_17-suspend-resume-test_20260920.md`） |
 
 > 节点数 / 边数仅以 `validate_flow.py` 拓扑扫描结果为准。详细测试结果参见 `./tdd/` 目录下的对应测试报告。
 

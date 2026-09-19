@@ -102,6 +102,37 @@
 | `TYPE_FORK` | `snaker:fork` | 并行分支发起 |
 | `TYPE_JOIN` | `snaker:join` | 并行汇合（无活跃任务时放行） |
 | `TYPE_CUSTOM` | `snaker:custom` | 自定义节点（外部处理器） |
+| `TYPE_CALL_ACTIVITY` | `snaker:callActivity` | 子流程触发节点 (FIX-T73 §3.1.2) |
+
+### 3.7 callActivity 子流程节点 (FIX-T73 §3.1.2)
+
+```json
+{
+  "id": "sub_flow",
+  "type": "snaker:callActivity",
+  "properties": {
+    "processDefineName": "leave-approval-sub",  // 子流程 name (必填, 按最新版本)
+    "assignee": "user2"                         // 子流程发起人 (缺省 = 主流程 operator)
+  }
+}
+```
+
+行为:
+1. 引擎查找 `wf_process_define` 中 name = `processDefineName` 的最新一版
+2. 启动子实例, parentId = 主实例 id
+3. 写 `childInstanceId` 到主实例 vars_[`<node.id>`_childInstanceId]
+4. 不阻塞主流程, 立即推进至下游节点
+5. 子实例完成时通过 §3.1.1 联动回写主实例 `parentStatus`
+
+约束:
+- 子流程必须先于主流程 deploy (引擎启动时按 name 查 definition)
+- callActivity 节点属性 `formKey` 可选, 但不强制 (用于子流程表单复用)
+- 主流程中可混合 callActivity 与 task/decision, 但 callActivity 不创建 task, 不阻塞流转
+
+§3.1.1 主子状态联动 (FIX-T72): `ProcessInstance.parentStatus` 字段
+- `None` (默认, 子未完成)
+- `"CHILD_DONE"` (子实例 DONE → state=20)
+- `"CHILD_REJECT"` (子实例 REJECT → state=45)
 
 ### 3.2 start / end / fork / join
 
@@ -497,3 +528,5 @@ if perm is None:
 | 8 | `flows/` 现有 JSON 不可改 | 01-13 已固化（含两个 `11-`），所有改动走新增 + 晋升路径 | 新流程 JSON 先落 `./tdd/<key>.json`，测试稳定后 `cp` 晋升 `./flows/<key>.json` | `./flows/`（项目约定） |
 
 > 表格中"来源"列若引用源码行号，仅作历史定位参考，**禁止回读源码**，所有字段语义以本文档和 `./docs/actions.md` 为准。
+---
+

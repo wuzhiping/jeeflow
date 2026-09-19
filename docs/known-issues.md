@@ -1445,7 +1445,7 @@ highLight 行为定义为"已访问 + 可达节点"（设计器视角），不�
 
 ---
 
-## §36. main.py 后端与 main_pg.py 后端 _resolve_interceptors 行为不一致（BDD Task 19 验证 2026-09-17）
+## §36. 双端 interceptor 行为对齐（FIX 已对齐 2026-09-20 BDD #1070-#1072 验证）
 
 ### 现象
 
@@ -1487,13 +1487,30 @@ curl /wf/processInstance/startAndExecute -d '...'
 - main_pg.py 后端（PG）严格：未注册拦截器抛错阻断流程
 - **测试时需明确后端**：main.py 验证拦截器行为不严格，main_pg.py 才是契约级行为
 
-### 修复策略（**已选 C：文档化** 2026-09-17）
+### 修复策略（**已选 B：源码对齐** 2026-09-20）
 
 | 方案 | 描述 | 影响 | 状态 |
 |---|---|---|---|
 | A | main.py 加 try/except 包装 _resolve_interceptors 吞 ValueError + warn 日志 | 行为宽松化，保持现状 | 弃选 |
-| B | main.py 修复 _resolve_interceptors 调用链使其严格抛错 | 行为严格化，与 PG 一致 | 弃选 |
-| **C** | **保持现状但 docs 明确两后端行为差异** | **最小改动，需文档同步** | **✅ 已选** |
+| **B** | **`engine.py:_resolve_interceptors` 在 line 814 已经抛错；main.py + main_pg.py 共用 engine → 双端一致抛错** | **行为严格化，与 PG 一致** | **✅ 已选** |
+| C | 保持现状但 docs 明确两后端行为差异 | 最小改动，需文档同步 | 弃选 |
+
+### 实测 (修复后 BDD #1070-#1072 2026-09-20)
+
+```bash
+# main.py 后端 (8101)
+DESIGN=POST /wf/processDesign/save {"name":"test-ic-missing","displayName":"IC测试","content":<flow with postInterceptors="NON_EXIST_ONE">}
+DEF=POST /wf/processDesign/deploy {"id":DESIGN}
+
+POST /wf/processInstance/startAndExecute {"processDefineId":DEF,"operator":"user1"}
+→ {"code":99999999,"msg":"[ValueError] postInterceptors 声明的拦截器未注册: NON_EXIST_ONE"}
+
+# 已注册 POST_ONE
+POST /wf/processInstance/startAndExecute {"processDefineId":<DEF2>,"operator":"user1"}
+→ {"code":0,"msg":"成功"}
+```
+
+**报告**：`./bdd/bdd-1070-1072-interceptor_20260920.md`
 
 ### 文档化落地（方案 C）
 
@@ -1624,19 +1641,36 @@ PARALLEL ONE_VOTE_VETO 场景下，任一 task DONE 后，剩余未执行的会�
 
 ---
 
-## §40. Python 引擎 surrogate 仅记录不生效（BDD Task 26 发现 2026-09-17）
+## §40. Python 引擎 surrogate 生效（FIX-T62 已实现，2026-09-20 BDD #1031 验证）
 
 ### 现象
 
 创建 surrogate（流程级委托）后，被委托人**仍无法**处理授权人的 task。
 
-### 实测
+### 实测 (修复前)
 
 ```
 1. POST /wf/processSurrogate/save  → surrogate 记录创建成功 (id=11)
 2. leader 的 task (actor=leader)，manager 执行 execute
    → {"code":99999999,"msg":"operator manager not allowed"}
 ```
+
+### ✅ FIX-T62 (2026-09-19)
+
+`engine.py:676 _is_surrogate_allowed` 在 `_load_and_check` 中作为 fallback 校验。
+查询 `ext.page_surrogates(filters={"operator": actor, "surrogate": operator})`，检查 enabled/startTime/endTime。
+
+### 实测 (修复后 BDD #1031)
+
+```bash
+POST /wf/processSurrogate/save {"operator":"leader","surrogate":"manager"} → id=11
+POST /wf/processTask/execute {"processTaskId":"91974470515715","operator":"manager","submitType":1}
+→ {"code":0,"msg":"成功"}
+```
+
+**报告**：`./bdd/bdd-1031-surrogate_20260920.md`
+
+### 引擎行为
 
 ### 引擎行为
 
@@ -1846,7 +1880,7 @@ countersignType=SEQUENTIAL 会签，3 个 actor 按顺序激活。**未激活的
 
 ---
 
-## §46. Python 引擎 decisionHandler 未实现（Task 32 发现 2026-09-17）
+## §46. Python 引擎 decisionHandler 调用链（FIX-T46 已实现，2026-09-20 BDD #1041-#1042 验证）
 
 ### 现象
 
@@ -1859,6 +1893,31 @@ countersignType=SEQUENTIAL 会签，3 个 actor 按顺序激活。**未激活的
 ```
 
 `register_decision(name, handler)` 注册的处理器**无效**。
+
+### ✅ FIX-T46 (2026-09-20)
+
+`engine.py:509 _evaluate_decision` 增加 `decisionHandler` 调用链：
+1. 读 `node.properties.decisionHandler` 名字
+2. `ext.registry.resolve_decision(name)` 查 handler
+3. `handler.decide(node, inst, vars_)` → 返回 next node id
+4. `_find_node(flow, target_id)` → `_execute_node`
+
+`main_common.py` 增加示例 handler `demo.decision.amount` / `demo.decision.priority`（注册到 `_registry`）。
+
+### 实测 (BDD #1041-#1042)
+
+```bash
+# 流程: start → apply → d1(decisionHandler=demo.decision.amount) → {task1, end} → end
+# amount=5000 → end, amount=20000 → task1
+
+POST /wf/processInstance/startAndExecute {"processDefineId":24,"amount":5000}
+→ state=20 (DONE, 走 end)
+
+POST /wf/processInstance/startAndExecute {"processDefineId":24,"amount":20000}
+→ state=10 (DOING, 等 task1 处理)
+```
+
+**报告**：`./bdd/bdd-1041-1042-decisionHandler_20260920.md`
 
 ### 影响
 
@@ -2135,12 +2194,27 @@ manager 驳回到 leader_review：
 
 ---
 
-## §56. startAndExecute parentId 参数未生效（Task 40 发现 2026-09-17）
+## §56. startAndExecute parentId 参数（FIX-T33 已实现，2026-09-20 BDD #1001 验证）
 
 ### 现象
 
 `startAndExecute body.parentId=$PARENT_INST` 启动子实例时，**引擎忽略 parentId**。
 子实例 `detail.parentId` 仍为 `None`。
+
+### ✅ FIX-T33 (2026-09-18)
+
+`engine.py:88` 启动实例时读取 `args.get("parentId")` 写入 `ProcessInstance.parentId`。
+
+### 实测
+
+```bash
+PARENT=$(POST /wf/processInstance/startAndExecute {...} → "processInstanceId":"91974059807751")
+CHILD=$(POST /wf/processInstance/startAndExecute {... "parentId":"$PARENT"} → "processInstanceId":"91974059852810")
+GET /wf/processInstance/detail {"id":"91974059852810"}
+→ {"id":"91974059852810","parentId":"91974059807751","state":10,"operator":"user2"}
+```
+
+**报告**：`./bdd/bdd-1001-parentId_20260920.md`
 
 ### 引擎行为
 
@@ -2290,15 +2364,38 @@ actual = vars.get(key)  # vars = instance.variables
 
 ---
 
-## §61. ccList API 行为（Task 49 发现 2026-09-17）
+## §61. ccList processInstanceId 参数（FIX-T61 已实现，2026-09-20 BDD #1065-#1067 验证）
 
-### 实测
+### 实测 (修复前)
 
 `/wf/processInstance/ccList`：
 - `operator` 参数：按 actor_id 过滤 CC 列表 ✅
 - `processInstanceId` 参数：**未生效**，被 facade 忽略
-- 响应不含 `cc.actor_id`（仅用于内部 filter）
-- 返回行含 `variable` + `ext` 字段，含完整 instance 变量
+
+### ✅ FIX-T61 (2026-09-20)
+
+`facade.py:_processInstance_ccList` 读取 `args.processInstanceId`，追加 `QueryCondition(column="t.id", operator="EQ", value=pid)` 到 conditions。
+
+### 实测 (修复后)
+
+```bash
+INST1=$(POST /wf/processInstance/startAndExecute {"f_ccActors":"observer1"} → 91975865463809)
+INST2=$(POST /wf/processInstance/startAndExecute {"f_ccActors":"observer1"} → 91975865494532)
+
+# 不带 processInstanceId → 2 条
+POST /wf/processInstance/ccList {"operator":"observer1","pageSize":100}
+→ {"data":{"recordCount":2,"rows_len":2}}
+
+# 带 processInstanceId=INST1 → 1 条
+POST /wf/processInstance/ccList {"operator":"observer1","processInstanceId":"91975865463809"}
+→ {"data":{"recordCount":1,"rows":[{"id":"91975865463809"}]}}
+
+# 带 processInstanceId=INST2 → 1 条
+POST /wf/processInstance/ccList {"operator":"observer1","processInstanceId":"91975865494532"}
+→ {"data":{"recordCount":1,"rows":[{"id":"91975865494532"}]}}
+```
+
+**报告**：`./bdd/bdd-1065-1067-ccList_20260920.md`
 
 ### Engine 实现（facade.py L868-874）
 
@@ -2306,8 +2403,6 @@ actual = vars.get(key)  # vars = instance.variables
 actor_id = str(args.get("operator", "user1"))
 rows, total = await self._repo.page_cc_instances(page_num, page_size, actor_id, ...)
 ```
-
-`processInstanceId` 完全没读取。
 
 ### 测试报告
 
@@ -2533,22 +2628,52 @@ PG DB 直接查 `wf_process_instance.owner_id` 字段落库正确。`m_EQ_ownerI
 
 ---
 
-## §70 实例/任务扩展操作未实现（2026-09-19 BDD #192-#195 确认）
-- `processInstance/suspend` - 实例挂起（state=50）→ 未实现
-- `processTask/transfer` - 任务转交 → 未实现
-- `processTask/comment` - 任务评论 → 未实现
-- `processTask/extra` - 任务额外信息 → 未实现
+## §70 实例/任务扩展操作（2026-09-19 标记未实现，2026-09-20 实测全部已实现 ✅）
 
-**绕过方法**：
-- 挂起：直接更新 inst.state=50（自实现 endpoint）
-- 转交：先 `removeCandidate` + `addCandidate`（已实现）
-- 评论/额外信息：通过 `processTask/execute` 的 `comment` 字段写入
+### 实际状态（FIX-T70 2026-09-20）
 
-**报告**：`./bdd/bdd-191-195-ops_20260919_184000.md`
+| 端点 | vendor 行号 | 行为 | 测试 |
+|---|---|---|---|
+| `processInstance/suspend` | facade.py:1486 | state DOING/PENDING → PENDING(50) | ✅ PASS |
+| `processInstance/resume` | facade.py:1503 | state PENDING → DOING(10) | ✅ PASS |
+| `processTask/transfer` | facade.py:1520 | task.actorIds 替换为目标用户 | ✅ PASS |
+| `processTask/comment` | facade.py:1542 | task.variables._comments 追加 | ✅ PASS |
+| `processTask/extra` | facade.py:1569 | task.variables._extra 合并 | ✅ PASS |
+
+### 实测请求
+
+```bash
+# 1. suspend
+POST /wf/processInstance/suspend {"id": "91974093670413"}
+# → {"code":0,"data":{"id":"91974093670413","state":50}}
+
+# 2. resume
+POST /wf/processInstance/resume {"id": "91974093670413"}
+# → {"code":0,"data":{"id":"91974093670413","state":10}}
+
+# 3. transfer
+POST /wf/processTask/transfer {"processTaskId":"91974093672463","targetUserId":"leader2"}
+# → {"code":0,"data":{"oldActors":["leader"],"newActors":["leader2"]}}
+
+# 4. comment
+POST /wf/processTask/comment {"processTaskId":"91974093672463","comment":"已转交领导2"}
+# → {"code":0,"data":{"count":1}}
+
+# 5. extra
+POST /wf/processTask/extra {"processTaskId":"91974093672463","urgency":"high","priority":1}
+# → {"code":0,"data":{"extra":{"urgency":"high","priority":1}}}
+```
+
+### 限制
+
+- 转交/评论/额外均**写入 task.variables JSON**，无独立字段（影响按 _comments/_extra 索引的查询）
+- suspend 后**不自动触发事件**（其他监听器需自己实现）
+
+**报告**：`./bdd/bdd-70-fix_20260920.md`
 
 ---
 
-## §69 任务委派 delegate 未实现（2026-09-19 BDD #142 确认）
+## §69 任务委派 delegate（FIX-T69 已实现，2026-09-20 BDD #1021-#1023 验证）
 
 ### 现象
 - 仅支持 surrogate（全局授权规则）
@@ -2570,7 +2695,32 @@ PG DB 直接查 `wf_process_instance.owner_id` 字段落库正确。`m_EQ_ownerI
 3. 在 custom 节点编程实现 delegate 业务（call addCandidate + removeActor）
 
 ### 报告
-- `./bdd/bdd-142-delegate_20260919_173000.md`
+- `./bdd/bdd-142-delegate_20260919_173000.md`（修复前）
+
+### ✅ FIX-T69 (2026-09-20)
+
+新增 `processTask/delegate` 端点：
+- 入参：`processTaskId`, `operator` (当前处理人), `targetUserId` (被委托人)
+- 校验：`operator` 必须在 `task.actorIds` 中
+- 执行：`addCandidate(task, [target])` + 写入 `task.variables._delegate_of[operator] = target`
+
+`engine._load_and_check` 增加 `_is_delegate_allowed` fallback（_is_allowed 失败后检查 `_delegate_of`）。
+
+### 实测 (BDD #1021-#1023)
+
+```bash
+POST /wf/processTask/delegate {"processTaskId":"91974470515715","operator":"leader","targetUserId":"boss"}
+→ {"taskId":"...","delegated":"leader","to":"boss","actors":["leader","boss"]}
+
+POST /wf/processTask/execute {"processTaskId":"91974470515715","operator":"boss","submitType":1}
+→ {"code":0,"msg":"成功"}  # boss 通过 delegate 成功代办
+
+# 错误用法
+POST /wf/processTask/delegate {"processTaskId":"...","operator":"randomUser","targetUserId":"boss"}
+→ {"code":99999999,"msg":"[ValueError] operator randomUser 不在 task actorIds 中"}
+```
+
+**报告**：`./bdd/bdd-1021-1023-delegate_20260920.md`
 
 ---
 
@@ -3977,3 +4127,154 @@ if operator_in.lower() not in ("flow.auto", "flow.admin", "admin"):
 - surrogate: leader → userC
 - userC 办 leader 任务 → 0 成功 ✓
 - TDD 17/17 PASS
+
+---
+
+## §107 §3.1.1 主子状态联动（FIX-T72 已实现 2026-09-20 BDD #1101-#1102 验证）
+
+### 实测 (修复后)
+
+```bash
+# 主子实例启动
+PARENT=$(POST /wf/processInstance/startAndExecute {...} → 91980923483137)
+CHILD=$(POST /wf/processInstance/startAndExecute {..., "parentId":"91980923483137"} → 91980923513860)
+
+# 子实例启动后查父 - parentStatus=null
+POST /wf/processInstance/detail {"id":"91980923483137"}
+→ {"id":"91980923483137","parentStatus":null}
+
+# 子实例 task 完成 → 父实例 parentStatus=CHILD_DONE
+POST /wf/processTask/execute {"processTaskId":"...","operator":"leader","submitType":1}
+POST /wf/processInstance/detail {"id":"91980923483137"}
+→ {"id":"91980923483137","parentStatus":"CHILD_DONE"}
+```
+
+### ✅ FIX-T72 (2026-09-20)
+
+`engine.py:_execute_node` TYPE_END 分支处理后, 设置主实例 `parentStatus`:
+- 子实例 DONE → `parentStatus = "CHILD_DONE"`
+- 子实例 REJECT → `parentStatus = "CHILD_REJECT"`
+
+字段语义:
+- `parentStatus` 是 ProcessInstance 新增字段 (Optional[str])
+- 仅当 `inst.parentId != None` 时触发联动
+- 失败时 try/except 不阻断子实例完成
+
+**PG 端要求**:
+- `wf_process_instance.parent_status VARCHAR(32)` 列已添加 (schema migration)
+- `_INSTANCE_COLS` + `find_instance_by_id` + `update_instance` + `save_instance` 都已更新
+
+**报告**: `./bdd/bdd-1101-1102-parentStatus_20260920.md`
+
+---
+
+## §108 §3.1.2 callActivity 节点（FIX-T73 已实现 2026-09-20 BDD #1103-#1105 验证）
+
+### 节点定义
+
+新增节点类型 `snaker:callActivity`, 字段:
+- `properties.processDefineName`: 子流程 name (必填)
+- `properties.assignee`: 子流程发起人 (缺省 = 主流程 operator)
+
+### 行为
+
+1. 主流程执行到 callActivity 节点时, **启动子实例** (parentId=主实例.id)
+2. 记录 `childInstanceId` 到主实例 `vars_[node.id+"_childInstanceId"]`
+3. **不阻塞主流程**, 立即推进到下游节点
+4. 子实例完成时通过 §3.1.1 parentStatus 通知主实例
+
+### 实测
+
+```bash
+# 部署子流程 (call-activity-sub)
+SUB_DEF=POST /wf/processDesign/deploy {...} → 20
+
+# 部署主流程 (call-activity-main, 含 callActivity 节点)
+MAIN_DEF=POST /wf/processDesign/deploy {...} → 21
+
+# 启动主流程
+MAIN=POST /wf/processInstance/startAndExecute {"processDefineId":21,"operator":"user1"}
+
+# 主实例 detail (主流程立即推进到 post_check, 跳过 sub_flow)
+POST /wf/processInstance/detail {"id":"91981603277825"}
+→ {
+  "state": 10,
+  "variables": {"sub_flow_childInstanceId": "91981603279875"},
+  "tasks": [
+    {"taskName":"apply","taskState":20},
+    {"taskName":"post_check","taskState":10}  ← callActivity 不阻塞
+  ]
+}
+```
+
+### ✅ FIX-T73 (2026-09-20)
+
+`engine.py:_execute_call_activity` 实现:
+- 查找子流程定义 (按 name 取最新一版)
+- 启动子实例 + 写 `childInstanceId` 到 vars_
+- 立即推进下游节点
+
+**报告**: `./bdd/bdd-1103-1105-callActivity_20260920.md`
+
+---
+
+## §109 §3.2 任务委派 + 转交 + 表单 (FIX-T74/T75/T76 已实现 2026-09-20 BDD #1106-#1108 验证)
+
+### FIX-T74 §3.2.1 delegate 历史查询
+
+新增 `/wf/processTask/delegateHistory` 端点, 返回:
+```json
+{
+  "taskId": 123,
+  "delegateHistory": [{"from":"leader","to":"boss","at":"2026-09-19T..."}],
+  "delegateAt": "2026-09-19T...",
+  "actorIds": ["leader", "boss"]
+}
+```
+
+### FIX-T75 §3.2.2 transfer + addCandidate 合并
+
+新增 `/wf/processTask/transferAndAdd` 端点, 与 transfer 区别:
+- `transfer`: 替换 actorIds = [target]
+- `transferAndAdd`: actorIds = old + [target] (保留原 actor)
+
+业务场景: A 转给 B 后, A 仍需看流程后续动态 (审计场景)
+
+### FIX-T76 §3.2.3 withForm 表单绑定
+
+新增 `/wf/processTask/withForm` 端点, 给 task 绑定:
+- `formKey`: 表单 schema key
+- `fields`: dict {field_name: {type, required, perm}}
+
+与节点级 `field.PERMISSION_*` 区别:
+- 节点级: 部署时静态声明
+- task 级: 运行时动态绑定, 支持 per-instance 定制
+
+**报告**: `./bdd/bdd-1106-1108-taskOps_20260920.md`
+
+---
+
+## §110 §3.3 性能优化 (FIX-T77/T78 已实现 2026-09-20 BDD #1109-#1110 验证)
+
+### FIX-T77 §3.3.1 PG 端 AsyncJdbcTableReader
+
+新增 `AsyncJdbcTableReader` 包装 asyncpg pool:
+- 接口与 `JdbcTableReader` 一致 (query_first / query_list)
+- 占位符 `$n` (PostgreSQL 风格) 替代 `?` (SQLite 风格)
+- `main_pg.py` 在 lifespan 中优先使用, fallback 到 sync `JdbcTableReader`
+
+### FIX-T78 §3.3.2 流程定义缓存 (LRU, max=100)
+
+`engine.py:find_define_cached` 实现 LRU 缓存:
+- 命中: O(1) dict access (move_to_end)
+- miss: 调用 repo + 加入缓存尾部
+- LRU 淘汰: 超过 100 时弹出最旧
+
+失效机制: `invalidate_define_cache()` 在 deploy/redeploy 时调用.
+
+### §3.3.3 BDD 100 场景压测 (无新代码, 性能基线)
+
+- MEM 端: 100 实例并发启动 ~250ms, 100 task1 execute ~190ms
+- PG 端: 100 实例并发启动 ~1.3-2.4s
+
+**报告**: `./bdd/bdd-1109-1110-perf_20260920.md`

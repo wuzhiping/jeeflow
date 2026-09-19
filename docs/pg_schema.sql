@@ -28,11 +28,14 @@ CREATE TABLE IF NOT EXISTS wf_process_instance (
     owner_id            VARCHAR(64),  -- FIX-T9 (2026-09-17) §66 实例所有者（流程发起人 userId）
     expire_time         TIMESTAMP,
     variable            TEXT,
+    parent_status       VARCHAR(32),  -- FIX-T72 (2026-09-20) §3.1.1 主子状态联动 (CHILD_DONE/CHILD_REJECT)
+    version             BIGINT DEFAULT 0,  -- FIX-T87 (2026-09-20) §4.4.2 乐观锁
     create_time         TIMESTAMP,
     create_user         VARCHAR(64),
     update_time         TIMESTAMP,
     update_user         VARCHAR(64)
 );
+CREATE INDEX IF NOT EXISTS idx_wf_process_instance_version ON wf_process_instance(version);
 CREATE INDEX IF NOT EXISTS idx_wf_process_instance_owner  ON wf_process_instance(owner_id);
 
 CREATE TABLE IF NOT EXISTS wf_process_task (

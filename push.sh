@@ -2,7 +2,7 @@
 set -e
 
 N=$(sudo git log --format='%s' | awk '
-    /^vendor fix batch [0-9]+$/ {
+    /^prd fix batch [0-9]+$/ {
         match($0, /[0-9]+$/)
         print substr($0, RSTART, RLENGTH)
         exit
@@ -11,8 +11,8 @@ N=$(sudo git log --format='%s' | awk '
 
 N=$(( ${N:-0} + 1 ))
 
-echo "==> vendor fix batch $N"
+echo "==> prd fix batch $N"
 
 sudo git add .
-sudo git commit -m "vendor fix batch $N"
+sudo git commit -m "prd fix batch $N"
 sudo git push

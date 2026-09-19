@@ -265,6 +265,29 @@ class JdbcTableReader:
         return [dict(zip(cols, row)) for row in cur.fetchall()]
 
 
+class AsyncJdbcTableReader:
+    """BDD #1106 FIX-T77 (2026-09-20) §3.3.1：asyncpg 异步表读取器
+
+    与 JdbcTableReader 接口一致, 但使用 asyncpg pool 异步查询.
+    占位符 $n (PostgreSQL 风格), 而非 JdbcTableReader 的 ? (SQLite 风格).
+    """
+    def __init__(self, pool):
+        self._pool = pool
+
+    async def query_first(self, table_name: str, where_column: str, value: Any) -> Optional[dict[str, Any]]:
+        rows = await self.query_list(table_name, where_column, value, limit=1)
+        return rows[0] if rows else None
+
+    async def query_list(self, table_name: str, where_column: str, value: Any, limit: int = 0) -> list[dict[str, Any]]:
+        _check(table_name)
+        sql = f'SELECT * FROM {table_name} WHERE "{where_column}" = $1'
+        if limit > 0:
+            sql += f" LIMIT {int(limit)}"
+        async with self._pool.acquire() as conn:
+            rows = await conn.fetch(sql, value)
+        return [dict(row) for row in rows]
+
+
 def _check(table_name: str) -> None:
     """表名安全校验（读侧）"""
     from .persist import _check_table_name

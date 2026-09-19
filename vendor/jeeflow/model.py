@@ -39,6 +39,7 @@ TYPE_DECISION = "snaker:decision"
 TYPE_FORK     = "snaker:fork"
 TYPE_JOIN     = "snaker:join"
 TYPE_CUSTOM   = "snaker:custom"
+TYPE_CALL_ACTIVITY = "snaker:callActivity"  # BDD #1101 FIX-T73 §3.1.2 子流程触发
 
 # ─── Domain Types ──────────────────────────────────────────────────────────────
 
@@ -127,6 +128,15 @@ class ProcessInstance:
     # 业务场景：审批人待办列表"我发起的"按 ownerId 过滤
     # 优先级：显式 ownerId > variables.u_userId > operator
     ownerId: str = ""
+    # BDD #1101 FIX-T72 (2026-09-20) §3.1.1：主子状态联动
+    # 子实例 DONE/REJECT 时由 engine 自动回写主实例 parentStatus
+    # 主实例 detail 返回 parentStatus 让调用方感知"子实例已完成"
+    # 取值: None / "CHILD_DONE" / "CHILD_REJECT"
+    parentStatus: Optional[str] = None
+    # BDD #1213 FIX-T87 (2026-09-20) §4.4.2：实例乐观锁
+    # 多节点部署时, 同一实例并发 execute 用 version 防止覆盖
+    # UPDATE 时 WHERE id=? AND version=? 失败则重试
+    version: int = 0
 
     # ── 聚合根行为（对标 Java domain/ProcessInstance）──
 

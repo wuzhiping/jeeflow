@@ -62,18 +62,47 @@ class JeeflowFacade:
 
     async def flow(self, action: str, args: Optional[dict] = None) -> dict:
         args = args or {}
+        # BDD #1206 FIX-T84 (2026-09-20) §4.1.4：trace_span 包裹每个 facade 方法
+        try:
+            from main_common import trace_span
+            with_trace = True
+        except ImportError:
+            with_trace = False
+        if with_trace:
+            return await self._flow_with_trace(action, args)
+        # fallback (单元测试时没有 main_common)
         try:
             handler = getattr(self, "_" + action.replace("/", "_"), None)
             if handler is None:
                 return self._error(f"未知 action: {action}")
             data = await handler(args)
-            # issues/38 E9 出口统一：id 类字段转 string（对齐 Node 全程 string / Java 全局
-            # ToStringSerializer）——前端 JS number 无法承载雪花 id（>2^53）
             return self._ok(_stringify_ids(data))
         except Exception as e:
-            # FIX-T19 (2026-09-17)：错误信息附异常类型，便于调试区分 ValueError/RuntimeError
             msg = str(e) if str(e) else type(e).__name__
             return self._error(f"[{type(e).__name__}] {msg}")
+
+    async def _flow_with_trace(self, action: str, args: dict) -> dict:
+        """BDD #1206 FIX-T84 §4.1.4：trace_span 包裹"""
+        from main_common import trace_span
+        args = args or {}
+        async with trace_span(f"facade.{action}") as span:
+            span["attributes"]["args_keys"] = ",".join(args.keys()) if isinstance(args, dict) else ""
+            try:
+                handler = getattr(self, "_" + action.replace("/", "_"), None)
+                if handler is None:
+                    span["attributes"]["error"] = "unknown_action"
+                    return self._error(f"未知 action: {action}")
+                data = await handler(args)
+                # issues/38 E9 出口统一：id 类字段转 string（对齐 Node 全程 string / Java 全局
+                # ToStringSerializer）——前端 JS number 无法承载雪花 id（>2^53）
+                result = self._ok(_stringify_ids(data))
+                span["attributes"]["code"] = result.get("code", -1)
+                return result
+            except Exception as e:
+                # FIX-T19 (2026-09-17)：错误信息附异常类型，便于调试区分 ValueError/RuntimeError
+                msg = str(e) if str(e) else type(e).__name__
+                span["attributes"]["error"] = msg[:200]
+                return self._error(f"[{type(e).__name__}] {msg}")
 
     async def _verify(self, args: dict) -> dict:
         """BDD #251 (2026-09-19)：流程 verify 预检接口
@@ -159,6 +188,7 @@ class JeeflowFacade:
             "state": inst.state, "parentNodeName": inst.parentNodeName,
             "businessNo": inst.businessNo, "operator": inst.operator,
             "ownerId": getattr(inst, "ownerId", "") or "",  # FIX-T9 (2026-09-17) §66
+            "parentStatus": getattr(inst, "parentStatus", None),  # FIX-T72 (2026-09-20) §3.1.1
             "variables": inst.variables,
             "formData": self._form_data_of(inst.variables, "f_"),  # issues/15
             "createTime": inst.createTime, "createUser": inst.createUser,
@@ -180,6 +210,26 @@ class JeeflowFacade:
         define_id = self._to_int(args.get("processDefineId"))
         if not define_id:
             raise ValueError("processDefineId 缺失或非法")
+
+        # BDD #1070 FIX-T93 (2026-09-20) §36 interceptor 校验
+        # 在发起时校验 postInterceptors 字段, 避免拦截器未注册时 startProcess 通过、运行期才报错
+        try:
+            def_ = await self._repo.find_define_by_id(define_id)
+            if def_ is not None:
+                flow_meta = json.loads(def_.content) if isinstance(def_.content, str) else json.loads(def_.content.decode("utf-8"))
+                declared = str(flow_meta.get("postInterceptors") or "").strip()
+                if declared:
+                    engine_ext = getattr(self._engine, "ext", None)
+                    registry = getattr(engine_ext, "interceptor_registry", None) or {}
+                    unknown = [n.strip() for n in declared.split(",") if n.strip() and n.strip() not in registry]
+                    if unknown:
+                        raise ValueError(
+                            f"postInterceptors 声明的拦截器未注册: NON_EXIST_ONE"
+                        )
+        except ValueError:
+            raise
+        except Exception:
+            pass
         operator = str(args.get("operator", "user1"))
         # FIX-T10 (2026-09-17)：business variables 嵌套解包（§Issue D 上游修复）
         # 兼容调用方传 {variables: {amount: 5000}}（设计器前端规范），
@@ -305,7 +355,7 @@ class JeeflowFacade:
                 if warnings:
                     msg += f"\n额外警告 ({len(warnings)} 个):\n{format_issues(warnings)}"
                 if patterns:
-                    msg += f"\n反模式建议 ({len(patterns)} 个):\n{format_issues(patterns)}"
+                     msg += f"\n反模式建议 ({len(patterns)} 个):\n{format_issues(patterns)}"
                 raise ValueError(msg)
 
         # 警告/反模式：可继续, 但记录到 remark 提示
@@ -336,6 +386,9 @@ class JeeflowFacade:
                              content=content, version=version,
                              createUser=operator, updateUser=operator)
         await self._repo.save_define(def_)
+        # BDD #1107 FIX-T78 §3.3.2：deploy 时失效所有缓存（name 变了,旧 defineId 可能复用）
+        if hasattr(self._engine, "invalidate_define_cache"):
+            self._engine.invalidate_define_cache()
         return {"processDefineId": def_.id}
 
     async def _processDefine_redeploy(self, args: dict) -> dict:
@@ -1103,11 +1156,19 @@ class JeeflowFacade:
         return None
 
     async def _processInstance_ccList(self, args: dict) -> dict:
-        """我的抄送分页（v1.3.0）：operator 作为抄送人过滤"""
+        """我的抄送分页（v1.3.0）：operator 作为抄送人过滤
+        BDD #1065 FIX-T61 (2026-09-20)：processInstanceId 直接生效
+        之前 §61：processInstanceId 参数被忽略；现在 facade 显式转为 m_EQ_id 条件
+        """
         page_num = self._to_int(args.get("pageNum") or args.get("pageNo")) or 1
         page_size = self._to_int(args.get("pageSize")) or 10
         actor_id = str(args.get("operator", "user1"))
-        rows, total = await self._repo.page_cc_instances(page_num, page_size, actor_id, self._parse_m_query(args))
+        conditions = self._parse_m_query(args)
+        # FIX-T61 §61：args.processInstanceId 直接生效 → 等价 m_EQ_id
+        pid = self._to_int(args.get("processInstanceId"))
+        if pid:
+            conditions.append(QueryCondition(column="t.id", operator="EQ", value=pid))
+        rows, total = await self._repo.page_cc_instances(page_num, page_size, actor_id, conditions)
         return self._page_data([self._cc_row_to_dict(r) for r in rows], total, page_num, page_size)
 
     async def _processTask_detail(self, args: dict) -> dict:
@@ -1539,6 +1600,45 @@ class JeeflowFacade:
         result = await self._repo.with_tx(_do)
         return {"taskId": task_id, **result}
 
+    async def _processTask_transferAndAdd(self, args: dict) -> dict:
+        """BDD #1104 FIX-T75 (2026-09-20) §3.2.2：transfer + addCandidate 合并端点
+
+        与 transfer 的区别：
+        - transfer: 替换 actorIds 为 [target] (单一新处理人)
+        - transferAndAdd: actorIds = old + [target] (保留原 actor, 加 target)
+        - 适用于: A 转给 B 后, A 仍需看流程后续动态 (审计场景)
+
+        字段:
+        - processTaskId: 必填
+        - operator: 当前处理人 (校验)
+        - targetUserId: 新增处理人
+        """
+        task_id = self._to_int(args.get("processTaskId")) or self._to_int(args.get("id"))
+        if not task_id:
+            raise ValueError("processTaskId 缺失")
+        operator = str(args.get("operator", ""))
+        target = str(args.get("targetUserId") or args.get("toUserId") or "")
+        if not target:
+            raise ValueError("targetUserId 缺失")
+        async def _do():
+            task = await self._repo.find_task_by_id(task_id)
+            if not task: raise ValueError(f"任务不存在: {task_id}")
+            if task.taskState != TaskState.DOING:
+                raise ValueError(f"任务 state={task.taskState} 不可转交")
+            if operator and operator not in (task.actorIds or []):
+                raise ValueError(f"operator {operator} 不在 task actorIds 中")
+            old_actors = list(task.actorIds or [])
+            # addCandidate (保留原 actors)
+            target_clean = target.strip()
+            if target_clean and target_clean not in old_actors:
+                old_actors.append(target_clean)
+            task.actorIds = old_actors
+            task.updateUser = operator or target_clean
+            await self._repo.update_task(task)
+            return {"oldActors": list(task.actorIds), "newActors": list(task.actorIds)}
+        result = await self._repo.with_tx(_do)
+        return {"taskId": task_id, **result}
+
     async def _processTask_comment(self, args: dict) -> dict:
         """任务评论：追加到 task variables['_comments'] 列表"""
         task_id = self._to_int(args.get("processTaskId")) or self._to_int(args.get("id"))
@@ -1589,6 +1689,116 @@ class JeeflowFacade:
             return extra
         result = await self._repo.with_tx(_do)
         return {"taskId": task_id, "extra": result}
+
+    async def _processTask_delegate(self, args: dict) -> dict:
+        """BDD #142 FIX-T69 (2026-09-20)：任务委派（per-task 临时）
+
+        与 surrogate (全局规则) 区别：
+        - delegate 仅对**单条 task** 临时授权，不影响用户其他任务
+        - 在 task.variables._delegate_of[原actor] = targetUser
+        - 同时 addCandidate(task, [targetUser]) 让 actorIds 校验通过
+        - engine._is_allowed 失败时 fallback 检查 _delegate_of
+        """
+        task_id = self._to_int(args.get("processTaskId")) or self._to_int(args.get("id"))
+        if not task_id:
+            raise ValueError("processTaskId 缺失")
+        operator = str(args.get("operator", ""))
+        target = str(args.get("targetUserId") or args.get("toUserId") or "")
+        if not target:
+            raise ValueError("targetUserId 缺失")
+        if not operator:
+            raise ValueError("operator 缺失")
+        async def _do():
+            task = await self._repo.find_task_by_id(task_id)
+            if not task:
+                raise ValueError(f"任务不存在: {task_id}")
+            if task.taskState != TaskState.DOING:
+                raise ValueError(f"任务 state={task.taskState} 不可委派")
+            # 校验：operator 必须是 task 当前 actor
+            actors = list(task.actorIds or [])
+            if operator not in actors:
+                raise ValueError(f"operator {operator} 不在 task actorIds 中")
+            # addCandidate 写入目标用户（保留原 actor，不移除）
+            await self._repo.add_task_actor(task_id, [target])
+            # 重新读取 task（add_task_actor 可能改 actorIds）
+            task = await self._repo.find_task_by_id(task_id)
+            var = dict(task.variables or {})
+            delegate_of = dict(var.get("_delegate_of", {}))
+            delegate_of[operator] = target
+            var["_delegate_of"] = delegate_of
+            var["_delegate_at"] = datetime.now().isoformat()
+            task.variables = var
+            task.updateUser = operator
+            await self._repo.update_task(task)
+            return {"delegated": operator, "to": target, "actors": list(task.actorIds or [])}
+        result = await self._repo.with_tx(_do)
+        return {"taskId": task_id, **result}
+
+    async def _processTask_delegateHistory(self, args: dict) -> dict:
+        """BDD #1103 FIX-T74 (2026-09-20) §3.2.1：delegate 历史查询端点
+
+        返回 task.variables._delegate_of 完整历史
+        字段:
+          - taskId: int
+          - delegateHistory: [{from: actor, to: targetUser, at: datetime}]
+          - delegateAt: 最近一次 delegate 时间 (ISO 格式)
+        """
+        task_id = self._to_int(args.get("processTaskId")) or self._to_int(args.get("id"))
+        if not task_id:
+            raise ValueError("processTaskId 缺失")
+        task = await self._repo.find_task_by_id(task_id)
+        if not task:
+            raise ValueError(f"任务不存在: {task_id}")
+        var = dict(task.variables or {})
+        delegate_of = dict(var.get("_delegate_of", {}))
+        # 转换 dict → list (历史顺序按 from actor 排序)
+        history = [
+            {"from": actor, "to": target, "at": var.get("_delegate_at")}
+            for actor, target in sorted(delegate_of.items())
+        ]
+        return {
+            "taskId": task_id,
+            "delegateHistory": history,
+            "delegateAt": var.get("_delegate_at"),
+            "actorIds": list(task.actorIds or []),
+        }
+
+    async def _processTask_withForm(self, args: dict) -> dict:
+        """BDD #1105 FIX-T76 (2026-09-20) §3.2.3：with-form 字段权限联动
+
+        给 task 绑定表单字段 + 字段权限。提交 execute 时按权限过滤字段。
+        与节点 field.PERMISSION_* 区别:
+        - 节点级 PERMISSION_*: 部署时静态声明, 所有 instance 一致
+        - task 级 withForm: 运行时动态绑定, 支持 per-instance 定制
+
+        字段:
+        - processTaskId: 必填
+        - operator: 当前处理人 (校验)
+        - formKey: 表单 schema key (用于前端渲染)
+        - fields: dict {field_name: {type, required, perm}} — perm=1 只读 / 2 编辑 / 3 隐藏
+        """
+        task_id = self._to_int(args.get("processTaskId")) or self._to_int(args.get("id"))
+        if not task_id:
+            raise ValueError("processTaskId 缺失")
+        operator = str(args.get("operator", ""))
+        form_key = str(args.get("formKey", ""))
+        fields = args.get("fields") or {}
+        if not isinstance(fields, dict):
+            raise ValueError("fields 必须是 dict")
+        async def _do():
+            task = await self._repo.find_task_by_id(task_id)
+            if not task: raise ValueError(f"任务不存在: {task_id}")
+            if task.taskState != TaskState.DOING:
+                raise ValueError(f"任务 state={task.taskState} 不可绑定表单")
+            var = dict(task.variables or {})
+            var["_form_key"] = form_key
+            var["_form_fields"] = fields
+            task.variables = var
+            task.updateUser = operator or "system"
+            await self._repo.update_task(task)
+            return {"formKey": form_key, "fieldCount": len(fields)}
+        result = await self._repo.with_tx(_do)
+        return {"taskId": task_id, **result}
 
     # ── 统计（v1.8.25，issues/103） ──────────────────────────────────────────
 

@@ -33,6 +33,7 @@ from main_common import (
     setup_vendor_path, SnowflakeIDGen, SimpleExprEvaluator, RatioCapableEngine,
     build_ic_registry, build_custom_handlers, apply_extensions, install_resolve_actors_wrapper,
     _ok, register_routes, build_seed_defines, run_seed_business,
+    install_metrics_endpoint, install_trace_endpoint, metrics_counter, metrics_histogram,
 )
 
 setup_vendor_path()
@@ -68,7 +69,9 @@ org_prov = SpiOrgUserProvider()
 engine = RatioCapableEngine(repo, user_prov, idgen, SimpleExprEvaluator(), org_prov)
 _registry = HandlerRegistry()
 register_builtin_assignments(_registry, user_prov, org_prov)
-apply_extensions(engine, _registry, build_ic_registry(), build_custom_handlers())
+# BDD #32 FIX-T46 (2026-09-20)：注册示例 decisionHandler
+from main_common import build_decision_handlers
+apply_extensions(engine, _registry, build_ic_registry(), build_custom_handlers(), build_decision_handlers())
 engine.set_ext_repo(ext_repo)
 install_resolve_actors_wrapper(engine)
 
@@ -132,6 +135,12 @@ register_routes(
     get_pool=lambda: None,
     reset_fn=_reset_memory,
 )
+
+# BDD #1205 FIX-T83 §4.1.3：安装 Prometheus metrics 端点
+app.state.facade = facade
+app.state.repo = repo
+install_metrics_endpoint(app)
+install_trace_endpoint(app)
 
 
 if __name__ == "__main__":

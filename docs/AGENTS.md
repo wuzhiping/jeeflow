@@ -320,9 +320,16 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 | 16 | **`PERMISSION_*` 字段必须用 `PERMISSION_f_<name>` 前缀** | `./docs/BUGS.md FIX-DOC-1` |
 | 17 | **`submitType=2/3/4/6` 走 facade 不走 decision** | `./docs/BUGS.md §20` |
 | 18 | ~~不要依赖 custom 节点 clazz/methodName~~（v1.9.0 FIX-T38 已通过 `EngineExtensions.custom_handler_registry` 实现；handler 签名 `async def(node, inst, vars_, args) -> Any`） | `./docs/BUGS.md §16` |
-| 19 | **`preInterceptors` 静默未生效，用 `postInterceptors`** | `./docs/BUGS.md §34` |
-| 20 | **surrogate 不自动展开 todoList**（手动 addCandidate） | `./docs/BUGS.md §40` |
+| 19 | ~~**`preInterceptors` 静默未生效，用 `postInterceptors`**~~（FIX-T34 v1.9.0+ 已修复） | `./docs/BUGS.md §34` |
+| 20 | ~~**surrogate 不自动展开 todoList**~~（FIX-T62 v1.9.0+ 已修复：`engine._is_surrogate_allowed` 在 _load_and_check 中作 fallback） | `./docs/BUGS.md §40` |
 | 21 | **节点 id 命名规范**（FIX-T34 deploy 自动校验） | `./docs/BUGS.md §93` |
+| 22 | ~~**任务委派**需手动 addCandidate + removeActor~~（FIX-T69 v1.9.0+ 新增 `processTask/delegate` 端点） | `./docs/BUGS.md §69` |
+| 23 | **实例挂起/恢复**（FIX-T70 v1.9.0+ `processInstance/suspend` + `resume`） | `./docs/BUGS.md §70` |
+| 24 | **主子状态联动**（FIX-T72 v1.9.0+ ProcessInstance.parentStatus 字段） | `./docs/BUGS.md §107` |
+| 25 | **callActivity 子流程**（FIX-T73 v1.9.0+ `snaker:callActivity` 节点类型 + `processDefineName` 字段） | `./docs/BUGS.md §108` |
+| 26 | **delegate 历史查询**（FIX-T74 v1.9.0+ `processTask/delegateHistory` 端点） | `./docs/BUGS.md §109` |
+| 27 | **transfer + addCandidate 合并**（FIX-T75 v1.9.0+ `processTask/transferAndAdd` 端点） | `./docs/BUGS.md §109` |
+| 28 | **task 级表单绑定**（FIX-T76 v1.9.0+ `processTask/withForm` 端点） | `./docs/BUGS.md §109` |
 
 > ⚠️ 约束 #13-#20 来自 `./docs/BUGS.md`，是 BDD 实战中**反复踩坑**的约束。设计前**必读**。
 
@@ -413,19 +420,12 @@ sleep 1
 
 > **v1.9.0 里程碑（2026-09-19）**：27 个 BUG 全部修复，包含 §16 / §20 / §27 / §52 等历史顽疾。
 
-### 第二部分：5 个已知限制
+### 第二部分：0 个已知限制（roadmap §2 + §3 全部完成 2026-09-20）
 
-**不是 BUG，但**引擎能力边界**，设计时必须避开：
-
-| § | 限制 | 必看理由 |
-|---|------|----------|
-| §30 | join→end 链路可能不触发 | join 后必须接 task 节点 |
-| §32 | ROLLBACK_TO_OPERATOR 跳首任务 | 不要依赖"驳回必经中间节点" |
-| §34 | preInterceptors 静默 | 用 postInterceptors 代替 |
-| §40 | surrogate 不展开 todoList | 委托后手动 addCandidate |
-| §46 | decisionHandler FQCN 未实现 | 嵌套 decision 代替 |
-
-> v1.9.0 之前 §16（custom 节点）+ §20（decision 复合条件）属已知限制；FIX-T37/T38 后已升级为已修 BUG。
+> **v1.9.0+ 里程碑**：截至 2026-09-20，**roadmap §2 (16 项) + §3 (8 项) 共 24 项任务全部完成**，引擎能力边界 = 0。
+> 历史所有限制 §30 §32 §34 §40 §46 §56 §61 §69 §70 等全部 FIX。
+> Phase 2 新增能力：parentStatus 主子联动 / callActivity / delegate 历史 / transferAndAdd / withForm / AsyncJdbcTableReader / 流程定义缓存。
+> 详细见 `./docs/BUGS.md` + `./roadmap.md` + `./bdd/bdd-1101-1110-roadmap-phase2_20260920.md`。
 
 **每个限制都附"不要做"反例 + "替代方案"正例**，照搬正例即可安全设计。
 

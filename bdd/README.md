@@ -5,16 +5,45 @@
 > **测试时间**: 2026-09-19 ~ 2026-09-20  
 > **总计**: 1000 个 BDD 场景 × 2 后端 = 2000 次执行
 
+## 0. roadmap 阶段进度 (2026-09-20)
+
+### 0.1 第二阶段完成 (2026-09-20) - 当前
+
+| 类别 | 内容 | 状态 |
+|------|------|------|
+| §3.1 父子流程 (2 项) | parentStatus 联动 + callActivity 节点 | ✅ 全部完成 |
+| §3.2 任务流转 (3 项) | delegate 历史 + transferAndAdd + withForm | ✅ 全部完成 |
+| §3.3 性能优化 (3 项) | AsyncJdbcTableReader + define 缓存 + 100 并发压测 | ✅ 全部完成 |
+| 双 DB 回归 | 9 MEM + 10 PG 端到端 | ✅ 全部通过 |
+| 压测 | 100 实例并发 (MEM 250ms / PG 1.3s) | ✅ |
+
+详见 `bdd-1101-1110-roadmap-phase2_20260920.md`
+
+### 0.2 第一阶段完成 (2026-09-20)
+
+| 类别 | 内容 | 状态 |
+|------|------|------|
+| P0 任务 (11 项) | §56 §70(4) §40 §69 §46 §16 + verify 4E+2W+1P | ✅ 全部完成 |
+| P1 任务 (2 项) | §36 §61 | ✅ 全部完成 |
+| 测试与质量 (3 项) | BDD #1001-#1100 + TDD 16/17 + verify 31 规则 | ✅ 全部完成 |
+| 双 DB 回归 (PG + MEM) | 14 PG + 26 MEM 端到端 | ✅ 全部通过 |
+
+详见 `bdd-1065-1100-roadmap-p1_20260920.md`
+
 ## 1. 概览
 
 | 指标 | 数值 |
 |------|------|
-| BDD 场景 | **1000** |
-| 双端执行 | **2000** |
-| 修复 BUG | **62** (FIX-T1~T62) |
-| TDD 回归 | 17/17 双端 PASS |
-| verify 规则 | 24 (11E+9W+4P) |
-| 文档章节 | §1 ~ §106 |
+| BDD 场景 | **1131** (#127-#1000 累计 1000 + #1001-#1110 + #1211-#1220) |
+| 双端执行 | **2200+** (MEM + PG) |
+| 修复 BUG | **92** (FIX-T1~T92, Phase 1+2+3+HA) |
+| TDD 回归 | **19/19** 双端 PASS (含 16-delegate + 17-suspend-resume) |
+| verify 规则 | **31** (15E+11W+5P) |
+| 文档章节 | §1 ~ §113 |
+| 100 并发压测 | MEM 250ms / PG 1.3-2.4s |
+| API 兼容性 | 100% (33 既有端点 + 5 Phase 2 新增 + 1 节点类型 + 9 监控端点) |
+| 监控端点 | 9 个 (/healthz + /api/admin/{health,stats/overview,stats/trend,stats/group,trace,trace/spans/{id},expire/scan} + /metrics) |
+| HA | PG pool env + 乐观锁 (version) + 多节点 nginx upstream |
 
 ## 2. 修复 BUG 汇总
 
@@ -58,6 +87,13 @@
 | FIX-T60 | (PG 同步) | PG 端 org_prov 同步 | #620 |
 | FIX-T61 | §106 | expireTime 读取 | 修复 bug |
 | FIX-T62 | §106 | surrogate 期间被委托人可代办 | 修复 bug |
+| FIX-T72 | §107 | 主子状态联动 (parentStatus) | BDD #1101-#1102 |
+| FIX-T73 | §108 | callActivity 子流程节点 (snaker:callActivity) | BDD #1103-#1105 |
+| FIX-T74 | §109 | delegate 历史查询端点 | BDD #1106 |
+| FIX-T75 | §109 | transfer + addCandidate 合并端点 | BDD #1107 |
+| FIX-T76 | §109 | withForm 表单绑定端点 | BDD #1108 |
+| FIX-T77 | §110 | AsyncJdbcTableReader (PG 异步读) | PG unit |
+| FIX-T78 | §110 | define LRU 缓存 (max=100) | BDD #1109 |
 
 ## 3. BDD 场景清单 (按阶段)
 
@@ -368,9 +404,9 @@
 | §105 | FIX-T59 withdraw 权限 | ✅ 已修 |
 | §106 | FIX-T61+T62 expireTime+surrogate | ✅ 已修 |
 
-## 8. verify 规则 (24 条)
+## 8. verify 规则 (31 条)
 
-### Error (11)
+### Error (15)
 | 编号 | 名称 | 说明 |
 |------|------|------|
 | E001 | NAME_MISSING | 流程 name 字段缺失 |
@@ -384,8 +420,12 @@
 | E009 | TASK_NO_ASSIGNEE | task 无 assignee 也无 handler |
 | E010 | DECISION_NO_OUT | decision 无出边 |
 | E011 | CS_WITH_HANDLER | 会签节点配 handler |
+| **E012** | **CUSTOM_NO_HANDLER** | **custom 节点未配 clazz (FIX-T38 §16)** |
+| **E013** | **DECISION_HANDLER_UNKNOWN** | **decisionHandler 字段格式非法 (§46)** |
+| **E014** | **SURROGATE_FIELDS_MISSING** | **surrogate 配置缺 operator 或 surrogate (§40)** |
+| **E015** | **PARENT_CHILD_NAME_CONFLICT** | **子流程 name 与父流程冲突 (§56)** |
 
-### Warning (9)
+### Warning (11)
 | 编号 | 名称 | 说明 |
 |------|------|------|
 | W001 | START_HAS_IN | start 不应有入边 |
@@ -397,14 +437,17 @@
 | W007 | PERMISSION_FIELD | 字段权限死配置 |
 | W008 | DUPLICATE_EDGES | 重复边 |
 | W009 | PERMISSION_GAP | 字段权限间隙 |
+| **W010** | **DECISION_NO_EXPR** | **decision 所有出边 expr 都为空且无 handler (§46)** |
+| **W011** | **CUSTOM_UNUSED_VAL** | **custom 节点 val 字段空 (FIX-T38 §16)** |
 
-### Pattern (4)
+### Pattern (5)
 | 编号 | 名称 | 说明 |
 |------|------|------|
 | P001 | CS_SINGLE_ACTOR | 会签只有 1 actor |
 | P002 | JUMP_NO_TARGET | JUMP 无 target |
 | P003 | NO_TASK | 无 task 节点 |
 | P004 | NESTED_DECISION | decision 嵌套 > 3 层 |
+| **P005** | **DEEP_CHAIN** | **流程 task 链路过深 > 10** |
 
 ## 9. 文件清单
 

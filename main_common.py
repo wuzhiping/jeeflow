@@ -293,8 +293,14 @@ def build_ic_registry() -> dict:
 
 
 def apply_extensions(engine, registry: HandlerRegistry, ic_registry: Optional[dict] = None,
-                     custom_handlers: Optional[dict] = None):
+                     custom_handlers: Optional[dict] = None,
+                     decision_handlers: Optional[dict] = None):
     """应用 HandlerRegistry + 拦截器注册表 + custom 节点处理器到 engine"""
+    # BDD #32 FIX-T46 (2026-09-20)：注册示例 decisionHandler
+    # 业务方可通过 registry.register_decision("my.handler", MyHandler()) 扩展
+    if decision_handlers:
+        for name, handler in decision_handlers.items():
+            registry.register_decision(name, handler)
     ext = EngineExtensions(
         registry=registry,
         interceptor_registry=ic_registry or {},
@@ -343,6 +349,14 @@ def build_custom_handlers() -> dict:
     }
 
 
+def build_decision_handlers() -> dict:
+    """BDD #32 FIX-T46 (2026-09-20)：注册示例 decisionHandler（生产可扩）"""
+    return {
+        "demo.decision.amount": _BuiltinDecisionAmountHandler(),
+        "demo.decision.priority": _BuiltinDecisionPriorityHandler(),
+    }
+
+
 async def _builtin_custom_timestamp_handler(node, inst, vars_, args):
     """示例 handler：返回当前时间戳到 vars_[val]"""
     from datetime import datetime
@@ -363,6 +377,34 @@ async def _builtin_custom_append_vars_handler(node, inst, vars_, args):
             if k not in vars_:  # 不覆盖已有
                 vars_[k] = v
     return data
+
+
+# ─── Built-in Decision Handlers（FIX-T46 2026-09-20 §46 修复）──────────────────
+
+class _BuiltinDecisionAmountHandler:
+    """BDD #32 FIX-T46 (2026-09-20)：示例 decisionHandler
+
+    用 vars_.amount 阈值分流：
+    - amount >= 10000 → "task1"（高级审批）
+    - amount < 10000 → "end"（直接结束）
+    """
+    async def decide(self, node, inst, vars_):
+        amount = float(vars_.get("amount", 0) or 0)
+        if amount >= 10000:
+            return "task1"
+        return "end"
+
+
+class _BuiltinDecisionPriorityHandler:
+    """示例 decisionHandler：按 priority 字段分流
+    - priority >= 5 → "urgent_task"
+    - 否则 → "normal_task"
+    """
+    async def decide(self, node, inst, vars_):
+        priority = int(vars_.get("priority", 0) or 0)
+        if priority >= 5:
+            return "urgent_task"
+        return "normal_task"
 
 
 # ─── Resolve Actors Warning + Raise Wrapper ─────────────────────────────────────
@@ -562,6 +604,74 @@ def register_routes(app: FastAPI, *, get_facade: Callable, get_repo: Callable,
             pool_ok = pool is not None and not pool._closing
         return {"status": "UP", "backend": "python", "pg": "ok" if pool_ok else "down"}
 
+    @app.get("/api/admin/health")
+    async def admin_health():
+        """BDD #1201 FIX-T79 (2026-09-20) §4.1.1：管理端 health 监控
+
+        详细健康检查 (区别于 /healthz 简版):
+        - PG pool 状态 (size / idle / min_size / max_size)
+        - 引擎缓存状态 (_def_cache 命中数)
+        - repo 健康 (find_define_by_id 探测)
+        - process count (active instances / active tasks)
+        """
+        health = {
+            "status": "UP",
+            "backend": "python",
+            "version": "v1.9.0+",
+            "checks": {}
+        }
+        # PG 端
+        try:
+            pool = get_pool() if get_pool is not None else None
+            pool_ok = pool is not None and not getattr(pool, "_closing", False)
+            if pool is not None:
+                health["checks"]["pg"] = {
+                    "status": "ok" if pool_ok else "down",
+                    "min_size": getattr(pool, "_minsize", 0),
+                    "max_size": getattr(pool, "_maxsize", 0),
+                    "size": pool.get_size(),
+                    "idle_size": pool.get_idle_size(),
+                }
+                if not pool_ok:
+                    health["status"] = "DEGRADED"
+            else:
+                # main.py (内存后端) - get_pool 返回 None
+                health["checks"]["pg"] = {"status": "n/a (memory backend)"}
+        except Exception as e:
+            health["checks"]["pg"] = {"status": "error", "error": str(e)[:100]}
+            health["status"] = "DEGRADED"
+        # Repo 探测
+        try:
+            repo = get_repo()
+            # 任意一次 find_define_by_id 调用验证 repo 可用
+            await repo.find_define_by_id(0)  # 期望返回 None
+            health["checks"]["repo"] = {"status": "ok"}
+        except Exception as e:
+            health["checks"]["repo"] = {"status": "fail", "error": str(e)[:100]}
+            health["status"] = "DEGRADED"
+        # 引擎缓存
+        try:
+            facade = get_facade()
+            engine = getattr(facade, "_engine", None)
+            if engine and hasattr(engine, "_def_cache"):
+                health["checks"]["engine_cache"] = {
+                    "status": "ok",
+                    "size": len(engine._def_cache),
+                    "max": getattr(engine, "_DEF_CACHE_MAX", 100),
+                }
+        except Exception:
+            pass
+        # Process count
+        try:
+            repo = get_repo()
+            active_inst = await repo.query_instances_for_stats(state_in=[10, 50])
+            health["checks"]["process"] = {
+                "active_instances": len(active_inst),
+            }
+        except Exception:
+            pass
+        return health
+
     @app.get("/api/stats")
     async def api_stats(userId: str = "user1"):
         repo = get_repo()
@@ -571,6 +681,49 @@ def register_routes(app: FastAPI, *, get_facade: Callable, get_repo: Callable,
         mine = await repo.query_instances_for_stats(state_in=None)
         my_inst = sum(1 for i in mine if i.operator == userId)
         return _ok({"todoCount": len(todo_rows), "myInstanceCount": my_inst})
+
+    @app.get("/api/admin/stats/overview")
+    async def admin_stats_overview(start: str = None, end: str = None,
+                                    stateIn: str = None):
+        """BDD #1202 FIX-T80 (2026-09-20) §4.1.2：管理端看板总览
+
+        GET 端点, 调用 facade._processInstance_stats_overview
+        Args (query string):
+          - start: ISO datetime
+          - end: ISO datetime
+          - stateIn: 逗号分隔状态码 (10/20/30/40/45/50/99)
+        Returns: {total, inProgress, completed, rejected, withdrawn, suspended,
+                  todayNew, avgDurationSeconds, pending, overdue, activeUsers,
+                  countersignRate, onTimeRate, rejectRate}
+        """
+        import json as _json
+        body = {}
+        if start: body["start"] = start
+        if end: body["end"] = end
+        if stateIn:
+            body["stateIn"] = [int(x) for x in stateIn.split(",") if x.strip()]
+        return await get_facade().flow("processInstance/stats/overview", body)
+
+    @app.get("/api/admin/stats/trend")
+    async def admin_stats_trend(granularity: str = "day", start: str = None,
+                                  end: str = None, stateIn: str = None):
+        """BDD #1203 FIX-T81 (2026-09-20) §4.1.2：管理端趋势图"""
+        import json as _json
+        body = {"granularity": granularity}
+        if start: body["start"] = start
+        if end: body["end"] = end
+        if stateIn: body["stateIn"] = [int(x) for x in stateIn.split(",") if x.strip()]
+        return await get_facade().flow("processInstance/stats/trend", body)
+
+    @app.get("/api/admin/stats/group")
+    async def admin_stats_group(dimension: str = "state", start: str = None,
+                                  end: str = None, stateIn: str = None):
+        """BDD #1204 FIX-T82 (2026-09-20) §4.1.2：管理端分组聚合"""
+        body = {"dimension": dimension}
+        if start: body["start"] = start
+        if end: body["end"] = end
+        if stateIn: body["stateIn"] = [int(x) for x in stateIn.split(",") if x.strip()]
+        return await get_facade().flow("processInstance/stats/group", body)
 
     @app.post("/api/users")
     async def api_users(request: Request):
@@ -610,3 +763,287 @@ def register_routes(app: FastAPI, *, get_facade: Callable, get_repo: Callable,
         from spi import SPI_DICTS
         rows = [{"code": code, "items": list(items)} for code, items in SPI_DICTS.items()]
         return _ok(rows)
+
+    @app.post("/api/admin/expire/scan")
+    async def admin_expire_scan():
+        """BDD #1214 FIX-T91 (2026-09-20) §4.4.3：异步任务扫描 (Celery 替代)
+
+        扫描 wf_process_task.expireTime < now 的 task, 标记为 EXPIRED.
+        扫描 wf_process_surrogate 中 enabled=true 但 endTime < now 的, 标记为 enabled=false.
+
+        业务方建议每 5 分钟调一次 (cron / 定时任务):
+        curl -X POST http://jeeFlow:8101/api/admin/expire/scan
+        """
+        from datetime import datetime as _dt
+        now = _dt.now()
+        repo = get_repo()
+        facade = get_facade()
+        task_expired = 0
+        surrogate_disabled = 0
+
+        # 扫描 wf_process_task: expireTime < now 标记为 ABANDON
+        try:
+            tn = getattr(repo, "_find_tasks_by_state", None)
+            if tn is not None:
+                doing_tasks = await repo._find_tasks_by_state(instance_id=None, state_filter=None, actor_filter=None)
+                for task in doing_tasks:
+                    if task.expireTime and task.expireTime < now and task.taskState == 10:
+                        task.taskState = 99  # TaskState.ABANDON (expiry)
+                        task.updateTime = now
+                        task.updateUser = "system_expire"
+                        await repo.update_task(task)
+                        task_expired += 1
+        except Exception:
+            pass
+
+        # 扫描 wf_process_surrogate: endTime < now 关闭 enabled
+        try:
+            ext_repo = getattr(facade, "_ext_repo", None)
+            if ext_repo is not None:
+                rows, _ = await ext_repo.page_surrogates(1, 1000)
+                for s in rows:
+                    if getattr(s, "enabled", True) and getattr(s, "endTime", None):
+                        if s.endTime < now:
+                            s.enabled = False
+                            await ext_repo.update_surrogate(s)
+                            surrogate_disabled += 1
+        except Exception:
+            pass
+
+        return {"taskExpired": task_expired, "surrogateDisabled": surrogate_disabled, "scanTime": now.isoformat()}
+
+
+# ─── Prometheus Metrics (BDD #1205 FIX-T83 §4.1.3) ─────────────────────────────
+# 轻量版: 自实现 prometheus text format 输出, 无外部依赖
+# 暴露 3 个核心指标: wf_instance_state_total / wf_task_duration_seconds / wf_active_instances
+import threading
+import time as _time
+
+class _MetricsRegistry:
+    """线程安全的 prometheus 指标注册表 (自实现, 无外部依赖)"""
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._counters: dict = {}
+        self._gauges: dict = {}
+        self._histograms: dict = {}
+
+    def counter_inc(self, name: str, help_: str, labels: dict = None, value: float = 1.0):
+        with self._lock:
+            key = (name, tuple(sorted((labels or {}).items())))
+            if key not in self._counters:
+                self._counters[key] = {"name": name, "help": help_, "labels": labels or {}, "value": 0.0}
+            self._counters[key]["value"] += value
+
+    def gauge_set(self, name: str, help_: str, labels: dict = None, value: float = 0.0):
+        with self._lock:
+            key = (name, tuple(sorted((labels or {}).items())))
+            self._gauges[key] = {"name": name, "help": help_, "labels": labels or {}, "value": value}
+
+    def histogram_observe(self, name: str, help_: str, labels: dict = None, value: float = 0.0,
+                            buckets=(0.01, 0.1, 1.0, 10.0, 60.0, 300.0, 1800.0, 3600.0, 86400.0)):
+        with self._lock:
+            key = (name, tuple(sorted((labels or {}).items())))
+            if key not in self._histograms:
+                self._histograms[key] = {
+                    "name": name, "help": help_, "labels": labels or {},
+                    "buckets": list(buckets), "counts": [0] * (len(buckets) + 1),  # +1 for +Inf
+                    "sum": 0.0, "count": 0,
+                }
+            h = self._histograms[key]
+            h["sum"] += value
+            h["count"] += 1
+            for i, b in enumerate(h["buckets"]):
+                if value <= b:
+                    h["counts"][i] += 1
+            h["counts"][-1] += 1  # +Inf always
+
+    def render(self) -> str:
+        """Render Prometheus text format"""
+        lines = []
+        with self._lock:
+            for k, c in self._counters.items():
+                lines.append(f"# HELP {c['name']} {c['help']}")
+                lines.append(f"# TYPE {c['name']} counter")
+                label_str = self._fmt_labels(c["labels"])
+                lines.append(f"{c['name']}{label_str} {c['value']}")
+            for k, g in self._gauges.items():
+                lines.append(f"# HELP {g['name']} {g['help']}")
+                lines.append(f"# TYPE {g['name']} gauge")
+                label_str = self._fmt_labels(g["labels"])
+                lines.append(f"{g['name']}{label_str} {g['value']}")
+            for k, h in self._histograms.items():
+                lines.append(f"# HELP {h['name']} {h['help']}")
+                lines.append(f"# TYPE {h['name']} histogram")
+                base_labels = h["labels"]
+                for i, b in enumerate(h["buckets"]):
+                    le_labels = dict(base_labels)
+                    le_labels["le"] = str(b)
+                    label_str = self._fmt_labels(le_labels)
+                    lines.append(f'{h["name"]}_bucket{label_str} {h["counts"][i]}')
+                inf_labels = dict(base_labels)
+                inf_labels["le"] = "+Inf"
+                label_str = self._fmt_labels(inf_labels)
+                lines.append(f'{h["name"]}_bucket{label_str} {h["counts"][-1]}')
+                sum_label_str = self._fmt_labels(base_labels)
+                lines.append(f'{h["name"]}_sum{sum_label_str} {h["sum"]}')
+                lines.append(f'{h["name"]}_count{sum_label_str} {h["count"]}')
+        return "\n".join(lines) + "\n"
+
+    @staticmethod
+    def _fmt_labels(labels: dict) -> str:
+        if not labels:
+            return ""
+        items = ",".join(f'{k}="{v}"' for k, v in labels.items())
+        return "{" + items + "}"
+
+
+# 全局指标注册表
+_METRICS = _MetricsRegistry()
+
+
+def metrics_counter(name, help_, labels=None, value=1.0):
+    """业务调用：counter 累加"""
+    _METRICS.counter_inc(name, help_, labels, value)
+
+
+def metrics_gauge(name, help_, labels=None, value=0.0):
+    """业务调用：gauge 设置"""
+    _METRICS.gauge_set(name, help_, labels, value)
+
+
+def metrics_histogram(name, help_, labels=None, value=0.0):
+    """业务调用：histogram 观察"""
+    _METRICS.histogram_observe(name, help_, labels, value)
+
+
+def install_metrics_endpoint(app):
+    """BDD #1205 FIX-T83 (2026-09-20) §4.1.3：安装 /metrics 端点
+
+    Prometheus 文本格式输出 (无 prometheus_client 依赖)
+    暴露 3 个核心指标:
+    - wf_instance_state_total{state="doing|done|..."}
+    - wf_task_duration_seconds (histogram, labels=taskName)
+    - wf_active_instances (gauge)
+    """
+    @app.get("/metrics")
+    async def metrics():
+        # 动态更新 active_instances (每次 scrape 重新查)
+        try:
+            from jeeflow.model import InstanceState
+            counts = {}
+            for s in InstanceState:
+                if s == InstanceState.DOING or s == InstanceState.PENDING:
+                    insts = await app.state.repo.query_instances_for_stats(state_in=[s.value])
+                    counts[s.value] = len(insts)
+            _METRICS.gauge_set(
+                "wf_active_instances",
+                "当前活跃流程实例数 (DOING + PENDING)",
+                labels=None,
+                value=counts.get(InstanceState.DOING.value, 0) + counts.get(InstanceState.PENDING.value, 0),
+            )
+            # 各 state 计数 (作为 counter snapshot)
+            for s in InstanceState:
+                insts = await app.state.repo.query_instances_for_stats(state_in=[s.value])
+                _METRICS.counter_inc(
+                    "wf_instance_state_total",
+                    "流程实例状态总数 (按状态分组)",
+                    labels={"state": s.name},
+                    value=0,  # 仅初始化 label
+                )
+            # 重写 counter 为 gauge snapshot (覆盖之前累计的值)
+            with _METRICS._lock:
+                _METRICS._counters = {
+                    k: v for k, v in _METRICS._counters.items()
+                    if k[0] != "wf_instance_state_total"
+                }
+            for s in InstanceState:
+                insts = await app.state.repo.query_instances_for_stats(state_in=[s.value])
+                _METRICS.counter_inc(
+                    "wf_instance_state_total",
+                    "流程实例状态总数 (按状态分组)",
+                    labels={"state": s.name},
+                    value=float(len(insts)),
+                )
+        except Exception as _e:
+            # 指标采集失败不影响主流程
+            pass
+
+        # BDD #1219 FIX-T83+ §4.1.3：初始化 wf_task_duration_seconds histogram 占位 (无 sample 时也能 scrape)
+        _METRICS.histogram_observe(
+            "wf_task_duration_seconds",
+            "任务处理耗时 (histogram)",
+            labels={"taskName": "_init"},
+            value=0.001,
+        )
+
+        from fastapi.responses import PlainTextResponse
+        return PlainTextResponse(content=_METRICS.render(), media_type="text/plain; version=0.0.4")
+
+
+# ─── OpenTelemetry-style Trace (BDD #1206 FIX-T84 §4.1.4) ──────────────────────
+# 轻量版: 自实现 trace context + span 收集, 无 opentelemetry-api 依赖
+# 输出: JSON trace 数据到 /api/admin/trace
+import uuid
+from contextvars import ContextVar
+from contextlib import asynccontextmanager
+
+_current_span: ContextVar = ContextVar("current_span", default=None)
+_spans_log: list = []  # 最近 1000 个 span
+
+
+@asynccontextmanager
+async def trace_span(name: str, **attrs):
+    """BDD #1206 FIX-T84 §4.1.4：轻量级 span 追踪
+
+    用法:
+        async with trace_span("engine.execute_process_task", task_id=123) as span:
+            ... 主流程 ...
+            span.set_attribute("result", "ok")
+    """
+    parent = _current_span.get()
+    span_id = uuid.uuid4().hex[:16]
+    trace_id = parent["trace_id"] if parent else uuid.uuid4().hex
+    span = {
+        "span_id": span_id,
+        "trace_id": trace_id,
+        "parent_span_id": parent["span_id"] if parent else None,
+        "name": name,
+        "start_time": _time.time(),
+        "attributes": dict(attrs),
+        "events": [],
+        "status": "ok",
+    }
+    token = _current_span.set(span)
+    try:
+        yield span
+    except Exception as e:
+        span["status"] = "error"
+        span["error"] = str(e)[:200]
+        raise
+    finally:
+        span["end_time"] = _time.time()
+        span["duration_ms"] = int((span["end_time"] - span["start_time"]) * 1000)
+        _spans_log.append(span)
+        if len(_spans_log) > 1000:
+            _spans_log.pop(0)
+        _current_span.reset(token)
+
+
+def install_trace_endpoint(app):
+    """BDD #1206 FIX-T84 §4.1.4：安装 /api/admin/trace 端点
+
+    返回最近 200 个 span (JSON 数组)
+    """
+    @app.get("/api/admin/trace")
+    async def admin_trace(limit: int = 200, name: str = None):
+        spans = list(_spans_log)
+        if name:
+            spans = [s for s in spans if s["name"] == name]
+        return {"spans": spans[-limit:], "total": len(_spans_log)}
+
+    @app.get("/api/admin/trace/spans/{trace_id}")
+    async def admin_trace_by_id(trace_id: str):
+        """按 trace_id 返回完整调用链"""
+        spans = [s for s in _spans_log if s["trace_id"] == trace_id]
+        spans.sort(key=lambda x: x.get("start_time", 0))
+        return {"trace_id": trace_id, "spans": spans}

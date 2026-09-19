@@ -34,6 +34,10 @@ E_CS_NO_TYPE = "E008"
 E_CS_WITH_HANDLER = "E009"
 E_DECISION_NO_OUT = "E010"
 E_TASK_NO_ASSIGNEE = "E011"
+E_CUSTOM_NO_HANDLER = "E012"   # BDD #127 custom 节点未配 clazz (handler)
+E_DECISION_HANDLER_UNKNOWN = "E013"  # BDD #32 decision 节点 decisionHandler 未注册
+E_SURROGATE_FIELDS_MISSING = "E014"  # surrogate 配置缺 operator 或 surrogate
+E_PARENT_CHILD_NAME_CONFLICT = "E015"  # 子流程 name 与已存在流程冲突
 
 W_START_HAS_IN = "W001"
 W_END_HAS_OUT = "W002"
@@ -44,11 +48,14 @@ W_TOO_MANY_NODES = "W006"
 W_PERMISSION_FIELD = "W007"
 W_DUPLICATE_EDGES = "W008"
 W_PERMISSION_GAP = "W009"
+W_DECISION_NO_EXPR = "W010"   # decision 节点所有出边 expr 都为空
+W_CUSTOM_UNUSED_VAL = "W011"   # custom 节点 val 字段空（FIX-T38 §16）
 
 P_CS_SINGLE_ACTOR = "P001"
 P_JUMP_NO_TARGET = "P002"
 P_NO_TASK = "P003"
 P_NESTED_DECISION = "P004"
+P_DEEP_CHAIN = "P005"          # 流程节点深度 > 10 层
 
 ALL_CODES = {
     E_NAME_MISSING: "name 字段缺失或为空",
@@ -62,6 +69,10 @@ ALL_CODES = {
     E_CS_WITH_HANDLER: "会签节点配 assignmentHandler (assignmentHandler 不会被执行)",
     E_DECISION_NO_OUT: "decision 节点所有出边 expr 都为空 (会一直走首边)",
     E_TASK_NO_ASSIGNEE: "task 节点无 assignee 也无 assignmentHandler (节点卡死)",
+    E_CUSTOM_NO_HANDLER: "custom 节点未配 clazz (handler 必填, FIX-T38 §16)",
+    E_DECISION_HANDLER_UNKNOWN: "decision 节点 decisionHandler 字段格式非法 (BDD #32 §46)",
+    E_SURROGATE_FIELDS_MISSING: "surrogate 配置缺 operator 或 surrogate (BDD #26 §40)",
+    E_PARENT_CHILD_NAME_CONFLICT: "子流程 name 与已存在流程冲突 (BDD #40 §56)",
     W_START_HAS_IN: "start 节点有入边 (反模式, start 应是流程入口)",
     W_END_HAS_OUT: "end 节点有出边 (反模式, end 应是流程终点)",
     W_DECISION_FALLBACK_ONLY: "decision 节点所有出边 expr 都为空 (仅兜底, 建议显式条件)",
@@ -71,10 +82,13 @@ ALL_CODES = {
     W_PERMISSION_FIELD: "field 权限声明了但 variables 没用对应字段 (死配置)",
     W_DUPLICATE_EDGES: "同一对节点重复多条边 (冗余)",
     W_PERMISSION_GAP: "字段在某节点声明为 hidden/read, 但其他节点未声明 (建议显式声明以防覆盖)",
+    W_DECISION_NO_EXPR: "decision 节点所有出边 expr 都为空且无 decisionHandler (BDD #32 §46)",
+    W_CUSTOM_UNUSED_VAL: "custom 节点 val 字段空 (handler 结果丢弃, FIX-T38 §16)",
     P_CS_SINGLE_ACTOR: "会签只有 1 个 actor (退化为普通 task, 建议去掉 performType=1)",
     P_JUMP_NO_TARGET: "submitType=4 (JUMP) 但 targetTaskName/taskName 字段缺失",
     P_NO_TASK: "流程无 task 节点 (仅计算, 注意 'type=business' 才能纯计算)",
     P_NESTED_DECISION: "decision 嵌套 > 3 层 (可读性差, 建议拆分或合并)",
+    P_DEEP_CHAIN: "流程 task 链路过深 (> 10, 建议拆分或用子流程)",
 }
 
 TYPE_START = "snaker:start"
@@ -473,6 +487,109 @@ def verify_flow(flow: dict, variables: dict = None) -> Tuple[List[VerifyIssue], 
         if depth > 3:
             patterns.append(VerifyIssue(P_NESTED_DECISION, "pattern",
                                         f"decision 嵌套深度 {depth} > 3 (可读性差, 建议拆分或合并)"))
+
+    # BDD #1001 FIX-T70+ (2026-09-20)：扩展规则
+
+    # E012 - custom 节点未配 clazz (handler 必填)
+    custom_no_handler: list = []
+    for nid, n in node_by_id.items():
+        if n.get("type") == TYPE_CUSTOM:
+            props = n.get("properties") or {}
+            clazz = props.get("clazz", "")
+            if not clazz:
+                custom_no_handler.append(nid)
+    if custom_no_handler:
+        errors.append(VerifyIssue(E_CUSTOM_NO_HANDLER, "error",
+                                   f"custom 节点未配 clazz (handler): {custom_no_handler} (FIX-T38 §16)",
+                                   node_ids=custom_no_handler))
+
+    # E013 - decision 节点的 decisionHandler 字段语法校验
+    #   注: 是否已注册由引擎运行时校验, verify 阶段只查字段格式
+    decision_handler_bad: list = []
+    for nid, n in node_by_id.items():
+        if n.get("type") == TYPE_DECISION:
+            props = n.get("properties") or {}
+            dh = props.get("decisionHandler", "")
+            if dh and not re.match(r"^[A-Za-z0-9_.]+$", dh):
+                decision_handler_bad.append((nid, dh))
+    if decision_handler_bad:
+        errors.append(VerifyIssue(E_DECISION_HANDLER_UNKNOWN, "error",
+                                   f"decision 节点 decisionHandler 字段格式非法: {decision_handler_bad}",
+                                   node_ids=[x[0] for x in decision_handler_bad]))
+
+    # W010 - decision 节点所有出边 expr 都为空
+    # (运行时仅靠 decisionHandler 或 fallback)
+    for nid, n in node_by_id.items():
+        if n.get("type") == TYPE_DECISION:
+            out = out_edges.get(nid, [])
+            has_expr = False
+            for eid in out:
+                e = next((e for e in edges if e.get("id") == eid), None)
+                if e and e.get("properties", {}).get("expr"):
+                    has_expr = True
+                    break
+            if not has_expr and out:
+                props = n.get("properties") or {}
+                if not props.get("decisionHandler"):
+                    warnings.append(VerifyIssue(W_DECISION_NO_EXPR, "warning",
+                                               f"decision 节点[{nid}] 所有出边 expr 都为空且无 decisionHandler",
+                                               node_ids=[nid]))
+
+    # W011 - custom 节点 val 字段空
+    #   FIX-T38 §16：val 决定 handler 结果写回哪个 vars key；空则丢弃结果
+    for nid, n in node_by_id.items():
+        if n.get("type") == TYPE_CUSTOM:
+            props = n.get("properties") or {}
+            if not props.get("val"):
+                warnings.append(VerifyIssue(W_CUSTOM_UNUSED_VAL, "warning",
+                                           f"custom 节点[{nid}] val 字段为空，handler 结果将丢弃",
+                                           node_ids=[nid]))
+
+    # P005 - 流程链路过深 (start 到 end 超过 10 个 task 节点)
+    if start_ids:
+        from collections import deque as _dq
+        dq2 = _dq([(start_ids[0], 0)])
+        visited2 = set()
+        max_chain = 0
+        while dq2:
+            cur, d = dq2.popleft()
+            if cur in visited2:
+                continue
+            visited2.add(cur)
+            t = node_by_id.get(cur, {}).get("type")
+            if t == TYPE_TASK and d > max_chain:
+                max_chain = d
+            for eid in out_edges.get(cur, []):
+                e = next((e for e in edges if e.get("id") == eid), None)
+                if e:
+                    nxt = e.get("targetNodeId")
+                    dq2.append((nxt, d + 1))
+        if max_chain > 10:
+            patterns.append(VerifyIssue(P_DEEP_CHAIN, "pattern",
+                                        f"流程 task 链路过深 ({max_chain} > 10), 建议拆分或用子流程"))
+
+    # BDD #1101 FIX-VERIFY-3 (2026-09-20)：E014 surrogate 配置校验
+    #   校验 processDesign/save 不会带 surrogate, 但可通过顶层 surrogateRules 字段做全局委派
+    #   此处只检查典型错误: processName 含空格 / 包含 surrogate 但 operator/surrogate 字段为空
+    surrogate_rules = (flow.get("surrogateRules") or [])
+    if not isinstance(surrogate_rules, list):
+        surrogate_rules = []
+    bad_surrogate = []
+    for i, s in enumerate(surrogate_rules):
+        if not isinstance(s, dict):
+            continue
+        if not s.get("operator") or not s.get("surrogate"):
+            bad_surrogate.append((i, s.get("operator"), s.get("surrogate")))
+    if bad_surrogate:
+        errors.append(VerifyIssue(E_SURROGATE_FIELDS_MISSING, "error",
+                                   f"surrogate 配置缺 operator 或 surrogate: {bad_surrogate}"))
+
+    # BDD #1102 FIX-VERIFY-3 (2026-09-20)：E015 子流程 name 冲突
+    #   通过 parentProcessName 字段标记子流程, 不允许子流程 name 与父流程 name 冲突
+    parent_name = (flow.get("parentProcessName") or "").strip()
+    if parent_name and parent_name == name:
+        errors.append(VerifyIssue(E_PARENT_CHILD_NAME_CONFLICT, "error",
+                                   f"子流程 name '{name}' 与父流程 name 冲突"))
 
     return errors, warnings, patterns
 

@@ -22,8 +22,8 @@ class PostgresConnection(SqlConnection):
         self._conn = conn
         self._tx: Optional[Any] = None
 
-    async def execute(self, sql: str, args: Sequence[Any]) -> None:
-        await self._conn.execute(sql, *args)
+    async def execute(self, sql: str, args: Sequence[Any]) -> str:
+        return await self._conn.execute(sql, *args)
 
     async def fetchone(self, sql: str, args: Sequence[Any]) -> Optional[tuple]:
         return await self._conn.fetchrow(sql, *args)
