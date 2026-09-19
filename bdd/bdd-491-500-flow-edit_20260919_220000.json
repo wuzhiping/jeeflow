@@ -1,0 +1,65 @@
+{
+  "batch": "flow-edit",
+  "results": [
+    {
+      "bdd_id": "BDD#491",
+      "name": "save→deploy",
+      "status": "INFO",
+      "detail": "deploy code=0"
+    },
+    {
+      "bdd_id": "BDD#492",
+      "name": "processDesign/update",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#493",
+      "name": "processDesign/updateDefine",
+      "status": "INFO",
+      "detail": "code=99999999"
+    },
+    {
+      "bdd_id": "BDD#494",
+      "name": "processDesign/redeploy",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#495",
+      "name": "processDesign/remove",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#496",
+      "name": "processDefine/redeploy",
+      "status": "INFO",
+      "detail": "code=99999999"
+    },
+    {
+      "bdd_id": "BDD#497",
+      "name": "processDefine/remove",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#498",
+      "name": "save→deploy→start",
+      "status": "INFO",
+      "detail": "inst=91940121521376"
+    },
+    {
+      "bdd_id": "BDD#499",
+      "name": "同一流程多次 deploy",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#500",
+      "name": "同名 save",
+      "status": "INFO",
+      "detail": "code=0"
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "batch": "spi-advanced",
+  "results": [
+    {
+      "bdd_id": "BDD#411",
+      "name": "@user:director",
+      "status": "INFO",
+      "detail": "actors=['@user:director']"
+    },
+    {
+      "bdd_id": "BDD#412",
+      "name": "@role:engineer",
+      "status": "INFO",
+      "detail": "actors=['userA', 'userB', 'userC']"
+    },
+    {
+      "bdd_id": "BDD#413",
+      "name": "@role:boss",
+      "status": "INFO",
+      "detail": "actors=['boss']"
+    },
+    {
+      "bdd_id": "BDD#414",
+      "name": "role + applicant",
+      "status": "PASS",
+      "detail": "actors=['leader', 'userA']"
+    },
+    {
+      "bdd_id": "BDD#415",
+      "name": "f_userId 变量",
+      "status": "INFO",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#416",
+      "name": "f_actorIds 列表",
+      "status": "INFO",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#417",
+      "name": "APPLICANT 大写",
+      "status": "INFO",
+      "detail": "actors=['APPLICANT']"
+    },
+    {
+      "bdd_id": "BDD#418",
+      "name": "assignee 空格",
+      "status": "INFO",
+      "detail": "actors=['userA', 'userB']"
+    },
+    {
+      "bdd_id": "BDD#419",
+      "name": "中文 assignee",
+      "status": "INFO",
+      "detail": "state=10"
+    },
+    {
+      "bdd_id": "BDD#420",
+      "name": "全角逗号",
+      "status": "INFO",
+      "detail": "actors=['userA，userB']"
+    }
+  ]
+}

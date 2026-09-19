@@ -327,9 +327,15 @@
     "director"
   ],
   "hr": [
-    "cashier"
+    "userC",
+    "userD"
   ],
   "dept_lead": [
     "manager"
+  ],
+  "engineer": [
+    "userA",
+    "userB",
+    "userC"
   ]
 }

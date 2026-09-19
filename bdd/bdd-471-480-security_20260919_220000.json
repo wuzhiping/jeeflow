@@ -1,0 +1,65 @@
+{
+  "batch": "security",
+  "results": [
+    {
+      "bdd_id": "BDD#471",
+      "name": "跨用户 execute",
+      "status": "INFO",
+      "detail": "code=99999999, msg=[ValueError] operator userC not allowed"
+    },
+    {
+      "bdd_id": "BDD#472",
+      "name": "userA 提 userB 任务",
+      "status": "INFO",
+      "detail": "code=99999999, msg=[ValueError] operator userA not allowed"
+    },
+    {
+      "bdd_id": "BDD#473",
+      "name": "操作人伪造",
+      "status": "INFO",
+      "detail": "字符串伪造不验证 (依赖上游 SSO)"
+    },
+    {
+      "bdd_id": "BDD#474",
+      "name": "无权限访问 instance",
+      "status": "INFO",
+      "detail": "能读到 (无 ACL 校验)"
+    },
+    {
+      "bdd_id": "BDD#475",
+      "name": "processInstance detail",
+      "status": "INFO",
+      "detail": "state=None"
+    },
+    {
+      "bdd_id": "BDD#476",
+      "name": "deploy 权限",
+      "status": "INFO",
+      "detail": "无限制 (demo 简化)"
+    },
+    {
+      "bdd_id": "BDD#477",
+      "name": "remove 权限",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#478",
+      "name": "surrogate 越权",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#479",
+      "name": "designer page",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#480",
+      "name": "admin 操作",
+      "status": "INFO",
+      "detail": "无 RBAC 限制 (demo)"
+    }
+  ]
+}
