@@ -578,11 +578,12 @@ class JeeflowFacade:
         # 撤回：废弃全部 doing 任务 + 实例状态（v1.0.1：update_instance 级联落库）
         # 注意：find_instance_by_id 现水合 tasks（issues/110），此处仍按实例单独查 doing 任务废弃，
         # 且必须把聚合副本重置为仅被废弃项（见下方 inst.tasks = abandoned），防级联回写多余任务
+        # FIX-T111 §112 (2026-09-21): 显式传 abandoned_by=operator(撤回人),audit 追溯清晰
         operator = str(args.get("operator", "user1"))
         now = datetime.now()
         abandoned = []
         for t in await self._repo.find_doing_tasks(instance_id):
-            t.abandon(now)
+            t.abandon(now, abandoned_by=operator)
             abandoned.append(t)
         inst.withdraw(now)  # issues/53 E25：撤回状态 Withdraw(30) 而非 Reject(45)
         inst.updateUser = operator

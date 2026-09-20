@@ -179,10 +179,12 @@ class EngineImpl(Engine):
             # 废弃该节点剩余 DOING 任务（对齐内置引擎 abandonProcessTask）：
             # SEQUENTIAL 逐人创建天然 no-op；PARALLEL 全员预创建，否决时废弃其余成员
             # （刚完成者已 DONE 不会误伤）。逐条持久化并回写聚合副本（E25：防 update_instance 级联回写旧状态）
+            # FIX-T111 §112 (2026-09-21): 显式传 abandoned_by=operator(命中完成条件的提交人)
+            # 替代之前隐式沿用 createUser(=发起人),导致审计追溯错乱的问题
             if ct:
                 remaining = await self.repo.find_doing_tasks(inst.id, [cur_node.id])
                 for t in remaining:
-                    t.abandon(now)
+                    t.abandon(now, abandoned_by=operator)
                     await self.repo.update_task(t)
                     _sync_task_to_aggregate(inst, t)
                 # BDD #129 FIX-T46 (2026-09-19)：ONE_VOTE_VETO REJECT 路径

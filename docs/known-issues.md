@@ -4278,3 +4278,255 @@ POST /wf/processInstance/detail {"id":"91981603277825"}
 - PG 端: 100 实例并发启动 ~1.3-2.4s
 
 **报告**: `./bdd/bdd-1109-1110-perf_20260920.md`
+
+---
+
+## §111 FIX-T110 task 节点多出边隐式 fork 致实例提前 finish (2026-09-20)
+
+### 现象
+
+flowuser 反馈 BUG-1 (cmd: `hermes peer dm flowuser "..."` 2026-09-20)：
+
+```
+报销流程: apply → decision_amount → mgr_approve (f_amount<5000) → cashier_pay → end_paid
+                                                              ↘ end_rejected
+```
+
+mgr 同意后 (`processTask/execute submitType=1`)，预期：
+- cashier_pay task 创建 (DOING)
+- instance.state=10 (DOING)
+
+实际：
+- instance.state=20 (DONE)
+- cashier_pay 仍 DOING (state=10)
+- 再次执行 cashier 任务 → `code=99999999 "[ValueError] 实例 state=20 不可执行任务"`
+
+### 复现 (本地 v1.9.0 完整复现)
+
+`./tdd/expense_report_repro.json` (固化)，实例 ID=`92066757424129`：
+
+```bash
+# 复现 v1 (坏设计)
+DESIGN=$(curl ... save ... | jq .data.id)
+DEFINE=$(curl ... deploy ... | jq .data.processDefineId)
+INST=$(curl ... startAndExecute ... f_amount=4800 ... | jq .data.processInstanceId)
+MGR=$(curl ... todoList manager ... | jq -r '.data.rows[] | select(.processInstanceId=="'$INST'") | .id')
+curl ... execute "$MGR" submitType=1 ...
+# → instance.state=20 (BUG!) + cashier_pay 仍 DOING
+```
+
+### 根因
+
+`vendor/jeeflow/engine.py:210` `_follow_edges` 遍历所有出边，不分流：
+
+```python
+for node in _follow_edges(flow, cur_node.id):
+    await self._execute_node(flow, inst, node, operator, vars_)
+```
+
+当 `mgr_approve` 有 2 条无条件出边 `e_mgr_to_cashier` + `e_mgr_to_rejected` 时：
+1. `_execute_node(cashier_pay)` → TYPE_TASK → `_create_task` → cashier_pay DOING
+2. `_execute_node(end_rejected)` → TYPE_END → `inst.finish()` → instance.state=20 DONE
+
+结果：instance 提前 DONE，但下游 task 仍 DOING，execute 失败。
+
+**这是隐式 fork 语义**：task 节点多出边 = 行为等同 fork 节点，但 UI 上不直观。
+
+### 修复 (FIX-T110)
+
+#### 1. 新增 verify 规则 W012 (`vendor/jeeflow/verify.py`)
+
+```python
+W_TASK_MULTI_OUT_TO_END = "W012"
+# task 节点 ≥2 条出边且 target 含 end 节点时，发出警告（不阻塞 save/deploy）
+```
+
+触发条件：`type=snaker:task` AND `len(out_edges) ≥ 2` AND `any(target.type=snaker:end)`。
+
+#### 2. 正确流程设计：decision 节点分隔分支
+
+`./tdd/expense_report_v2.json`：
+
+```
+mgr_approve → decision_mgr
+              ├─ expr="#tf_mgr_decision==1" → cashier_pay
+              └─ expr="#tf_mgr_decision==2" → end_rejected
+
+dir_approve → decision_dir
+              ├─ expr="#tf_dir_decision==1" → cashier_pay
+              └─ expr="#tf_dir_decision==2" → end_rejected
+```
+
+#### 3. BDD 验证 (9/9 PASS)
+
+`./bdd/bdd-1501-1503-fix-t110-task-multi-out_20260920.sh`：
+
+| # | 描述 | 期望 | 实际 |
+|---|------|------|------|
+| 110.1 | W012 在 mgr_approve + dir_approve 各发 1 次 | 2 | 2 ✅ |
+| 110.2.1 | v1 mgr approve 后 instance.state=20 (BUG) | 20 | 20 ✅ |
+| 110.2.2 | v1 cashier execute 返回 99999999 (BUG 签名) | 99999999 | 99999999 ✅ |
+| 110.3.1 | v2 mgr approve (tf=1) 后 instance.state=10 | 10 | 10 ✅ |
+| 110.3.2 | v2 cashier execute 返回 0 | 0 | 0 ✅ |
+| 110.3.3 | v2 happy path 最终 state=20 | 20 | 20 ✅ |
+| 110.3.4 | v2 mgr reject (tf=2) → end_rejected DONE | 20 | 20 ✅ |
+| 110.3.5 | v2 dir path (f_amount=8000) cashier execute=0 | 0 | 0 ✅ |
+| 110.3.6 | v2 dir path 最终 state=20 | 20 | 20 ✅ |
+
+### 设计建议
+
+- ❌ **不要**给 task 节点接多条无条件出边（隐式 fork 语义不直观）
+- ✅ 需要分支时**用 decision 节点**分隔，每条 decision 出边配显式 `expr`
+- ✅ 用 fork 节点也可（但 fork 后必须用 join 汇合）
+
+### 引擎行为（保留）
+
+引擎对 task 节点多出边的处理**保持现状**（遍历所有出边，不分流）：
+- 已有的 fork/decision 节点提供显式分流能力
+- 改为「task 默认只走首边」会破坏已部署流程的兼容性
+- W012 警告 + 文档明确约束足以引导设计者正确使用 decision 节点
+
+### 复现实例
+
+| 实例 ID | 流程版本 | 操作 | 终态 |
+|---------|----------|------|------|
+| 92066757424129 | v1 (坏) | mgr approve | state=20 (BUG) + cashier_pay DOING |
+| 92067239349249 | v2 (修复) | mgr approve(tf=1) → cashier | state=20 (DONE) |
+| 92067260395525 | v2 | mgr approve(tf=2) | state=20 (end_rejected) |
+| 92067260534792 | v2 | dir approve(tf=1) → cashier | state=20 (DONE) |
+
+**报告**: `./tdd/test_fix-t110-task-multi-out_20260920211500.md`
+
+---
+
+## §112 FIX-T111 TaskState.ABANDON.updateUser 语义双义 (2026-09-21)
+
+### 现象 (flowuser 上报 BUG-3 2026-09-21)
+
+```
+recruit_hire 92060892440807:
+  manager approve (T+17.154s) → deptLeader task state=99
+    updateUser=user1 ← 异常 (发起人? deptLeader 才是真正 actor)
+    finishTime=NULL
+    createTime=19:20:15.276091  updateTime=19:20:32.618007 (+189ms)
+
+doc_review_v4 92062553090304:
+  userB approve (T+16.604s) → userC task state=99
+    updateUser=user1 ← 异常
+    finishTime=NULL
+```
+
+**双义点**:
+- `updateUser=user1` 是「发起人 user1 废弃了 userC task」还是「userC task 被自动废弃,updateUser 没被正确更新」?
+- 「废弃」语义不明:是被否决、撤回、超时、还是完成条件命中?
+- 审计追溯时,只看 `updateUser=user1` 会误判为「user1 手动废弃」,实际是「userB 的提交触发完成条件导致 userC 自动废弃」
+
+### 根因
+
+`vendor/jeeflow/model.py` 的 `ProcessTask.abandon()`:
+
+```python
+def abandon(self, now) -> None:        # FIX-T111 之前
+    """废弃任务"""
+    self.taskState = TaskState.ABANDONED
+    self.updateTime = now
+    # ❌ 没有写 updateUser → 保留 createUser (发起人)
+```
+
+调用方 (`main_common.py:248` / `engine.py:185` / `facade.py:585`) 调用 `t.abandon(now)` 时, `updateUser` 字段未设置, 默认沿用 task 创建时的 `createUser` (= 发起人 `user1`)。
+
+**审计盲点**: 比例会签完成条件命中的瞬间,引擎原子把剩余 DOING task 置为 state=99,但 audit 字段未记录「谁触发的废弃」。
+
+### 修复 (FIX-T111 §112 2026-09-21)
+
+#### 1. `vendor/jeeflow/model.py` `abandon()` API 升级
+
+```python
+def abandon(self, now, abandoned_by: str = "") -> None:
+    """废弃任务
+    
+    abandoned_by (FIX-T111): 当非空时, 同步写 task.updateUser = abandoned_by
+    留空保持向后兼容 (仅 taskState=99 + updateTime=now)
+    """
+    self.taskState = TaskState.ABANDONED
+    self.updateTime = now
+    if abandoned_by:
+        self.updateUser = abandoned_by
+```
+
+并同步更新 `abandon_task()` / `abandon_all_doing()` 透传 `abandoned_by`。
+
+#### 2. 调用方全部显式传 `abandoned_by`
+
+| 文件 | 行号 | 触发场景 | abandoned_by |
+|------|------|----------|--------------|
+| `main_common.py:248` | RatioCapableEngine 比例/PARALLEL 条件命中 | `operator` (命中条件的人) |
+| `engine.py:187` | ONE_VOTE_VETO/全部完成 节点 merged | `operator` |
+| `engine.py:202` | ONE_VOTE_VETO REJECT (state=45) | `operator` (原本就写,保留) |
+| `facade.py:586` | withdraw 流程撤回 | `operator` (撤回人) |
+
+#### 3. BDD 验证 (10/10 PASS)
+
+`./bdd/bdd-1511-1516-fix-t111-taskstate-abandon_20260921.sh`:
+
+| # | 描述 | 实测 |
+|---|------|------|
+| §112.1.1 | 比例会签 2/3 命中, instance.state=20 | ✅ |
+| §112.1.2 | ABANDON task.updateUser=userB (修复前是 user1) | ✅ |
+| §112.1.3 | ABANDON task.createUser=user1 (不变) | ✅ |
+| §112.1.4 | ABANDON task.finishTime=null (永久 NULL) | ✅ |
+| §112.2.1 | ONE_VOTE_VETO REJECT, instance.state=45 | ✅ |
+| §112.2.2 | 所有 ABANDON.updateUser=userA (否决人) | ✅ |
+| §112.3.1 | withdraw instance.state=30 WITHDRAW | ✅ |
+| §112.3.2 | leader ABANDON.updateUser=user1 (撤回人) | ✅ |
+| §112.4 | approvalRecord 包含 state=99 ABANDON (审计可见) | ✅ |
+| §112.5 | userC todoList=0 (ABANDON 不算待办) | ✅ |
+| §112.6 | backward compat: 默认参数不覆盖 updateUser | ✅ |
+
+#### 4. 回归 (无 regression)
+
+- P0 全量: 17/17 PASS
+- P1 全量: 26/26 PASS
+- Phase2 全量: 9/9 PASS
+
+### 修复后字段语义 (实测 `state.md §5.1`)
+
+| 字段 | DONE (20) | ABANDON (99) 修复后 |
+|---|---|---|
+| `finishTime` | 执行时间 | NULL (永久) |
+| `updateTime` | 完成时刻 | 废弃触发时刻 |
+| `updateUser` | 执行人 | **触发废弃的人** (修复前误为发起人) |
+| `createUser` | task 创建人 | task 创建人 (不变) |
+| `operator` | 执行人 | "" (未执行) |
+| `todoList` | 不含 | 不含 |
+| `approvalRecord` | 含 | **含** (审计可见) |
+| `bizData` | 含 | 含 (actorIds 仍可见,原应执行者) |
+
+### 设计决策记录
+
+**为什么保留 `finishTime=null` 不写?**
+- ABANDON 不是正常完成,语义上不应有 finishTime
+- 区别于 DONE 任务的「完成时刻」(语义清晰)
+- 若需要查询「何时废弃」, 用 `updateTime` 即可
+
+**为什么不直接用 `__system__` 标记 `updateUser`?**
+- 审计追溯需要知道「谁触发的废弃」,不是「系统自动」
+- 比例会签场景下,「userB 同意导致 userC 被废弃」是有意义的审计信息
+- 与 ONE_VOTE_VETO 路径 (`engine.py:202`) 行为一致 (一直用 `operator`)
+
+### 复现实例 (本地验证)
+
+| 实例 ID | 流程 | 操作 | ABANDON.updateUser (修复后) |
+|---------|------|------|------------------------------|
+| 92069283659795 | bug3_countersign_3of3_abandon_repro | userA+userB 同意 (2/3) | **userB** (触发者) |
+| (withdraw 测试) | bug3_withdraw | user1 withdraw | **user1** (撤回人) |
+| (ONE_VOTE_VETO 测试) | bug3_one_vote_veto | userA submitType=20 | **userA** (否决人) |
+
+### 关联文档
+
+- `docs/state.md §5.1` TaskState.ABANDON 字段语义表 (新)
+- `docs/state.md §5.2` ABANDON 触发场景表 (新)
+- `docs/state.md §5.3` `abandon()` API 约定 (新)
+- `docs/BUGS.md` FIX-T111 条目
+
+**报告**: `./bdd/bdd-1511-1516-fix-t111-taskstate-abandon_20260921.sh` (10/10 PASS)

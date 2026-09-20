@@ -163,6 +163,15 @@
 | `candidateGroups` | string | 否 | 候选角色组（同上两种位置，逗号分隔） |
 | `field` | object | 否 | 字段集合：可放 `candidateUsers` / `candidateGroups` / `countersignCompletionCondition` / `PERMISSION_xxx`（任务字段权限，1=只读、2=隐藏，见 §5） |
 
+> ⚠️ **多出边警告（FIX-T110 2026-09-20 §111）**：
+> - task 节点**不应有多条无条件出边**。引擎 `engine.py:210 _follow_edges` 遍历所有出边，不分流；
+>   当 task 节点 ≥2 出边且 target 含 end 节点时，end 会被提前遍历 → `inst.finish()` → instance.state=20 DONE，
+>   但同时创建的 DOING task 因 instance.state=20 而无法 `execute`（code=99999999）。
+> - 正确做法：需要分支时**用 decision 节点分隔**（每条 decision 出边配显式 `expr`），或用 fork 节点（必须 join 汇合）。
+> - verify 规则 **W012**（`vendor/jeeflow/verify.py`）会在 deploy 时警告此反模式（不阻塞 save/deploy）。
+> - 范例：`tdd/expense_report_v2.json` (mgr_approve → decision_mgr → cashier_pay / end_rejected)。
+> - 详见 `docs/known-issues.md §111` + `AGENTS.md §6 约束 #29`。
+
 **assignee 解析规则（实测 2026-09-17 §35）**：
 - `"applicant"` → `inst.operator`（流程发起人）
 - `inst.variables` 中存在的 key → 查变量值（list/tuple 展开）

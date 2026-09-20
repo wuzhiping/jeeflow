@@ -245,7 +245,9 @@ class RatioCapableEngine(EngineImpl):
                 still_doing = [t for t in node_tasks if t.taskState == 10]
                 if still_doing:
                     for t in still_doing:
-                        t.abandon(now)
+                        # FIX-T111 §112 (2026-09-21): abandoned_by=operator(命中比例条件的提交人)
+                        # 替代之前隐式沿用 createUser(=发起人) 导致审计追溯错乱
+                        t.abandon(now, abandoned_by=operator)
                         await self.repo.update_task(t)
                         _sync_task_to_aggregate(inst_after, t)
                     for node in _follow_edges(flow, cur_node.id):

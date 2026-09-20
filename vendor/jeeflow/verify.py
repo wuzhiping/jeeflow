@@ -50,6 +50,7 @@ W_DUPLICATE_EDGES = "W008"
 W_PERMISSION_GAP = "W009"
 W_DECISION_NO_EXPR = "W010"   # decision 节点所有出边 expr 都为空
 W_CUSTOM_UNUSED_VAL = "W011"   # custom 节点 val 字段空（FIX-T38 §16）
+W_TASK_MULTI_OUT_TO_END = "W012"   # task 节点多条出边且 target 含 end（BUG-1: 隐式 fork 致实例提前 finish）
 
 P_CS_SINGLE_ACTOR = "P001"
 P_JUMP_NO_TARGET = "P002"
@@ -84,6 +85,7 @@ ALL_CODES = {
     W_PERMISSION_GAP: "字段在某节点声明为 hidden/read, 但其他节点未声明 (建议显式声明以防覆盖)",
     W_DECISION_NO_EXPR: "decision 节点所有出边 expr 都为空且无 decisionHandler (BDD #32 §46)",
     W_CUSTOM_UNUSED_VAL: "custom 节点 val 字段空 (handler 结果丢弃, FIX-T38 §16)",
+    W_TASK_MULTI_OUT_TO_END: "task 节点多条出边且 target 含 end（隐式 fork 致 end 被提前遍历,实例 state=20 但下游 task 仍在 DOING, BUG-1 §110）",
     P_CS_SINGLE_ACTOR: "会签只有 1 个 actor (退化为普通 task, 建议去掉 performType=1)",
     P_JUMP_NO_TARGET: "submitType=4 (JUMP) 但 targetTaskName/taskName 字段缺失",
     P_NO_TASK: "流程无 task 节点 (仅计算, 注意 'type=business' 才能纯计算)",
@@ -544,6 +546,38 @@ def verify_flow(flow: dict, variables: dict = None) -> Tuple[List[VerifyIssue], 
                 warnings.append(VerifyIssue(W_CUSTOM_UNUSED_VAL, "warning",
                                            f"custom 节点[{nid}] val 字段为空，handler 结果将丢弃",
                                            node_ids=[nid]))
+
+    # W012 - task 节点多出边且 target 含 end 节点 (BUG-1 §110 2026-09-20)
+    #   引擎 engine.py:210 _follow_edges 遍历所有出边，不分流；
+    #   当 task 节点有 ≥2 条出边且其中 target 含 end 节点时，
+    #   end 节点会被提前遍历 → inst.finish() → instance.state=20 DONE，
+    #   但同时创建的 DOING task 因 instance state=20 而无法 execute。
+    #   正确设计：task 节点需要分支时必须用 decision / fork 节点分隔，
+    #   而不是 task 节点直接接多条出边（隐式 fork 语义不直观）。
+    for nid, n in node_by_id.items():
+        if n.get("type") != TYPE_TASK:
+            continue
+        out = out_edges.get(nid, [])
+        if len(out) < 2:
+            continue
+        # 检查出边 target 是否含 end 节点
+        end_targets: list = []
+        all_target_edge_ids: list = []
+        for eid in out:
+            e = next((e for e in edges if e.get("id") == eid), None)
+            if not e:
+                continue
+            all_target_edge_ids.append(eid)
+            t_node = node_by_id.get(e.get("targetNodeId"))
+            if t_node and t_node.get("type") == TYPE_END:
+                end_targets.append(e.get("targetNodeId"))
+        if end_targets:
+            warnings.append(VerifyIssue(W_TASK_MULTI_OUT_TO_END, "warning",
+                                       f"task 节点[{nid}] 有 {len(out)} 条出边且其中 {len(end_targets)} 条 target 为 end 节点 "
+                                       f"({end_targets})。引擎会遍历所有出边,end 节点被提前遍历导致 instance.state=20 但下游 task 仍 DOING。"
+                                       f"请用 decision/fork 节点分隔分支。",
+                                       node_ids=[nid] + end_targets,
+                                       edge_ids=all_target_edge_ids))
 
     # P005 - 流程链路过深 (start 到 end 超过 10 个 task 节点)
     if start_ids:

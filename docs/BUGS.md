@@ -1,7 +1,7 @@
 # jeeFlow 存量 BUG 报表
 
-> 截至 2026-09-20，共完成 1188 个 BDD + 106 个 FIX：
-> - **106 个 FIX**：全部已修复 (T1-T106)
+> 截至 2026-09-21，共完成 1198 个 BDD + 108 个 FIX (T1-T111)：
+> - **108 个 FIX**：全部已修复 (T1-T111)
 > - **0 个已知限制**：§2+§3+§4+§6+§7 全部完成
 >
 > 本表按状态分类，详细说明见 `docs/known-issues.md` 对应 §。
@@ -631,6 +631,36 @@ class MyHandler:
 - **文件**: `vendor/jeeflow/facade.py` (facade) + `vendor/jeeflow/repository/base.py` (list_instances_by_state) + `vendor/jeeflow/memory.py` (MemoryRepository 实现) + `main.py` + `main_pg.py` (startup hook)
 - **BDD**: #1526-#1532 (8 个验证点, 双端 PASS)
 - **验收**: doingList API + 双端启动日志输出残留告警
+
+### FIX-T110 (2026-09-20): §111 task 节点多出边隐式 fork 致实例提前 finish
+
+- **来源**: flowuser 通过 `hermes peer dm flowuser "..."` 上报 BUG-1 (2026-09-20)
+- **问题**: 报销流程 mgr_approve 有 2 条无条件出边 (e_mgr_to_cashier + e_mgr_to_rejected)，引擎 `_follow_edges` 遍历所有出边，先创建 cashier_pay DOING 再遍历到 end_rejected → `inst.finish()` → instance.state=20。cashier execute 时返回 `code=99999999 "[ValueError] 实例 state=20 不可执行任务"`
+- **根因**: `vendor/jeeflow/engine.py:210 _follow_edges` 不分流，task 节点多出边 = 隐式 fork 语义不直观
+- **解决**:
+  1. `vendor/jeeflow/verify.py` 新增 **W012** 规则：task 节点 ≥2 出边且 target 含 end → 警告（不阻塞 save/deploy）
+  2. 文档新增 §111 + design agent 反模式清单
+  3. 流程范例 `tdd/expense_report_v2.json`：mgr_approve/dir_approve 之后插入 decision 节点 `decision_mgr`/`decision_dir`，由 `expr` 控制分支
+- **文件**: `vendor/jeeflow/verify.py` (W012) + `docs/known-issues.md §111`
+- **BDD**: `#1501-#1503` (9/9 PASS, 双端)
+- **复现实例**: `92066757424129` (v1 BUG) / `92067239349249` (v2 修复 happy) / `92067260395525` (v2 mgr reject) / `92067260534792` (v2 dir path)
+
+### FIX-T111 (2026-09-21): §112 TaskState.ABANDON.updateUser 语义双义
+
+- **来源**: flowuser 通过 `hermes peer dm flowuser "..."` 上报 BUG-3 (2026-09-21)
+- **问题**: 比例/PARALLEL 会签完成条件命中时,引擎把剩余 DOING task 置 state=99 ABANDON,但 `updateUser` 字段保持为 `createUser`（=发起人 user1）。审计追溯时无法识别「谁触发的废弃」(实际是「另一个会签人的提交触发了完成条件」)。
+- **根因**: `vendor/jeeflow/model.py ProcessTask.abandon(now)` 不接受 `abandoned_by` 参数,只写 `taskState`+`updateTime`,不写 `updateUser`。
+- **解决**:
+  1. `vendor/jeeflow/model.py` `abandon(now, abandoned_by: str = "")` 新增可选参数,非空时同步写 `updateUser`
+  2. 调用方全部显式传 `abandoned_by=operator`:
+     - `main_common.py:248` (RatioCapableEngine 比例条件命中)
+     - `engine.py:187` (节点 merged)
+     - `facade.py:586` (withdraw)
+  3. `docs/state.md §5.1-§5.3` 新增 ABANDON 字段语义表 + 触发场景表 + API 约定
+- **文件**: `vendor/jeeflow/model.py` + `vendor/jeeflow/engine.py` + `vendor/jeeflow/facade.py` + `main_common.py` + `docs/state.md` + `docs/known-issues.md §112`
+- **BDD**: `#1511-#1516` (10/10 PASS)
+- **回归**: P0 17/17 + P1 26/26 + Phase2 9/9 全 PASS
+- **复现实例**: `92060892440807` (recruit_hire 流user上报) / `92062553090304` (doc_review_v4 flowuser上报) / `92069283659795` (本地 bug3_ratio 验证)
 
 ---
 

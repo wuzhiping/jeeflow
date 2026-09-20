@@ -1,0 +1,90 @@
+{
+  "name": "expense_report_repro",
+  "displayName": "BUG-1 复现：按金额分支汇合 cashier_pay 跳过",
+  "type": "approval",
+  "instanceUrl": "/form/expense-apply",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "name": "开始", "properties": {}},
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "name": "员工提交报销",
+      "properties": {
+        "form": "expense-apply-form",
+        "assignee": "user1",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "PERMISSION_f_amount": 2,
+          "PERMISSION_f_category": 2,
+          "PERMISSION_f_description": 2,
+          "PERMISSION_f_receipt_url": 2
+        }
+      }
+    },
+    {"id": "decision_amount", "type": "snaker:decision", "name": "按金额分流", "properties": {}},
+    {
+      "id": "mgr_approve",
+      "type": "snaker:task",
+      "name": "经理审批 (<5000)",
+      "properties": {
+        "form": "expense-mgr-form",
+        "assignee": "manager",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "PERMISSION_f_amount": 1,
+          "PERMISSION_f_category": 1,
+          "PERMISSION_tf_mgr_decision": 2,
+          "PERMISSION_tf_mgr_note": 2
+        }
+      }
+    },
+    {
+      "id": "dir_approve",
+      "type": "snaker:task",
+      "name": "总监审批 (>=5000)",
+      "properties": {
+        "form": "expense-dir-form",
+        "assignee": "director",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "PERMISSION_f_amount": 1,
+          "PERMISSION_f_category": 1,
+          "PERMISSION_tf_dir_decision": 2,
+          "PERMISSION_tf_dir_note": 2
+        }
+      }
+    },
+    {
+      "id": "cashier_pay",
+      "type": "snaker:task",
+      "name": "出纳付款",
+      "properties": {
+        "form": "expense-cashier-form",
+        "assignee": "cashier",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "PERMISSION_f_amount": 1,
+          "PERMISSION_tf_cashier_status": 2,
+          "PERMISSION_tf_payment_ref": 2
+        }
+      }
+    },
+    {"id": "end_paid", "type": "snaker:end", "name": "已付款", "properties": {}},
+    {"id": "end_rejected", "type": "snaker:end", "name": "驳回", "properties": {}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e_apply_to_decision", "sourceNodeId": "apply", "targetNodeId": "decision_amount", "properties": {}},
+    {"id": "e_decision_to_mgr", "sourceNodeId": "decision_amount", "targetNodeId": "mgr_approve", "properties": {"expr": "#f_amount<5000"}},
+    {"id": "e_decision_to_dir", "sourceNodeId": "decision_amount", "targetNodeId": "dir_approve", "properties": {"expr": "#f_amount>=5000"}},
+    {"id": "e_mgr_to_cashier", "sourceNodeId": "mgr_approve", "targetNodeId": "cashier_pay", "properties": {}},
+    {"id": "e_dir_to_cashier", "sourceNodeId": "dir_approve", "targetNodeId": "cashier_pay", "properties": {}},
+    {"id": "e_cashier_to_paid", "sourceNodeId": "cashier_pay", "targetNodeId": "end_paid", "properties": {}},
+    {"id": "e_mgr_to_rejected", "sourceNodeId": "mgr_approve", "targetNodeId": "end_rejected", "properties": {}},
+    {"id": "e_dir_to_rejected", "sourceNodeId": "dir_approve", "targetNodeId": "end_rejected", "properties": {}}
+  ]
+}

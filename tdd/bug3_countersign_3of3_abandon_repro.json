@@ -1,0 +1,38 @@
+{
+  "name": "countersign_3of3_abandon_repro",
+  "displayName": "BUG-3 复现: 3 人 PARALLEL 会签 2/3 完成条件触发 state=99 ABANDON",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "name": "开始", "properties": {}},
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "name": "发起申请",
+      "properties": {
+        "form": "apply-form",
+        "assignee": "user1",
+        "taskType": 0,
+        "performType": 0
+      }
+    },
+    {
+      "id": "review_countersign",
+      "type": "snaker:task",
+      "name": "三方会签",
+      "properties": {
+        "form": "countersign-form",
+        "assignee": "userA,userB,userC",
+        "taskType": 0,
+        "performType": 1,
+        "countersignType": "PARALLEL",
+        "countersignCompletionCondition": "#nrOfCompletedInstances>=2"
+      }
+    },
+    {"id": "end_approved", "type": "snaker:end", "name": "通过", "properties": {}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e_apply_to_cs", "sourceNodeId": "apply", "targetNodeId": "review_countersign", "properties": {}},
+    {"id": "e_cs_to_end", "sourceNodeId": "review_countersign", "targetNodeId": "end_approved", "properties": {}}
+  ]
+}

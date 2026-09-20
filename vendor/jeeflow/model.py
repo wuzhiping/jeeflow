@@ -147,17 +147,22 @@ class ProcessInstance:
         self.updateTime = now
         self.updateUser = operator
 
-    def abandon_task(self, task: "ProcessTask", now) -> None:
-        """废弃单个任务"""
-        task.abandon(now)
+    def abandon_task(self, task: "ProcessTask", now, abandoned_by: str = "") -> None:
+        """废弃单个任务
+
+        abandoned_by (FIX-T111): 当非空时, 同步写 task.updateUser = abandoned_by
+        用于审计追溯「谁触发的废弃」(例: 比例会签完成条件命中的最后提交人)
+        留空保持向后兼容 (行为 = 仅 taskState=99 + updateTime=now)
+        """
+        task.abandon(now, abandoned_by=abandoned_by)
         self.updateTime = now
 
-    def abandon_all_doing(self, now) -> list["ProcessTask"]:
-        """废弃所有进行中任务，返回被废弃列表"""
+    def abandon_all_doing(self, now, abandoned_by: str = "") -> list["ProcessTask"]:
+        """废弃所有进行中任务，返回被废弃列表 (FIX-T111: abandoned_by 透传)"""
         abandoned = []
         for t in self.tasks:
             if t.is_doing():
-                t.abandon(now)
+                t.abandon(now, abandoned_by=abandoned_by)
                 abandoned.append(t)
         self.updateTime = now
         return abandoned
@@ -253,10 +258,22 @@ class ProcessTask:
         self.updateUser = operator
         self.variables = vars_
 
-    def abandon(self, now) -> None:
-        """废弃任务"""
+    def abandon(self, now, abandoned_by: str = "") -> None:
+        """废弃任务
+
+        abandoned_by (FIX-T111 §112 2026-09-21): 当非空时同步写 updateUser,
+        用于审计追溯「触发废弃的操作人」(例: 比例会签完成条件命中的最后提交人,
+        一票否决场景的 rejecter)。留空保持向后兼容,行为 = 仅 taskState=99 + updateTime=now。
+
+        典型场景:
+        - 比例/PARALLEL 会签完成条件命中 → 调用方传 operator(满足条件的提交人)
+        - ONE_VOTE_VETO REJECT → 调用方传 operator(否决人), 已在 engine.py:202 显式赋值
+        - 流程撤回 (withdraw) → 调用方传 operator(撤回人)
+        """
         self.taskState = TaskState.ABANDONED
         self.updateTime = now
+        if abandoned_by:
+            self.updateUser = abandoned_by
 
     def is_doing(self) -> bool:
         return self.taskState == TaskState.DOING

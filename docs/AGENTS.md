@@ -330,6 +330,8 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 | 26 | **delegate 历史查询**（FIX-T74 v1.9.0+ `processTask/delegateHistory` 端点） | `./docs/BUGS.md §109` |
 | 27 | **transfer + addCandidate 合并**（FIX-T75 v1.9.0+ `processTask/transferAndAdd` 端点） | `./docs/BUGS.md §109` |
 | 28 | **task 级表单绑定**（FIX-T76 v1.9.0+ `processTask/withForm` 端点） | `./docs/BUGS.md §109` |
+| 29 | **task 节点**不应有多条无条件出边（隐式 fork 致 end 被提前遍历,实例 state=20 但下游 task 仍 DOING;FIX-T110 v1.9.0+ verify W012 警告 + 用 decision 节点分隔） | `./docs/known-issues.md §111` |
+| 30 | **TaskState.ABANDON.updateUser** 语义 = 触发废弃的人（FIX-T111 §112；比例/PARALLEL 会签完成条件命中、流程撤回、ONE_VOTE_VETO REJECT 等场景必须显式传 abandoned_by；不传时保持 backward compat = 沿用 createUser） | `./docs/known-issues.md §112` |
 
 > ⚠️ 约束 #13-#20 来自 `./docs/BUGS.md`，是 BDD 实战中**反复踩坑**的约束。设计前**必读**。
 
