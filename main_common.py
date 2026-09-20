@@ -26,6 +26,7 @@ from typing import Any, Callable, Optional
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
+from decorators import access_guard
 from jeeflow import EngineImpl, JeeflowFacade, EngineExtensions, HandlerRegistry
 from jeeflow.extensions import FlowInterceptor
 from jeeflow.engine import _find_node, _follow_edges, _sync_task_to_aggregate
@@ -584,13 +585,15 @@ def register_routes(app: FastAPI, *, get_facade: Callable, get_repo: Callable,
         )
 
     @app.post("/wf/{action:path}")
+    @access_guard
     async def wf_flow(action: str, request: Request):
         """单入口门面转发（v1.5.0）：/wf/{action}，action 多段（如 processDefine/page）"""
         body = await request.json() if await request.body() else {}
         return await get_facade().flow(action, body)
 
     @app.post("/api/reset")
-    async def api_reset():
+    @access_guard
+    async def api_reset(request: Request):
         """一键重置（issues/11）：清空存储 + 重载种子。reset_fn 处理双端差异（memory 清字典 / PG TRUNCATE）。"""
         if reset_fn:
             result = await reset_fn()
@@ -599,7 +602,8 @@ def register_routes(app: FastAPI, *, get_facade: Callable, get_repo: Callable,
         return _ok()
 
     @app.get("/healthz")
-    async def healthz():
+    @access_guard
+    async def healthz(request: Request):
         pool_ok = True
         if get_pool is not None:
             pool = get_pool()
@@ -607,7 +611,8 @@ def register_routes(app: FastAPI, *, get_facade: Callable, get_repo: Callable,
         return {"status": "UP", "backend": "python", "pg": "ok" if pool_ok else "down"}
 
     @app.get("/api/admin/health")
-    async def admin_health():
+    @access_guard
+    async def admin_health(request: Request):
         """BDD #1201 FIX-T79 (2026-09-20) §4.1.1：管理端 health 监控
 
         详细健康检查 (区别于 /healthz 简版):
@@ -675,7 +680,8 @@ def register_routes(app: FastAPI, *, get_facade: Callable, get_repo: Callable,
         return health
 
     @app.get("/api/stats")
-    async def api_stats(userId: str = "user1"):
+    @access_guard
+    async def api_stats(request: Request, userId: str = "user1"):
         repo = get_repo()
         # 双端差异：memory 用 all_tasks()；PG 用 page_todo_tasks()
         # 通用做法：调 page_todo_tasks（memory + PG 都有，行为一致）
@@ -685,7 +691,8 @@ def register_routes(app: FastAPI, *, get_facade: Callable, get_repo: Callable,
         return _ok({"todoCount": len(todo_rows), "myInstanceCount": my_inst})
 
     @app.get("/api/admin/stats/overview")
-    async def admin_stats_overview(start: str = None, end: str = None,
+    @access_guard
+    async def admin_stats_overview(request: Request, start: str = None, end: str = None,
                                     stateIn: str = None):
         """BDD #1202 FIX-T80 (2026-09-20) §4.1.2：管理端看板总览
 
@@ -707,7 +714,8 @@ def register_routes(app: FastAPI, *, get_facade: Callable, get_repo: Callable,
         return await get_facade().flow("processInstance/stats/overview", body)
 
     @app.get("/api/admin/stats/trend")
-    async def admin_stats_trend(granularity: str = "day", start: str = None,
+    @access_guard
+    async def admin_stats_trend(request: Request, granularity: str = "day", start: str = None,
                                   end: str = None, stateIn: str = None):
         """BDD #1203 FIX-T81 (2026-09-20) §4.1.2：管理端趋势图"""
         import json as _json
@@ -718,7 +726,8 @@ def register_routes(app: FastAPI, *, get_facade: Callable, get_repo: Callable,
         return await get_facade().flow("processInstance/stats/trend", body)
 
     @app.get("/api/admin/stats/group")
-    async def admin_stats_group(dimension: str = "state", start: str = None,
+    @access_guard
+    async def admin_stats_group(request: Request, dimension: str = "state", start: str = None,
                                   end: str = None, stateIn: str = None):
         """BDD #1204 FIX-T82 (2026-09-20) §4.1.2：管理端分组聚合"""
         body = {"dimension": dimension}
@@ -728,6 +737,7 @@ def register_routes(app: FastAPI, *, get_facade: Callable, get_repo: Callable,
         return await get_facade().flow("processInstance/stats/group", body)
 
     @app.post("/api/users")
+    @access_guard
     async def api_users(request: Request):
         from spi import SPI_USERS, SPI
         body = await request.json() if await request.body() else {}
@@ -749,6 +759,7 @@ def register_routes(app: FastAPI, *, get_facade: Callable, get_repo: Callable,
         return _ok(rows)
 
     @app.post("/api/roles")
+    @access_guard
     async def api_roles(request: Request):
         from spi import SPI_ROLES
         body = await request.json() if await request.body() else {}
@@ -761,13 +772,15 @@ def register_routes(app: FastAPI, *, get_facade: Callable, get_repo: Callable,
         return _ok(rows)
 
     @app.post("/api/dicts")
+    @access_guard
     async def api_dicts(request: Request):
         from spi import SPI_DICTS
         rows = [{"code": code, "items": list(items)} for code, items in SPI_DICTS.items()]
         return _ok(rows)
 
     @app.post("/api/admin/expire/scan")
-    async def admin_expire_scan():
+    @access_guard
+    async def admin_expire_scan(request: Request):
         """BDD #1214 FIX-T91 (2026-09-20) §4.4.3：异步任务扫描 (Celery 替代)
 
         扫描 wf_process_task.expireTime < now 的 task, 标记为 EXPIRED.
@@ -956,7 +969,8 @@ def install_metrics_endpoint(app):
     - wf_active_instances (gauge)
     """
     @app.get("/metrics")
-    async def metrics():
+    @access_guard
+    async def metrics(request: Request):
         # 动态更新 active_instances (每次 scrape 重新查)
         try:
             from jeeflow.model import InstanceState
@@ -1136,14 +1150,16 @@ def install_trace_endpoint(app):
     返回最近 200 个 span (JSON 数组)
     """
     @app.get("/api/admin/trace")
-    async def admin_trace(limit: int = 200, name: str = None):
+    @access_guard
+    async def admin_trace(request: Request, limit: int = 200, name: str = None):
         spans = list(_spans_log)
         if name:
             spans = [s for s in spans if s["name"] == name]
         return {"spans": spans[-limit:], "total": len(_spans_log)}
 
     @app.get("/api/admin/trace/spans/{trace_id}")
-    async def admin_trace_by_id(trace_id: str):
+    @access_guard
+    async def admin_trace_by_id(request: Request, trace_id: str):
         """按 trace_id 返回完整调用链"""
         spans = [s for s in _spans_log if s["trace_id"] == trace_id]
         spans.sort(key=lambda x: x.get("start_time", 0))
