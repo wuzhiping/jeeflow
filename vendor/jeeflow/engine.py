@@ -450,10 +450,12 @@ class EngineImpl(Engine):
         return task, inst
 
     async def _execute_node(self, flow: FlowModel, inst: ProcessInstance, node: FlowNode, operator: str, vars_: dict):
-        # 任务创建（对齐 Java CreateTaskHandler：不触发节点拦截器——创建任务 ≠ 节点执行完成；
-        # 任务完成的拦截器由 execute_process_task 显式触发，1.8.0 SYNC 同步演进）
+        # §6.1.1 FIX-T94 (2026-09-20) post-fix: task 节点也触发 pre_handle (BEFORE 创建任务)
+        # 之前: 任务创建不触发 (对齐 Java CreateTaskHandler), 但 bdd-1302 验证 PRE_ONE 被调用
+        # 现在: 所有节点 (含 task) 进入时都触发 _fire_pre, post_handle 在 execute_process_task 完成时触发
         if node.type == TYPE_TASK:
             self._last_created_record_done = False
+            if not await self._fire_pre(node, inst): return
             await self._create_task(node, inst, operator, vars_)
             # BDD #260 FIX-T55 (2026-09-19)：taskType=2 RECORD 自动完成
             # _create_task 内部把 task 置 DONE + fire TASK_COMPLETE

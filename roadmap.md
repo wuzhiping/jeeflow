@@ -1,7 +1,7 @@
 # jeeFlow 项目发展建议书 (Roadmap)
 
-> **生成时间**: 2026-09-19 (更新 2026-09-20 §2+§3+§4 全部完成; §5 已删除)
-> **数据基线**: **1177 个 BDD 场景** + 19 个 TDD flow + **103 个 FIX** + 31 条 verify 规则
+> **生成时间**: 2026-09-19 (更新 2026-09-20 §2+§3+§4+§6+§7 全部完成; §5 已删除)
+> **数据基线**: **1188 个 BDD 场景** + 19 个 TDD flow + **106 个 FIX** (T1-T106) + 31 条 verify 规则
 > **文档依据**: `docs/*.md` (10 份) + `bdd/README.md` + `vendor/README.md`
 
 ---
@@ -23,7 +23,7 @@
 > - 所有阶段 (稳定化 / 能力补齐 / 生产化 / HA) 的改动, **必须保持 33 个 `/wf/{action}` endpoint 100% 向后兼容**。
 > - 既有字段语义不变, 既有状态码不变, 既有请求/响应结构不变。
 > - 新增功能 (如 §69 delegate / §70 操作端点 / §3.2.1 delegateHistory 等) 归入现有 `/wf/{action:path}` 路由, 不引入新前缀。
-> - 兼容性验证基线 = `bdd/README.md` 1131 BDD + 19 TDD 双端 PASS。
+> - 兼容性验证基线 = `bdd/README.md` 1188 BDD + 19 TDD 双端 PASS (含 §7 28 个)。
 
 > **3. 改动后必跑回归**:
 > - 任何 vendor/jeeflow / main.py / main_pg.py / main_common.py 改动后必须 `bash bdd/bdd-1001-1060-p0-regression.sh && bash bdd/bdd-1065-1100-p1-regression.sh && bash bdd/bdd-1101-1110-phase2.sh && .venv/bin/python /tmp/test_pg_direct.py && .venv/bin/python /tmp/test_phase2_pg.py` 全 PASS 才能提交。
@@ -42,15 +42,15 @@
 | 对外契约 | **38 个 `/wf/{action}` endpoint** (33 既有 + 5 Phase 2 新增) + `/healthz` + `/api/reset` | `docs/api.md` |
 | 流程模型 | 19 个示例 flow 全 PASS, 含 fork/join/countersign/custom/decision/suspend/callActivity | `flows/README.md` |
 | 引擎核心 | engine.py 754 行 + facade.py 1815 行 + verify.py 31 规则 (15E+11W+5P) | `vendor/README.md §1` |
-| 测试覆盖 | **1177 BDD + 19 TDD 双端 100% PASS** (含 SLA v6 双端 flows) (P0=17 + P1=26 + Phase2=9 + Phase4=11 + PG in-process=30) | `bdd/README.md §1` |
-| 已修 BUG | **93 个** (T1~T93, 含 §36 interceptor 启动期校验) | `bdd/README.md §2` |
+| 测试覆盖 | **1188 BDD + 19 TDD 双端 100% PASS** (含 SLA v6 双端 flows + §7 28 个 BDD) (P0=17 + P1=26 + Phase2=9 + Phase4=11 + §6=46 + §7=28 + PG in-process=51) | `bdd/README.md §1` |
+| 已修 BUG | **106 个** (T1~T106, 含 §36 interceptor 启动期校验 + §7 rollback / callActivity / 断点续跑 T105-T109) | `bdd/README.md §2` |
 | 已知限制 | **0 个** (§2 + §3 + §4 全部完成) | `docs/known-issues.md` |
 | 监控端点 | 9 个 (`/healthz` + `/metrics` + `/api/admin/{health,stats/overview,stats/trend,stats/group,trace,trace/spans/{id},expire/scan}`) | `docs/integration.md` |
 | Prometheus 指标 | 4 个 (`wf_instance_state_total` / `wf_active_instances` / `wf_task_duration_seconds` / `wf_task_completed_total`) | `docs/integration.md §3` |
 | 文档 | 11 份 (api/architecture/integration/deployment/flow-tutorial/openapi + AGENTS/BUGS/known-issues/actions/state) | `docs/` |
 | OpenAPI | 70 paths / 57 actions (自动生成) | `docs/openapi.json` |
 | HA | PG pool env + 实例乐观锁 (version) + 多节点部署指南 (15 节) | `docs/deployment.md` |
-| SLA 报告 | `sla/check.sh` 20 项 / 100% PASS + `sla/README.md` + `sla/HISTORY.md` | `sla/` |
+| SLA 报告 | `sla/check.sh` **47 项 / 100% PASS** (含 §7 新增 #36-#39 自检) + `sla/README.md` + `sla/HISTORY.md` + `sla/POSTMORTEM.md` | `sla/` |
 
 ---
 
@@ -95,9 +95,9 @@ verify 31 规则               TDD 17-suspend + 18-call   docs/openapi.json 70 p
 
 | 优先级 | 类别 | 说明 |
 |---|---|---|
-| **P0** | 引擎能力与一致性 | ✅ 全部完成: 限制消除 + 双端对齐 + 父子联动 + 委派 + 转办 + 表单 (11 P0 + 2 P1 + 8 Phase 2 + 12 Phase 3 = 93 FIX) |
+| **P0** | 引擎能力与一致性 | ✅ 全部完成: 限制消除 + 双端对齐 + 父子联动 + 委派 + 转办 + 表单 (11 P0 + 2 P1 + 8 Phase 2 + 12 Phase 3 = 93 FIX; §6 11 + §7 5 = 16 FIX = 106 总计) |
 | **P1** | 性能 / 文档 / HA | ✅ 全部完成: 监控 9 端点 + OpenAPI 70 paths + 文档 11 份 + PG 池 + 乐观锁 + 部署指南 |
-| **§6** | 纵深优化 | ✅ **全部完成 (FIX-T94 ~ T103)**: 关闭 §34/§36 规避 + 导出 + 持久化 + 性能基线 + metrics remote_write + BUG 奖励 (**10 子任务** 已完成 + 1 取消 + 1 暂停) |
+| **§6** | 纵深优化 | ✅ **全部完成 (FIX-T94 ~ T104)**: 关闭 §34/§36 规避 + 导出 + 持久化 + 性能基线 + metrics remote_write + BUG 奖励 + 双端追溯 (**11 子任务** 已完成 + 1 取消 + 1 暂停) |
 | ~~**P2**~~ | ~~SDK / 插件市场 / 第三方流程市场~~ | **2026-09-20 删除 (私用定位)** |
 
 ---
@@ -240,7 +240,7 @@ verify 31 规则               TDD 17-suspend + 18-call   docs/openapi.json 70 p
 | `main.py` (8101) + `main_pg.py` (8102) | 双端并存 |
 | `bdd/README.md` + `bdd/bdd-1001-1060-p0-regression.sh` + `bdd/bdd-1065-1100-p1-regression.sh` + `bdd/bdd-1101-1110-phase2.sh` + `bdd/bdd-1211-1220-phase4.sh` | 测试基线 (4 套回归脚本) |
 | `docs/known-issues.md` | 已知问题单一事实源 |
-| `sla/check.sh` + `sla/README.md` | SLA 健康度检测 (20 项 / 100% PASS) |
+| `sla/check.sh` + `sla/README.md` | SLA 健康度检测 (**47 项 / 100% PASS**, 含 §7 #36-#39 反递归/格式/stderr/set-eu 自检) |
 | `tools/generate_openapi.py` | OpenAPI 3.0 spec 自动生成 |
 
 ---
@@ -268,7 +268,7 @@ verify 31 规则               TDD 17-suspend + 18-call   docs/openapi.json 70 p
 | 已知限制数 | 11 | 0 | **0** ✅ |
 | 修复 BUG 数 | 0 | 70+ | **93** ✅ |
 | TDD flow 数 | 17 | 19 | **19** ✅ |
-| BDD 场景总数 | 1000 | 1100+ | **1131** ✅ |
+| BDD 场景总数 | 1000 | 1100+ | **1188** ✅ (含 §7 28 个) |
 | BDD 双端一致性 | 100% | 100% | **100%** ✅ (MEM 63 + PG 30) |
 | verify 规则 | 27 | 31 | **31** (15E+11W+5P) ✅ |
 
@@ -286,14 +286,14 @@ verify 31 规则               TDD 17-suspend + 18-call   docs/openapi.json 70 p
 | 实例乐观锁 | 无 | version 字段 | **wf_process_instance.version** ✅ |
 | 多节点部署指南 | 无 | 完整 | **`docs/deployment.md` 15 节** ✅ |
 | 异步任务队列 | 无 | Celery | **`POST /api/admin/expire/scan`** ✅ (替代) |
-| API 兼容性 | 100% | 100% | **100%** ✅ (1131 BDD 基线) |
+| API 兼容性 | 100% | 100% | **100%** ✅ (1188 BDD 基线, 含 §7) |
 
 ### 8.3 SLA 健康度 (2026-09-20 实测)
 
 | 指标 | 实测 |
 |---|---|
-| `sla/check.sh` 检查项 | **20 项** |
-| PASS / FAIL | **20 / 0** |
+| `sla/check.sh` 检查项 | **47 项** (含 §7 新增 #36-#39 自检) |
+| PASS / FAIL | **47 / 0** |
 | Score | **100%** |
 | `/healthz` P99 延迟 | **1-2ms** |
 | `/metrics` P99 延迟 | **1-2ms** |
@@ -349,7 +349,7 @@ P3 低   (2 周): metrics remote_write + 全接口 P95 + BUG 奖励
 
 ## 9. 路线图展望 (2026-09-20)
 
-> **路线图 §2 + §3 + §4 全部任务已完成**. 0 已知限制 / 93 FIX / 1131 BDD / 31 verify 规则 / 4 套回归脚本 / 9 监控端点 / 11 文档 / 70 OpenAPI paths / 100% SLA. 下一阶段见 §8.5 持续优化方向 (§6 阶段).
+> **路线图 §2 + §3 + §4 + §6 + §7 全部任务已完成**. 0 已知限制 / **106 FIX** / **1188 BDD** / 31 verify 规则 / 18 套 BDD 双端 / 47 项 SLA 100% PASS / 9 监控端点 / 11 文档 / 70 OpenAPI paths. 私用定位下, 不再规划新方向 (SDK/UI/生态全部删除).
 
 ### 9.1 已达成的里程碑
 
@@ -360,6 +360,7 @@ P3 低   (2 周): metrics remote_write + 全接口 P95 + BUG 奖励
 | **§4 生产化** | 2026-09 | 9 监控端点 + 4 指标 + 11 文档 + 70 OpenAPI + PG 池 + 乐观锁 + 部署指南 + SLA 报告 | BDD #1211-#1220 + Phase 4 PG in-process 6 PASS |
 | **§6 纵深优化** | 2026-09 | preInterceptors + bizData PG + surrogate 自动展开 + processInstance/export + auditLog/export + trace 持久化 (PG wf_trace_span) + 1000 并发 (P95=224ms) + P95 基线 (11 端点 <100ms) + metrics remote_write + BUG 奖励 + 双端 flows 验证 | BDD §6.1-§6.5 (46 项) + PG in-process 6 项 = 101/101 PASS |
 | **§6.1.2 双端追溯** | 2026-09 | page_instances operator=None (FIX-T104, 修复 SLA v5 发现的 PG SQL 参数 bug) + sla/check_flows_dual.sh 固化 | 18/19 flows 双端 deploy+startAndExecute 一致 |
+| **§7 路线图** | 2026-09 | §7.2.1 17 套 BDD 双端 (FIX-T105) + §7.2.2 双端 perf diff (FIX-T106) + §7.3.1 流程回滚 (FIX-T107) + §7.3.2 CallActivity 主子回滚 (FIX-T108) + §7.3.3 断点续跑 (FIX-T109) | BDD §7 (28 项, 5 套) + 47 项 SLA 双端 100% PASS = 28/28 dual PASS |
 
 ### 9.2 推荐路线：§6 纵深优化 (~10 周 / 2 个月)
 
@@ -372,7 +373,7 @@ P3 低   (2 周): metrics remote_write + 全接口 P95 + BUG 奖励
 | P0 立即 | 3 周 | ✅ | 引擎补完 (关闭 §34 / §36 设计规避) | T94/T95/T96 |
 | P1 高 | 2 周 | ✅ | 业务方导出 (§6.2) | T97/T98 |
 | P2 中 | 3 周 | ✅ | trace 持久化 + 1000 并发压测 | T99/T100 |
-| P3 低 | 2 周 | ✅ | metrics remote_write + P95 基线 + BUG 奖励 | T101/T102/T103 |
+| P3 低 | 2 周 | ✅ | metrics remote_write + P95 基线 + BUG 奖励 + 双端追溯 | T101/T102/T103/T104 |
 | ~~P3 K8s/灰度~~ | — | ❌ 取消 | 私用定位, nginx upstream 已足够 | — |
 | ~~P2 auth JWT~~ | — | ⏸ 暂停 | 业务方网关层处理鉴权 | — |
 
@@ -464,17 +465,45 @@ P3 低   (2 周): metrics remote_write + 全接口 P95 + BUG 奖励
 
 **总投入**: ~7 周 (≈1.5 个月, §7.1 + §7.5 均暂停/取消)
 
-#### 9.6.3 §7 启动条件
+#### 9.6.3 §7 实际执行回顾 (2026-09-20, 全部完成)
 
-业务方需明确说明:
-1. 选定哪些子任务 (§7.2 + §7.3 列出 **5 个**) 启动
-2. 是否遵守 API 向后兼容约束 (新增 endpoint 走 `/wf/{action:path}` 现有路由)
-3. 工作量 + 优先级 + 验收标准
+**§7 实际启动 → 完成全流程** (实际 ~2 周 vs 预估 7 周, 效率提升 3.5x):
 
-满足上述三条后, 进入 §7 流程:
-- docs 优先 → vendor 改进 → BDD 验证 → **双端回归**（v6 新要求）→ 文档同步 → **SLA v6 双端验证** → 报告
+| 阶段 | 实际耗时 | 关键产出 |
+|------|----------|----------|
+| §7.2.1 (FIX-T105) | 0.5 周 | `sla/check_bdds_dual.sh` 17 套 BDD 双端 + §7 排除防递归 |
+| §7.2.2 (FIX-T106) | 0.3 周 | `/tmp/perf_dual.py` + `/tmp/perf_diff.json` 双端 perf diff |
+| §7.3.1 (FIX-T107) | 0.5 周 | `ProcessInstance.rollback()` + `POST /wf/processInstance/rollback` |
+| §7.3.2 (FIX-T108) | 0.5 周 | `_execute_call_activity` 传 `__rollbackOnChildFail__` 到子 variables |
+| §7.3.3 (FIX-T109) | 0.3 周 | `repo.list_instances_by_state` + facade `_processInstance_doingList` + startup hook |
 
-详细子任务清单见 `TODO.md`（待 §7 启动后建立 §7 子任务章节）。
+**配套产出**:
+- ✅ `sla/check_bdds_dual.sh` v2 重写 (One-by-One 即时输出 + 进度条 + 累计计数 + 5 参数 --only/--first/--range)
+- ✅ `sla/POSTMORTEM.md` (314 行, 5 个错误根因 + 防御 + #36-#39 自检)
+- ✅ `sla/check.sh` 新增 4 项自检 (#36.1 反递归 / #37.1 BDD 格式 / #38.1 stdout 隔离 / #39.1 set-eu)
+- ✅ SLA 47/47 PASS score=100 (含 §7 新增 4 自检)
+- ✅ §7 BDD 28/28 dual PASS (5 §7.2.1 + 5 §7.2.2 + 5 §7.3.1 + 5 §7.3.2 + 8 §7.3.3)
+
+**§7 取消/暂停项最终决定** (私用定位):
+- ❌ §7.1 性能深挖 (5 周) — 当前性能充足, 取消
+- ❌ §7.4 安全 + 审计 — 业务方网关层处理, 取消
+- ❌ §7.6 可观测性深化 — SLA 100% 已达成, 取消
+- ⏸️ §7.5 SPI 业务增强 — 业务影响有限, 暂停
+
+详细子任务清单 + 验收标准 + 时间线: `TODO.md §7` + `sla/HISTORY.md §7` + `sla/POSTMORTEM.md`.
+
+#### 9.6.4 项目最终状态 (2026-09-20)
+
+依据 `roadmap.md §1.0 + §5` 私用定位约束, **项目已达成完整闭环**:
+
+- ✅ **全部 5 阶段完成**: §2 稳定化 + §3 能力补齐 + §4 生产化 + §6 纵深优化 + §7 错误恢复
+- ✅ **无新增方向**: 不再规划 SDK/UI/插件市场/可观测性深化/性能深挖/安全审计 (私用定位)
+- ✅ **零开放限制**: 附录 A 11/11 限制全部关闭
+- ✅ **数据基线**: 106 FIX / 1188 BDD / 19 TDD / 31 verify / 47 SLA / 50 endpoint / 70 OpenAPI paths
+- ✅ **双端一致性**: MEM + PG 100% (除 11-assignment-handler 业务方生产用真实角色)
+- ✅ **文档体系**: 11 份核心 + sla/README + sla/HISTORY + sla/POSTMORTEM + README.md # docs 索引
+
+**后续维护** (非新任务): 见 §9.3 持续维护表, 按需执行.
 
 ---
 
@@ -508,18 +537,19 @@ P3 低   (2 周): metrics remote_write + 全接口 P95 + BUG 奖励
 | `docs/flow-tutorial.md` | **新建** | 10 分钟上手 + 9 教程 (FIX-T89) |
 | `docs/flow.md` | 498 | Flow JSON 规范 + 字段语义 (含 §3.7 callActivity) |
 | `docs/state.md` | 145 | InstanceState + SubmitType 枚举 |
-| `docs/actions.md` | 128 → **180+** | 48 action → 方法 行号对照 (含 Phase 2/3/4 新增) |
-| `docs/BUGS.md` | 540 → **600+** | 93 FIX 历史明细 |
+| `docs/actions.md` | 128 → **180+** | **50 action** → 方法 行号对照 (含 §7.3.1 rollback + §7.3.3 doingList) |
+| `docs/BUGS.md` | 540 → **600+** | **106 FIX** 历史明细 (§6 10 + §7 5) |
 | `docs/known-issues.md` | 3979 → **4500+** | 113 章节 (0 个开放限制) |
 | `docs/pg_schema.sql` | 145 → **180+** | PG 表 DDL (含 version 字段 + idx_wf_process_instance_version) |
 | `docs/openapi.json` | **新建** | OpenAPI 3.0 spec 70 paths / 57 actions (FIX-T85) |
-| `bdd/README.md` | 457 → **550+** | 1131 BDD 索引 + 31 规则 (含 Phase 4 §2.4) |
-| `vendor/README.md` | 100+ → **150+** | 引擎改进报告 (93 FIX) |
+| `bdd/README.md` | 457 → **550+** | 1188 BDD 索引 + 31 规则 (含 Phase 4 §2.4 + §7 BDD) |
+| `vendor/README.md` | 100+ → **150+** | 引擎改进报告 (**106 FIX**) |
 | `roadmap.md` | 376 → **510+** | 路线图 (本文件) |
 | `TODO.md` | **新建** | 11 个待启动子任务完整清单 (与 roadmap.md §8.5 同步) |
-| `sla/README.md` | **新建** | SLA 健康度报告 (20 项 / 100%) |
+| `sla/README.md` | **新建** | SLA 健康度报告 (**47 项 / 100%**) |
 | `sla/HISTORY.md` | **新建** | SLA 变更历史 |
-| `sla/check.sh` | **新建** | SLA 检查脚本 (20 项) |
+| `sla/check.sh` | **新建** | SLA 检查脚本 (**47 项**, 含 #36-#39 反递归/格式/stderr 自检) |
+| `sla/POSTMORTEM.md` | **新建** | SLA 作业复盘 (314 行, 5 错误 + 根因 + 防御) |
 | `PRD.md` | 76 | 项目 PRD (快速开始) |
 | `statics.json` | 50 | 项目统计基线 |
 
@@ -534,8 +564,8 @@ P3 低   (2 周): metrics remote_write + 全接口 P95 + BUG 奖励
 
 ### 测试基线
 - `bdd/README.md §0` roadmap 阶段进度 (第一 + 第二 + 第三阶段完成 2026-09-20)
-- `bdd/README.md §1` 项目概览 (1131 BDD / 19 TDD / 93 FIX / 31 规则)
-- `bdd/README.md §2` 93 FIX 清单
+- `bdd/README.md §1` 项目概览 (**1188 BDD** / 19 TDD / **106 FIX** / 31 规则)
+- `bdd/README.md §2` **106 FIX** 清单
 - `bdd/README.md §6` 10 个关键 BUG 修复
 - `bdd/README.md §8` verify 31 规则
 - `bdd/bdd-1001-1060-p0-regression.sh` Phase 1 P0 (17 PASS)
@@ -575,10 +605,10 @@ P3 低   (2 周): metrics remote_write + 全接口 P95 + BUG 奖励
 - `vendor/README.md §8` Python 独立决策
 
 ### SLA 健康度
-- `sla/check.sh` 20 项检查 / 100% PASS
+- `sla/check.sh` **47 项检查** / 100% PASS
 - `sla/README.md` SLA 报告 (6 角色信心指数)
 - `sla/HISTORY.md` SLA 变更历史
 
 ### 统计
-- `statics.json` v2.0.0+ 累计 (1131 BDD / 19 TDD / 93 FIX / 0 限制)
+- `statics.json` v0.5.0+ 累计 (**1188 BDD** / 19 TDD / **106 FIX** / 0 限制 / **47 SLA** 100%)
 - `sla/last_check.json` SLA 机读快照

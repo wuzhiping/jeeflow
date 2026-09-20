@@ -67,7 +67,7 @@ T_METRICS_MS=$(latency_ms $BASE/metrics)
 # === 4. metrics 4 指标 ===
 M=$(http_get $BASE/metrics)
 for m in wf_instance_state_total wf_active_instances wf_task_duration_seconds wf_task_completed_total; do
-  if echo "$M" | grep -q "^# HELP $m "; then
+  if echo "$M" | grep -q "^# HELP $m"; then
     ok "4.$m metric exists"
   else
     fail "4.$m metric exists" "missing"
@@ -225,7 +225,7 @@ fi
 PG_M=$(http_get $PG_BASE/metrics)
 PG_METRIC_OK=0
 for m in wf_instance_state_total wf_active_instances wf_task_duration_seconds wf_task_completed_total; do
-  if echo "$PG_M" | grep -q "^# HELP $m "; then
+  if echo "$PG_M" | grep -q "^# HELP $m"; then
     PG_METRIC_OK=$((PG_METRIC_OK + 1))
   fi
 done

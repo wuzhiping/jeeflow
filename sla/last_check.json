@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-20T00:44:01Z",
+  "timestamp": "2026-09-20T01:13:20Z",
   "host": "http://localhost:8101",
   "pg_host": "http://localhost:8102",
   "total_checks": 47,
@@ -16,7 +16,7 @@
     "done": 0.0
   },
   "metrics_snapshot_pg": {
-    "trace_span_total": 3673,
+    "trace_span_total": 5376,
     "biz_data_check": "sla-test"
   },
   "section6_features": {
@@ -45,7 +45,7 @@
   "✅ 5.1 stats/overview code=0",
   "✅ 5.2 stats/overview.data.total=1",
   "✅ 5.3 stats/trend code=0",
-  "✅ 6.1 trace.total=1000",
+  "✅ 6.1 trace.total=460",
   "✅ 7.1 expire/scan returns scanTime",
   "✅ 8.1 processDesign/save reachable",
   "✅ 9.1 docs/actions.md ≥30 endpoints (实测 59)",
@@ -56,7 +56,7 @@
   "✅ 14.1 §6.2.1 processInstance/export CSV (code=0, header ok)",
   "✅ 14.2 §6.2.1 processInstance/export JSON (可解析)",
   "✅ 15.1 §6.2.2 auditLog/export CSV (count=2)",
-  "✅ 16.1 §6.1.1 preInterceptors pre_handle 被调用 (1 次)",
+  "✅ 16.1 §6.1.1 preInterceptors pre_handle 被调用 (3 次)",
   "✅ 17.1 §6.4.2 main_common 读取 JEEFLOW_METRICS_REMOTE_WRITE_URL env",
   "✅ 18.1 trace/spans/{trace_id} 返回结构 (trace_id=_sla_test_trace)",
   "✅ 19.1 stats/group code=0",
@@ -66,7 +66,7 @@
   "✅ 23.1 PG processInstance/export CSV (code=0, header ok)",
   "✅ 24.1 PG auditLog/export CSV (count=5)",
   "✅ 25.1 PG bizData 返回数据 (FIX-T95)",
-  "✅ 26.1 PG wf_trace_span 表 span 数=3673 (FIX-T99)",
+  "✅ 26.1 PG wf_trace_span 表 span 数=5376 (FIX-T99)",
   "✅ 27.1 PG expire/scan returns scanTime",
   "✅ 28.1 PG stats/overview code=0",
   "✅ 29.1 双端 PG 数据可查 (bizData + trace)",

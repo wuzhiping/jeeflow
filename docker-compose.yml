@@ -2,7 +2,7 @@ version: '2'
 services:
 
   jeeflow:
-    image: shawoo/jeeflow:dev
+    image: shawoo/jeeflow:prd
     build: .
     restart: always
     #command: ["uv", "run", "main_pg.py"]

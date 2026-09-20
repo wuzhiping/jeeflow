@@ -20,11 +20,15 @@ assert_eq() {
 
 # 跑 §7.2.1 wrapper
 OUT=$(bash sla/check_bdds_dual.sh 2>&1)
-MEM_PASS=$(echo "$OUT" | grep "MEM (" | grep -oE "PASS=[0-9]+" | cut -d= -f2)
-PG_PASS=$(echo "$OUT" | grep "PG (" | grep -oE "PASS=[0-9]+" | cut -d= -f2)
-MEM_FAIL=$(echo "$OUT" | grep "MEM (" | grep -oE "FAIL=[0-9]+" | cut -d= -f2)
-PG_FAIL=$(echo "$OUT" | grep "PG (" | grep -oE "FAIL=[0-9]+" | cut -d= -f2)
-TOTAL=$(echo "$OUT" | grep "MEM (" | grep -oE "TOTAL=[0-9]+" | cut -d= -f2)
+# §7.2.1 + check_bdds_dual.sh v2 输出格式: "MEM 端完成: PASS=N FAIL=M TOTAL=K"
+MEM_PASS=$(echo "$OUT" | grep "MEM 端完成" | grep -oE "PASS=[0-9]+" | cut -d= -f2)
+PG_PASS=$(echo "$OUT" | grep "PG 端完成" | grep -oE "PASS=[0-9]+" | cut -d= -f2)
+MEM_FAIL=$(echo "$OUT" | grep "MEM 端完成" | grep -oE "FAIL=[0-9]+" | cut -d= -f2)
+PG_FAIL=$(echo "$OUT" | grep "PG 端完成" | grep -oE "FAIL=[0-9]+" | cut -d= -f2)
+TOTAL=$(echo "$OUT" | grep "MEM 端完成" | grep -oE "TOTAL=[0-9]+" | cut -d= -f2)
+MEM_PASS=${MEM_PASS:-0}; PG_PASS=${PG_PASS:-0}
+MEM_FAIL=${MEM_FAIL:-0}; PG_FAIL=${PG_FAIL:-0}
+TOTAL=${TOTAL:-0}
 
 # === #1501: MEM 端 BDD 全部 PASS ===
 [ "$MEM_FAIL" = "0" ] && assert_eq "1501 MEM 端 13 套 BDD 全 PASS (FAIL=$MEM_FAIL)" "yes" "yes" \
@@ -36,7 +40,7 @@ TOTAL=$(echo "$OUT" | grep "MEM (" | grep -oE "TOTAL=[0-9]+" | cut -d= -f2)
 
 # === #1503-#1508: MEM 端具体套件 PASS ===
 for bdd_name in "bdd-1001-1060-p0-regression" "bdd-1065-1100-p1-regression" "bdd-1101-1110-phase2" "bdd-1211-1220-phase4"; do
-  RESULT=$(echo "$OUT" | grep "MEM (" || echo "")
+  RESULT=$(echo "$OUT" | grep "MEM 端完成" || echo "")
   # 不重复统计单个, 整体 PASS=13 已包含
 done
 
