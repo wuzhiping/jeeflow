@@ -12,7 +12,7 @@
 | --- | --- | --- |
 | 10 | `DOING` | 进行中（含被回退重新激活的节点） |
 | 20 | `DONE` | 已完成（按 plan 顺序走完到 end） |
-| 30 | `WITHDRAW` | 发起人撤回 |
+| 30 | `WITHDRAW` | 发起人撤回 / 流程回滚 (§7.3.1 FIX-T107: state=WITHDRAW, 废弃所有 DOING 任务) |
 | 40 | `INTERRUPT` | 中断（管理员手动干预） |
 | 45 | `REJECT` | 驳回（决策路由匹配 submitType==2 等拒绝分支） |
 | 50 | `PENDING` | 待激活（如并行汇聚前的等待状态） |

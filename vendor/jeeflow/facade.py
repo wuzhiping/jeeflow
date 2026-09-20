@@ -163,6 +163,43 @@ class JeeflowFacade:
         rows, total = await self._repo.page_instances(page_num, page_size, operator, self._parse_m_query(args))
         return self._page_data([self._instance_row_to_dict(r) for r in rows], total, page_num, page_size)
 
+    async def _processInstance_export(self, args: dict) -> dict:
+        """§6.2.1 FIX-T97 (2026-09-20): 流程实例导出 (CSV/JSON).
+
+        支持参数:
+          operator: 发起人过滤 (默认空=全部, 业务方可指定看自己范围)
+          format: csv | json (默认 csv)
+          limit: 单次最多导出 (默认 1000, 上限 5000)
+          conditions: 通过 _parse_m_query 支持 (state, businessNo 等)
+        返回:
+          {format, count, data (CSV 字符串 or JSON list 字符串)}
+        """
+        operator = str(args.get("operator", "")) or None
+        fmt = str(args.get("format", "csv")).lower()
+        if fmt not in ("csv", "json"):
+            raise ValueError(f"format 必须是 csv 或 json, 当前={fmt}")
+        limit = min(self._to_int(args.get("limit")) or 1000, 5000)
+        # 用 page_instances 一次取 limit 条 (pageSize = limit)
+        rows, _ = await self._repo.page_instances(1, limit, operator, self._parse_m_query(args))
+        dicts = [self._instance_row_to_dict(r) for r in rows]
+        if fmt == "json":
+            import json as _json
+            data_str = _json.dumps(dicts, ensure_ascii=False, default=str)
+        else:
+            # CSV
+            if dicts:
+                import csv as _csv
+                import io
+                buf = io.StringIO()
+                writer = _csv.DictWriter(buf, fieldnames=list(dicts[0].keys()))
+                writer.writeheader()
+                for d in dicts:
+                    writer.writerow({k: _csv_safe(v) for k, v in d.items()})
+                data_str = buf.getvalue()
+            else:
+                data_str = ""
+        return {"format": fmt, "count": len(dicts), "data": data_str}
+
     async def _processInstance_detail(self, args: dict) -> dict:
         """流程实例详情（含任务列表，v1.5.0 补齐）"""
         instance_id = self._to_int(args.get("id"))
@@ -211,21 +248,22 @@ class JeeflowFacade:
         if not define_id:
             raise ValueError("processDefineId 缺失或非法")
 
-        # BDD #1070 FIX-T93 (2026-09-20) §36 interceptor 校验
-        # 在发起时校验 postInterceptors 字段, 避免拦截器未注册时 startProcess 通过、运行期才报错
+        # BDD #1070 FIX-T93 + §6.1.1 FIX-T94 (2026-09-20) §36 + §34 interceptor 校验
+        # 在发起时校验 preInterceptors + postInterceptors, 避免拦截器未注册时 startProcess 通过、运行期才报错
         try:
             def_ = await self._repo.find_define_by_id(define_id)
             if def_ is not None:
                 flow_meta = json.loads(def_.content) if isinstance(def_.content, str) else json.loads(def_.content.decode("utf-8"))
-                declared = str(flow_meta.get("postInterceptors") or "").strip()
-                if declared:
-                    engine_ext = getattr(self._engine, "ext", None)
-                    registry = getattr(engine_ext, "interceptor_registry", None) or {}
-                    unknown = [n.strip() for n in declared.split(",") if n.strip() and n.strip() not in registry]
-                    if unknown:
-                        raise ValueError(
-                            f"postInterceptors 声明的拦截器未注册: NON_EXIST_ONE"
-                        )
+                engine_ext = getattr(self._engine, "ext", None)
+                registry = getattr(engine_ext, "interceptor_registry", None) or {}
+                for field_name in ("preInterceptors", "postInterceptors"):
+                    declared = str(flow_meta.get(field_name) or "").strip()
+                    if declared:
+                        unknown = [n.strip() for n in declared.split(",") if n.strip() and n.strip() not in registry]
+                        if unknown:
+                            raise ValueError(
+                                f"{field_name} 声明的拦截器未注册: {','.join(unknown)}"
+                            )
         except ValueError:
             raise
         except Exception:
@@ -420,6 +458,110 @@ class JeeflowFacade:
             await self._repo.update_define_state(define_id, state)
         return None
 
+    async def _processInstance_rollback(self, args: dict) -> dict:
+        """§7.3.1 FIX-T107 (2026-09-20): 回滚流程到指定节点 (state=WITHDRAW, 废弃 DOING 任务)
+
+        参数:
+          id: 实例 ID (必填)
+          toNodeName: 回滚目标节点名 (必填, 用于记录; 实际跳回由调用方决定)
+          operator: 操作人 (可选, 默认 system)
+        行为:
+          1. 校验实例存在且状态 DOING/PENDING
+          2. 废弃所有 DOING 任务
+          3. instance.state = WITHDRAW
+          4. variables[__rollback__] = {to_node_name, rollback_time, operator}
+        返回: {state, rollback: {to_node_name, rollback_time, operator}}
+        API 兼容性: 新增 endpoint (走 /wf/{action:path} 路由)
+        """
+        instance_id = self._to_int(args.get("id"))
+        if not instance_id:
+            raise ValueError("id 缺失或非法")
+        to_node = str(args.get("toNodeName", "")).strip()
+        if not to_node:
+            raise ValueError("toNodeName 缺失")
+        operator = str(args.get("operator", "system"))
+        inst = await self._repo.find_instance_by_id(instance_id)
+        if not inst:
+            raise ValueError(f"流程实例不存在: {instance_id}")
+        if inst.state not in (InstanceState.DOING, InstanceState.PENDING):
+            raise ValueError(f"实例 state={inst.state} 不可回滚（仅 DOING=10/PENDING=50 可回滚）")
+        from datetime import datetime as _dt
+        inst.rollback(to_node, _dt.now(), operator)
+        await self._repo.update_instance(inst)
+        return {
+            "state": inst.state,
+            "rollback": {
+                "toNodeName": to_node,
+                "rollbackTime": str(inst.updateTime),
+                "operator": operator,
+            }
+        }
+
+    async def _processInstance_doingList(self, args: dict) -> dict:
+        """§7.3.3 FIX-T109 (2026-09-20): 断点续跑 - 扫描 DOING 状态实例
+
+        用法: 启动 hook 调用, 输出当前 DOING 实例统计 + 列表
+        参数:
+          limit: 返回数量上限 (默认 100)
+          defineId: 可选, 只查某 define 的 DOING 实例
+        返回:
+          {
+            instance_count: int,  # DOING 实例数
+            task_count: int,      # 关联 DOING 任务数
+            by_node: {node_name: count},  # 按当前节点统计
+            instances: [{id, defineId, createTime, updateTime, businessNo, doing_tasks: [...]}, ...]
+          }
+        用途:
+          1. 启动 hook: 检测 server 重启前留下的 DOING 实例, 输出日志
+          2. 运维: 列出当前所有 DOING 实例, 检查未完成任务
+        """
+        from .model import InstanceState, TaskState
+        limit = int(args.get("limit") or 100)
+        define_id = args.get("defineId")
+        try:
+            define_id = int(define_id) if define_id else None
+        except Exception:
+            define_id = None
+        result = {
+            "instance_count": 0,
+            "task_count": 0,
+            "by_node": {},
+            "instances": [],
+        }
+        # 拿所有 DOING instance
+        if hasattr(self._repo, "list_instances_by_state"):
+            instances = await self._repo.list_instances_by_state(InstanceState.DOING, limit=limit)
+        else:
+            # 退化: 全量扫
+            instances = []
+            for i in range(1, int(getattr(self._repo, "_seq", 0) or 0) + 1):
+                inst = await self._repo.find_instance_by_id(i)
+                if inst and inst.state == InstanceState.DOING:
+                    if define_id is None or inst.defineId == define_id:
+                        instances.append(inst)
+                if len(instances) >= limit:
+                    break
+        # 按 defineId 过滤
+        if define_id is not None:
+            instances = [i for i in instances if i.defineId == define_id]
+        result["instance_count"] = len(instances)
+        for inst in instances:
+            doing_tasks = [t for t in (inst.tasks or []) if t.taskState == TaskState.DOING]
+            result["task_count"] += len(doing_tasks)
+            cur_node = doing_tasks[0].taskName if doing_tasks else None
+            if cur_node:
+                result["by_node"][cur_node] = result["by_node"].get(cur_node, 0) + 1
+            result["instances"].append({
+                "id": inst.id,
+                "defineId": inst.defineId,
+                "createTime": str(inst.createTime),
+                "updateTime": str(inst.updateTime),
+                "businessNo": inst.businessNo,
+                "currentNode": cur_node,
+                "doing_tasks": [{"id": t.id, "taskName": t.taskName, "taskState": t.taskState.value if hasattr(t.taskState, 'value') else t.taskState} for t in doing_tasks],
+            })
+        return result
+
     async def _processInstance_withdraw(self, args: dict) -> dict:
         instance_id = self._to_int(args.get("id"))
         if not instance_id:
@@ -454,20 +596,112 @@ class JeeflowFacade:
     # ── 流程任务 ─────────────────────────────────────────────────────────────
 
     async def _processTask_todoList(self, args: dict) -> dict:
-        """我的待办分页（operator 作为待办人过滤，v1.5.0 补齐）"""
+        """§6.1.3 FIX-T96 (2026-09-20): 我的待办分页 (含 surrogate 自动展开).
+
+        自动展开: actor 是 surrogate (代理人) 时, 也显示其委托方 (operator) 的待办.
+        实现: 查 wf_process_surrogate 中 surrogate=actor 的有效委托,
+              收集所有被代理的 operator, 在 page_todo_tasks 后合并去重.
+
+        向后兼容: 无委托时, 行为与原 page_todo_tasks 一致.
+        """
         page_num = self._to_int(args.get("pageNum") or args.get("pageNo")) or 1
         page_size = self._to_int(args.get("pageSize")) or 10
         actor_id = str(args.get("operator", "user1"))
+        # §6.1.3: 收集 surrogate 委托的 operator 列表
+        surrogate_operators = await self._collect_surrogate_operators(actor_id)
         rows, total = await self._repo.page_todo_tasks(page_num, page_size, actor_id, self._parse_m_query(args))
+        # 如果有 surrogate 委托, 额外查这些 operator 的待办并去重合并
+        if surrogate_operators:
+            extra_rows = []
+            seen_ids = {r.id for r in rows}
+            for op in surrogate_operators:
+                extra, _ = await self._repo.page_todo_tasks(1, 1000, op, [])
+                for r in extra:
+                    if r.id not in seen_ids:
+                        extra_rows.append(r)
+                        seen_ids.add(r.id)
+            rows = list(rows) + extra_rows
+            total = len(rows)
         return self._page_data([self._task_row_to_dict(r) for r in rows], total, page_num, page_size)
 
+    async def _collect_surrogate_operators(self, surrogate_actor: str) -> list[str]:
+        """§6.1.3 FIX-T96: 收集 surrogate=surrogate_actor 的有效委托方列表.
+
+        委托关系: surrogate (代理人) 可代办 operator (委托人) 的任务.
+        当前 actor 是 surrogate 时, 收集他作为代理的所有 operator.
+        """
+        ext = getattr(self, "_ext", None)  # __init__ 存的属性是 self._ext
+        if ext is None:
+            return []
+        try:
+            from datetime import datetime as _dt
+            now = _dt.now()
+            rows, _ = await ext.page_surrogates(1, 1000, filters={"surrogate": surrogate_actor, "enabled": True})
+            operators = []
+            for s in rows:
+                # 检查时间窗口 (startTime <= now <= endTime)
+                if s.startTime and s.startTime > now:
+                    continue
+                if s.endTime and s.endTime < now:
+                    continue
+                if s.operator and s.operator not in operators:
+                    operators.append(s.operator)
+            return operators
+        except Exception:
+            return []
+
     async def _processTask_doneList(self, args: dict) -> dict:
-        """我的已办分页（operator 过滤，v1.5.0 补齐）"""
+        """我的已办分页（operator 过滤，v1.5.0 补齐 + §6.1.3 surrogate 展开）"""
         page_num = self._to_int(args.get("pageNum") or args.get("pageNo")) or 1
         page_size = self._to_int(args.get("pageSize")) or 10
         operator = str(args.get("operator", "user1"))
+        # §6.1.3: surrogate 自动展开 (同 todoList)
+        surrogate_operators = await self._collect_surrogate_operators(operator)
         rows, total = await self._repo.page_done_tasks(page_num, page_size, operator, self._parse_m_query(args))
+        if surrogate_operators:
+            extra_rows = []
+            seen_ids = {r.id for r in rows}
+            for op in surrogate_operators:
+                extra, _ = await self._repo.page_done_tasks(1, 1000, op, [])
+                for r in extra:
+                    if r.id not in seen_ids:
+                        extra_rows.append(r)
+                        seen_ids.add(r.id)
+            rows = list(rows) + extra_rows
+            total = len(rows)
         return self._page_data([self._task_row_to_dict(r) for r in rows], total, page_num, page_size)
+
+    async def _auditLog_export(self, args: dict) -> dict:
+        """§6.2.2 FIX-T98 (2026-09-20): 审计日志导出 (CSV/JSON).
+
+        数据源: wf_process_task 全部历史 (含 operator + taskState + 完成时间).
+        支持参数:
+          format: csv | json (默认 csv)
+          limit: 单次最多导出 (默认 1000, 上限 5000)
+          conditions: 通过 _parse_m_query 支持 (operator, process_instance_id, task_state, create_time)
+        返回: {format, count, data}
+        """
+        fmt = str(args.get("format", "csv")).lower()
+        if fmt not in ("csv", "json"):
+            raise ValueError(f"format 必须是 csv 或 json, 当前={fmt}")
+        limit = min(self._to_int(args.get("limit")) or 1000, 5000)
+        rows, _ = await self._repo.page_audit_log(1, limit, self._parse_m_query(args))
+        dicts = [self._task_row_to_dict(r) for r in rows]
+        if fmt == "json":
+            import json as _json
+            data_str = _json.dumps(dicts, ensure_ascii=False, default=str)
+        else:
+            import csv as _csv, io
+            if dicts:
+                buf = io.StringIO()
+                writer = _csv.DictWriter(buf, fieldnames=list(dicts[0].keys()))
+                writer.writeheader()
+                for d in dicts:
+                    writer.writerow({k: _csv_safe(v) for k, v in d.items()})
+                data_str = buf.getvalue()
+            else:
+                data_str = ""
+        return {"format": fmt, "count": len(dicts), "data": data_str}
 
     async def _processTask_execute(self, args: dict) -> dict:
         task_id = self._to_int(args.get("processTaskId"))
@@ -2160,3 +2394,11 @@ def _stringify_ids(v):
     if dataclasses.is_dataclass(v) and not isinstance(v, type):
         return _stringify_ids(dataclasses.asdict(v))
     return v
+
+def _csv_safe(v):
+    """§6.2.1 FIX-T97: CSV 安全序列化 (dict/list 序列化为字符串)."""
+    import json as _json
+    if v is None: return ""
+    if isinstance(v, (dict, list)): return _json.dumps(v, ensure_ascii=False, default=str)
+    if isinstance(v, (int, float, bool, str)): return v
+    return str(v)

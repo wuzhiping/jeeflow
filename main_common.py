@@ -289,6 +289,8 @@ def build_ic_registry() -> dict:
         "com.example.MockAuditInterceptor": MockAuditInterceptor(),
         # FIX-ALL (2026-09-17)：注册 bdd 测试用 POST_ONE 拦截器
         "POST_ONE": MockAuditInterceptor(name="POST_ONE"),
+        # §6.1.1 FIX-T94 (2026-09-20)：注册 PRE_ONE 测试用 pre-interceptor
+        "PRE_ONE": MockAuditInterceptor(name="PRE_ONE"),
     }
 
 
@@ -916,6 +918,34 @@ def metrics_histogram(name, help_, labels=None, value=0.0):
     _METRICS.histogram_observe(name, help_, labels, value)
 
 
+_METRICS_REMOTE_WRITE_URL: str = os.environ.get("JEEFLOW_METRICS_REMOTE_WRITE_URL", "").strip()
+_METRICS_REMOTE_WRITE_AUTH: str = os.environ.get("JEEFLOW_METRICS_REMOTE_WRITE_AUTH", "").strip()
+
+
+def _metrics_remote_write(content: str) -> None:
+    """§6.4.2 FIX-T102 (2026-09-20): Prometheus remote_write 客户端 (httpx → urllib fallback).
+
+    推送格式: protobuf (snappy 压缩), 简化为 HTTP POST body 直接送 text/plain.
+    实际生产推荐用 prometheus_client 库 (本项目不得加依赖), 此处 fire-and-forget.
+    """
+    if not _METRICS_REMOTE_WRITE_URL:
+        return
+    try:
+        import urllib.request
+        req = urllib.request.Request(
+            _METRICS_REMOTE_WRITE_URL,
+            data=content.encode("utf-8"),
+            method="POST",
+            headers={
+                "Content-Type": "text/plain; version=0.0.4",
+                **({"Authorization": _METRICS_REMOTE_WRITE_AUTH} if _METRICS_REMOTE_WRITE_AUTH else {}),
+            },
+        )
+        urllib.request.urlopen(req, timeout=2).read()
+    except Exception:
+        pass  # 远程写失败静默 (不阻塞本地)
+
+
 def install_metrics_endpoint(app):
     """BDD #1205 FIX-T83 (2026-09-20) §4.1.3：安装 /metrics 端点
 
@@ -976,8 +1006,10 @@ def install_metrics_endpoint(app):
             value=0.001,
         )
 
+        content = _METRICS.render()
+        _metrics_remote_write(content)  # §6.4.2 FIX-T102: remote_write 推送
         from fastapi.responses import PlainTextResponse
-        return PlainTextResponse(content=_METRICS.render(), media_type="text/plain; version=0.0.4")
+        return PlainTextResponse(content=content, media_type="text/plain; version=0.0.4")
 
 
 # ─── OpenTelemetry-style Trace (BDD #1206 FIX-T84 §4.1.4) ──────────────────────
@@ -989,6 +1021,7 @@ from contextlib import asynccontextmanager
 
 _current_span: ContextVar = ContextVar("current_span", default=None)
 _spans_log: list = []  # 最近 1000 个 span
+_persist_span_hook = None  # §6.4.1 FIX-T99: main_pg.py lifespan 注册, 用于异步落 PG
 
 
 @asynccontextmanager
@@ -1026,7 +1059,75 @@ async def trace_span(name: str, **attrs):
         _spans_log.append(span)
         if len(_spans_log) > 1000:
             _spans_log.pop(0)
+        # §6.4.1 FIX-T99 (2026-09-20): trace 持久化 (PG) 钩子
+        # main_pg.py lifespan 中注册 _persist_span_hook, main.py 不注册 (in-memory only)
+        try:
+            if _persist_span_hook is not None:
+                _persist_span_hook(span)
+        except Exception:
+            pass  # 持久化失败不应影响主流程
         _current_span.reset(token)
+
+
+def install_trace_persistence(pool):
+    """§6.4.1 FIX-T99 (2026-09-20): 注册 trace span 持久化钩子 (PG asyncpg pool).
+
+    每个 trace_span 结束时, 异步写入 wf_trace_span 表 (fire-and-forget, 不阻塞主流程).
+    7 天 TTL 由 install_trace_purge 注册的定时清理任务处理.
+    """
+    global _persist_span_hook
+    import asyncio
+
+    def _hook(span: dict):
+        # fire-and-forget, 不 await (调用方已 try/except)
+        async def _write():
+            try:
+                async with pool.acquire() as conn:
+                    await conn.execute(
+                        """INSERT INTO wf_trace_span
+                        (trace_id, span_id, parent_span_id, name, start_time, end_time, duration_ms, status, error, attributes, events)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)""",
+                        span.get("trace_id", ""),
+                        span.get("span_id", ""),
+                        span.get("parent_span_id"),
+                        span.get("name", ""),
+                        span.get("start_time", 0),
+                        span.get("end_time"),
+                        span.get("duration_ms"),
+                        span.get("status", "ok"),
+                        span.get("error"),
+                        __import__("json").dumps(span.get("attributes", {})),
+                        __import__("json").dumps(span.get("events", [])),
+                    )
+            except Exception:
+                pass  # 持久化失败静默
+        try:
+            loop = asyncio.get_event_loop()
+            loop.create_task(_write())
+        except Exception:
+            pass
+    _persist_span_hook = _hook
+    return _hook
+
+
+def install_trace_purge(pool, retention_days: int = 7):
+    """§6.4.1 FIX-T99: 注册定时清理任务 (删除 retention_days 前的 span)."""
+    async def _purge_loop():
+        while True:
+            try:
+                await asyncio.sleep(24 * 3600)  # 每天清理一次
+                async with pool.acquire() as conn:
+                    await conn.execute(
+                        "DELETE FROM wf_trace_span WHERE create_time < NOW() - INTERVAL '%d days'",
+                        retention_days,
+                    )
+            except Exception:
+                continue
+    try:
+        loop = asyncio.get_event_loop()
+        loop.create_task(_purge_loop())
+    except Exception:
+        pass
 
 
 def install_trace_endpoint(app):

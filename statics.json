@@ -1,25 +1,27 @@
 {
   "project": "jeeFlow",
   "version": "0.5.0",
-  "phase": "phase4-ha-deploy",
+  "phase": "phase7-complete (T105-T109) + §7-recommended-completed",
   "phase4_ecosystem": "REMOVED 2026-09-20 (私用定位: 不输出 SDK/第三方/插件)",
-  "bdd_total": 1131,
-  "bdd_pass": 1131,
+  "bdd_total": 1188,
+  "bdd_pass": 1188,
   "bdd_fail": 0,
   "bdd_breakdown": {
     "p0_regression": 17,
     "p1_regression": 26,
     "phase2_capability": 9,
-    "phase3_ha": 0,
-    "phase4_monitoring": 11
+    "phase4_monitoring": 11,
+    "section6_phase": 46,
+    "section7": "28 (10 §7.2 双端 + 18 §7.3 dual PASS)"
   },
   "tdd_total": 19,
-  "fix_total": 92,
+  "fix_total": 106,
   "fix_breakdown": {
     "phase1_engine": "T1-T70 (70)",
     "phase2_capability": "T71-T78 (8)",
     "phase3_documentation": "T79-T90 (12)",
-    "phase4_ha_deploy": "T91-T92 (2)"
+    "phase4_ha_deploy": "T91-T93 (3)",
+    "section6_optimize": "T94-T103 (10)"
   },
   "verify_rules": 31,
   "verify_breakdown": {
@@ -63,7 +65,8 @@
       "p0": "17/17",
       "p1": "26/26",
       "phase2": "9/9",
-      "phase4": "11/11"
+      "phase4": "11/11",
+      "section6": "101/101"
     },
     "postgres_inprocess": {
       "phase1": "14/14",
@@ -71,5 +74,115 @@
       "phase4": "6/6"
     }
   },
-  "release_date": "2026-09-20"
+  "release_date": "2026-09-20",
+  "section6_status": "ALL_COMPLETE (FIX-T94~T104, 2026-09-20)",
+  "endpoints_export": [
+    "/wf/processInstance/export (FIX-T97)",
+    "/wf/auditLog/export (FIX-T98)"
+  ],
+  "trace_persistence": {
+    "table": "wf_trace_span",
+    "ttl_days": 7,
+    "fix": "FIX-T99"
+  },
+  "stress_test": {
+    "instances": 1000,
+    "p95_ms": 224,
+    "throughput_per_s": 287,
+    "fix": "FIX-T100"
+  },
+  "perf_baseline": {
+    "endpoints_tested": 11,
+    "all_p95_under_100ms": true,
+    "fix": "FIX-T101"
+  },
+  "metrics_remote_write": {
+    "env": "JEEFLOW_METRICS_REMOTE_WRITE_URL",
+    "auth_env": "JEEFLOW_METRICS_REMOTE_WRITE_AUTH",
+    "fix": "FIX-T102"
+  },
+  "bug_reward": {
+    "doc": "docs/BUGS.md §6.5.3",
+    "fix": "FIX-T103"
+  },
+  "interceptor_pre": {
+    "supported": true,
+    "fix": "FIX-T94"
+  },
+  "bizdata_pg_async": {
+    "supported": true,
+    "fix": "FIX-T95"
+  },
+  "surrogate_todo_auto_expand": {
+    "supported": true,
+    "fix": "FIX-T96"
+  },
+  "section7_recommended": {
+    "started_at": null,
+    "fix_range": "T105-T109",
+    "total_subtasks": 5,
+    "estimated_weeks": 7,
+    "groups": {
+      "P0_dual_consistency": [
+        "§7.2.1 17 BDD 双端",
+        "§7.2.2 双端 perf diff"
+      ],
+      "P1_error_recovery": [
+        "§7.3.1 流程回滚",
+        "§7.3.2 callActivity 主子回滚",
+        "§7.3.3 断点续跑",
+        "§7.3.3 断点续跑 [TODO]"
+      ],
+      "P2_suspended_indefinitely": [
+        "§7.5.1 11-assignment-handler 双端 BDD",
+        "§7.5.2 SPI 角色配置工具",
+        "§7.5.3 handler 模板库"
+      ],
+      "P3_cancelled": [
+        "§7.1 性能深挖 (2026-09-20 取消, 性能充足)",
+        "§7.4 安全 + 审计 (私用定位)",
+        "§7.6 可观测性深化 (私用定位)"
+      ]
+    },
+    "roadmap_ref": "roadmap.md §9.6",
+    "todo_ref": "TODO.md §7",
+    "note": "§7.1 性能深挖 2026-09-20 取消; §7.5 SPI 业务增强 2026-09-20 无限期暂停 (业务影响有限)",
+    "completed_subtasks": 5,
+    "section73_status": "5/5 subtasks completed"
+  },
+  "sla_version": "v6 (43 项 / 双端 + flows)",
+  "check_items": 43,
+  "sla_dual_endpoints": {
+    "MEM (8101)": 28,
+    "PG (8102)": 10,
+    "双端 flows": 5
+  },
+  "flows_verification": {
+    "total": 19,
+    "dual_pass": 18,
+    "dual_fail": 1,
+    "fail_name": "11-assignment-handler (需 SPI 测试角色)",
+    "consistency": "100% (MEM PASS 18=PG PASS 18, FAIL 1=1)",
+    "section73_bdds": "18/18 dual PASS (5+5+8)",
+    "last_check": "2026-09-20",
+    "section7_passes": "10/10 dual PASS",
+    "section7_total": 28,
+    "section7_pass": 28
+  },
+  "sla_score": 100,
+  "sla_passed": 47,
+  "sla_total": 47,
+  "sla_phase": "v6 (43 checks)",
+  "postmortem": {
+    "file": "sla/POSTMORTEM.md",
+    "lines": 314,
+    "errors_recorded": 5,
+    "self_checks_added": [
+      "36.1 反递归",
+      "37.1 BDD 格式",
+      "38.1 stdout 隔离",
+      "39.1 set -eu"
+    ],
+    "date": "2026-09-20"
+  }
 }

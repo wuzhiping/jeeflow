@@ -112,6 +112,8 @@ class JsonMetaProvider(IDynamicMetaProvider):
     def load_table_meta(self, table_name: str) -> Optional[TableMeta]:
         if table_name in self._cache:
             return self._cache[table_name]
+        if not self.dir:  # §6.1.2 FIX-T95：无目录时直接返回 None (fallback 原始 row)
+            return None
         path = os.path.join(self.dir, table_name + ".json")
         if not os.path.isfile(path):
             return None
@@ -286,6 +288,36 @@ class AsyncJdbcTableReader:
         async with self._pool.acquire() as conn:
             rows = await conn.fetch(sql, value)
         return [dict(row) for row in rows]
+
+
+class AsyncMetaTableReader:
+    """§6.1.2 FIX-T95 (2026-09-20): async 版 MetaTableReader, 适配 asyncpg pool.
+
+    接口与 MetaTableReader 一致, 但 read_by_process_instance 返回 awaitable.
+    meta_defs 缺省时, 直接返回原始 row (列名→值), 不做字段映射.
+    """
+
+    def __init__(self, reader, provider):
+        self.reader = reader
+        self.provider = provider
+
+    async def read_by_process_instance(self, table_name: str, process_instance_id: Any):
+        row = await self.reader.query_first(table_name, "process_instance_id", process_instance_id)
+        if row is None:
+            return None
+        meta = self.provider.load_table_meta(table_name)
+        if meta is None:
+            return row  # 无元数据: 原样返回 (列名→值)
+        result: dict = {}
+        for f in meta.fields:
+            v = row.get(f.column()) if hasattr(row, "get") else row.get(f.column())
+            if v is None:
+                continue
+            result[f.name] = v
+        for k, v in (row.items() if hasattr(row, "items") else []):
+            if meta.find_field_by_column(k) is None:
+                result.setdefault(k.lower(), v)
+        return result
 
 
 def _check(table_name: str) -> None:

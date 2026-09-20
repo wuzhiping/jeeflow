@@ -1,4 +1,5 @@
 # 此项目ref: ./docs/AGENTS.md, 为AI Agent 和人机协同提供工作流运行时支持
+* 所有功能测试数据和流程（flows/ tdd/,bdd,/...) 都需要memory + pg 8101 8102 双验证
 * 此指导文件可以被变更和修改，留下决策数据和历史记录
 * 请依据 docs/*.md tdd/ bdd/ roadmap.md BDD.md PRD.md等指引
 * 做一次全面的健康检测，生成保留最新的一份 sla/README.md， 只反映当下，变更和历史记录另行记录在其他文件中

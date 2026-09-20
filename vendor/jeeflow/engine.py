@@ -99,6 +99,7 @@ class EngineImpl(Engine):
         inst = ProcessInstance(id=self._next_id(), defineId=define_id, operator=operator,
                                ownerId=owner_id,
                                parentId=int(args.get("parentId")) if args.get("parentId") is not None else None,  # FIX-T33 (2026-09-18) §56
+                               parentNodeName=str(args.get("parentNodeName") or ""),  # §7.3.2 FIX-T108 (2026-09-20) callActivity
                                variables=vars_, createTime=datetime.now(), updateTime=datetime.now(),
                                createUser=operator, updateUser=operator,
                                businessNo=str(vars_.get(KEY_BUSINESS_NO, "")))
@@ -219,6 +220,16 @@ class EngineImpl(Engine):
         # 门面 submitType=2 REJECT 唯一入口（对齐 Java executeAndJumpToEnd 语义）
         inst.reject(datetime.now())
         await self.repo.update_instance(inst)
+        # §7.3.2 FIX-T108 (2026-09-20) callActivity 主子回滚
+        # 子实例 REJECT → 主实例自动 rollback 到 callActivity 节点
+        if inst.parentId and inst.variables.get("__rollbackOnChildFail__") and inst.parentNodeName:
+            try:
+                parent = await self.repo.find_instance_by_id(inst.parentId)
+                if parent and parent.state in (InstanceState.DOING, InstanceState.PENDING):
+                    parent.rollback(inst.parentNodeName, datetime.now(), operator)
+                    await self.repo.update_instance(parent)
+            except Exception:
+                pass  # 主实例可能不存在或已被删除
         await self._fire_event(ProcessEvent(EventType.PROCESS_REJECT, inst.id, task_id, operator=operator))
         return await self.repo.find_instance_by_id(inst.id)
 
@@ -504,6 +515,13 @@ class EngineImpl(Engine):
                             parent.parentStatus = parent_status_value
                             parent.updateTime = datetime.now()
                             parent.updateUser = operator
+                            # §7.3.2 FIX-T108 (2026-09-20) callActivity 主子回滚
+                            # 子实例 REJECT → 主实例自动 rollback 到 callActivity 节点
+                            # 触发条件: 子实例 parentNodeName 节点 properties.rollbackOnChildFail=true
+                            if is_reject:
+                                # §7.3.2 FIX-T108: 子实例 variables 标记了 rollback 配置
+                                if inst.variables.get("__rollbackOnChildFail__") and inst.parentNodeName:
+                                    parent.rollback(inst.parentNodeName, datetime.now(), operator)
                             await self.repo.update_instance(parent)
                             await self._fire_event(ProcessEvent(
                                 type=EventType.PROCESS_START,  # 复用事件类型，CC 用 ccActorId
@@ -599,6 +617,12 @@ class EngineImpl(Engine):
         # 记录 childInstanceId 到主实例 vars_
         vars_[f"{node.id}_childInstanceId"] = child_inst.id
         inst.variables = _merge_exec_into_instance(inst.variables, vars_)
+        # §7.3.2 FIX-T108 (2026-09-20): 把 rollback 配置传到子实例 variables, 让子实例 end 节点触发主子回滚
+        if node.properties.get("rollbackOnChildFail"):
+            child_inst.variables = dict(child_inst.variables or {})
+            child_inst.variables["__rollbackOnChildFail__"] = True
+            child_inst.variables["__callActivityNodeName__"] = node.id
+            await self.repo.update_instance(child_inst)
         await self.repo.update_instance(inst)
         await self._fire_event(ProcessEvent(
             type=EventType.PROCESS_START,
@@ -875,50 +899,66 @@ class EngineImpl(Engine):
 
     async def _fire_pre(self, node, inst) -> bool:
         if not self.ext: return True
-        for ic in sorted(await self._resolve_interceptors(inst), key=lambda x: x.order):
+        pre_list, _ = await self._resolve_interceptors(inst)
+        for ic in sorted(pre_list, key=lambda x: x.order):
             if not await ic.pre_handle(node, inst): return False
         return True
 
     async def _fire_post(self, node, inst):
         if not self.ext: return
-        for ic in sorted(await self._resolve_interceptors(inst), key=lambda x: x.order, reverse=True):
+        _, post_list = await self._resolve_interceptors(inst)
+        for ic in sorted(post_list, key=lambda x: x.order, reverse=True):
             await ic.post_handle(node, inst)
 
-    async def _resolve_interceptors(self, inst) -> list:
-        """定义级拦截器解析（issue 34，对齐 Java 模型级 postInterceptors）：
-        流程定义顶层 postInterceptors 声明 → 按名从 interceptor_registry 取（未声明该流程不触发）；
-        未声明 → 回落引擎级列表（向后兼容现状）。结果按 defineId 缓存。
+    async def _resolve_interceptors(self, inst) -> tuple:
+        """定义级拦截器解析（issue 34 + §6.1.1 FIX-T94 2026-09-20）：
+        流程定义顶层 preInterceptors + postInterceptors 声明 → 按名从 interceptor_registry 取；
+        pre/post 分别缓存。结果按 defineId 缓存 (双 list)。
+        未声明 → 回落引擎级列表（向后兼容现状）。
         issues/60：解析与校验分离——定义读取/JSON 解析失败回落引擎级（现状语义），
-        声明中存在未注册名时抛 ValueError（不静默跳过），且错误不写缓存保证持续报错。"""
+        声明中存在未注册名时抛 ValueError（不静默跳过），且错误不写缓存保证持续报错。
+        """
         if not self.ext:
-            return []
+            return [], []
         define_id = getattr(inst, "defineId", None)
         if define_id is None:
-            return list(self.ext.interceptors)
+            return list(self.ext.interceptors), list(self.ext.interceptors)
         cached = self._ic_cache.get(define_id)
         if cached is not None:
             return cached
-        ic_list = list(self.ext.interceptors)
-        declared = None
+        engine_list = list(self.ext.interceptors)
+        registry = self.ext.interceptor_registry or {}
+        pre_list, post_list = engine_list, engine_list
         try:
             def_ = await self.repo.find_define_by_id(define_id)
             if def_ is not None:
                 content = def_.content
                 meta = json.loads(content) if isinstance(content, str) else json.loads(content.decode("utf-8"))
-                declared = str(meta.get("postInterceptors") or "").strip()
+                pre_declared = str(meta.get("preInterceptors") or "").strip()
+                post_declared = str(meta.get("postInterceptors") or "").strip()
+                if pre_declared:
+                    pre_list = []
+                    for name in pre_declared.split(","):
+                        name = name.strip()
+                        if not name:
+                            continue
+                        if name not in registry:
+                            raise ValueError(f"preInterceptors 声明的拦截器未注册: {name}")
+                        pre_list.append(registry[name])
+                if post_declared:
+                    post_list = []
+                    for name in post_declared.split(","):
+                        name = name.strip()
+                        if not name:
+                            continue
+                        if name not in registry:
+                            raise ValueError(f"postInterceptors 声明的拦截器未注册: {name}")
+                        post_list.append(registry[name])
         except Exception:
             pass
-        if declared:
-            ic_list = []
-            for name in declared.split(","):
-                name = name.strip()
-                if not name:
-                    continue
-                if name not in (self.ext.interceptor_registry or {}):
-                    raise ValueError(f"postInterceptors 声明的拦截器未注册: {name}")
-                ic_list.append(self.ext.interceptor_registry[name])
-        self._ic_cache[define_id] = ic_list
-        return ic_list
+        result = (pre_list, post_list)
+        self._ic_cache[define_id] = result
+        return result
 
     async def fire_event(self, evt: ProcessEvent):
         """公开事件发布入口（issues/102）：facade 层 CC 创建后逐抄送人 fire CC_CREATE；

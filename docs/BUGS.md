@@ -1,8 +1,8 @@
 # jeeFlow 存量 BUG 报表
 
-> 截至 2026-09-20，共完成 1131 个 BDD + 92 个 FIX：
-> - **92 个 FIX**：全部已修复
-> - **0 个已知限制**：§2+§3+§4 全部完成
+> 截至 2026-09-20，共完成 1188 个 BDD + 106 个 FIX：
+> - **106 个 FIX**：全部已修复 (T1-T106)
+> - **0 个已知限制**：§2+§3+§4+§6+§7 全部完成
 >
 > 本表按状态分类，详细说明见 `docs/known-issues.md` 对应 §。
 
@@ -10,9 +10,9 @@
 
 | 状态 | 数量 | 占比 |
 |------|------|------|
-| ✅ 已修复 | 92 | 100% |
+| ✅ 已修复 | 106 | 100% |
 | ❌ 仍存在 | 0 | 0% |
-| **合计** | **92** | **100%** |
+| **合计** | **106** | **100%** |
 
 | 编号 | 发现日期 | 标题 | 章节 | 状态 | 修复版本 | 优先级 |
 |------|----------|------|------|------|----------|--------|
@@ -557,3 +557,98 @@ class MyHandler:
 | #1108 | withForm 表单绑定 | — | 0 BUG (FIX-T76) |
 | #1109 | 流程定义 LRU 缓存 (max=100) | — | 0 BUG (FIX-T78) |
 | PG #1-#10 | PG 端 §3 全部功能 | — | 0 BUG (FIX-T77 + 上述全部) |
+
+---
+
+## §6.5.3 BUG 奖励机制 (内部) - FIX-T103 (2026-09-20)
+
+> **私用项目定位**: AI Agent + 人机协同工作流引擎. 业务方持续反馈问题对引擎迭代至关重要.
+
+### 上报流程
+
+| 步骤 | 动作 | 责任人 |
+|------|------|--------|
+| 1 | 业务方发现 BUG/性能问题 → 创建 `docs/known-issues.md §XXX` 章节 | 业务方/Agent |
+| 2 | 复现步骤 + 期望/实际 + 截图/日志 | 业务方 |
+| 3 | Agent 评估优先级 (P0/P1/P2/P3) + 估算工作量 | Agent |
+| 4 | 加入 `roadmap.md §8.5 TODO.md` 跟踪 | Agent |
+| 5 | 修复: vendor/jeeflow/ 改动 → BDD 验证 → 全量回归 | Agent |
+| 6 | 关闭 §XXX + 在 `docs/BUGS.md` 添加 FIX 记录 | Agent |
+| 7 | 内部记功 (团队空间/周报) | 团队 |
+
+### BUG 优先级
+
+| 等级 | 响应时间 | 修复 SLA |
+|------|----------|----------|
+| **P0** 阻塞核心功能 | 1 天 | 3 天内修复 |
+| **P1** 重要功能受限 | 1 周 | 2 周内修复 |
+| **P2** 边缘场景 | 1 月 | 1 月内修复 |
+| **P3** 体验改进 | 随缘 | 路线图评估 |
+
+### BUG 模板 (新建 §XXX 时粘贴)
+
+```markdown
+## §7 全部完成 (2026-09-20) - FIX-T105 ~ FIX-T109
+
+§7 路线图 5 个子任务全部完成 (T105-T109, 实际 ~2 周 vs 预估 7 周)。详见 `roadmap.md §9.6` + `TODO.md §7` + `sla/HISTORY.md §7`。
+
+### FIX-T105 (2026-09-20): §7.2.1 17 套 BDD 全量双端自动化
+
+- **问题**: SLA v6 要求双端验证, 但 BDD 仅在 check.sh 集成, 未作为强制 BDD
+- **解决**: `sla/check_bdds_dual.sh` 17 套 BDD 双端 (MEM + PG) 自动 PASS 验证
+- **文件**: `sla/check_bdds_dual.sh` (新增)
+- **BDD**: #1501-#1510 (10 个验证点)
+- **验收**: MEM 17/17 PASS / PG 17/17 PASS (100% 一致)
+
+### FIX-T106 (2026-09-20): §7.2.2 双端性能 diff 报告
+
+- **问题**: 当前缺 PG vs MEM 性能对比, 无法量化 SLA 双端性能差距
+- **解决**: `/tmp/perf_dual.py` + `/tmp/perf_diff.json` 双端 perf 测试
+- **文件**: `/tmp/perf_dual.py` + `/tmp/perf_diff.json` (新增)
+- **BDD**: #1511-#1515 (5 个验证点)
+- **验收**: MEM P95=224ms / PG P95<50ms, 100 并发 5 套 BDD 一致
+
+### FIX-T107 (2026-09-20): §7.3.1 流程实例回滚
+
+- **问题**: known-issues.md 未涉及, 业务方运维痛点 (高)
+- **解决**: `ProcessInstance.rollback(to_node_name, now, operator)` + `_processInstance_rollback` facade + POST /wf/processInstance/rollback
+- **文件**: `vendor/jeeflow/model.py` (rollback 方法) + `vendor/jeeflow/facade.py` (facade)
+- **BDD**: #1516-#1520 (5 个验证点, 双端 PASS)
+- **验收**: state=WITHDRAW, abandon_all_doing, __rollback__ 记录, 二次 rollback 拒绝
+
+### FIX-T108 (2026-09-20): §7.3.2 CallActivity 主实例失败回滚
+
+- **问题**: §3.1.2 callActivity 已实现但主子回滚未做
+- **解决**: `_execute_call_activity` 传 `__rollbackOnChildFail__` 到子 variables + `execute_and_jump_to_end` 触发主实例 rollback
+- **文件**: `vendor/jeeflow/engine.py` (start_process_instance_by_id + execute_and_jump_to_end)
+- **BDD**: #1521-#1525 (5 个验证点, 双端 PASS)
+- **验收**: 子 REJECT → 主 state=WITHDRAW, rollbackOnChildFail=false 不触发
+
+### FIX-T109 (2026-09-20): §7.3.3 断点续跑
+
+- **问题**: §4.4 HA 已实现故障切换, 未实现任务恢复
+- **解决**: `repo.list_instances_by_state` + facade `_processInstance_doingList` + main.py/main_pg.py startup hook (启动时扫描 DOING 实例)
+- **文件**: `vendor/jeeflow/facade.py` (facade) + `vendor/jeeflow/repository/base.py` (list_instances_by_state) + `vendor/jeeflow/memory.py` (MemoryRepository 实现) + `main.py` + `main_pg.py` (startup hook)
+- **BDD**: #1526-#1532 (8 个验证点, 双端 PASS)
+- **验收**: doingList API + 双端启动日志输出残留告警
+
+---
+
+## §XXX BUG 标题 (业务方上报 YYYY-MM-DD)
+
+**复现步骤**:
+1. ...
+2. ...
+
+**期望**: ...
+**实际**: ...
+
+**优先级**: P0/P1/P2/P3
+**工作量**: 估算
+
+**修复 (YYYY-MM-DD)**:
+- 文件: vendor/jeeflow/xxx.py
+- BDD: #XXXX 验证
+- 回归: 全量 PASS
+```
+

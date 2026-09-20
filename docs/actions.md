@@ -55,6 +55,8 @@ action 命名约定：`{实体}/{动作}`，统一驼峰、不带前缀下划线
 | 31 | `processInstance/stats/group` | `_processInstance_stats_group` | 1282 | 分组聚合 |
 | 32 | `processInstance/suspend` | `_processInstance_suspend` | 1486 | 实例挂起 (state=50 PENDING, FIX-T70 §70) |
 | 33 | `processInstance/resume` | `_processInstance_resume` | 1503 | 实例恢复 (FIX-T70 §70) |
+| 34 | `processInstance/rollback` | `_processInstance_rollback` | 461 | 流程实例回滚 (state=WITHDRAW, 废弃 DOING 任务, FIX-T107 §7.3.1) |
+| 35 | `processInstance/doingList` | `_processInstance_doingList` | 500 | DOING 实例扫描 (断点续跑 / startup hook, FIX-T109 §7.3.3) |
 
 ## 4. processTask — 流程任务（`wf_process_task`）
 

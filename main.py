@@ -92,6 +92,16 @@ def load_seed_sync():
 if FLOWS:
     load_seed_sync()
 
+# §7.3.3 FIX-T109 (2026-09-20) 断点续跑 - 启动时扫描 DOING 实例
+# MEM 端: load_seed_sync 之后跑 (repo 已有内容)
+try:
+    doing_res = asyncio.run(facade.flow("processInstance/doingList", {"limit": 100}))
+    if doing_res.get("code") == 0:
+        data = doing_res["data"]
+        print(f"[§7.3.3 startup] DOING 实例数: {data['instance_count']}, DOING 任务数: {data['task_count']}, 节点分布: {data['by_node']}")
+except Exception as e:
+    print(f"[§7.3.3 startup] DOING 扫描失败: {e}")
+
 
 # ─── run_seed_business (兼容 reload) ──────────────────────────────────────────
 # T003：业务数据种子（引擎真实启动 16 进行中 + 9 已完成 + 8 委托），/api/reset 复跑。

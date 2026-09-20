@@ -44,6 +44,17 @@ class MemoryRepository(ProcessRepository):
     async def remove_define(self, define_id: int):
         self._defines.pop(define_id, None)
 
+    async def list_instances_by_state(self, state, limit: int = 100):
+        """§7.3.3 FIX-T109 (2026-09-20): 列出特定 state 的 instance (内存版, 全量扫)"""
+        result = []
+        from .model import InstanceState
+        for inst in self._instances.values():
+            if inst.state == state:
+                result.append(inst)
+                if len(result) >= limit:
+                    break
+        return result
+
     async def find_instance_by_id(self, id):
         inst = self._instances.get(id)
         if not inst: return None
@@ -201,6 +212,16 @@ class MemoryRepository(ProcessRepository):
                 continue
             if operator and t.actorId != operator:
                 continue
+            row = self._task_row(t)
+            if _match_conditions(conditions, _pick_fields(row, _TASK_FIELDS)):
+                rows.append(row)
+        return self._slice(rows, page_num, page_size)
+
+    async def page_audit_log(self, page_num: int = 1, page_size: int = 10,
+                             conditions=None):
+        """§6.2.2 FIX-T98 (2026-09-20): 审计日志分页 (不限 operator)."""
+        rows = []
+        for t in self._tasks.values():
             row = self._task_row(t)
             if _match_conditions(conditions, _pick_fields(row, _TASK_FIELDS)):
                 rows.append(row)
@@ -809,6 +830,16 @@ class MemoryExtRepository(ProcessExtRepository):
                 continue
             if operator and t.actorId != operator:
                 continue
+            row = self._task_row(t)
+            if _match_conditions(conditions, _pick_fields(row, _TASK_FIELDS)):
+                rows.append(row)
+        return self._slice(rows, page_num, page_size)
+
+    async def page_audit_log(self, page_num: int = 1, page_size: int = 10,
+                             conditions=None):
+        """§6.2.2 FIX-T98 (2026-09-20): 审计日志分页 (不限 operator)."""
+        rows = []
+        for t in self._tasks.values():
             row = self._task_row(t)
             if _match_conditions(conditions, _pick_fields(row, _TASK_FIELDS)):
                 rows.append(row)

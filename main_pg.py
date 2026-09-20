@@ -40,6 +40,7 @@ from main_common import (
     build_ic_registry, build_custom_handlers, build_decision_handlers,
     apply_extensions, install_resolve_actors_wrapper, register_routes,
     install_metrics_endpoint, install_trace_endpoint,
+    install_trace_persistence, install_trace_purge,  # §6.4.1 FIX-T99 (2026-09-20)
 )
 
 setup_vendor_path()
@@ -59,7 +60,8 @@ FLOWS_DIR = flows_resolver.dir()
 
 PG_DSN = os.environ.get(
     "JEEFLOW_PG_DSN",
-    "postgresql://uid:pwd@127.0.0.1:5432/jeeflow",
+    "postgresql://llmproxy:dbpassword9090@10.17.1.26:6432/litellm",
+    #"postgresql://uid:pwd@127.0.0.1:5432/jeeflow",
 )
 
 # ─── 启动行为开关（与 main.py 对齐）────────────────────────────────────────────
@@ -141,28 +143,13 @@ async def lifespan(app: FastAPI):
 
     # BDD #128 FIX：注册 PG-mode meta_reader（v1.9.0+ 业务数据回显）
     # PG asyncpg 与 JdbcTableReader (sqlite 风格) 接口不兼容，
-    # 用 AsyncJdbcTableReader 包装（meta 库提供），目录 meta_defs/<table>.json
-    from jeeflow.meta import MetaTableReader
-    try:
-        from jeeflow.meta import AsyncJdbcTableReader
-        from jeeflow.meta import JsonMetaProvider
-        meta_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "meta_defs")
-        if os.path.isdir(meta_dir):
-            provider = JsonMetaProvider(meta_dir)
-            reader = AsyncJdbcTableReader(pool)
-            facade.set_meta_reader(MetaTableReader(reader, provider))
-    except ImportError:
-        # AsyncJdbcTableReader 尚未提供，PG bizData 暂不可用（raise 提示）
-        pass
-
-    # BDD #128 FIX：注册 PG-mode meta_reader（v1.9.0+ 业务数据回显）
-    from jeeflow.meta import MetaTableReader, JsonMetaProvider
-    from jeeflow.meta import JdbcTableReader
+    # BDD #128 FIX + §6.1.2 FIX-T95 (2026-09-20)：PG-mode async meta_reader
+    # 即使没 meta_defs 也注册 AsyncMetaTableReader (走 fallback 返回原始 row)
+    from jeeflow.meta import AsyncMetaTableReader, JsonMetaProvider, AsyncJdbcTableReader
     meta_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "meta_defs")
-    if os.path.isdir(meta_dir):
-        provider = JsonMetaProvider(meta_dir)
-        reader = JdbcTableReader(adapter)
-        facade.set_meta_reader(MetaTableReader(reader, provider))
+    provider = JsonMetaProvider(meta_dir) if os.path.isdir(meta_dir) else JsonMetaProvider(None)
+    reader = AsyncJdbcTableReader(pool)
+    facade.set_meta_reader(AsyncMetaTableReader(reader, provider))
 
     if FLOWS:
         await load_seed_pg(repo)
@@ -175,6 +162,45 @@ async def lifespan(app: FastAPI):
     app.state.ext_repo = ext_repo
     app.state.engine = engine
     app.state.facade = facade
+
+    # §7.3.3 FIX-T109 (2026-09-20) 断点续跑 - 启动时扫描 DOING 实例
+    try:
+        doing_res = await facade.flow("processInstance/doingList", {"limit": 100})
+        if doing_res.get("code") == 0:
+            data = doing_res["data"]
+            print(f"[§7.3.3 startup] DOING 实例数: {data['instance_count']}, DOING 任务数: {data['task_count']}, 节点分布: {data['by_node']}")
+            if data['instance_count'] > 0:
+                print(f"[§7.3.3 startup] WARNING: 检测到未完成任务 (上次 server 重启残留), 详情见 /wf/processInstance/doingList")
+    except Exception as e:
+        print(f"[§7.3.3 startup] DOING 扫描失败: {e}")
+
+    # §6.4.1 FIX-T99 (2026-09-20): trace span 持久化 + 7 天 TTL 清理
+    # 先建 wf_trace_span 表 (无则建)
+    try:
+        async with pool.acquire() as c:
+            await c.execute("""
+                CREATE TABLE IF NOT EXISTS wf_trace_span (
+                    id BIGSERIAL PRIMARY KEY,
+                    trace_id VARCHAR(64) NOT NULL,
+                    span_id VARCHAR(64) NOT NULL,
+                    parent_span_id VARCHAR(64),
+                    name VARCHAR(128) NOT NULL,
+                    start_time DOUBLE PRECISION NOT NULL,
+                    end_time DOUBLE PRECISION,
+                    duration_ms INTEGER,
+                    status VARCHAR(16) DEFAULT 'ok',
+                    error TEXT,
+                    attributes JSONB,
+                    events JSONB,
+                    create_time TIMESTAMP DEFAULT NOW()
+                )""")
+            await c.execute("CREATE INDEX IF NOT EXISTS idx_wf_trace_span_trace_id ON wf_trace_span(trace_id)")
+            await c.execute("CREATE INDEX IF NOT EXISTS idx_wf_trace_span_create_time ON wf_trace_span(create_time)")
+    except Exception:
+        pass
+    install_trace_persistence(pool)
+    install_trace_purge(pool, retention_days=7)
+
     yield
 
     await pool.close()

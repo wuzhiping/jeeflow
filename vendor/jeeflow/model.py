@@ -177,6 +177,21 @@ class ProcessInstance:
         self.state = InstanceState.REJECT
         self.updateTime = now
 
+    def rollback(self, to_node_name: str, now, operator: str = "system") -> None:
+        """§7.3.1 FIX-T107 (2026-09-20): 回滚流程到指定节点
+        行为: 废弃所有 DOING 任务 + state=WITHDRAW + 记录 rollback 信息
+        """
+        self.abandon_all_doing(now)
+        self.state = InstanceState.WITHDRAW
+        self.variables = dict(self.variables or {})
+        self.variables["__rollback__"] = {
+            "to_node_name": to_node_name,
+            "rollback_time": str(now),
+            "operator": operator,
+        }
+        self.updateTime = now
+        self.updateUser = operator
+
     def add_variable(self, vars_: dict) -> None:
         """追加变量"""
         self.variables.update(vars_)

@@ -118,3 +118,22 @@ CREATE INDEX IF NOT EXISTS idx_wf_process_task_instance     ON wf_process_task(p
 CREATE INDEX IF NOT EXISTS idx_wf_process_task_actor_task   ON wf_process_task_actor(process_task_id);
 CREATE INDEX IF NOT EXISTS idx_wf_process_cc_instance_inst  ON wf_process_cc_instance(process_instance_id);
 CREATE INDEX IF NOT EXISTS idx_wf_process_design_his_design ON wf_process_design_his(process_design_id);
+-- §6.4.1 FIX-T99 (2026-09-20): trace span 持久化
+CREATE TABLE IF NOT EXISTS wf_trace_span (
+    id BIGSERIAL PRIMARY KEY,
+    trace_id VARCHAR(64) NOT NULL,
+    span_id VARCHAR(64) NOT NULL,
+    parent_span_id VARCHAR(64),
+    name VARCHAR(128) NOT NULL,
+    start_time DOUBLE PRECISION NOT NULL,
+    end_time DOUBLE PRECISION,
+    duration_ms INTEGER,
+    status VARCHAR(16) DEFAULT 'ok',
+    error TEXT,
+    attributes JSONB,
+    events JSONB,
+    create_time TIMESTAMP DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_wf_trace_span_trace_id ON wf_trace_span(trace_id);
+CREATE INDEX IF NOT EXISTS idx_wf_trace_span_create_time ON wf_trace_span(create_time);
+CREATE INDEX IF NOT EXISTS idx_wf_trace_span_name ON wf_trace_span(name);

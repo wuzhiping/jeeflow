@@ -596,19 +596,45 @@ class JdbcRepository(ProcessRepository):
                              operator: Optional[str] = None,
                              conditions: Optional[list[QueryCondition]] = None) -> tuple[list[InstanceRow], int]:
         cond_sql, cond_args = self._build_where(conditions or [], _INSTANCE_WHITELIST)
-        where = (" FROM wf_process_instance t"
-                 " LEFT JOIN wf_process_define pd ON t.process_define_id = pd.id"
-                 " WHERE t.operator = ?" + cond_sql)
+        # §6.2.1: operator=None 时不 WHERE operator (返回全部, 支持 export 全部历史)
+        if operator:
+            where = (" FROM wf_process_instance t"
+                     " LEFT JOIN wf_process_define pd ON t.process_define_id = pd.id"
+                     " WHERE t.operator = ?" + cond_sql)
+        else:
+            where = (" FROM wf_process_instance t"
+                     " LEFT JOIN wf_process_define pd ON t.process_define_id = pd.id"
+                     " WHERE 1=1" + cond_sql)
         cols = ("t.id, t.parent_id, t.process_define_id, t.state, t.parent_node_name, t.business_no,"
                 " t.operator, t.owner_id, t.expire_time, t.variable, t.create_time, t.create_user,"
                 " t.update_time, t.update_user, pd.name, pd.display_name, pd.version")  # FIX-T9 §66 owner_id
+        # §6.2.1: operator=None 时不传 operator 参数
+        if operator:
+            count_args = (operator, *cond_args)
+            list_args = (operator, *cond_args, page_size, (page_num - 1) * page_size)
+        else:
+            count_args = tuple(cond_args)
+            list_args = (*cond_args, page_size, (page_num - 1) * page_size)
         async with self._conn() as conn:
-            row = await conn.fetchone(self._sql("SELECT COUNT(*)" + where), (operator, *cond_args))
+            row = await conn.fetchone(self._sql("SELECT COUNT(*)" + where), count_args)
             total = int(row[0]) if row else 0
             rows = await conn.fetchall(self._sql(
-                f"SELECT {cols}{where} ORDER BY t.id DESC LIMIT ? OFFSET ?"),
-                (operator, *cond_args, page_size, (page_num - 1) * page_size))
+                f"SELECT {cols}{where} ORDER BY t.id DESC LIMIT ? OFFSET ?"), list_args)
         return [self._map_instance_row(r) for r in rows], total
+
+    async def list_instances_by_state(self, state, limit: int = 100) -> list:
+        """§7.3.3 FIX-T109 (2026-09-20): 断点续跑 - 查询特定 state 的 instance 行
+        返回 ProcessInstance 完整对象 (含 tasks), 用于启动 hook 扫描 DOING/PENDING 等中间态"""
+        async with self._conn() as conn:
+            rows = await conn.fetchall(self._sql(
+                "SELECT id FROM wf_process_instance WHERE state = ? ORDER BY id DESC LIMIT ?"
+            ), (int(state), limit))
+        result = []
+        for r in rows:
+            inst = await self.find_instance_by_id(int(r["id"]))
+            if inst:
+                result.append(inst)
+        return result
 
     async def page_todo_tasks(self, page_num: int = 1, page_size: int = 10,
                               actor_id: Optional[str] = None,
@@ -619,6 +645,30 @@ class JdbcRepository(ProcessRepository):
                               operator: Optional[str] = None,
                               conditions: Optional[list[QueryCondition]] = None) -> tuple[list[TaskRow], int]:
         return await self._page_tasks(page_num, page_size, True, operator, conditions)
+
+    async def page_audit_log(self, page_num: int = 1, page_size: int = 10,
+                             conditions: Optional[list[QueryCondition]] = None) -> tuple[list[TaskRow], int]:
+        """§6.2.2 FIX-T98 (2026-09-20): 审计日志分页 (不限 operator).
+
+        数据源: wf_process_task (含 operator + taskState + createTime + finishTime).
+        返回所有任务历史, 不按 operator 过滤 (审计员需要看全部).
+        """
+        cond_sql, cond_args = self._build_where(conditions or [], _TASK_WHITELIST)
+        where = (" FROM wf_process_task t"
+                 " LEFT JOIN wf_process_instance pi ON t.process_instance_id = pi.id"
+                 " LEFT JOIN wf_process_define pd ON pi.process_define_id = pd.id"
+                 " WHERE 1=1" + cond_sql)
+        cols = ("DISTINCT t.id, t.process_instance_id, t.task_name, t.display_name, t.task_type,"
+                " t.perform_type, t.task_state, t.operator, t.finish_time, t.expire_time, t.form_key,"
+                " t.task_parent_id, t.variable, t.create_time, t.create_user, t.update_time, t.update_user,"
+                " pd.name, pd.display_name, pd.version, pi.variable, pi.create_time")
+        async with self._conn() as conn:
+            row = await conn.fetchone(self._sql("SELECT COUNT(DISTINCT t.id)" + where), cond_args)
+            total = int(row[0]) if row else 0
+            rows = await conn.fetchall(self._sql(
+                f"SELECT {cols}{where} ORDER BY t.id DESC LIMIT ? OFFSET ?"),
+                (*cond_args, page_size, (page_num - 1) * page_size))
+        return [self._map_task_row(r) for r in rows], total
 
     async def _page_tasks(self, page_num: int, page_size: int, done: bool,
                           filter_val: str,

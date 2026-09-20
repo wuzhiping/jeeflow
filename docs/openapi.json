@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "jeeFlow API",
-    "description": "私用定位的工作流引擎 API (BDD #1207 FIX-T85 §4.3.1)\n- 48 个 action 端点全部在 /wf/{action:path} 路由\n- 兼容 Phase 1+2 所有 endpoint",
+    "description": "私用定位的工作流引擎 API (BDD #1207 FIX-T85 §4.3.1)\n- 50 个 action 端点全部在 /wf/{action:path} 路由 (§7 新增 processInstance/rollback + doingList)\n- 兼容 Phase 1+2 所有 endpoint",
     "version": "1.9.0+"
   },
   "paths": {
