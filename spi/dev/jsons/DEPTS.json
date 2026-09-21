@@ -1,0 +1,100 @@
+{
+  "version": "1.1.0",
+  "description": "FlowMatrix 研发组织架构 · 5 部门 tree 结构 (重构 v9 · 替换 v8 LEV) · 13 人员分布 · 角色组合",
+  "encoding": {
+    "structure": "tree (扁平存储 + parent_id + 派生嵌套)",
+    "relationship": "父部门 = parent_id (顶层部门 parent_id = null)",
+    "example": {
+      "D99": {
+        "name": "总经办",
+        "parent_id": null
+      },
+      "D01": {
+        "name": "研发部",
+        "parent_id": "D99"
+      },
+      "D02": {
+        "name": "前端组",
+        "parent_id": "D01"
+      }
+    },
+    "tree_query": "SPI_DEPTS_TREE (data.py 派生) → {dept_id: {name, leader, children: {...递归嵌套...}}}"
+  },
+  "departments": {
+    "D01": {
+      "name": "研发部",
+      "parent_id": "D99",
+      "leader": "u_rd_dir",
+      "main_leader": "u_cto",
+      "role_combinations": {
+        "rd_director": [
+          "u_rd_dir"
+        ],
+        "qa_engineer": [
+          "u_qa_lead",
+          "u_qa_eng"
+        ]
+      }
+    },
+    "D02": {
+      "name": "前端组",
+      "parent_id": "D01",
+      "leader": "u_fe_lead",
+      "main_leader": "u_rd_dir",
+      "role_combinations": {
+        "tech_lead": [
+          "u_fe_lead"
+        ],
+        "senior_engineer": [
+          "u_fe_senior"
+        ],
+        "engineer": [
+          "u_fe_eng"
+        ]
+      }
+    },
+    "D03": {
+      "name": "后端组",
+      "parent_id": "D01",
+      "leader": "u_be_lead",
+      "main_leader": "u_rd_dir",
+      "role_combinations": {
+        "tech_lead": [
+          "u_be_lead"
+        ],
+        "senior_engineer": [
+          "u_be_senior1",
+          "u_be_senior2"
+        ],
+        "engineer": [
+          "u_be_eng"
+        ]
+      }
+    },
+    "D04": {
+      "name": "架构组",
+      "parent_id": "D01",
+      "leader": "u_arch",
+      "main_leader": "u_cto",
+      "role_combinations": {
+        "architect": [
+          "u_arch"
+        ]
+      }
+    },
+    "D99": {
+      "name": "总经办",
+      "parent_id": null,
+      "leader": "u_ceo",
+      "main_leader": "u_ceo",
+      "role_combinations": {
+        "ceo": [
+          "u_ceo"
+        ],
+        "cto": [
+          "u_cto"
+        ]
+      }
+    }
+  }
+}

@@ -204,6 +204,46 @@ class MyUserProvider:
 user_prov = MyUserProvider()  # 替换 SimpleUserProvider
 ```
 
+### 5.4 SPI_FOLDER 切换 (v26 dispatcher, 多 SPI 数据源)
+
+```bash
+# 启动 dev 数据源 (默认 13 用户 5 部门)
+SPI_FOLDER=dev python main.py    # main.py 8101
+SPI_FOLDER=dev python main_pg.py # main_pg.py 8102
+
+# 启动 demo 数据源 (原始时间戳, 99 errors 是已知问题)
+SPI_FOLDER=demo python main.py
+
+# CLI 直查
+SPI_FOLDER=dev python -m spi.cli list-users
+SPI_FOLDER=demo python -m spi.cli show-user u_demo_001
+
+# fdep: 无 cli/api → 走 dispatcher 返回 404
+SPI_FOLDER=fdep python main.py
+curl http://localhost:8101/api/spi/users
+# {"detail": "SPI_FOLDER=fdep 不支持 API (缺少 api 模块)"}
+```
+
+### 5.5 main_common 双端共用 (v28)
+
+```python
+# main_common.py (1175 行)
+def register_spi_routes(app: FastAPI):
+    """v28 新增: SPI 路由注册, 双端共用"""
+    from spi.api import router as spi_router
+    app.include_router(spi_router)
+
+# main.py (MEM backend, 8101)
+from main_common import register_spi_routes
+register_spi_routes(app)  # 注册 6 路由 (/api/spi/verify/status/users/...)
+
+# main_pg.py (PG backend, 8102)
+from main_common import register_spi_routes
+register_spi_routes(app)  # 注册 6 路由 (同上, 双端一致)
+```
+
+**对齐的设计**: 与 `register_routes(app)` (业务 facade) 和 `install_metrics_endpoint(app)` (Prometheus) 同级.
+
 ## 6. 自定义 handler (§6.3)
 
 ### 6.1 参与者解析

@@ -1,0 +1,20 @@
+{
+  "dictproxy_count": 22,
+  "dictproxy_expected": 22,
+  "dictproxy_pass": true,
+  "search_users_result": [
+    "u_fe_eng"
+  ],
+  "search_depts_result": [
+    "D02"
+  ],
+  "helpers_pass": true,
+  "verify_ok": true,
+  "verify_errors": 0,
+  "verify_warnings": 0,
+  "verify_pass": true,
+  "v27_v29_mismatch": 0,
+  "inverse_pass": true,
+  "spi_folder": "dev",
+  "total_pass": 4
+}

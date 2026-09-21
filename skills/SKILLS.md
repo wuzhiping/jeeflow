@@ -163,9 +163,20 @@
 - 用户提到 "整体 / 现状 / 进展" → 先读 `README.md`
 - **不要**建议修改 raw data 目录下的文件, **永远**只产出到 `skills/`.
 
+### 6.1 SPI 路由 dispatcher (v22-v29, 新增)
+
+> ⚠️ 用户提到 "SPI 路由" / "spi/api" / "spi/cli" / "main_common.register_spi_routes" / "SPI_FOLDER" → **先读 `SKILL-TREE.md §16`** + `RML.md §SPI 能力` + `spi/SPEC.md §8` + 8 份 v22-v29 retrospective.
+
+- **架构**: 三层分离 (dispatcher + implementation + data)
+- **API**: 6 端点 (`/api/spi/verify/status/users/{uid}/depts/{dept_id}`), 双端 (MEM/PG) 共用
+- **CLI**: 7 命令 (`verify/status/list-users/show-user/list-depts/show-dept/help`), 跟随 `SPI_FOLDER`
+- **契约**: 6 个 `_data_*` 函数 (CLI/API 共享, 不允许改签名)
+- **集成**: `main_common.register_spi_routes(app)`, `main.py` + `main_pg.py` 同步调用
+
 ---
 
 ## 7. 版本
 
 - v1.0 · 2026-09-21 · 建立技能体系骨架
+- v1.1 · 2026-11-17 · 同步 v22-v29 SPI 路由 dispatcher 能力 (SKILL-TREE.md §16) · 详见 `SKILL-TREE.md §16` + 8 份 v22-v29 retrospective
 - 维护者: hermes (流程设计师) + bro (引擎开发者) 双签

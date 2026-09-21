@@ -341,6 +341,7 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 | 30 | **TaskState.ABANDON.updateUser** 语义 = 触发废弃的人（FIX-T111 §112；比例/PARALLEL 会签完成条件命中、流程撤回、ONE_VOTE_VETO REJECT 等场景必须显式传 abandoned_by；不传时保持 backward compat = 沿用 createUser） | `./docs/known-issues.md §112` |
 | 31 | **decision 节点**多分支建议加默认边（BUG-2 / FIX-T112 2026-09-22；如所有 expr 评估失败, 引擎兜底走第一条边, 可能创建孤儿 DOING task. 修复: 引擎层 _cleanup_orphan_decision_tasks + verify W013 警告加默认边 `expr=""`） | `./docs/known-issues.md §113` (注: §113 实为 countersignCompletionCondition, BUG-2 见 FB-0007) |
 | 32 | **变量作用域铁律**（FB-0011 / FIX-DOC-4 2026-09-24；`tf_*` 只在当前 task 作用域, 不到 instance.variables, decision expr 读不到 → 触发 BUG-2 类似现象. 启动时 + execute 时都传 `f_*` 或重启动传 `f_<name>`；`tf_*` 仅当前 task + 后置拦截器可见） | `./docs/known-issues.md §115` + `docs/flow.md §7.1` |
+| 33 | **SPI 路由必须走 dispatcher**（v26+；新增 SPI 路由必须放在 `spi/api.py` (dispatcher 层) 或 `spi/<folder>/api.py` (实现层), 严禁直接在 `main.py` / `main_pg.py` / `main_common.py` 写 SPI 路由。注册统一用 `main_common.register_spi_routes(app)`. 6 个 `_data_*` 函数是 CLI/API 共享契约, 不允许修改签名). | `spi/SPEC.md §8` + `skills/RML.md §SPI dispatcher` |
 
 > ⚠️ 约束 #13-#20 来自 `./docs/BUGS.md`，是 BDD 实战中**反复踩坑**的约束。设计前**必读**。
 

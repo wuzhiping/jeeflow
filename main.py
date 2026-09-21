@@ -146,6 +146,12 @@ register_routes(
     reset_fn=_reset_memory,
 )
 
+# v25: 注册 spi/dev API 路由 (CLI 能力远程 API 暴露)
+# v26: 改为 dispatcher 层 spi.api (跟随 SPI_FOLDER 自动切换 demo/dev)
+# v28: 移到 main_common.register_spi_routes (双端共用)
+from main_common import register_spi_routes
+register_spi_routes(app)
+
 # BDD #1205 FIX-T83 §4.1.3：安装 Prometheus metrics 端点
 app.state.facade = facade
 app.state.repo = repo

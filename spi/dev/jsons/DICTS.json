@@ -1,0 +1,32 @@
+{
+  "version": "1.0.0",
+  "description": "FlowMatrix 研发组织字典 · 4 字典组 · 研发相关枚举",
+  "dicts": {
+    "wf_leave_type": [
+      {"value": "annual", "label": "年假"},
+      {"value": "sick", "label": "病假"},
+      {"value": "personal", "label": "事假"},
+      {"value": "compensatory", "label": "调休"},
+      {"value": "marriage", "label": "婚假"}
+    ],
+    "wf_process_type": [
+      {"value": "leave", "label": "请假申请"},
+      {"value": "overtime", "label": "加班申请"},
+      {"value": "asset", "label": "资产申请"},
+      {"value": "recruit", "label": "招聘审批"},
+      {"value": "release", "label": "上线审批"},
+      {"value": "reimburse", "label": "报销申请"}
+    ],
+    "dev_environment": [
+      {"value": "dev", "label": "开发环境"},
+      {"value": "staging", "label": "预发布环境"},
+      {"value": "prod", "label": "生产环境"}
+    ],
+    "pr_status": [
+      {"value": "open", "label": "待合并"},
+      {"value": "review", "label": "评审中"},
+      {"value": "merged", "label": "已合并"},
+      {"value": "closed", "label": "已关闭"}
+    ]
+  }
+}

@@ -1166,3 +1166,22 @@ def install_trace_endpoint(app):
         spans = [s for s in _spans_log if s["trace_id"] == trace_id]
         spans.sort(key=lambda x: x.get("start_time", 0))
         return {"trace_id": trace_id, "spans": spans}
+
+
+# ─── SPI Routes (v28 新增, 双端共用) ──────────────────────────────────────────────
+def register_spi_routes(app) -> None:
+    """注册 SPI 路由到 FastAPI app (双端共用, v28)
+
+    通过 SPI_FOLDER 自动切换数据源 (demo / dev / fdep):
+    - SPI_FOLDER=dev  → /api/spi/* 返回 dev 数据
+    - SPI_FOLDER=demo → /api/spi/* 返回 demo 数据
+    - SPI_FOLDER=xxx (无 cli/api) → 路由返回 HTTP 404 + 错误信息
+
+    用法 (main.py / main_pg.py):
+        from main_common import register_spi_routes
+        register_spi_routes(app)
+
+    与 install_metrics_endpoint / install_trace_endpoint 调用模式一致.
+    """
+    from spi.api import register_routes
+    register_routes(app)

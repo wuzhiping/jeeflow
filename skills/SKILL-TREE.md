@@ -670,3 +670,104 @@ D91-180  L6+ 视情况
 - `proposals/UNFREEZE-TRACKING-2026-11-10.md` · bro 月度询问
 - `feedback/retrospectives/2026-11-month2-final.md` · Month 2 收官
 - `feedback/retrospectives/2026-q4-quarterly-prep.md` · Q4 季度复盘准备
+
+---
+
+## 16. SPI 路由 dispatcher 架构 (v22-v29)
+
+> 新增章节 (v1.51 同步) · 详见 `RML.md §SPI 能力` + `spi/SPEC.md §8` + `feedback/retrospectives/2026-11-17-spi-*.md` (10 份)
+
+### 16.1 三层分离 (v26 起)
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  Layer 1: Dispatcher (spi/cli.py + spi/api.py + spi/__main__.py)    │
+│  · 入口层, 跟随 SPI_FOLDER 环境变量                                    │
+│  · 解析命令行参数 (cli) 或 HTTP 路由 (api)                              │
+│  · 加载 spi/<SPI_FOLDER>/cli.py 或 spi/<SPI_FOLDER>/api.py            │
+│  · 调用下层 _data_* 函数, 不含业务逻辑                                   │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  Layer 2: Implementation (spi/{demo,dev,fdep}/cli.py + api.py)      │
+│  · 暴露 6 个 _data_* 函数 (CLI/API 共享契约)                            │
+│  · cli.py + api.py 是薄包装, 几乎全部 re-export                         │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  Layer 3: Data (spi/{demo,dev}/data.py + *.json)                      │
+│  · spi/dev/data.py: 22 DictProxy (v8-v29) + 2 helpers + verify()       │
+│  · spi/demo/data.py: 基础 + verify() (99 errors 是已知问题)             │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 16.2 6 个 _data_* 函数 (CLI/API 共享契约)
+
+| 函数 | 返回 | 说明 |
+| --- | --- | --- |
+| `_data_verify()` | `dict` | 4 类完整性检查 (跨表引用 + tree + 完整性 + ROLE_TO_USERS 一致性) |
+| `_data_status()` | `dict` | SPI 概况 (数据源 + 22 DictProxy 摘要) |
+| `_data_list_users()` | `list[dict]` | 所有用户精简视图 |
+| `_data_show_user(uid)` | `dict \| None` | 单用户完整档案 (13 字段集成视图 SPI_USERS_FULL) |
+| `_data_list_depts()` | `list[dict]` | 所有部门精简视图 |
+| `_data_show_dept(dept_id)` | `dict \| None` | 单部门详情 + 成员 |
+
+### 16.3 6 个 API 端点 + 7 个 CLI 命令
+
+**API 端点** (双端共用, `main_common.register_spi_routes(app)`):
+
+| 方法 | 路径 |
+| --- | --- |
+| GET | `/api/spi/verify` |
+| GET | `/api/spi/status` |
+| GET | `/api/spi/users` |
+| GET | `/api/spi/users/{uid}` |
+| GET | `/api/spi/depts` |
+| GET | `/api/spi/depts/{dept_id}` |
+
+**CLI 命令** (`python -m spi.cli <cmd>`, 跟随 SPI_FOLDER):
+
+```bash
+SPI_FOLDER=dev python -m spi.cli verify
+SPI_FOLDER=dev python -m spi.cli status
+SPI_FOLDER=dev python -m spi.cli list-users
+SPI_FOLDER=dev python -m spi.cli show-user u_fe_eng
+SPI_FOLDER=dev python -m spi.cli list-depts
+SPI_FOLDER=dev python -m spi.cli show-dept D02
+SPI_FOLDER=dev python -m spi.cli help  # 帮助
+```
+
+### 16.4 SPI_FOLDER 路由规则
+
+| SPI_FOLDER | cli/api | 行为 |
+| --- | --- | --- |
+| `dev` | ✅ | 完整实现 (22 DictProxy + 2 helpers + 9 SPI 函数 + verify()) |
+| `demo` | ✅ | 基础实现 (99 errors 是已知问题) |
+| `fdep` | ❌ | 走 dispatcher 返回 404 (`{"detail": "SPI_FOLDER=fdep 不支持 API"}`) |
+| 其它 | ❌ | 404 错误 |
+
+### 16.5 main_common 双端集成 (v28)
+
+```python
+# main_common.py (1175 行)
+def register_spi_routes(app: FastAPI):
+    from spi.api import router as spi_router
+    app.include_router(spi_router)
+
+# main.py + main_pg.py 同步调用
+from main_common import register_spi_routes
+register_spi_routes(app)
+```
+
+### 16.6 8 份 v22-v29 retrospective 索引
+
+- `feedback/retrospectives/2026-11-17-spi-dev-refactor-v22-cli.md` · CLI 入口
+- `feedback/retrospectives/2026-11-17-spi-dev-refactor-v23-users-with-roles.md` · 用户角色反向
+- `feedback/retrospectives/2026-11-17-spi-dev-refactor-v24-cli-extended.md` · CLI 子命令扩展
+- `feedback/retrospectives/2026-11-17-spi-dev-refactor-v25-fastapi-routes.md` · FastAPI 路由
+- `feedback/retrospectives/2026-11-17-spi-v26-dispatcher-cli-api.md` · dispatcher 三层分离
+- `feedback/retrospectives/2026-11-17-spi-dev-refactor-v27-dept-role-2d.md` · (dept,role) 二维聚合
+- `feedback/retrospectives/2026-11-17-spi-v28-main-common-routes.md` · main_common 双端集成
+- `feedback/retrospectives/2026-11-17-spi-dev-refactor-v29-user-dept-role.md` · 用户部门角色反向 (v27 互逆)

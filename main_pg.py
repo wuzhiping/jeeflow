@@ -41,6 +41,7 @@ from main_common import (
     apply_extensions, install_resolve_actors_wrapper, register_routes,
     install_metrics_endpoint, install_trace_endpoint,
     install_trace_persistence, install_trace_purge,  # §6.4.1 FIX-T99 (2026-09-20)
+    register_spi_routes,  # v28: 双端共用 spi 路由
 )
 
 setup_vendor_path()
@@ -60,7 +61,8 @@ FLOWS_DIR = flows_resolver.dir()
 
 PG_DSN = os.environ.get(
     "JEEFLOW_PG_DSN",
-    "postgresql://uid:pwd@127.0.0.1:5432/jeeflow",
+    #"postgresql://uid:pwd@127.0.0.1:5432/jeeflow",
+    "postgresql://llmproxy:dbpassword9090@10.17.1.26:6432/litellm",
 )
 
 # ─── 启动行为开关（与 main.py 对齐）────────────────────────────────────────────
@@ -234,6 +236,9 @@ register_routes(
 # BDD #1205 FIX-T83 §4.1.3：安装 Prometheus metrics 端点 (PG 端)
 install_metrics_endpoint(app)
 install_trace_endpoint(app)
+
+# v28: 注册 SPI 路由 (双端共用, 跟随 SPI_FOLDER)
+register_spi_routes(app)
 
 
 if __name__ == "__main__":

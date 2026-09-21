@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0",
+  "description": "FlowMatrix 研发组织角色枚举 · 8 个角色 · P5-P10 等级",
+  "roles": {
+    "ceo": "首席执行官",
+    "cto": "首席技术官",
+    "rd_director": "研发总监",
+    "tech_lead": "技术组长",
+    "architect": "架构师",
+    "senior_engineer": "高级工程师",
+    "engineer": "工程师",
+    "qa_engineer": "QA 工程师"
+  }
+}
