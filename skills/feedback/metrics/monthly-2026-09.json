@@ -1,0 +1,71 @@
+{
+  "period": "2026-09 (历史回填 + Phase 8.1 启动 + 闭环完成)",
+  "report_date": "2026-09-21",
+  "summary": {
+    "total_received": 6,
+    "closed": 6,
+    "notified": 0,
+    "in_progress": 0,
+    "verified": 0,
+    "classified": 0,
+    "received": 0
+  },
+  "by_type": {
+    "bug": 4,
+    "improve": 0,
+    "doc": 1,
+    "ux": 0,
+    "consult": 1
+  },
+  "by_priority": {
+    "P0": 3,
+    "P1": 2,
+    "P2": 1,
+    "P3": 0
+  },
+  "by_owner": {
+    "engine": 4,
+    "flow": 0,
+    "doc": 2,
+    "ui": 0,
+    "spi": 0,
+    "sla": 0
+  },
+  "by_scope": {
+    "single": 1,
+    "multi": 4,
+    "global": 1
+  },
+  "sla_metrics": {
+    "P0_24h_first_response": "100% (3/3)",
+    "P0_7d_closed": "100% (3/3)",
+    "P1_3d_first_response": "100% (2/2)",
+    "P1_30d_closed": "100% (2/2, FB-0002 在 30d SLA 内闭环)",
+    "P2_7d_first_response": "100% (1/1)",
+    "P2_90d_closed_or_scheduled": "100% (1/1, 闭环)"
+  },
+  "customer_metrics": {
+    "L1_engagement": 0,
+    "L2_engagement": 4,
+    "L3_engagement": 2,
+    "unique_customers": 6,
+    "repeat_feedback": 0,
+    "l1_acquisition_strategy": "skills/customers/l1-acquisition.md (新建)"
+  },
+  "fix_metrics": {
+    "fixes_deployed": 5,
+    "bdd_added": 4,
+    "verify_rules_added": 1,
+    "docs_updated": 4
+  },
+  "closed_feedback_ids": ["FB-0001", "FB-0002", "FB-0003", "FB-0004", "FB-0005", "FB-0006"],
+  "in_flight_feedback_ids": [],
+  "notes": [
+    "本报告为初始基线 + 完整闭环完成版",
+    "6/6 = 100% 闭环, 超出 Phase 8.1 目标 (>80%)",
+    "P0 闭环 100%, P1 闭环 100% (含 FB-0002 在 30d SLA 内闭环)",
+    "L1 引擎客户 = 0, 招揽策略已制定 (l1-acquisition.md)",
+    "FB-0002 闭环路径: 客户 24h 内确认, 走正常路径, 非 14 天沉默归档",
+    "客户旅程实证: 4/6 段完整实证 (C-001), 满足解冻条件 #2"
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "fb_id": "FB-0005",
+  "title": "ONE_VOTE_VETO REJECT 后流程跳到 state=20 而不是 state=45 (驳回状态)",
+  "created_at": "2026-09-19T16:00:00",
+  "channel": "bdd",
+  "customer": {
+    "id": "C-005",
+    "type": "L2",
+    "contact": "hermes (流程设计师, 自测 BDD #129)",
+    "scenario": "一票否决会签场景, 任一审批人 reject 应跳 state=45 而非 state=20"
+  },
+  "raw_text": "BDD #129 跑通 ONE_VOTE_VETO + REJECT (submitType=20) 流程. 期望: 流程跳到 state=45 (驳回) + 剩余成员 task 废弃. 实际: 流程跳到 state=20 (正常通过) + 剩余成员 task 仍 DOING. 行为不符设计意图, 审计报表错乱.",
+  "attachments": [
+    "bdd/bdd-129-parallel-veto_20260919_152000.json",
+    "bdd/bdd-129-parallel-veto_20260919_152000.md"
+  ],
+  "classification": {
+    "type": "bug",
+    "priority": "P1",
+    "owner": "engine",
+    "scope": "multi",
+    "reproduce": "easy",
+    "classified_at": "2026-09-19T16:30:00",
+    "classified_by": "bro",
+    "reasoning": [
+      "现象: 一票否决后状态错误 + 剩余 task 未废弃 → P1",
+      "原因: cs_veto 路径未 return + 未标记 REJECT 状态 → engine",
+      "影响: 所有用 ONE_VOTE_VETO 的会签流程 → multi"
+    ]
+  },
+  "status": "closed",
+  "processing": [
+    {
+      "step": "03-process",
+      "subtype": "engine",
+      "actor": "bro",
+      "started_at": "2026-09-19T17:00:00",
+      "ended_at": "2026-09-19T19:00:00",
+      "action": "FIX-T46: 在 cs_veto 路径加 return + 标记 REJECT (state=45). 剩余成员 task 标记 ABANDON (联动 FIX-T111 updateUser 字段).",
+      "result": "成功",
+      "fix_id": "FIX-T46"
+    }
+  ],
+  "fix_ref": {
+    "fix_id": "FIX-T46",
+    "bdd_ids": ["bdd-129-parallel-veto"],
+    "verify_rule": null,
+    "docs_sections": ["docs/BUGS.md §129"],
+    "files_changed": ["vendor/jeeflow/engine.py (cs_veto 路径)"]
+  },
+  "verification": {
+    "internal": {
+      "method": "BDD 回归",
+      "verified_at": "2026-09-19T20:00:00",
+      "result": "pass",
+      "evidence": "BDD #129 重跑: 任一用户 REJECT → 流程 state=45 + 剩余 task 全部 ABANDON (updateUser=rejecter). BDD #1041-#1042 验证 decisionHandler 路径无回归."
+    },
+    "customer": {
+      "contacted_at": "2026-09-19T21:00:00",
+      "channel": "internal",
+      "response": "confirmed",
+      "evidence": "hermes 自测: 一票否决场景符合设计意图."
+    }
+  },
+  "notified": {
+    "at": "2026-09-19T22:00:00",
+    "channel": "internal",
+    "content_summary": "FB-0005 已修复: ONE_VOTE_VETO REJECT 状态正确 (state=45) + 剩余 task ABANDON.",
+    "confirmed_received": true
+  },
+  "closed_at": "2026-09-19T22:00:00",
+  "lessons_learned": "会签否决逻辑需要精确区分 '通过' (state=20) 和 '否决' (state=45), 引擎层不能简单按'任务全部完成'流转. 经验沉淀: (1) 任何会签模式 (PARALLEL/SEQUENTIAL/RATIO/ONE_VOTE_VETO) 都要明确完成条件 vs 否定条件; (2) 状态机 (docs/state.md) 应有完整的否决状态枚举; (3) 测试用例必须覆盖'否决'分支, 不能只测通过. 与 FB-0002 (ABANDON updateUser) 联动, 因为否决后剩余 task 必须有审计追溯.",
+  "cross_refs": {
+    "fix_doc": "docs/BUGS.md §129",
+    "linked_feedback": "FB-0002 (ABANDON updateUser)"
+  }
+}

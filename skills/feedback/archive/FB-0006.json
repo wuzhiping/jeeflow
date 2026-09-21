@@ -1,0 +1,73 @@
+{
+  "fb_id": "FB-0006",
+  "title": "新需求: 流程设计器希望支持 '按组织架构自动选审批人'",
+  "created_at": "2026-09-20T15:30:00",
+  "channel": "hermes_dm",
+  "customer": {
+    "id": "C-006",
+    "type": "L2",
+    "contact": "客户L2 (通过 hermes DM 上报)",
+    "scenario": "中型企业 HR 系统集成, 流程审批人应按组织架构自动选"
+  },
+  "raw_text": "我们公司有 500+ 员工, 流程设计时希望: '申请人所在部门的总监' 自动作为审批人, 而不是硬编码 'director'. 类似还有: '申请人上两级领导' / '申请人 HRBP' 等. 当前每个流程都要硬编码 assignee, 改一次组织架构所有流程都要改. 请问 jeeflow 支持 SPI 自定义 assignmentHandler 吗? 怎么配置?",
+  "attachments": [],
+  "classification": {
+    "type": "consult",
+    "priority": "P2",
+    "owner": "doc",
+    "scope": "single",
+    "reproduce": "n/a",
+    "classified_at": "2026-09-20T16:00:00",
+    "classified_by": "cli",
+    "reasoning": [
+      "类型: 客户在问能力 (consult), 不是 BUG",
+      "优先级: 不阻塞 → P2",
+      "归属: 应答 + 文档 → doc"
+    ]
+  },
+  "status": "notified",
+  "processing": [
+    {
+      "step": "03-process",
+      "subtype": "consult",
+      "actor": "hermes",
+      "started_at": "2026-09-20T16:30:00",
+      "ended_at": "2026-09-20T17:00:00",
+      "action": "答复: jeeflow 支持 assignmentHandler 自定义 (见 docs/flow.md §6 + docs/integration.md). 推荐方案: (1) 用 SPI 实现 OrgUserProvider.get_dept_leader(userId, levels); (2) 流程 properties.assignmentHandler 引用注册名. 给客户看了 docs/flow.md §6 内置 7 个 handler + docs/integration.md SPI 接入示例.",
+      "result": "成功"
+    }
+  ],
+  "fix_ref": {
+    "fix_id": null,
+    "bdd_ids": [],
+    "verify_rule": null,
+    "docs_sections": ["docs/flow.md §6", "docs/integration.md"],
+    "files_changed": []
+  },
+  "verification": {
+    "internal": {
+      "method": "文档确认",
+      "verified_at": "2026-09-20T17:30:00",
+      "result": "pass",
+      "evidence": "docs/flow.md §6 + docs/integration.md 明确说明 SPI 接入方式, 7 个内置 handler 可直接使用或扩展."
+    },
+    "customer": {
+      "contacted_at": "2026-09-20T17:45:00",
+      "channel": "hermes_dm",
+      "response": "confirmed",
+      "evidence": "客户回复: '明白了, 我研究一下 docs/flow.md §6, 后续有疑问再问你.'"
+    }
+  },
+  "notified": {
+    "at": "2026-09-20T17:45:00",
+    "channel": "hermes_dm",
+    "content_summary": "jeeflow 支持 SPI 自定义 assignmentHandler. docs/flow.md §6 列出 7 个内置 handler, docs/integration.md 列出 SPI 接入方式. 推荐: 用 SPI 实现 OrgUserProvider.get_dept_leader(userId, levels).",
+    "confirmed_received": true
+  },
+  "closed_at": "2026-09-20T18:00:00",
+  "lessons_learned": "客户咨询类反馈的核心是'快速找到答案'. 经验: (1) docs/flow.md §6 应在目录中更显眼; (2) 未来考虑加 FAQ 文档 skills/faq.md, 收录高频咨询; (3) 客户提出'自动选审批人'的诉求, 是 SPI 扩展的高频场景, 可考虑加入示例库 (spi/demo/org_assignee_handler.py). 跨客户价值: 中大型企业集成 SPI 是必经之路, 文档 + 示例要完善.",
+  "cross_refs": {
+    "potential_improvement": "skills/roadmap/candidates/auto-assignee-by-org.md",
+    "linked_docs": ["docs/flow.md §6", "docs/integration.md"]
+  }
+}

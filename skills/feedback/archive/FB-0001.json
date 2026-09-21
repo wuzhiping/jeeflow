@@ -1,0 +1,111 @@
+{
+  "fb_id": "FB-0001",
+  "title": "报销流程出纳节点被跳过 (cashier_pay task 不被创建)",
+  "created_at": "2026-09-19T14:30:00",
+  "channel": "tdd",
+  "customer": {
+    "id": "C-001",
+    "type": "L3",
+    "contact": "user1 (报销人, L3 业务审批人)",
+    "scenario": "员工提交差旅报销, 按金额分流, 经理/总监审批后由出纳付款"
+  },
+  "raw_text": "跑通 expense_report_repro 流程: amount=3500 → mgr_approve 通过后, cashier_pay task 永远不在 todoList 出现. 流程卡在 state=10, 出纳收不到付款任务, 报销款从未支付. 复现脚本: tdd/expense_report_repro.json",
+  "attachments": [
+    "tdd/expense_report_repro.json",
+    "tdd/expense_report_v2.json",
+    "docs/BUGS.md §111"
+  ],
+  "classification": {
+    "type": "bug",
+    "priority": "P0",
+    "owner": "engine",
+    "scope": "multi",
+    "reproduce": "easy",
+    "classified_at": "2026-09-19T15:00:00",
+    "classified_by": "hermes",
+    "reasoning": [
+      "现象: 流程卡死, 业务阻塞 → P0",
+      "原因: 引擎层 task 多出边处理缺陷 → owner=engine",
+      "影响: 任何用 task+decision 路由的流程都有同样风险 → multi",
+      "复现: 3 步可复现 → easy"
+    ]
+  },
+  "status": "closed",
+  "processing": [
+    {
+      "step": "03-process",
+      "subtype": "engine",
+      "actor": "bro",
+      "started_at": "2026-09-19T16:00:00",
+      "ended_at": "2026-09-20T08:00:00",
+      "action": "复现并定位: vendor/jeeflow/engine.py _execute_node 在 task 节点有 ≥2 条无条件出边时, 会按出边顺序创建下游 task, 但 task 节点的出边条件被忽略, 导致下游 task 被错误触发, 后续 task 不再创建. 修复: 引入 verify 规则 W012 警告 'task 节点不应有多条无条件出边' (隐式 fork 致 end 被提前遍历, 实例 state=20 但下游 task 仍 DOING).",
+      "result": "成功",
+      "fix_id": "FIX-T110",
+      "verify_rule": "W012",
+      "files_changed": [
+        "vendor/jeeflow/engine.py:184-185",
+        "vendor/jeeflow/verify.py (新增 W012)"
+      ]
+    },
+    {
+      "step": "03-process",
+      "subtype": "doc",
+      "actor": "hermes",
+      "started_at": "2026-09-20T08:30:00",
+      "ended_at": "2026-09-20T09:00:00",
+      "action": "更新 docs/BUGS.md §111 + docs/known-issues.md §111 + docs/flow.md 反模式表, 加入'task 多出边应改用 decision 节点分隔'的告诫.",
+      "result": "成功"
+    },
+    {
+      "step": "03-process",
+      "subtype": "flow",
+      "actor": "hermes",
+      "started_at": "2026-09-20T09:00:00",
+      "ended_at": "2026-09-20T10:00:00",
+      "action": "新增 tdd/expense_report_v2.json 作为修复后模板 (用 decision 节点分隔两个 manager 出边).",
+      "result": "成功"
+    }
+  ],
+  "fix_ref": {
+    "fix_id": "FIX-T110",
+    "bdd_ids": ["bdd-1501-1503-fix-t110-task-multi-out_20260920"],
+    "verify_rule": "W012",
+    "docs_sections": [
+      "docs/BUGS.md §111",
+      "docs/known-issues.md §111",
+      "docs/flow.md §7 (反模式表)"
+    ],
+    "files_changed": [
+      "vendor/jeeflow/engine.py:184-185",
+      "vendor/jeeflow/verify.py (W012)",
+      "tdd/expense_report_v2.json (新增)"
+    ]
+  },
+  "verification": {
+    "internal": {
+      "method": "BDD 双端回归",
+      "verified_at": "2026-09-20T11:00:00",
+      "result": "pass",
+      "evidence": "bdd-1501-1503-fix-t110-task-multi-out: 9/9 PASS, MEM+PG 双端一致. expense_report_v2 跑通: amount=3500 → mgr_approve (manager) → cashier_pay (cashier) → end_paid. amount=8000 → dir_approve (director) → cashier_pay (cashier) → end_paid. cashier todoList 正确显示."
+    },
+    "customer": {
+      "contacted_at": "2026-09-20T14:00:00",
+      "channel": "hermes_dm",
+      "response": "confirmed",
+      "evidence": "user1 复跑 expense_report_v2: 经理审批后, 出纳 todoList 立即出现 1 条 cashier_pay task. 提交付款后流程 state=20 DONE. user1 DM 回复: '跑通了, 出纳能看到付款任务了.'"
+    }
+  },
+  "notified": {
+    "at": "2026-09-20T14:30:00",
+    "channel": "hermes_dm",
+    "content_summary": "FB-0001 已修复: 报销流程出纳节点被跳过问题. 修复编号 FIX-T110 + verify 规则 W012 警告. 验证用例 9/9 PASS, 双端一致. 建议复测 tdd/expense_report_v2.json. 感谢反馈.",
+    "confirmed_received": true
+  },
+  "closed_at": "2026-09-20T14:30:00",
+  "lessons_learned": "Task 节点的多条无条件出边在引擎层会被当作隐式 fork 处理, 引发 end 提前遍历和下游 task 创建混乱. 反模式: 不要在 task 节点写 ≥2 条无条件出边, 必须用 decision 节点分隔. 经验沉淀: (1) vendor/jeeflow/verify.py 加入 W012 警告规则, deploy 时拦截; (2) docs/flow.md §7 反模式表新增案例; (3) hermes 设计流程时默认走 'decision 分流' 模式, 避免 task 多出边; (4) 流程测试要覆盖 '决策后汇合' 场景, 不仅测单线; (5) 客户上报流程卡住时, 优先查 highLight 看是否 end 被提前触发, 这个特征能快速定位 task 多出边 BUG. 客户接口人: user1 在 L3 业务审批人角色, 是反馈闭环的标杆客户, 应纳入持续追踪 (见 skills/customers/C-001.yaml).",
+  "cross_refs": {
+    "customer_profile": "skills/customers/C-001.yaml",
+    "verify_rule_doc": "vendor/jeeflow/verify.py (W012)",
+    "similar_cases": ["FB-0002 (task 节点混用会签也涉及 task 创建)"]
+  }
+}
