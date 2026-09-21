@@ -866,7 +866,19 @@ class EngineImpl(Engine):
                     else:
                         actors.append(str(val))
                 else:
-                    actors.append(token)
+                    # FIX-T115 (2026-09-22 FB-0015)：assignees 字段死字段修复
+                    # 上游 facade 把 args.assignees 整体塞进 vars_['assignees']，
+                    # 旧版引擎零处读取，调用方误以为 assignees.<nodeId> 已生效
+                    # 修复：token 解析失败时回退到 vars_.assignees.<nodeId>，单值/列表均支持
+                    assignees_map = vars_.get("assignees") if isinstance(vars_.get("assignees"), dict) else {}
+                    a_val = assignees_map.get(node.id) or assignees_map.get(token)
+                    if a_val is not None:
+                        if isinstance(a_val, (list, tuple)):
+                            actors.extend(str(x) for x in a_val)
+                        else:
+                            actors.append(str(a_val))
+                    else:
+                        actors.append(token)
             return actors
         handler_name = node.properties.get("assignmentHandler", "")
         if handler_name and self.ext and self.ext.registry:

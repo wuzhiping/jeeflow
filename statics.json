@@ -3,8 +3,8 @@
   "version": "0.5.0",
   "phase": "phase7-complete (T105-T109) + §7-recommended-completed + §111-§112-flowuser-driven-fixes (T110-T111) + §117-decision-signature-fix (T113) + §118-rollback-taskname-compat (T114)",
   "phase4_ecosystem": "REMOVED 2026-09-20 (私用定位: 不输出 SDK/第三方/插件)",
-  "bdd_total": 1213,
-  "bdd_pass": 1213,
+  "bdd_total": 1220,
+  "bdd_pass": 1220,
   "bdd_fail": 0,
   "bdd_breakdown": {
     "p0_regression": 17,
@@ -16,10 +16,14 @@
     "section111_design_pitfall": "9 (#1501-#1503 FIX-T110, 双端 PASS)",
     "section112_taskstate_abandon": "10 (#1511-#1516 FIX-T111)",
     "section117_decision_signature": "5 (BDD-DEV-001-005 20260921230000, dev SPI 完整流程回归)",
-    "section118_rollback_taskname_compat": "10 (BDD-DEV-006-015 20260921231000, 10 个新独立流程)"
+    "section118_rollback_taskname_compat": "10 (BDD-DEV-006-015 20260921231000, 10 个新独立流程)",
+    "section119_capability_extension_v2": "5 (BDD-DEV-016-020 20260922000000, 5 个独立新流程覆盖 callActivity/拦截器/会签+decision/veto+decision/multi-handler)",
+    "section120_assignees_dead_field_fix": "1 (20260922 BDD-DEV-021 用户反馈 FB-0015: assignees 字段死字段修复 FIX-T115 + 19 流程全量回归 PASS)",
+    "section121_field_position_fix": "1 (20260922 BDD-DEV-022 用户反馈 FB-0014: 07 field.countersignCompletionCondition 移至顶层 FIX-T116)"
   },
   "tdd_total": 19,
-  "fix_total": 110,
+  "fix_total": 112,
+  "fix_total_note": "20260922000000 bdd-dev-five-flows 5 流程全 PASS, 无新 BUG. 20260922 用户反馈 3 项: 1)07 字段位置错(FIX-T116 数据修正), 2)11 SPI 缺数据(不成立), 3)assignees 死字段(FIX-T115 引擎修复) → +2 (T115/T116).",
   "fix_breakdown": {
     "phase1_engine": "T1-T70 (70)",
     "phase2_capability": "T71-T78 (8)",
@@ -29,7 +33,9 @@
     "section7_complete": "T104-T109 (6)",
     "flowuser_driven_fixes": "T110-T111 (2)",
     "decision_signature_drift": "T113 (1, vendor/jeeflow/engine.py:680/690/705)",
-    "rollback_taskname_compat": "T114 (1, vendor/jeeflow/facade.py:737/741)"
+    "rollback_taskname_compat": "T114 (1, vendor/jeeflow/facade.py:737/741)",
+    "assignees_dead_field_fix": "T115 (1, vendor/jeeflow/engine.py:867-880)",
+    "field_position_fix": "T116 (1, flows/07-countersign-ratio.json + flows_demo/07-countersign-ratio.json)"
   },
   "verify_rules": 33,
   "verify_breakdown": {
@@ -38,53 +44,45 @@
     "performance": 5
   },
   "last_bdd_session": {
-    "timestamp": "20260921231000",
+    "timestamp": "20260922000000",
     "spi_folder": "dev",
     "flow_files": [
-      "bdd/bdd-dev-overtime-multi-decision_20260921231000.json",
-      "bdd/bdd-dev-recruit-simple-chain_20260921231000.json",
-      "bdd/bdd-dev-code-review-cs_20260921231000.json",
-      "bdd/bdd-dev-one-vote-veto_20260921231000.json",
-      "bdd/bdd-dev-custom-calc_20260921231000.json",
-      "bdd/bdd-dev-candidate-page_20260921231000.json",
-      "bdd/bdd-dev-handler-dept-leader_20260921231000.json",
-      "bdd/bdd-dev-rollback_20260921231000.json",
-      "bdd/bdd-dev-task-type-mixed_20260921231000.json",
-      "bdd/bdd-dev-reject-flow_20260921231000.json"
+      "bdd/bdd-dev-sub-approval_20260922000000.json (callActivity 主流程)",
+      "bdd/dev-sub-finance_20260922000000.json (callActivity 子流程)",
+      "bdd/bdd-dev-business-interceptors_20260922000000.json (业务流 + 拦截器)",
+      "bdd/bdd-dev-cs-then-decision_20260922000000.json (会签 + decision 分流)",
+      "bdd/bdd-dev-veto-with-decision_20260922000000.json (一票否决 + decision)",
+      "bdd/bdd-dev-multi-handler-mix_20260922000000.json (4 handler 混合)"
     ],
-    "flow_pass": 10,
+    "flow_pass": 5,
     "flow_fail": 0,
     "node_types_used": [
       "snaker:start",
       "snaker:task",
       "snaker:decision",
-      "snaker:fork",
-      "snaker:join",
-      "snaker:custom",
+      "snaker:callActivity",
       "snaker:end"
     ],
     "features_demonstrated": [
-      "multi-level decision (嵌套 decision)",
-      "linear 4-task chain",
-      "parallel countersign (全员通过)",
-      "ONE_VOTE_VETO 一票否决会签",
-      "custom node + AppendVarsHandler (FIX-T38 §16)",
-      "candidatePage API (candidateUsers + candidateGroups 角色展开)",
-      "assignmentHandler (DeptLeader + DeptMainLeader)",
-      "submitType=3 ROLLBACK + taskName 回滚 (FIX-T114)",
-      "taskType 混合 (0 主审 + 1 副审 + 2 RECORD)",
-      "submitType=2 REJECT 路径 (state=45)"
+      "callActivity 子流程嵌套 + 主子状态联动 (FIX-T73 §3.1.2 + §7.3.2)",
+      "业务流 + preInterceptors/postInterceptors (FIX-T94 §6.1.1)",
+      "会签全员通过 → decision 阈值分流 (小/大额)",
+      "ONE_VOTE_VETO 会签 + 后续 decision 拓扑短路 (FIX-T46 §129)",
+      "混合 4 handler: Operator + FormField + DeptLeader + TaskRole (FIX-T8 §68)"
     ],
     "bugs_found": [
-      "FIX-T114 ROLLBACK/JUMP taskName 仅读顶层 args.taskName, 不读 variables.taskName → 走默认 ROLLBACK 触发 FIX-T36 §52 assignee 覆写"
+      "FIX-T115: vendor/jeeflow/engine.py 整个代码库零处读取 args.assignees 字段 (FB-0015)",
+      "FIX-T116: flows/07-countersign-ratio.json 把 countersignCompletionCondition 放在 properties.field 而非顶层 (FB-0014)"
     ],
     "bugs_fixed": [
-      "FIX-T114: facade.py:737/741 同时支持 args.taskName / args.targetTaskName / args.variables.taskName / args.variables.targetTaskName"
+      "FIX-T115 (vendor/jeeflow/engine.py:867-880): _resolve_actors 在 token 解析失败时回退到 vars_.assignees.<nodeId>",
+      "FIX-T116 (flows/07-countersign-ratio.json + flows_demo/07-countersign-ratio.json): countersignCompletionCondition 移至顶层 properties, field 仅留 candidateUsers"
     ],
+    "regression": "19/19 flows state=20 (01-17 + 11-assignee-vars + 11-assignment-handler 全部 DONE, 零回归)",
+    "report": "bdd/bdd-dev-five-flows_20260922000000.md",
     "docs_updated": [
-      "docs/known-issues.md §118 (FIX-T114 详细根因 + 修复 + 设计陷阱)",
-      "docs/flow.md §3.3 submitType 表 ROLLBACK 陷阱说明",
-      "docs/AGENTS.md §6 约束 #37 (ROLLBACK taskName 兼容性)"
+      "statics.json (bdd_total 1213→1218, last_bdd_session 更新)",
+      "bdd/bdd-dev-five-flows_20260922000000.md (5 流程详细执行日志 + 验证点)"
     ]
   },
   "openapi_paths": 70,

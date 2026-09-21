@@ -1,0 +1,19 @@
+{
+  "name": "dev-bdd-sub-approval",
+  "displayName": "BDD-DEV-子流程嵌套 callActivity",
+  "type": "approval",
+  "instanceUrl": "/bdd/dev-sub-approval/form",
+  "nodes": [
+    { "id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": { "width": 50, "height": 50 }, "text": { "value": "开始" } },
+    { "id": "apply", "type": "snaker:task", "x": 180, "y": 200, "properties": { "width": 100, "height": 50, "form": "main-form", "assignee": "applicant", "taskType": 0, "performType": 0 }, "text": { "value": "主流程提交" } },
+    { "id": "sub_call", "type": "snaker:callActivity", "x": 340, "y": 200, "properties": { "width": 120, "height": 50, "processDefineName": "dev-sub-finance", "assignee": "u_arch" }, "text": { "value": "调用子流程(财务)" } },
+    { "id": "rd_final", "type": "snaker:task", "x": 500, "y": 200, "properties": { "width": 120, "height": 50, "assignee": "u_rd_dir", "taskType": 0, "performType": 0 }, "text": { "value": "总监复审" } },
+    { "id": "end", "type": "snaker:end", "x": 660, "y": 200, "properties": { "width": 50, "height": 50 }, "text": { "value": "结束" } }
+  ],
+  "edges": [
+    { "id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {} },
+    { "id": "e1", "sourceNodeId": "apply", "targetNodeId": "sub_call", "properties": {} },
+    { "id": "e2", "sourceNodeId": "sub_call", "targetNodeId": "rd_final", "properties": {} },
+    { "id": "e3", "sourceNodeId": "rd_final", "targetNodeId": "end", "properties": {} }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "dev-sub-finance",
+  "displayName": "BDD-DEV-子流程-财务审核",
+  "type": "approval",
+  "nodes": [
+    { "id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": { "width": 50, "height": 50 }, "text": { "value": "开始" } },
+    { "id": "sub_apply", "type": "snaker:task", "x": 180, "y": 200, "properties": { "width": 100, "height": 50, "assignee": "applicant", "taskType": 0, "performType": 0 }, "text": { "value": "子流程提交" } },
+    { "id": "finance_check", "type": "snaker:task", "x": 340, "y": 200, "properties": { "width": 120, "height": 50, "assignee": "u_qa_lead", "taskType": 0, "performType": 0 }, "text": { "value": "财务审核" } },
+    { "id": "end", "type": "snaker:end", "x": 500, "y": 200, "properties": { "width": 50, "height": 50 }, "text": { "value": "子流程结束" } }
+  ],
+  "edges": [
+    { "id": "e0", "sourceNodeId": "start", "targetNodeId": "sub_apply", "properties": {} },
+    { "id": "e1", "sourceNodeId": "sub_apply", "targetNodeId": "finance_check", "properties": {} },
+    { "id": "e2", "sourceNodeId": "finance_check", "targetNodeId": "end", "properties": {} }
+  ]
+}

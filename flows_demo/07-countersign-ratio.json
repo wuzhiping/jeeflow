@@ -46,9 +46,9 @@
         "taskType": 0,
         "performType": 1,
         "countersignType": "PARALLEL",
+        "countersignCompletionCondition": "#nrOfCompletedInstances==2",
         "field": {
-          "candidateUsers": "userA,userB,userC,userD",
-          "countersignCompletionCondition": "#nrOfCompletedInstances==2"
+          "candidateUsers": "userA,userB,userC,userD"
         }
       },
       "text": {

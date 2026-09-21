@@ -5029,3 +5029,188 @@ target = str(
 - `docs/AGENTS.md §5.5` (curl 范例)
 
 ---
+
+## §119 FIX-T115 `args.assignees` 字段死字段 — 引擎零读取 (2026-09-22 BDD-DEV · 用户反馈 FB-0015)
+
+### 现象
+
+调用方在 `startAndExecute` 传 `"assignees": {"apply": "u_qa_lead"}` 期望覆盖 apply 节点默认 `applicant` 解析。
+实际上 **`vendor/jeeflow/` 整个代码库零处读取 `assignees` 字段**：
+- `facade.py:_startAndExecute` 把 `args.assignees` 整体塞进 `vars_`（line 279 flow_args 透传）
+- `engine.py:_resolve_actors` line 843-870 仅读 `properties.assignee` literal，零回退到 `vars_["assignees"]`
+- 结果：`assignees.apply=u_qa_lead` 被静默存入 `inst.variables.assignees`，**引擎永不消费**
+
+### 复现
+
+```bash
+# 流程 01-simple.json 中 apply.properties.assignee = "applicant"
+curl -X POST /wf/processInstance/startAndExecute -d '{
+  "processDefineId": "20", "operator": "u_be_eng",
+  "assignees": {"apply": "u_qa_lead"},
+  "variables": {"submitType": 0, "u_userId": "u_be_eng"}
+}'
+# 实测: apply 节点 actor = [u_be_eng]（仅 applicant 替换结果），u_qa_lead 静默忽略
+# 期望: apply 节点 actor = [u_qa_lead, u_be_eng] 或 [u_qa_lead]（设计者意图）
+```
+
+### 根因
+
+历史接口约定（mldong `startProcessInstanceById`）:
+- `properties.assignee = "applicant"` → 引擎替换为 `inst.operator`
+- `properties.assignee = "<变量 key>"` → 引擎读 `vars_[key]`
+- `args.assignees` 在 Java Spring 体系是另一套 endpoint 协议（`startProcessInstanceByName`），本仓未实现
+
+### 修复 (FIX-T115)
+
+`vendor/jeeflow/engine.py:_resolve_actors` 在 token 解析失败时回退到 `vars_["assignees"]`：
+
+```python
+# FIX-T115 (2026-09-22 FB-0015)：assignees 字段死字段修复
+assignees_map = vars_.get("assignees") if isinstance(vars_.get("assignees"), dict) else {}
+a_val = assignees_map.get(node.id) or assignees_map.get(token)
+if a_val is not None:
+    if isinstance(a_val, (list, tuple)):
+        actors.extend(str(x) for x in a_val)
+    else:
+        actors.append(str(a_val))
+else:
+    actors.append(token)
+```
+
+**优先级** (OR 累加语义):
+1. `properties.assignee` literal + 特殊 token（`applicant` / `@role:xxx`）
+2. `vars_[token]` 直接命中
+3. `vars_["assignees"][node.id]` 新增回退（FIX-T115）
+4. `vars_["assignees"][token]` token 名作为 assignees key 的回退（FIX-T115）
+
+### 复测
+
+| 姿势 | properties.assignee | assignees | 期望 actor | 实测 actor | 结果 |
+|---|---|---|---|---|---|
+| 1 | "applicant" | {"apply": "u_qa_lead"} | u_qa_lead + u_be_eng | u_qa_lead + u_be_eng | ✅ |
+| 2 | "applicant" | {} | u_be_eng | u_be_eng | ✅ (向后兼容) |
+| 3 | "u_fe_eng" | {"apply": "u_qa_lead"} | u_fe_eng + u_qa_lead | u_fe_eng + u_qa_lead | ✅ |
+
+19 流程全量回归 19/19 state=20 ✅，零回归。
+
+### 文档同步
+
+- `docs/flow.md §3.3`: 新增 `assignees` 字段语义段
+- `docs/AGENTS.md §5.5`: curl 范例补充 `assignees` 用法
+
+### 关联文档
+
+- `vendor/jeeflow/engine.py:867-880` (FIX-T115 修复点)
+- `bdd/bdd-dev-five-flows_20260922000000.md` (BDD-DEV 第五轮触发)
+
+---
+
+## §120 07-countersign-ratio `field.countersignCompletionCondition` 字段位置错 (2026-09-22 BDD-DEV · 用户反馈 FB-0014)
+
+### 现象
+
+`flows/07-countersign-ratio.json` 的 `task1.properties` 把比例条件放在 `field.countersignCompletionCondition`：
+
+```json
+"properties": {
+  "assignee": "u_fe_eng,u_be_eng,u_qa_eng,u_fe_senior",
+  "countersignType": "PARALLEL",
+  "field": {
+    "candidateUsers": "u_fe_eng,...",
+    "countersignCompletionCondition": "#nrOfCompletedInstances==2"  ← 应放顶层
+  }
+}
+```
+
+### 引擎实际读取位置
+
+`vendor/jeeflow/engine.py:148`:
+```python
+cs_cond = str(cur_node.properties.get("countersignCompletionCondition", "") or "").strip()
+```
+
+**仅读顶层**。`field.countersignCompletionCondition` 不被 raw EngineImpl 读取。
+
+### 为何流程仍能跑通？
+
+`main.py:69` 用的是 `RatioCapableEngine` 包装器（`main_common.py:225-228`），它有兜底回退到 `field.` 位置：
+
+```python
+if not cs_cond:
+    field = p.get("field", {}) or {}
+    cs_cond = str(field.get("countersignCompletionCondition", "") or "").strip()
+```
+
+→ 包装器救了场，但**这是设计不一致**：raw EngineImpl + 用户文档期望的位置是顶层，包装器却读 field。
+
+### 修复 (FIX-T116 数据修正)
+
+把 `flows/07-countersign-ratio.json` 和 `flows_demo/07-countersign-ratio.json` 的 `countersignCompletionCondition` 移到顶层 `properties`，保留 `field` 仅用于 `PERMISSION_f_*` 字段权限声明：
+
+```json
+"properties": {
+  "countersignType": "PARALLEL",
+  "countersignCompletionCondition": "#nrOfCompletedInstances==2",
+  "field": {
+    "candidateUsers": "u_fe_eng,u_be_eng,u_qa_eng,u_fe_senior"
+  }
+}
+```
+
+修复后**去掉对 RatioCapableEngine 包装器兜底的依赖**，engine.py 单点真相。
+
+### 复测
+
+| 场景 | 期望 | 实测 | 结果 |
+|---|---|---|---|
+| 1/4 完成 | task1 仍 active (nrOfCompletedInstances=1 < 2) | activeNodeNames=[task1] | ✅ |
+| 2/4 完成 | task1 done + 余者 ABANDON | activeNodeNames=[] + state=20 | ✅ |
+
+### 关联文档
+
+- `flows/07-countersign-ratio.json` (FIX-T116 数据修正点)
+- `flows_demo/07-countersign-ratio.json` (镜像同步)
+- `vendor/jeeflow/engine.py:148` (canonical 读法)
+- `main_common.py:225-228` (包装器兜底, 保留向后兼容)
+- `docs/flow.md §4.2` (countersignCompletionCondition 字段位置规范)
+
+---
+
+## §121 11-assignment-handler 缺 SPI 数据 (2026-09-22 用户反馈 · 不成立)
+
+### 现象 (用户报告)
+
+用户报告：`flows/11-assignment-handler.json` handler FQCN 注册了, SPI 缺 task1/task2/task3/task4 + role_code。
+
+### 复测结果
+
+SPI dev 配置（`spi/dev/jsons/`）:
+- 13 用户: u_ceo, u_cto, u_rd_dir, u_arch, u_fe_lead, u_fe_senior, u_fe_eng, u_be_lead, u_be_senior1, u_be_senior2, u_be_eng, u_qa_lead, u_qa_eng
+- 8 角色: ceo / cto / rd_director / tech_lead / architect / senior_engineer / engineer / qa_engineer
+- 全部 task1/task2/task3/task4 handler FQCN 在 `vendor/jeeflow/builtin.py` 已注册
+
+流程默认 deploy 后报错 `[ValueError] 节点[task1] handler 'com.mldong.jeeflow.interceptor.impl.FormFieldAssigneeHandler' SPI 角色匹配为空（检查 role_code）` — **实际原因是 FormField handler 期望 variables.f_task1**，而非 SPI 缺数据。
+
+### 修复
+
+无需代码修复。流程使用说明补充到 docs/flow.md：
+- task1 (FormField): 必须传 `variables.f_task1 = "<userId>"`
+- task2 (Operator): 默认当前 operator，无需额外配置
+- task3 (DeptLeader): 引擎自动通过 SPI find_dept_leaders 解析发起人部门主管
+- task4 (TaskRole): 节点 properties.roleCode = "qa_engineer" → SPI 解析为 [u_qa_lead, u_qa_eng]
+
+### 复测
+
+| 节点 | handler | 解析路径 | 实测 actor | 结果 |
+|---|---|---|---|---|
+| task1 | FormFieldAssigneeHandler | variables.f_task1 | u_qa_lead + u_be_eng (applicant) | ✅ |
+| task2 | OperatorAssignmentHandler | operator | u_be_eng | ✅ |
+| task3 | DeptLeaderAssignmentHandler | SPI find_dept_leaders | u_be_lead | ✅ |
+| task4 | TaskRoleAssigneeHandler | SPI find_by_role("qa_engineer") | [u_qa_lead, u_qa_eng] | ✅ |
+
+state=20 ✅
+
+### 关联文档
+
+- `docs/flow.md §5.4`: handler 字段名 + 配套变量约定
+- `flows/11-assignment-handler.json`: 注释补充
