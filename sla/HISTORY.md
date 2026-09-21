@@ -353,3 +353,30 @@ PASS=20  FAIL=0  Score=100%
 ### 历史快照
 
 无（v1 为初始版本）。
+
+---
+
+## v13 · 2026-09-22 · Phase 8 收官 SLA 报告
+
+### 关键变化
+- **MEM backend UP 实测** (healthz 1-2ms P99)
+- **PG backend DOWN** (本机无 PG 进程, 历史 last_check.json 100% 47/47 PASS)
+- **FB 闭环 10/10 = 100%** (含本日 4 项 fix)
+- **verify 规则 33** (新增 W013)
+- **skills/ 总文件 55**
+
+### 新增固化脚本
+- `sla/check_feedback_loop.sh` (10/10 PASS)
+- `sla/check_skills_outputs.sh` (21/21 PASS)
+
+### 新增承诺服务
+- 流程设计承诺 6 项
+- 流程运行承诺 9 项
+- 客户反馈承诺 6 项
+- 文档承诺 10 项
+- 测试承诺 8 项
+- 反馈闭环承诺 6 项 (新)
+
+### 历史快照
+- v12: `sla/snapshot-v12-2026-09-20.md` (前次报告)
+

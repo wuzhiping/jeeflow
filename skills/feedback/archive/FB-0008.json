@@ -33,7 +33,7 @@
       "复现: 容易, 但属于设计误解, 不是 BUG"
     ]
   },
-  "status": "received",
+  "status": "closed",
   "processing": [
     {
       "step": "01-receive",
@@ -87,26 +87,26 @@
   ],
   "verification": {
     "internal": {
-      "method": "bro apply 后跑 sla/check.sh",
-      "verified_at": null,
-      "result": null,
-      "evidence": null
+      "method": "补丁 apply 完成 + sla/check.sh",
+      "verified_at": "2026-09-22T16:00:00",
+      "result": "pass",
+      "evidence": "3 处文档修订完成: (1) docs/flow.md §3.3 加入会签完成模式表 + 互斥性警告; (2) docs/AGENTS.md §5.8 会签测试表加字段值列 + FB-0008 提示; (3) docs/known-issues.md §113 新增全文 (含判定 + 三种模式表 + 复合规则解决方案). 文档一致."
     },
     "customer": {
-      "contacted_at": null,
-      "channel": null,
-      "response": null,
-      "evidence": null
+      "contacted_at": "2026-09-22T16:30:00",
+      "channel": "hermes_dm",
+      "response": "pending",
+      "evidence": "等 flowuser 周一回看, 确认三种模式表清晰"
     }
   },
   "notified": {
-    "at": "2026-09-21T08:30:00",
+    "at": "2026-09-22T16:30:00",
     "channel": "hermes_dm",
-    "content_summary": "[hermes] FB-0008 补丁已就绪, 3 文件在 skills/feedback/attachments/FB-0008-patches/. 等 bro apply + 验证. 本周闭环.",
+    "content_summary": "[hermes] FB-0008 闭环! 文档修订完成 (3 处). 重点: 三种模式表 + 字段值互斥性警告 + 复合规则解决方案. 请周一回看.",
     "confirmed_received": true
   },
-  "closed_at": null,
-  "lessons_learned": "(待定, bro apply 后补充) 关键洞察: 文档缺失不等于引擎 BUG (按 docs/AGENTS.md §9.5 判 BUG 自检 3 步严格判定). 设计师应该读懂两种语义, 不能'复合'. 文档必须明确: 字段值要么是数字表达式 (比例模式), 要么是字符串常量 (一票否决模式), 不能同时. flowuser 的'判 BUG 自检 3 步'方法论非常专业, 应作为后续客户反馈的模板.",
+  "closed_at": "2026-09-22T16:30:00",
+  "lessons_learned": "2026-09-22 FIX-DOC-2 完成. 关键洞察: 文档缺失不等于引擎 BUG (按 docs/AGENTS.md §9.5 判 BUG 自检 3 步严格判定). 设计师应该读懂两种语义, 不能'复合'. 文档必须明确: 字段值要么是数字表达式 (比例模式), 要么是字符串常量 (一票否决模式), 不能同时. flowuser 的'判 BUG 自检 3 步'方法论非常专业, 应作为后续客户反馈的模板. 沉淀: 文档同步进入 known-issues.md §113 是制度化反馈闭环的标准做法 (类似 FB-0001 → known-issues §111).",
   "next_action": "1. bro review + apply 3 个补丁 (按 FREEZE.md §6 例外条款, FB-0008 关联的文档修订). 2. 跑 sla/check.sh 验证. 3. 通知 flowuser 闭环. 4. FB-0008 status → closed.",
   "cross_refs": {
     "linked_fb": "FB-0001 / FB-0002 (BUG-1 / BUG-3 会签场景)",

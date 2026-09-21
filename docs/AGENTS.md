@@ -287,12 +287,19 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 
 ### 5.8 会签测试
 
-| 类型 | curl 操作 | 预期 `performType/countersignType` | 预期完成条件 |
-| --- | --- | --- | --- |
-| 并行 | 三用户按序 `processTask/execute` | `1 / PARALLEL` | **全员通过才流转**（剩余成员 taskState 仍 10，不自动废弃） |
-| 串行 | 三个用户按顺序 `processTask/execute` | `1 / SEQUENTIAL` | 仅最后一个通过即流转 |
-| 比例 | N 个用户中 K 个通过 | `1 / PARALLEL` | `countersignCompletionCondition` 在 field 下 |
-| 一票否决 | 任一用户 reject（submitType=20） | `1 / PARALLEL` | `ONE_VOTE_VETO`（仅当配置时生效；剩余成员废弃） |
+| 类型 | curl 操作 | 预期 `performType/countersignType` | `countersignCompletionCondition` 字段值 | 预期完成条件 |
+| --- | --- | --- | --- | --- |
+| 并行 (全员通过) | 三用户按序 `processTask/execute` (全部 submitType=0) | `1 / PARALLEL` | (字段省略) | **全员通过才流转**（剩余成员 taskState 仍 10，不自动废弃） |
+| 串行 | 三个用户按顺序 `processTask/execute` | `1 / SEQUENTIAL` | (字段省略) | 仅最后一个通过即流转 |
+| 比例 (N/M) | N 个用户中 K 个 submitType=0 | `1 / PARALLEL` | `"#nrOfCompletedInstances>=K"` (OGNL 表达式) | 满足 K/M 立即流转; 余者 taskState=99 ABANDON (updateUser=触发者, FIX-T111) |
+| 一票否决 | 任一用户 reject (submitType=20) | `1 / PARALLEL` | `"ONE_VOTE_VETO"` (字符串常量) | 立即流转 state=45 + 余者 ABANDON (updateUser=rejecter, FIX-T46+T111) |
+
+> ⚠️ **FB-0008 关键提示 (2026-09-21 flowuser 反馈)**:
+> - 字段值 = 表达式 → 引擎按比例模式处理, **放弃** 一票否决能力
+> - 字段值 = 字符串 "ONE_VOTE_VETO" → 引擎按一票否决处理, **放弃** 比例能力
+> - 这两种语义 **互斥**, 不能复合 (如设计师想"2/3 通过 OR 任一 reject"是行不通的)
+> - 设计师必须二选一, 不要试图构造"复合规则"
+> - 详见 `docs/flow.md §3.3` (修订后) + `docs/known-issues.md §113`
 
 > ⚠️ **修正（2026-09-17 实测 05-countersign-parallel）**：原表写 PARALLEL "任一通过即流转"，实测**全员通过才流转**。`engine.py:121-123` 完成任务后检查 `find_doing_tasks`，有 doing 直接 return 不流转。剩下成员 taskState 仍 10 (DOING)，由后续完成者继续推进；最后一个完成时所有 doing 已清空才往下走。
 
@@ -332,6 +339,7 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 | 28 | **task 级表单绑定**（FIX-T76 v1.9.0+ `processTask/withForm` 端点） | `./docs/BUGS.md §109` |
 | 29 | **task 节点**不应有多条无条件出边（隐式 fork 致 end 被提前遍历,实例 state=20 但下游 task 仍 DOING;FIX-T110 v1.9.0+ verify W012 警告 + 用 decision 节点分隔） | `./docs/known-issues.md §111` |
 | 30 | **TaskState.ABANDON.updateUser** 语义 = 触发废弃的人（FIX-T111 §112；比例/PARALLEL 会签完成条件命中、流程撤回、ONE_VOTE_VETO REJECT 等场景必须显式传 abandoned_by；不传时保持 backward compat = 沿用 createUser） | `./docs/known-issues.md §112` |
+| 31 | **decision 节点**多分支建议加默认边（BUG-2 / FIX-T112 2026-09-22；如所有 expr 评估失败, 引擎兜底走第一条边, 可能创建孤儿 DOING task. 修复: 引擎层 _cleanup_orphan_decision_tasks + verify W013 警告加默认边 `expr=""`） | `./docs/known-issues.md §113` (注: §113 实为 countersignCompletionCondition, BUG-2 见 FB-0007) |
 
 > ⚠️ 约束 #13-#20 来自 `./docs/BUGS.md`，是 BDD 实战中**反复踩坑**的约束。设计前**必读**。
 

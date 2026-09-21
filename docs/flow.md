@@ -158,7 +158,7 @@
 | `taskType` | int | 是 | `0`=主审 `1`=副审（旁审）`2`=记录（`TaskType` 枚举，`model.py:80`）；**FIX-T30 (2026-09-18) 透传落库**；样例 `04-fork-join.json` taskB 与 `10-mixed-mode.json` task3 均用 1 |
 | `performType` | int/string | 是 | `0`/ `"0"`=普通，`1`/ `"1"`/`"ALL"`/`"COUNTERSIGN"`=会签；引擎容错解析（`engine.py:382-386`） |
 | `countersignType` | string | 会签时必填 | `"PARALLEL"` 并行；`"SEQUENTIAL"` 串行（`engine.py:282, 387`） |
-| `countersignCompletionCondition` | string | 否 | 会签完成条件；可放 `properties` 根下，也可放 `properties.field` 内。两种取值：① Activiti 表达式，如 `"#nrOfCompletedInstances==2"`（`flows/07`）；② 常量 `"ONE_VOTE_VETO"` 一票否决（`flows/13`） |
+| `countersignCompletionCondition` | string | 否 | 会签完成条件；**两种语义互斥**, 不可复合。可放 `properties` 根下, 也可放 `properties.field` 内。详见下方"会签完成模式表" |
 | `candidateUsers` | string | 否 | 候选人名单（逗号分隔）。可直接放 `properties` 根下（`flows/12-candidate-page.json`）也可放 `field` 内（`flows/05/06/07/13`）。前端候选人组件按此过滤 |
 | `candidateGroups` | string | 否 | 候选角色组（同上两种位置，逗号分隔） |
 | `field` | object | 否 | 字段集合：可放 `candidateUsers` / `candidateGroups` / `countersignCompletionCondition` / `PERMISSION_xxx`（任务字段权限，1=只读、2=隐藏，见 §5） |
@@ -214,6 +214,23 @@
 - `countersignType=PARALLEL` + `countersignCompletionCondition="#nrOfCompletedInstances>=K"`
 - 每次 task 完成时 evaluate 表达式；true → **abandon 剩余 DOING**（taskState=99 ABANDON）+ 推进下游
 - RatioCapableEngine 扩展（`main_pg.py:93-155`）
+
+**会签完成模式（实测 2026-09-21 FB-0008 flowuser 反馈）**：
+
+| 模式 | `countersignCompletionCondition` 字段值 | 行为 | 样例 |
+|------|---------------------------------------|------|------|
+| **全员通过 (默认)** | (字段省略) | PARALLEL: 全员 approve 才流转; 任何 reject 走 reject 边 | `flows/05` |
+| **比例通过 (N/M)** | `"#nrOfCompletedInstances>=K"` (OGNL 表达式) | 满足 K/M 立即流转 + 余者 taskState=99 ABANDON (updateUser=触发者, FIX-T111) | `flows/07` |
+| **一票否决** | `"ONE_VOTE_VETO"` (字符串常量) | 任一 reject (submitType=20) 立即流转 state=45 + 余者 ABANDON | `flows/13` |
+
+⚠️ **关键互斥 (FB-0008 flowuser 报告)**:
+- 字段值 = 表达式 → **放弃** 一票否决能力 (即使 reject, 引擎已按比例流转, reject 来不及)
+- 字段值 = 字符串 → **放弃** 比例能力 (引擎只识别 ONE_VOTE_VETO, 不评估表达式)
+- 这是引擎设计选择, 不是 bug. 设计师必须二选一, 不要试图"2/3 通过 OR 任一 reject"
+
+**如果需要"复合规则" (FB-0008 设计模式)**:
+- 2/3 通过 + 任一 reject 立即驳回: 用嵌套 decision + expr (`docs/flow.md §3.4`); 会签节点只做 2/3, 后接 decision 节点判 reject 边
+- 复杂多条件会签: 自定义节点 + handler (`docs/flow.md §3.5` + `main_common.build_custom_handlers`)
 
 ### 3.4 decision 节点 properties
 
@@ -395,6 +412,48 @@ if perm is None:
 **委托 ≠ 自动代办**：userA 委托给 userB 后，userB 仍需调用 surrogate addCandidate 才能在 todoList 看到 userA 的任务。
 
 详细测试见 `./known-issues.md §82`。
+
+### 5.3.1 任务级委托（delegate · per-task 临时）
+
+> 🆕 FIX-T69 v1.9.0+ 新增端点. 单任务一次性转交, 不影响其他任务.
+
+**API**: `/wf/processTask/delegate`
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `processTaskId` | string | 是 | 当前任务 ID (雪花 ID, 字符串) |
+| `operator` | string | 是 | 委托人 userId (实际操作人, 必须在 actorIds 里) |
+| `targetUserId` | string | 是 | 受托人 userId (**注意: 不是 `assignee`**) |
+| `comment` | string | 否 | 委托备注 |
+
+> ⚠️ **FB-0009 关键提示 (2026-09-21 flowuser 反馈)**:
+> - 字段名是 **`targetUserId`**, 不是 `assignee`
+> - 用户首次调用按 `assignee` 传 → `[ValueError] targetUserId 缺失` (code=99999999)
+> - 修正后立即生效
+
+**当前行为 (v1.9.0+ 实测)**:
+- delegate 后 `actorIds` = `[operator, targetUserId]` (双方都在 actorIds 里)
+- 双方都可在 `processTask/todoList` 看到该 task
+- 任何一方都可执行 `processTask/execute`
+- `processTask/delegateHistory` 端点可查委托历史
+
+**委托 ≠ 转交 (设计意图 vs 实现错位, FB-0010)**:
+- v1.9.0+ 当前是"协助"语义 (双方可见), 不是"移交"语义
+- 详见 `docs/known-issues.md §114` + `feedback/inbox/FB-0010` (设计缺陷候选, 等 Phase 9 修复)
+
+**示例**:
+```bash
+curl -X POST http://127.0.0.1:8101/wf/processTask/delegate \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "processTaskId": "92111791452258",
+    "operator": "deptLeader",
+    "targetUserId": "leader",
+    "comment": "我出差 1 周, 请 leader 帮我审批"
+  }'
+```
+
+详细测试见 `docs/known-issues.md §114`。
 
 ---
 

@@ -51,6 +51,7 @@ W_PERMISSION_GAP = "W009"
 W_DECISION_NO_EXPR = "W010"   # decision 节点所有出边 expr 都为空
 W_CUSTOM_UNUSED_VAL = "W011"   # custom 节点 val 字段空（FIX-T38 §16）
 W_TASK_MULTI_OUT_TO_END = "W012"   # task 节点多条出边且 target 含 end（BUG-1: 隐式 fork 致实例提前 finish）
+W_DECISION_MULTI_BRANCH_RISK = "W013"   # decision 节点多分支, 任一分支 expr 缺失或全 false 风险（BUG-2 / FIX-T112 2026-09-22）
 
 P_CS_SINGLE_ACTOR = "P001"
 P_JUMP_NO_TARGET = "P002"
@@ -578,6 +579,56 @@ def verify_flow(flow: dict, variables: dict = None) -> Tuple[List[VerifyIssue], 
                                        f"请用 decision/fork 节点分隔分支。",
                                        node_ids=[nid] + end_targets,
                                        edge_ids=all_target_edge_ids))
+
+    # W013 - decision 节点多分支风险 (BUG-2 / FIX-T112 2026-09-22)
+    #   BUG-2 现象: decision 节点若多条出边 expr 全部评估失败 (如 vars 缺字段),
+    #   引擎会兜底走第一条边, 导致孤儿 DOING task (e.g. cashier_pay 幽灵 DOING).
+    #   检测:
+    #     1) decision 节点 ≥ 2 条出边 (多分支)
+    #     2) 任一分支的 expr 字段缺失或为空 (可能走兜底)
+    #     3) 或 decision 节点配置了 decisionHandler (FIX-T46 §129 一票否决等)
+    #   警告设计师:
+    #     - 加默认边 (expr="" 在最后)
+    #     - 用嵌套 decision 或显式兜底
+    for nid, n in node_by_id.items():
+        if n.get("type") != TYPE_DECISION:
+            continue
+        out = out_edges.get(nid, [])
+        if len(out) < 2:
+            continue
+        # 收集各出边 expr 状态
+        branch_info = []
+        has_default = False
+        for eid in out:
+            e = next((e for e in edges if e.get("id") == eid), None)
+            if not e:
+                continue
+            target_id = e.get("targetNodeId")
+            expr = (e.get("properties") or {}).get("expr", "")
+            if not expr:
+                has_default = True
+            branch_info.append((target_id, expr))
+        # 检查 1: 多分支但全部 expr 都有 (无默认边)
+        # 检查 2: 任一分支 expr 为空 (即默认边在中间, 可能不按 JSON 顺序)
+        if not has_default:
+            # 全部 expr 非空 - 检查是否能覆盖所有数据场景
+            warnings.append(VerifyIssue(
+                W_DECISION_MULTI_BRANCH_RISK, "warning",
+                f"decision 节点[{nid}] 有 {len(out)} 条出边, 全部带 expr (无默认边)。"
+                f"如数据不满足任一 expr, 引擎会兜底走第一条边 (可能导致孤儿 task)。"
+                f"建议: 加一条 expr=\"\" 的默认边作为兜底。",
+                node_ids=[nid],
+                edge_ids=[e.get("id") for e in edges if e.get("sourceNodeId") == nid]
+            ))
+        # 检查 3: decisionHandler 配置 (FIX-T46 一票否决)
+        props = n.get("properties") or {}
+        if props.get("decisionHandler"):
+            warnings.append(VerifyIssue(
+                W_DECISION_MULTI_BRANCH_RISK, "info",
+                f"decision 节点[{nid}] 配置了 decisionHandler={props.get('decisionHandler')}, "
+                f"handler 决定路由. 如 handler 抛错, 引擎会抛 ValueError 而非兜底.",
+                node_ids=[nid]
+            ))
 
     # P005 - 流程链路过深 (start 到 end 超过 10 个 task 节点)
     if start_ids:

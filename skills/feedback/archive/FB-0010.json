@@ -1,0 +1,96 @@
+{
+  "fb_id": "FB-0010",
+  "title": "delegate 后委托方 (deptLeader) 仍能在 todoList 看到 task — 设计缺陷 (b) 70% 置信度",
+  "created_at": "2026-09-21T21:30:00",
+  "channel": "hermes_dm",
+  "customer": {
+    "id": "C-flowuser",
+    "type": "L2",
+    "contact": "flowuser (远程用户, https://abc.feg.cn/jeeflow/)",
+    "scenario": "委托 (delegate) 场景测试, 发现委托后双方都在 actorIds"
+  },
+  "raw_text": "调 processTask/delegate {processTaskId, operator: deptLeader, targetUserId: leader} 成功. 但委托后: (1) deptLeader todoList 仍有 1 条 dept_approve task; (2) leader todoList 也有 1 条 dept_approve task. delegateHistory 显示 actorIds=['deptLeader','leader'] 双方都列. flowuser 分析 3 选项: (a) 设计如此 5% (b) 设计缺陷 70% (c) 引擎 bug 25%. 我们决策选 (b) 设计缺陷, 证据: API 字段 targetUserId 命名强烈暗示转交, delegateHistory 只有 from/to 没 removed_actor 字段.",
+  "attachments": [
+    "audit_logs/92111791451232_*.ndjson (用户端, delegate 测试)",
+    "tdd/leave_request.json (测试流程)",
+    "docs/flow.md §5.3 (设计意图沉默)",
+    "vendor/jeeflow/engine.py (待查, 确认 actorIds 添加逻辑)"
+  ],
+  "classification": {
+    "type": "improve",
+    "priority": "P2",
+    "owner": "engine",
+    "scope": "multi",
+    "reproduce": "easy",
+    "classified_at": "2026-09-21T21:35:00",
+    "classified_by": "hermes",
+    "reasoning": [
+      "现象: 委托后委托方仍可见 task (actorIds 双列)",
+      "原因 (假设): 引擎只实现'加 actor'没实现'移除原 actor', 是设计不完整",
+      "影响: 所有用 processTask/delegate 的场景, 业务上易误判 ('我以为你接了')",
+      "复现: 1 步 (delegate 后查 todoList)",
+      "flowuser 3 选项分析: (a) 设计如此 5% / (b) 设计缺陷 70% / (c) 引擎 bug 25%",
+      "决策: 选 (b), 等 bro 验证源码"
+    ]
+  },
+  "status": "closed",
+  "processing": [
+    {
+      "step": "01-receive",
+      "actor": "hermes",
+      "started_at": "2026-09-21T21:30:00",
+      "ended_at": "2026-09-21T21:35:00",
+      "action": "通过 hermes peer dm 接收 flowuser 反馈 + 决策分析, 分配 FB-0010, 选 (b) 设计缺陷"
+    }
+  ],
+  "fix_ref": {
+    "fix_id": "FIX-T113 (候选)",
+    "bdd_ids": [
+      "bdd-XXXX-delegate-remove-actor (待加)"
+    ],
+    "verify_rule": "W014 (候选: delegate 后委托方不应在 todoList 看到)",
+    "docs_sections": [
+      "docs/flow.md §5.3 (修订: 明确委托后行为)",
+      "docs/known-issues.md §114 (新增)"
+    ],
+    "files_changed": [
+      "vendor/jeeflow/engine.py (待 bro 确认, 是否需要移除原 actor)"
+    ],
+    "patch_status": "等 bro 决策 + Phase 9 排期"
+  },
+  "verification": {
+    "internal": {
+      "method": "源码审查 + flowuser 3 选项分析",
+      "verified_at": "2026-09-22T17:00:00",
+      "result": "pass",
+      "evidence": "facade.py:1956-1957 注释明确写 \"保留原 actor，不移除\" (addCandidate 写入目标用户, 不移除原 actor). 这是设计如此 (a) 而非设计缺陷 (b) 或引擎 bug (c). 但 API 字段命名 targetUserId 暗示转交语义, 命名 vs 行为错位, 已文档化在 docs/known-issues.md §114."
+    },
+    "customer": {
+      "contacted_at": "2026-09-22T17:00:00",
+      "channel": "hermes_dm",
+      "response": "pending",
+      "evidence": "结论与 flowuser 70% (b) 假设不同, 但已文档化当前行为. 等 flowuser 周一回看确认."
+    }
+  },
+  "notified": {
+    "at": "2026-09-22T17:00:00",
+    "channel": "hermes_dm",
+    "content_summary": "[hermes] FB-0010 验证完成. 源码审查确认: facade.py:1956 注释 \"保留原 actor，不移除\". 这是设计如此, 不是 bug. 但 API 命名 vs 行为错位 (targetUserId 暗示转交). 已文档化在 known-issues §114 + flow.md §5.3.1. Phase 9 候选池.",
+    "confirmed_received": true
+  },
+  "closed_at": "2026-09-22T17:00:00",
+  "lessons_learned": "2026-09-22: 源码审查结论与 flowuser 70% (b) 假设不同, 实测为 (a) 设计如此. 关键证据: facade.py:1956-1957 注释 \"保留原 actor，不移除\". 命名 vs 行为错位确实存在 (targetUserId 暗示转交), 但这是 UX 文档问题, 不是引擎问题. 教训: 当客户用判 BUG 自检 3 步后给出高置信度结论时, 应同时做源码验证. 实证纠正假设是反馈闭环的价值之一. Phase 9 候选: 给 delegate 增加参数 (e.g. removeOriginalActor) 让用户选择.",
+  "next_action": "1. 等 bro 验证 vendor/jeeflow/engine.py 确认 actorIds 添加逻辑. 2. 短期: 文档化 (告知用户当前行为). 3. 长期: Phase 9 排期 + 修复 (按 (b) 路线). 4. 通知 flowuser 闭环.",
+  "cross_refs": {
+    "linked_fb": "FB-0009 (delegate API 字段名错位)",
+    "fix_id_proposed": "FIX-T113",
+    "flowuser_analysis": "70% (b) 设计缺陷 / 25% (c) 引擎 bug / 5% (a) 设计如此"
+  },
+  "channel_metadata": {
+    "tool": "hermes peer dm flowuser",
+    "transport": "http://10.17.1.26:8642",
+    "context": "第 3 次 users.md 任务, 委托/surrogate 测试",
+    "instances_observed": "92111791451232",
+    "test_method": "新 defineId=115 leave_request, 不污染现有 user1 实例"
+  }
+}

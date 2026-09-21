@@ -75,7 +75,7 @@ action 命名约定：`{实体}/{动作}`，统一驼峰、不带前缀下划线
 | 42 | `processTask/transfer` | `_processTask_transfer` | 1529 | 任务转交 (替换 actorIds) |
 | 43 | `processTask/comment` | `_processTask_comment` | 1551 | 任务评论 (追加到 task.variables._comments) |
 | 44 | `processTask/extra` | `_processTask_extra` | 1578 | 任务额外信息 (合并到 task.variables._extra) |
-| 45 | `processTask/delegate` | `_processTask_delegate` | 1602 | 任务委派 (per-task 临时) |
+| 45 | `processTask/delegate` | `_processTask_delegate` | 1602 | 任务委派 (per-task 临时, **字段名 `targetUserId` 不是 `assignee`**, 详见 `docs/flow.md §5.3.1` + `docs/known-issues.md §114` FB-0009) |
 | 46 | `processTask/delegateHistory` | `_processTask_delegateHistory` | 1647 | delegate 历史查询 (BDD #1106, FIX-T74) |
 | 47 | `processTask/transferAndAdd` | `_processTask_transferAndAdd` | — | transfer + addCandidate 合并 (BDD #1107, FIX-T75) |
 | 48 | `processTask/withForm` | `_processTask_withForm` | — | task 级表单绑定 (BDD #1108, FIX-T76) |

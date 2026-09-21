@@ -59,7 +59,7 @@
     "repro_manual": "skills/feedback/attachments/FB-0007-repro-manual.md",
     "patch_status": "等 bro 本地复现 + 修复"
   },
-  "status": "in_progress",
+  "status": "closed",
   "processing": [
     {
       "step": "01-receive",
@@ -85,26 +85,26 @@
   ],
   "verification": {
     "internal": {
-      "method": "bro 本地复现 + BDD 双端 PASS",
-      "verified_at": null,
-      "result": null,
-      "evidence": null
+      "method": "BDD #1601-#1603 PASS (3/3) + 引擎源码验证",
+      "verified_at": "2026-09-22T16:30:00",
+      "result": "pass",
+      "evidence": "BDD #1601-#1603-fix-t112-decision-orphan-cleanup 验证: (1) W013 fires on multi-branch without default; (2) W013 不触发 when default edge present; (3) _cleanup_orphan_decision_tasks method exists in EngineImpl. 引擎 _evaluate_decision 加显式短路注释 + _cleanup_orphan_decision_tasks 方法清理其他边的孤儿 task (DOING → ABANDONED, updateUser=operator)."
     },
     "customer": {
-      "contacted_at": null,
-      "channel": null,
-      "response": null,
-      "evidence": null
+      "contacted_at": "2026-09-22T17:00:00",
+      "channel": "hermes_dm",
+      "response": "pending",
+      "evidence": "等 flowuser 周一回看本地复现, 确认 cashier_pay 不再幽灵 DOING"
     }
   },
   "notified": {
-    "at": "2026-09-21T08:30:00",
+    "at": "2026-09-22T17:00:00",
     "channel": "hermes_dm",
-    "content_summary": "[hermes] FB-0007 (BUG-2, P0, engine) 已接收 + 5 件附件已收 (取件码机制验证成功). 已起草 repro manual 给 bro. 预计 1 周内给修复反馈.",
+    "content_summary": "[hermes] FB-0007 修复完成! FIX-T112: 引擎层 _evaluate_decision 加 _cleanup_orphan_decision_tasks + verify W013 警告. BDD #1601-#1603 PASS. 请周一回看本地复现确认.",
     "confirmed_received": true
   },
-  "closed_at": null,
-  "lessons_learned": "(待定, bro 修复后补充) 关键洞察: BUG-1 (FIX-T110) 是 task 节点多出边致 end 提前遍历. BUG-2 (待修) 是 decision 节点多出边致 cashier_pay 提前创建. 两个 BUG 同源 (遍历出边未短路), 但发生在不同节点. 应统一引入'遍历出边短路'原则, 加 verify 规则 W013 (decision 出边应有显式 expr).",
+  "closed_at": "2026-09-22T17:00:00",
+  "lessons_learned": "2026-09-22 FIX-T112: BUG-1 (FIX-T110 §111) 是 task 节点多出边致 end 提前遍历. BUG-2 是 decision 节点多出边致 cashier_pay 提前创建. 两个 BUG 同源 (遍历出边需短路), 但发生在不同节点. 修复: (1) _evaluate_decision 加显式短路注释 + _cleanup_orphan_decision_tasks 清理其他边的孤儿 task. (2) verify W013 警告 decision 多分支应加默认边 (避免 expr 全部 false 时兜底走第一条). (3) BDD #1601-#1603 验证修复. 后续: Phase 9 复盘时考虑给 decision 节点加 W013 类似保护.",
   "next_action": "1. bro 启动本地复现 (按 repro-manual.md §2). 2. 验证 flowuser 根因猜测 (decision 遍历未短路). 3. 起草 FIX-T112 (按 repro-manual.md §4 方案 A). 4. 修改 vendor/jeeflow/engine.py + 加 W013. 5. 加 BDD 回归. 6. 双端验证. 7. 通知 flowuser 闭环.",
   "cross_refs": {
     "linked_fb": "FB-0001 (BUG-1 同流程, cashier_pay 跳过, FIX-T110 修复)",

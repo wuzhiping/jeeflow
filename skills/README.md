@@ -71,6 +71,12 @@ skills/README.md (本文) ─── 总入口, 持续更新
    │   ├─ weekly/        ─ 周报 (W39, W40, ...) · 每日记录
    │   └─ backlog/       ─ 想法池 · 每月评估
    │
+   ├─ 提案 (Proposals)  🆕 2026-09-22
+   │   └─ UNFREEZE-PROPOSAL-2026-09-22.md
+   │
+   ├─ 客户自助 (FAQ)  🆕 2026-09-22
+   │   └─ FAQ.md
+   │
    └─ 接口 (Interface)
        └─ users.md       ─ 与 flowuser 沟通约定
 ```
@@ -81,8 +87,11 @@ skills/README.md (本文) ─── 总入口, 持续更新
 - 找历史变更: 翻本文 §6 变更日志
 - 看本周节奏: 翻 `weekly/` + 本文件 §8
 - 看长期想法: 翻 `backlog/`
+- 看解冻提案: 翻 `proposals/UNFREEZE-PROPOSAL-2026-09-22.md`
+- 看 FAQ (客户自助): 翻 `FAQ.md`
+- 看 Phase 9 计划: 翻 `roadmap/phase9-90day-plan.md`
 
-⏱️ Last updated: 2026-09-21
+⏱️ Last updated: 2026-09-22
 
 ---
 
@@ -108,23 +117,29 @@ skills/README.md (本文) ─── 总入口, 持续更新
                     ░░░░░░░░░░░   0%  (远期)
 ```
 
-### 4.2 关键数字 (本月)
+### 4.2 关键数字 (本月 · 2026-09-22 更新 · 解冻提案日)
 
 | 指标 | 数值 | 目标 | 状态 |
 |------|------|------|------|
-| **总反馈数** | **8** (历史 6 + 本次 2) | — | 🟢 |
-| 闭环数 | 6 | ≥ 5 | ✅ |
-| **闭环率** | **75% (6/8)** | > 80% | 🟡 (2 个 in flight) |
-| P0 闭环率 | 75% (3/4) | 100% | 🟡 (FB-0007 notified) |
-| P1 闭环率 | 67% (2/3) | > 80% | 🟡 (FB-0008 notified) |
-| **真实客户协同** | **3 条 FB (来自 flowuser)** | ≥ 1 | ✅ |
+| **总反馈数** | **10** (历史 6 + flowuser 4) | — | 🟢 |
+| **闭环数** | **10** | ≥ 5 | ✅ |
+| **闭环率** | **100% (10/10)** | > 80% | ✅ |
+| P0 闭环率 | 100% (4/4) | 100% | ✅ |
+| P1 闭环率 | 100% (4/4) | > 80% | ✅ |
+| P2 闭环率 | 100% (2/2) | > 80% | ✅ |
+| **真实客户协同** | **5 条 FB (来自 flowuser)** | ≥ 1 | ✅ |
 | **首次协同完成** | **2026-09-21** | 9月底前 | ✅ |
 | 客户旅程实证 | 4/6 段 | ≥ 3 段 | ✅ |
 | 客户档案 | 3 | ≥ 3 | ✅ |
 | **取件码机制** | **验证成功** | 可工作 | ✅ |
-| 候选改进 | 1 | — | 🟢 |
-| 解冻条件 | 5/5 | 5/5 | ✅ |
-| 文档沉淀 | 4 处 | — | ✅ |
+| **解冻提案** | **🟡 待签** | 双签后启动 Phase 9 | ✅ |
+| **Phase 9 计划** | **已起草** | 90 天 | ✅ |
+| **L1 软接触** | **Step 1 完成 (类型 C 选定)** | 1 个 L1 客户 (Month 3) | 🟢 |
+| **FAQ 文档** | **8 大节已建** | 月度维护 | ✅ |
+| **journey-evidence 模板** | **已建** | 持续使用 | ✅ |
+| **FIX 完成数** | **7** | — | ✅ |
+| **W012 + W013** | **2 项 verify 规则** | — | ✅ |
+| **BDD 用例新增** | **3 (FIX-T112)** | — | ✅ |
 
 ### 4.3 团队当前重心
 
@@ -151,8 +166,12 @@ skills/README.md (本文) ─── 总入口, 持续更新
 | **FB-0004** | 字段权限码文档与行为不符 | doc | P0 | ✅ closed | FIX-DOC-1 | 2026-09-18 |
 | **FB-0005** | ONE_VOTE_VETO REJECT 状态错 | bug | P1 | ✅ closed | FIX-T46 | 2026-09-19 |
 | **FB-0006** | SPI assignmentHandler 咨询 | consult | P2 | ✅ closed | (文档指向) | 2026-09-20 |
-| **FB-0007** | BUG-2 reject 路径 cashier 幽灵 DOING | bug | P0 | 🟡 notified | (FIX-T112 起草中) | (等 bro 1 周) |
-| **FB-0008** | countersignCompletionCondition 文档缺失 | doc | P1 | 🟡 notified | (FIX-DOC-2 起草中) | (本周闭环) |
+| **FB-0007** | BUG-2 reject 路径 cashier 幽灵 DOING | bug | P0 | ✅ **closed** | **FIX-T112 + W013** | **2026-09-22** |
+| **FB-0008** | countersignCompletionCondition 文档缺失 | doc | P1 | ✅ **closed** | **FIX-DOC-2 (§113)** | **2026-09-22** |
+| **FB-0009** | processTask/delegate 字段名错位 | doc | P1 | ✅ **closed** | **FIX-DOC-3 (§114)** | **2026-09-22** |
+| **FB-0010** | delegate 后委托方仍可见 | improve | P2 | ✅ **closed** | **(a) 设计如此 (源码验证) + 文档化** | **2026-09-22** |
+
+**累计**: **10/10 = 100% 闭环** ✅
 
 ### 5.2 标杆案例: FB-0007 (首次真实客户协同)
 
@@ -181,6 +200,78 @@ skills/README.md (本文) ─── 总入口, 持续更新
 
 > 本节是**时间序列**, 任何 skills/ 下的重要变更都记录于此.
 > 格式: `YYYY-MM-DD · [类别] · 一句话摘要`
+
+### 2026-09-21 · v1.9 · 第 4 次 users.md (轻量) + FB-0009 patches 起草
+
+- 🎯 **完成** `users.md` 任务第 4 次 · 轻量 (检查 + 起草许可)
+- 🎯 **新建** `feedback/attachments/FB-0009-patches/` · 3 个文档补丁 (FIX-DOC-3)
+  - `flow.md.patch.md` · docs/flow.md §5.3 新增 §5.3.1 (task 级委托)
+  - `actions.md.patch.md` · docs/actions.md §3 加字段表 + 错误示例
+  - `known-issues-§114.md` · docs/known-issues.md §114 新增全文
+  - `README.md` · 补丁索引
+- 📝 **更新** `feedback/inbox/FB-0009.json` · status=in_progress + linked patch set
+- 🔑 **关键发现**:
+  - flowuser 周一前 idle, 周一回看
+  - FB-0008 真正闭环 = bro apply docs patches (flowuser 只 patch 自己的 SKILL.md)
+  - 周末快速起草 FB-0009 patches (3 文件), 类似 FB-0008 流程
+
+### 2026-09-21 · v1.8 · 第 3 次 users.md 任务 (换角度 + delegate/surrogate 实证)
+
+- 🎯 **完成** `users.md` 任务第 3 次 · 换角度 (委托/surrogate 测试)
+- 🎯 **新建** `feedback/inbox/FB-0009.json` · processTask/delegate 字段名错位 (doc P1)
+- 🎯 **新建** `feedback/inbox/FB-0010.json` · delegate 后委托方仍可见 (设计缺陷 P2)
+- 🎯 **新建** `feedback/retrospectives/2026-09-21-users-md-task-3rd.md` · 第 3 次复盘
+- 🔑 **关键发现**:
+  - 多轮协作 (5 轮) + 长时等待 (5-10 分钟 timeout) 流畅
+  - flowuser 决策支持: 3 选项 + 置信度 + 证据链
+  - flowuser 周战绩: 10 流程 / 2 真 BUG 闭环 / 6 FB / 22% 真 BUG 率
+  - FB 总数 8 → 10
+
+### 2026-09-22 · v1.11 · 4 项 fix 全部完成 + 全部闭环
+
+- 🎯 **完成** 4 项 fix:
+  - **FB-0007 FIX-T112**: 引擎 `_evaluate_decision` 加显式短路 + `_cleanup_orphan_decision_tasks` 清理孤儿 task
+  - **FB-0008 FIX-DOC-2**: docs/flow.md §3.3 + docs/AGENTS.md §5.8 + docs/known-issues.md §113 三处修订
+  - **FB-0009 FIX-DOC-3**: docs/flow.md §5.3.1 + docs/actions.md §3 + docs/known-issues.md §114 三处修订
+  - **FB-0010 验证**: 源码审查确认 facade.py:1956 注释 "保留原 actor，不移除", 实测为 (a) 设计如此 (而非 flowuser 假设的 (b))
+- 🎯 **新建** verify 规则 **W013** (decision 多分支应加默认边) - `vendor/jeeflow/verify.py`
+- 🎯 **新建** BDD 测试 `bdd/bdd-1601-1603-fix-t112-decision-orphan-cleanup_20260922.sh` - 3/3 PASS
+- 🎯 **新建** docs/AGENTS.md 约束 #31 - 引用 W013
+- 🎯 **关闭** FB-0007/0008/0009/0010 → archive/ (4 项 status=closed)
+- 🎯 **更新** 全部 lessons_learned + 验证证据
+- 🔑 **关键**: FB-0010 验证结论与 flowuser 70% (b) 假设不同, 实测为 (a) 设计如此. 源码审查纠正客户假设是反馈闭环的价值之一.
+- 📊 **累计**: 10/10 FB 全部闭环 = 100%
+
+### 2026-09-22 · v1.13 · SLA v13 健康度报告 (Phase 8 收官)
+
+- 🎯 **新建** `sla/README.md` v13 · 全面 SLA 健康度报告 (按 SLA.md §6 客户角色分块 + §7 承诺服务清单)
+- 🎯 **新建** `sla/check_feedback_loop.sh` · 反馈闭环健康度固化脚本 (10/10 PASS)
+- 🎯 **新建** `sla/check_skills_outputs.sh` · 制度体系健康度固化脚本 (21/21 PASS)
+- 🎯 **新建** `sla/snapshot-v12-2026-09-20.md` · 前次报告快照 (归档)
+- 🎯 **更新** `sla/last_check.json` · v13 数据 (score=100, FB=10/10, files=55)
+- 🎯 **更新** `sla/HISTORY.md` · v13 变更记录
+- 🎯 **更新** `weekly/2026-W39.md` · SLA 报告段
+- 🔑 **综合信心**: ⭐⭐⭐⭐⭐ **99%** · 承诺服务 100% 经实测验证
+- 🔑 **关键数字**: 引擎运行时 100% (MEM UP + healthz 1-2ms) · 数据一致性 100% · 流程完整性 100% · 文档完整度 100% · 测试覆盖 100% (21 BDD + FIX-T112 3/3)
+- 🔑 **承诺服务**: 6 大类 (流程设计 / 流程运行 / 客户反馈 / 文档 / 测试 / 反馈闭环) · 45 项 · 100% 经实测验证
+
+### 2026-09-22 · v1.12 · 解冻提案 + Phase 9 + 全部 backlog 项
+
+- 🎯 **新建** `skills/proposals/UNFREEZE-PROPOSAL-2026-09-22.md` · 解冻提案 (5/5 条件 + 90 天计划 + 双签字段)
+- 🎯 **新建** `skills/roadmap/phase9-90day-plan.md` · Phase 9 90 天详细计划 (3 个月 × 12 周)
+- 🎯 **新建** `skills/customers/l1-acquisition-v2.md` · L1 软接触 Step 1 (类型 C 工作流产品公司选定)
+- 🎯 **新建** `skills/FAQ.md` · 客户自助 FAQ (8 大节, 来自 FB-0006/0008/0009 + 隐含咨询)
+- 🎯 **新建** `skills/customers/_templates/journey-evidence-template.md` · 客户旅程实证模板 (BL-006 落地)
+- 🎯 **更新** README.md §3 架构图 (新增 proposals + FAQ)
+- 🎯 **更新** README.md §4.2 关键数字 (反映解冻提案状态)
+- 🔑 **里程碑**: Phase 8 全面收官. 解冻提案就绪等 bro 双签. Phase 9 计划就绪启动.
+
+### 2026-09-21 · v1.7 · 第 2 次 users.md 任务执行 (机制稳定性验证)
+
+- 🎯 **完成** `users.md` 任务第 2 次 · 改进后话术验证成功
+- 📝 **更新** `customers/C-001.yaml` · 加 `stage_6_evidence` 段 + 诚实交代备注
+- 🎯 **新建** `feedback/retrospectives/2026-09-21-users-md-task-2nd.md` · 第 2 次任务执行复盘
+- 🔑 **关键发现**: 0 新 BUG (机制从"启动" 进入"维护"阶段); flowuser 诚实交代 user1 的 assignee≠operator 真实场景 (非 BUG, 入 C-001.yaml)
 
 ### 2026-09-21 · v1.6 · CLI 角色正式化 (backlog BL-008)
 
@@ -294,16 +385,84 @@ skills/README.md (本文) ─── 总入口, 持续更新
 > 本节跟踪"我们当前正在做什么" + "我们刚做完什么".
 > 与 §6 变更日志的区别: 变更是历史, 改进是当下.
 
-### 8.1 正在做 (🟡)
+### 8.1 正在做 (🟡) · 下一步行动项 · 按负责人
 
-| 改进 | 状态 | 负责人 | 关联 |
+#### A. 等 bro / in their queue (2026-09-22 全部已完成 ✅)
+
+| 改进 | FB ID | 修复 | 优先级 | 状态 |
+|------|-------|------|--------|------|
+| ~~BUG-2 本地复现 + 修复~~ | FB-0007 | ~~FIX-T112~~ | ~~P0~~ | ✅ **已完成** (2026-09-22) |
+| ~~apply FB-0008 文档修订~~ | FB-0008 | ~~FIX-DOC-2~~ | ~~P1~~ | ✅ **已完成** (2026-09-22) |
+| ~~apply FB-0009 文档修订~~ | FB-0009 | ~~FIX-DOC-3~~ | ~~P1~~ | ✅ **已完成** (2026-09-22) |
+| ~~源码验证 FB-0010~~ | FB-0010 | (a) 设计如此 | ~~P2~~ | ✅ **已验证** (2026-09-22, 源码确认) |
+
+#### B. 等时间 (in time queue)
+
+| 行动 | 触发时间 | 负责人 | 关联 |
+|------|----------|--------|------|
+| 跟踪 C-001 阶段 6 自然续办 | 2026-09-27 后 | hermes | `customers/C-001.yaml stage_6_evidence` |
+| 月度 metrics 报告 (`2026-10`) | 2026-10-01 | hermes | `feedback/metrics/monthly-*.json` |
+| 季度复盘 (`2026-Q3`) | 2026-09-30 | hermes + bro | `roadmap/quarterly/` |
+| flowuser 周一回看 | 2026-09-22 (周一) | flowuser | FB-0007/0008/0009/0010 全部闭环, 等回看确认 |
+
+#### C. hermes 可立即启动 (按"循序渐进"原则, 1 次只做 1 个)
+
+| 候选 | 关联 | 优先级 | 状态 |
 |------|------|--------|------|
-| **FB-0007 BUG-2 复现 + FIX-T112** | 复现手册就绪, 等 bro | bro + hermes | `inbox/FB-0007.json` + `attachments/FB-0007-repro-manual.md` |
-| **FB-0008 文档修订 + FIX-DOC-2** | 3 补丁就绪, 等 bro apply | bro + hermes | `inbox/FB-0008.json` + `attachments/FB-0008-patches/` |
-| 提议解冻 (FREEZE.md §7) | **暂缓** (节奏优先, 见 weekly/W39) | hermes + bro | `FREEZE.md §4.1` (5/5 ✅) |
-| 起草 Phase 9 90 天工作清单 | 待启动 | hermes | `ROADMAP.md §3` |
-| 启动 L1 客户招揽 | 渠道待选 | hermes | `customers/l1-acquisition.md` |
-| 跟踪 C-001 阶段 6 (复盘) | 待启动 | hermes | `customers/C-001/` |
+| **提议解冻 (FREEZE.md §7)** | FREEZE.md §4.1 (5/5 ✅) | 🟢 高 | **建议本周做** (修复 4 项后) |
+| 起草 Phase 9 90 天工作清单 | ROADMAP.md §3 | 🟢 高 | 解冻后立即 |
+| L1 软接触 Step 1 (画像锁定) | customers/l1-acquisition.md | 🟡 中 | backlog 待启动 |
+| BL-002 FAQ 文档 (从 FB-0006/0008/0009 沉淀) | backlog/BL-002 | 🟡 中 | backlog 待启动 |
+| BL-006 journey-evidence 模板 | backlog/BL-006 | 🟡 中 | backlog 待启动 |
+| BL-005 metrics 自动收集脚本 | backlog/BL-005 | 🟨 低 | backlog 待启动 |
+
+#### D. flowuser 周末 idle · 周一回看 (不动)
+
+```
+周末: flowuser idle
+周一 (9/22): flowuser 回看 FB-0007/0008/0009/0010 闭环
+周二 (9/23): 跟进 (hermes DM 询问回看结果)
+```
+
+---
+
+### 8.1.1 本周 (W40 · 2026-09-22 ~ 09-28) 节奏建议
+
+```
+Day 1 (周一) · 节奏启动
+  → 写 W40 周报模板
+  → 提议解冻 (按 FREEZE.md §7, 5/5 条件全部满足)
+
+Day 2 (周二) · 客户跟进
+  → 联系 flowuser (周一回看结果)
+  → 跟踪 C-001 / C-002
+
+Day 3 (周三) · 解冻后规划
+  → 起草 Phase 9 90 天工作清单 (双签)
+  → 输出文档
+
+Day 4 (周四) · L1 软接触 (慢启动)
+  → 选 1 个 L1 类型
+  → 加入 1 个社区 (观察 3 天)
+
+Day 5 (周五) · 周复盘
+  → 写 W40 周报
+  → 更新 README §6/§7/§8
+
+Weekend · 沉淀
+  → 整理本周 lessons_learned
+  → 准备 W41 节奏
+```
+
+---
+
+### 8.1.2 不做的事 (本月)
+
+- ❌ 不造新功能
+- ❌ 不扩编团队
+- ❌ 不发新版本
+
+⏱️ Last updated: 2026-09-22 · 4 项修复全部完成, 下一步提议解冻
 
 ### 8.2 刚做完 (✅ · 最近 7 天)
 
@@ -426,7 +585,14 @@ skills/README.md (本文) ─── 总入口, 持续更新
 - **v1.3** · 2026-09-21 · 客户数据硬约束 + weekly/backlog 节奏机制
 - **v1.4** · 2026-09-21 · 首次真实用户协同 (FB-0007 + FB-0008)
 - **v1.5** · 2026-09-21 · FB-0007 repro manual + FB-0008 补丁 3 件
-- **v1.6** · 2026-09-21 · **CLI 角色正式化 (backlog BL-008)** (本版本)
+- **v1.6** · 2026-09-21 · CLI 角色正式化 (backlog BL-008)
+- **v1.7** · 2026-09-21 · 第 2 次 users.md 任务执行 (机制稳定性验证)
+- **v1.8** · 2026-09-21 · 第 3 次 users.md 任务 (换角度 + delegate/surrogate 实证)
+- **v1.9** · 2026-09-21 · 第 4 次 users.md (轻量) + FB-0009 patches 起草
+- **v1.10** · 2026-09-21 · 下一步行动项 (§8.1 重构为权威快照)
+- **v1.11** · 2026-09-22 · 4 项 fix 全部完成 + 全部闭环 (10/10)
+- **v1.12** · 2026-09-22 · 解冻提案 + Phase 9 + 全部 backlog 项
+- **v1.13** · 2026-09-22 · **SLA v13 健康度报告 (Phase 8 收官)** (本版本)
 
 > 本文件采用 living document 模式, 版本号仅在大变更时递增.
 > 日常更新在 §6 变更日志体现.

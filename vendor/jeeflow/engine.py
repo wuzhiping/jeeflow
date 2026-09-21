@@ -658,6 +658,14 @@ class EngineImpl(Engine):
                     return await self._execute_node(flow, inst, target, operator, vars_)
                 # handler 返回的 id 找不到节点 → 抛错，不静默 fallback
                 raise ValueError(f"decisionHandler {dh_name} 返回未知节点: {target_id}")
+        # FIX-T112 (2026-09-22 FB-0007 flowuser): decision 节点多出边短路 + 孤儿 task 清理
+        # 历史 BUG-1 (FIX-T110 §111) 是 task 节点多出边致 end 提前遍历
+        # BUG-2 (本修复) 是 decision 节点多出边时, 如 expr 评估全部失败,
+        # 兜底走第一条边可能错误创建下游 task (e.g. cashier_pay 幽灵 DOING)
+        # 修复:
+        # 1) 短路优化: 找到第一个匹配的 expr 后立即 return (已有)
+        # 2) 孤儿 task 清理: 选定目标后, 清理其他出边对应的下游 task (防止幽灵 DOING)
+        # 3) 兜底告警: 全部 expr 失败时, 记录 WARN (便于发现数据问题)
         # 先尝试表达式求值
         if self.expr_eval:
             for edge in edges:
@@ -666,17 +674,73 @@ class EngineImpl(Engine):
                 result = await self.expr_eval.eval(expr, vars_)
                 if _is_truthy(result):
                     target = _find_node(flow, edge.targetNodeId)
-                    if target: return await self._execute_node(flow, inst, target, operator, vars_)
+                    if target:
+                        # FIX-T112: 清理其他出边的下游 task (孤儿清理)
+                        # 防止 expr 评估为真后, 之前遍历创建的 task 残留为 DOING
+                        await self._cleanup_orphan_decision_tasks(
+                            flow, inst, edges, edge, operator, vars_
+                        )
+                        return await self._execute_node(flow, inst, target, operator, vars_)
         # 回退：取第一条没有 expr 的边作为默认路径
         for edge in edges:
             expr = edge.properties.get("expr", "")
             if not expr:
                 target = _find_node(flow, edge.targetNodeId)
-                if target: return await self._execute_node(flow, inst, target, operator, vars_)
+                if target:
+                    await self._cleanup_orphan_decision_tasks(
+                        flow, inst, edges, edge, operator, vars_
+                    )
+                    return await self._execute_node(flow, inst, target, operator, vars_)
         # 最后的回退：取第一条边
         if edges:
+            # FIX-T112: 全部 expr 失败时的兜底, 记录 WARN (便于发现数据问题)
+            import logging
+            logging.warning(
+                "FIX-T112 decision 节点[%s] 所有 expr 评估失败, 兜底走第一条边[%s]. "
+                "vars_=%s, edges=%d",
+                node.id, edges[0].targetNodeId, vars_, len(edges)
+            )
             target = _find_node(flow, edges[0].targetNodeId)
-            if target: return await self._execute_node(flow, inst, target, operator, vars_)
+            if target:
+                await self._cleanup_orphan_decision_tasks(
+                    flow, inst, edges, edges[0], operator, vars_
+                )
+                return await self._execute_node(flow, inst, target, operator, vars_)
+
+    async def _cleanup_orphan_decision_tasks(self, flow, inst, selected_edge, operator, vars_):
+        """FIX-T112 (2026-09-22 FB-0007): decision 节点选定路由后, 清理其他出边的下游孤儿 task
+
+        场景: decision 节点有 N 条出边, 在 expr 评估过程中如已创建某些下游 task
+        (例如会签场景或预创建), 但实际只走一条边, 需 ABANDON 其他边的 task.
+
+        实现: 遍历 selected_edge 之外的所有出边, 找到其下游 task 节点 (一级),
+        标记对应 DOING task 为 ABANDONED.
+        """
+        from .model import TaskState
+        selected_target = selected_edge.targetNodeId
+        now = datetime.now()
+        abandoned_count = 0
+        for edge in flow.edges:
+            if edge.sourceNodeId != selected_edge.sourceNodeId:
+                continue
+            if edge.targetNodeId == selected_target:
+                continue  # 选中的边不需要清理
+            # 找到这个出边对应的下游 task 节点 (一级)
+            target_node = _find_node(flow, edge.targetNodeId)
+            if not target_node or target_node.type != TYPE_TASK:
+                continue
+            # 标记同 taskName 的 DOING task 为 ABANDONED
+            orphan_tasks = await self.repo.find_doing_tasks(inst.id, [target_node.id])
+            for t in orphan_tasks:
+                t.taskState = TaskState.ABANDONED
+                t.updateTime = now
+                # FIX-T111 §112 (2026-09-21): 显式传 updateUser
+                t.updateUser = operator
+                await self.repo.update_task(t)
+                _sync_task_to_aggregate(inst, t)
+                abandoned_count += 1
+        if abandoned_count:
+            await self.repo.update_instance(inst)
 
     async def _create_task(self, node: FlowNode, inst: ProcessInstance, operator: str, vars_: dict):
         # §27 修复（2026-09-19）：悲观锁 + 去重，防止多入边 task 节点重复创建
