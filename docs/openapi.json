@@ -3,7 +3,7 @@
   "info": {
     "title": "jeeFlow API",
     "description": "私用定位的工作流引擎 API (BDD #1207 FIX-T85 §4.3.1)\n- 50 个 action 端点全部在 /wf/{action:path} 路由 (§7 新增 processInstance/rollback + doingList)\n- 兼容 Phase 1+2 所有 endpoint",
-    "version": "1.9.0+"
+    "version": "1.9.0+spi-v26-v29"
   },
   "paths": {
     "/wf/{action}": {
@@ -2189,6 +2189,170 @@
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/spi/verify": {
+      "get": {
+        "summary": "Spi Verify",
+        "description": "SPI 数据完整性校验 (4 类检查: 跨表引用 + tree 结构 + 完整性 + ROLE_TO_USERS 一致性)\nv26 dispatcher layer + main_common.register_spi_routes 双端共用\n数据: 由 SPI_FOLDER 决定 (dev=20 DictProxy PASS / demo=99 errors 已知 / fdep=404)",
+        "operationId": "spi_verify_api_spi_verify_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response (verify 失败仍可查, body 含 ok/errors/warnings/summary)",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/spi/status": {
+      "get": {
+        "summary": "Spi Status",
+        "description": "SPI 概况 (SPI_FOLDER + 20 DictProxy 摘要 + verify() summary)\nv26 dispatcher layer",
+        "operationId": "spi_status_api_spi_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/spi/users": {
+      "get": {
+        "summary": "Spi List Users",
+        "description": "列出所有用户精简视图 (uid, name, post, level, dept_id, roles)\nv26 dispatcher layer, 数据源 SPI_FOLDER",
+        "operationId": "spi_list_users_api_spi_users_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/spi/users/{uid}": {
+      "get": {
+        "summary": "Spi Show User",
+        "description": "单用户完整档案 (13 字段 SPI_USERS_FULL: name, dept_name, leader, main_leader, dept_chain, leader_chain, colleagues, level, post, email, roles, ...)\nv16 SPI_USERS_FULL + v23 SPI_USERS_WITH_ROLES + v29 SPI_USER_DEPT_ROLE",
+        "operationId": "spi_show_user_api_spi_users__uid__get",
+        "parameters": [
+          {
+            "name": "uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Uid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/spi/depts": {
+      "get": {
+        "summary": "Spi List Depts",
+        "description": "列出所有部门精简视图 (dept_id, name, size, leader, main_leader)\nv26 dispatcher layer, 数据源 SPI_FOLDER",
+        "operationId": "spi_list_depts_api_spi_depts_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/spi/depts/{dept_id}": {
+      "get": {
+        "summary": "Spi Show Dept",
+        "description": "单部门详情 + 成员 (info + members, 复用 v17 SPI_DEPT_FULL_INFO + v19 SPI_DEPT_MEMBERS_FULL)\nv26 dispatcher layer",
+        "operationId": "spi_show_dept_api_spi_depts__dept_id__get",
+        "parameters": [
+          {
+            "name": "dept_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Dept Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Dept not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
               }
             }
           },
