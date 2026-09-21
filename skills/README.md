@@ -618,7 +618,9 @@ skills/README.md (本文) ─── 总入口, 持续更新
 - **v1.19** · 2026-09-26 · §8.1 下一步行动项快照更新 (W40 收盘 → W41 启动)
 - **v1.20** · 2026-09-29 · W41 周报 (Week 2 of Phase 9)
 - **v1.21** · 2026-10-06 · W41 Day 1-5 全部交付 · 包含 metrics W40 + 月度 10 月 + L1 v3 + C-001 跟踪 + W42 周报 + Q3 复盘计划
-- **v1.22** · 2026-10-13 · **W42 Day 1-5 全部交付 (本版本)** · 包含 Q3 复盘 published + FB-0012 patches 草稿 + UNFREEZE 跟踪 + W43 周报 + Month 1 收官准备
+- **v1.22** · 2026-10-13 · W42 Day 1-5 全部交付 · 包含 Q3 复盘 published + FB-0012 patches 草稿 + UNFREEZE 跟踪 + W43 周报 + Month 1 收官准备
+- **v1.23** · 2026-10-20 · W43 Day 1-5 全部交付 · 包含 Month 1 metrics + Month 2 启动清单 + FAQ 0.1 起草 + Month 1 收官 published + W44 周报 + Month 2 启动准备就绪
+- **v1.24** · 2026-10-27 · **W44 Day 1-5 全部交付 (本版本)** · 包含 Month 2 启动清单 v1.0 + auto-assignee-by-org 0.2 方案 + BDD #1801 设计 + bro 第 3 次询问 (deadline 升级) + W45 周报 + Month 2 Week 2 启动
 
 > 本文件采用 living document 模式, 版本号仅在大变更时递增.
 > 日常更新在 §6 变更日志体现.

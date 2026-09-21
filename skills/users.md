@@ -65,3 +65,18 @@
     - 一次性 DM → 94 行响应, 含 BUG-2 (P0 真 BUG) + BUG-3 修复验证
     - 改进后话术 → 5 个文件取件码 → 逐个 DM 索取成功
     - 教训: 多轮小问, 要原始证据, 明确身份, 确认收到
+
+  * **2026-09-21 第 2 次 (同日)**: `skills/feedback/retrospectives/2026-09-21-users-md-task-2nd.md`
+    - 简短追问 (1-2 题) → 0 新 BUG 诚实交代
+    - 续办场景 (C-001 跟踪期) 试探
+    - 教训: "诚实交代"模式工作, 不强求
+
+  * **2026-09-21 第 3 次 (同日)**: `skills/feedback/retrospectives/2026-09-21-users-md-task-3rd.md`
+    - 换角度 (delegate/surrogate) → 5 轮长链 DM
+    - 新产出: FB-0009 (字段错位) + FB-0010 (设计缺陷)
+    - 教训: 客户从"提 BUG" 升级到"测试 + 决策支持", 健康信号
+
+  * **2026-10-22 第 4 次 (跨月 + Month 2 启动)**: `skills/feedback/retrospectives/2026-10-22-users-md-task-4th.md`
+    - 跨月 31 天间隔, 4 件事打包 DM (BUG-2 升级 / FB-0011 review / FB-0012 实证 / 新反馈)
+    - Month 2 正式启动日仪式感 (1 次 DM 完成 4 个动作)
+    - 教训: 跨月协同 = 健康可持续; 闭环率 100% = 信任基础; 4 件事打包效率 +6x

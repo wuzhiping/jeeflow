@@ -115,8 +115,8 @@ fi
 # === 7. README.md 版本检查 ===
 README_PATH="$SKILLS_DIR/README.md"
 if [ -f "$README_PATH" ]; then
-  # 取最大版本号 (最后出现)
-  VERSION=$(grep -oE "v[0-9]+\.[0-9]+" "$README_PATH" | tail -1)
+  # 取最大版本号 (从 versions 段: 行首 "- **vX.Y**")
+  VERSION=$(grep -E "^- \*\*v[0-9]+\.[0-9]+\*\*" "$README_PATH" | tail -1 | grep -oE "v[0-9]+\.[0-9]+" | head -1)
   ok "7.1 README.md 最新版本 $VERSION"
 else
   fail "7.1 README.md" "missing"
