@@ -5214,3 +5214,62 @@ state=20 ✅
 
 - `docs/flow.md §5.4`: handler 字段名 + 配套变量约定
 - `flows/11-assignment-handler.json`: 注释补充
+
+## §122 FIX-T117 handler 返回空时统一错误消息误导用户归咎 SPI 缺数据 (2026-09-22 BDD-DEV · 用户反馈 FB-0016)
+
+### 现象
+
+用户启动 `flows/11-assignment-handler.json` 报：
+```
+[ValueError] 节点[task1] handler 'com.mldong.jeeflow.interceptor.impl.FormFieldAssigneeHandler' 
+SPI 角色匹配为空（检查 role_code）
+```
+
+用户报告：**"SPI 数据层问题, 引擎无法修"**。但 SPI dev 完整（13 users / 8 roles / qa_engineer 都有）。
+
+**实际原因**：FormFieldAssigneeHandler 期望 `variables.f_task1`，调用方没传 → handler 返回 `[]` → 引擎抛"统一"错误，用户**误读**为 SPI 角色数据缺失。
+
+### 根因
+
+`vendor/jeeflow/engine.py:760` (旧) + `main_common.py:install_resolve_actors_wrapper:448` 都用统一措辞：
+
+```python
+raise ValueError(f"节点[{node.id}] handler '{handler_name}' SPI 角色匹配为空（检查 role_code）")
+```
+
+→ 把所有"handler 返回空" 归到"SPI role_code 缺失"，FormField 缺 `f_<node>`、TaskRole roleCode 错、DeptLeader 无部门主管都被同一句话掩盖。
+
+### 修复 (FIX-T117)
+
+1. `vendor/jeeflow/engine.py:_create_task` 按 `_last_resolve_meta.source` 给具体错误：
+   - `form_field`: "FormFieldAssigneeHandler 返回空：未找到 variables['f_<node>']"
+   - `task_role`: "TaskRoleAssigneeHandler 返回空：roleCode='<rc>' 在 SPI 角色表中无用户"
+   - `dept_leader`: "DeptLeaderAssignmentHandler 返回空：发起人无部门主管"
+   - `operator`: "OperatorAssignmentHandler 返回空：操作人为空"
+2. `vendor/jeeflow/engine.py:_resolve_actors` 记录 `_last_resolve_meta = {source, handlerName, roleCode}`
+3. `main_common.py:install_resolve_actors_wrapper:444-449` 移除冗余 raise，让 engine 内部错误透传
+
+### 复测
+
+| handler | 输入 | 旧错误 | 新错误 |
+|---------|------|--------|--------|
+| FormField (缺 f_task1) | `variables={u_userId: u_be_eng}` | "SPI 角色匹配为空 (检查 role_code)" | "FormFieldAssigneeHandler 返回空：未找到 variables['f_task1']" |
+| TaskRole (roleCode=不存在) | `properties.roleCode="no_such_role"` | "SPI 角色匹配为空" | "TaskRoleAssigneeHandler 返回空：roleCode='no_such_role' 在 SPI 角色表中无用户" |
+| DeptLeader (正常) | `operator=u_be_eng` | n/a | 解析为 u_be_lead ✅ |
+| 11-assignment-handler + f_task1 | 加 f_task1 | (成功) | (成功) ✅ |
+
+19 流程全量回归 19/19 state=20 ✅，零回归。
+
+### 文档同步
+
+- `docs/flow.md §5.4`: 明确 handler 错误诊断表
+
+### 关联文档
+
+- `vendor/jeeflow/engine.py:760-798` (FIX-T117 错误分派)
+- `vendor/jeeflow/engine.py:917-925` (_last_resolve_meta 记录)
+- `main_common.py:444-449` (移除冗余 raise)
+- `bdd/bdd-dev-handler-error-clarify_20260922000000.md` (本节)
+
+---
+

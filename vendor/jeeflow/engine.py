@@ -53,6 +53,7 @@ class EngineImpl(Engine):
         self.ext: Optional[EngineExtensions] = None
         self._ic_cache: dict = {}   # 定义级拦截器解析缓存（issue 34，按 defineId）
         self._last_created_tasks: list = []  # FIX-T61：临时存储当前 _create_task 创建的 task
+        self._last_resolve_meta: dict = {}  # FIX-T117：记录 _resolve_actors 失败上下文, 给具体错误提示
         # BDD #1107 FIX-T78 (2026-09-20) §3.3.2：流程定义缓存 (LRU, max=100)
         # 避免每次 startAndExecute 都从 repo 读完整 flow JSON + parse
         # 部署 (processDefine/deploy / processDefine/redeploy) 时 facade._deploy_invalidate_cache 失效
@@ -457,6 +458,8 @@ class EngineImpl(Engine):
         # 现在: 所有节点 (含 task) 进入时都触发 _fire_pre, post_handle 在 execute_process_task 完成时触发
         if node.type == TYPE_TASK:
             self._last_created_record_done = False
+            # FIX-T117: 每次 task 节点创建前重置 _last_resolve_meta, 避免上一次残留
+            self._last_resolve_meta = {}
             if not await self._fire_pre(node, inst): return
             await self._create_task(node, inst, operator, vars_)
             # BDD #260 FIX-T55 (2026-09-19)：taskType=2 RECORD 自动完成
@@ -756,9 +759,43 @@ class EngineImpl(Engine):
         actors = await self._resolve_actors(node, inst, operator, vars_)
         # FIX-T17 (2026-09-17)：actors=[] 不再静默 return（流程卡住无错误）
         # 原代码 return → 流程在此节点终止不报错；raise ValueError 让 facade 报清晰错误
+        # FIX-T117 (2026-09-22 FB-0016)：按处理器类型给具体提示
+        # 原统一提示 "assignee/handler/SPI 角色均未匹配" 误导用户把 FormField 缺 f_<node>
+        # 错误归咎到 "SPI 角色匹配为空"。现按 _resolve_actors 返回 _resolve_meta 给清晰指引
         if not actors:
-            raise ValueError(f"节点[{node.id}]无法解析任何处理人：assignee/handler/SPI 角色均未匹配，"
-                             f"请检查 properties.assignee、assignmentHandler FQCN、SPI role_code")
+            meta = self._last_resolve_meta or {}
+            src = meta.get("source", "unknown")
+            if src == "form_field":
+                # FormField handler 返回空 → 缺 variables.f_<node.id> 或 f_<node.id>=空
+                raise ValueError(
+                    f"节点[{node.id}] FormFieldAssigneeHandler 返回空：未找到 variables['f_{node.id}']"
+                    f" 或 variables['{node.id}']。请在 startAndExecute.variables 中传入"
+                    f" f_{node.id}=<userId[,userId,...]>（如 f_{node.id}='u_qa_lead,u_be_lead'）"
+                )
+            elif src == "task_role":
+                # TaskRole handler 返回空 → properties.roleCode 角色 SPI 未配置
+                rc = meta.get("roleCode", "")
+                raise ValueError(
+                    f"节点[{node.id}] TaskRoleAssigneeHandler 返回空：roleCode='{rc}' 在 SPI 角色表中无用户。"
+                    f" 请检查 (1) properties.roleCode='{rc}' 是否正确；"
+                    f"(2) SPI 角色表 role_to_users['{rc}'] 是否已配置用户"
+                )
+            elif src == "dept_leader":
+                raise ValueError(
+                    f"节点[{node.id}] DeptLeaderAssignmentHandler 返回空：发起人(u_userId)无部门主管。"
+                    f" 请检查 (1) variables.u_userId 在 SPI 用户表中存在；"
+                    f"(2) 该用户所在部门的 dept_leaders 已配置主管"
+                )
+            elif src == "operator":
+                raise ValueError(
+                    f"节点[{node.id}] OperatorAssignmentHandler 返回空：操作人为空。"
+                    f" 请检查 POST /wf/processTask/execute 的 operator 参数"
+                )
+            else:
+                raise ValueError(
+                    f"节点[{node.id}]无法解析任何处理人：assignee/handler/SPI 角色均未匹配，"
+                    f"请检查 properties.assignee、assignmentHandler FQCN、SPI role_code"
+                )
         # performType 容错解析（对齐 java codeOf，issue 42）：int 优先；
         # 字符串 'ALL'/'COUNTERSIGN'（设计器面板格式，大小写不敏感）映射为会签；未知回落 0
         _pt = node.properties.get("performType", 0)
@@ -883,7 +920,15 @@ class EngineImpl(Engine):
         handler_name = node.properties.get("assignmentHandler", "")
         if handler_name and self.ext and self.ext.registry:
             h = self.ext.registry.resolve_assignment(handler_name)
-            if h: return await h.assign(node, inst, operator)
+            if h:
+                # FIX-T117 (2026-09-22 FB-0016)：记录 handler 来源 + 元数据, 失败时给具体提示
+                self._last_resolve_meta = {"source": self._handler_source_key(handler_name),
+                                            "handlerName": handler_name,
+                                            "roleCode": node.properties.get("roleCode", "")}
+                actors = await h.assign(node, inst, operator)
+                if not actors:
+                    return actors  # _create_task 通过 _last_resolve_meta 给具体错误提示
+                return actors
         if self.ext and self.ext.assignment_handler:
             result = self.ext.assignment_handler(handler_name, node, inst)
             if hasattr(result, '__await__'): return await result
@@ -893,6 +938,17 @@ class EngineImpl(Engine):
         if node.type == TYPE_CUSTOM:
             return [operator]
         return []
+
+    @staticmethod
+    def _handler_source_key(handler_name: str) -> str:
+        """FIX-T117: 把 FQCN 映射到 _resolve_meta.source 短键 (form_field/task_role/dept_leader/operator)"""
+        h = handler_name.lower()
+        if "formfield" in h: return "form_field"
+        if "taskrole" in h: return "task_role"
+        if "deptleader" in h: return "dept_leader"
+        if "deptmainleader" in h: return "dept_main_leader"
+        if "operator" in h: return "operator"
+        return "unknown"
 
     def _is_allowed(self, task: ProcessTask, operator: str) -> bool:
         # v1.0.1：系统代执行（flow.auto）/超级管理员（flow.admin）放行（对齐 boot3 isAllowed）

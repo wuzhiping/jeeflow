@@ -443,9 +443,9 @@ def install_resolve_actors_wrapper(engine):
                 raise ValueError(f"节点[{node.id}] handler FQCN='{handler_name}' 未注册")
         actors = await _orig_resolve_actors(node, inst, operator, vars_)
         if handler_name and not actors:
-            _fix_log(f"[FIX-T2 WARN] handler '{handler_name}' returned empty actors for node_id='{node.id}' (process={inst.defineId}); check SPI role_code")
-            # FIX-T17：handler 已注册但 SPI 无匹配 → raise 让 facade 报错
-            raise ValueError(f"节点[{node.id}] handler '{handler_name}' SPI 角色匹配为空（检查 role_code）")
+            _fix_log(f"[FIX-T2 WARN] handler '{handler_name}' returned empty actors for node_id='{node.id}' (process={inst.defineId}); check handler inputs")
+            # FIX-T117 (2026-09-22 FB-0016)：由 engine 内部 _resolve_meta 按 handler 类型给具体错误
+            # 此处不再 raise, 让 engine._create_task 通过 _last_resolve_meta 给清晰指引
         return actors
 
     engine._resolve_actors = _logged_resolve_actors

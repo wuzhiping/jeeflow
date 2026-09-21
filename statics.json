@@ -3,8 +3,8 @@
   "version": "0.5.0",
   "phase": "phase7-complete (T105-T109) + §7-recommended-completed + §111-§112-flowuser-driven-fixes (T110-T111) + §117-decision-signature-fix (T113) + §118-rollback-taskname-compat (T114)",
   "phase4_ecosystem": "REMOVED 2026-09-20 (私用定位: 不输出 SDK/第三方/插件)",
-  "bdd_total": 1220,
-  "bdd_pass": 1220,
+  "bdd_total": 1221,
+  "bdd_pass": 1221,
   "bdd_fail": 0,
   "bdd_breakdown": {
     "p0_regression": 17,
@@ -19,11 +19,12 @@
     "section118_rollback_taskname_compat": "10 (BDD-DEV-006-015 20260921231000, 10 个新独立流程)",
     "section119_capability_extension_v2": "5 (BDD-DEV-016-020 20260922000000, 5 个独立新流程覆盖 callActivity/拦截器/会签+decision/veto+decision/multi-handler)",
     "section120_assignees_dead_field_fix": "1 (20260922 BDD-DEV-021 用户反馈 FB-0015: assignees 字段死字段修复 FIX-T115 + 19 流程全量回归 PASS)",
-    "section121_field_position_fix": "1 (20260922 BDD-DEV-022 用户反馈 FB-0014: 07 field.countersignCompletionCondition 移至顶层 FIX-T116)"
+    "section121_field_position_fix": "1 (20260922 BDD-DEV-022 用户反馈 FB-0014: 07 field.countersignCompletionCondition 移至顶层 FIX-T116)",
+    "section122_handler_error_msg_clarify": "1 (20260922 BDD-DEV-023 用户反馈 FB-0016: handler 返回空时按 FormField/TaskRole/DeptLeader/Operator 类型给具体错误, 避免用户把 FormField 缺 f_<node> 误归 SPI 缺数据 FIX-T117)"
   },
   "tdd_total": 19,
-  "fix_total": 112,
-  "fix_total_note": "20260922000000 bdd-dev-five-flows 5 流程全 PASS, 无新 BUG. 20260922 用户反馈 3 项: 1)07 字段位置错(FIX-T116 数据修正), 2)11 SPI 缺数据(不成立), 3)assignees 死字段(FIX-T115 引擎修复) → +2 (T115/T116).",
+  "fix_total": 113,
+  "fix_total_note": "20260922000000 bdd-dev-five-flows 5 流程全 PASS. 用户反馈 3 项: FIX-T115 assignees 死字段(引擎), FIX-T116 07 字段位置(数据), 11 SPI 缺数据(不成立, 仅 docs). 用户反馈二次 (FB-0016): FIX-T117 错误消息按 handler 类型具体化(FormField/TaskRole/DeptLeader/Operator) → +1.",
   "fix_breakdown": {
     "phase1_engine": "T1-T70 (70)",
     "phase2_capability": "T71-T78 (8)",
@@ -35,7 +36,8 @@
     "decision_signature_drift": "T113 (1, vendor/jeeflow/engine.py:680/690/705)",
     "rollback_taskname_compat": "T114 (1, vendor/jeeflow/facade.py:737/741)",
     "assignees_dead_field_fix": "T115 (1, vendor/jeeflow/engine.py:867-880)",
-    "field_position_fix": "T116 (1, flows/07-countersign-ratio.json + flows_demo/07-countersign-ratio.json)"
+    "field_position_fix": "T116 (1, flows/07-countersign-ratio.json + flows_demo/07-countersign-ratio.json)",
+    "handler_error_msg_clarify": "T117 (1, vendor/jeeflow/engine.py:760-798 + main_common.py:444-449)"
   },
   "verify_rules": 33,
   "verify_breakdown": {
