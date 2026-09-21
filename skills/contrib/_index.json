@@ -3,12 +3,13 @@
     {
       "user_id": "C-omarchy",
       "first_seen": "2026-10-22",
-      "last_seen": "2026-10-22",
-      "level": "L3",
-      "extraction_codes": ["77045"],
-      "fb_archived": ["FB-0013"],
+      "last_seen": "2026-11-10",
+      "level": "L3+",
+      "extraction_codes": ["77045", "97841", "39376"],
+      "fb_archived": ["FB-0013", "FB-0014", "FB-0015"],
       "monitoring_frequency": "daily",
-      "note": "主动贡献 10-run BDD 工件, run_10_times.py 脚本"
+      "note": "持续贡献型异步用户 (file-share 持续渠道). 第 1 次 = BDD 10-run 验证 (run_10_times.py), 第 2 次 = BUG-3 真引擎 BUG + FIX-T113 + W014 verify 规则, 第 3 次 = BUG-4 真引擎 BUG + FIX-T114 (PARALLEL countersign REJECT orphan) + 双场景 runner.",
+      "monitoring_action": "(1) W47 内评估 FIX-T114 纳入 hermes 修复池; (2) W47 内起草 BDD #19xx (REJECT orphan 回归测试); (3) Month 3 持续监控 omarchy 取件码"
     }
   ]
 }

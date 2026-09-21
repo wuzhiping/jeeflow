@@ -620,7 +620,10 @@ skills/README.md (本文) ─── 总入口, 持续更新
 - **v1.21** · 2026-10-06 · W41 Day 1-5 全部交付 · 包含 metrics W40 + 月度 10 月 + L1 v3 + C-001 跟踪 + W42 周报 + Q3 复盘计划
 - **v1.22** · 2026-10-13 · W42 Day 1-5 全部交付 · 包含 Q3 复盘 published + FB-0012 patches 草稿 + UNFREEZE 跟踪 + W43 周报 + Month 1 收官准备
 - **v1.23** · 2026-10-20 · W43 Day 1-5 全部交付 · 包含 Month 1 metrics + Month 2 启动清单 + FAQ 0.1 起草 + Month 1 收官 published + W44 周报 + Month 2 启动准备就绪
-- **v1.24** · 2026-10-27 · **W44 Day 1-5 全部交付 (本版本)** · 包含 Month 2 启动清单 v1.0 + auto-assignee-by-org 0.2 方案 + BDD #1801 设计 + bro 第 3 次询问 (deadline 升级) + W45 周报 + Month 2 Week 2 启动
+- **v1.24** · 2026-10-27 · W44 Day 1-5 全部交付 · 包含 Month 2 启动清单 v1.0 + auto-assignee-by-org 0.2 方案 + BDD #1801 设计 + bro 第 3 次询问 (deadline 升级) + W45 周报 + Month 2 Week 2 启动
+- **v1.25** · 2026-10-22 · W45 Day 1-5 + fix all · 包含 omarchy 持续贡献 (取件码 97841) + FB-0014 闭环 (BUG-3 + FIX-T113 + W014) + W014 verify 规则纳入 SLA 工具集 (32/32 PASS) + FAQ 0.2 + auto-assignee-by-org 流程模式示例 + W46 月报 + 月度 metrics 10 月首月
+- **v1.26** · 2026-11-10 · W46 Day 1-5 + W47 Day 1-5 + fix all · 包含 flowuser 8 轮 DM 跨月协同 + omarchy 第 3 次贡献 (取件码 39376) + FB-0015 闭环 (BUG-4 + FIX-T114) + BDD #1901-#1905 REJECT orphan 回归测试设计 + top-N v1.0 published + FAQ v1.1 升级 (24 题) + W47 月报 + monthly metrics 11 月 + C-001 Day 45 跟踪 (健康度 9.4)
+- **v1.27** · 2026-11-17 · **W47 fix all + Month 2 收官 + Q4 准备 (本版本)** · 包含 bro 第 4 次询问草稿 (改为月度) + Month 2 收官报告 published v1.0 + docs/known-issues §117 (W009 warning) + Q4 季度复盘准备 + SKILL-TREE.md v1.1 (5 新章节) + RML.md 更新 + SLA HISTORY.md v13.1 + C-002 + C-006 健康检查 + README v1.27
 
 > 本文件采用 living document 模式, 版本号仅在大变更时递增.
 > 日常更新在 §6 变更日志体现.

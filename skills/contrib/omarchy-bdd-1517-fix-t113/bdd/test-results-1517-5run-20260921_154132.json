@@ -1,0 +1,158 @@
+{
+ "timestamp": "20260921_154132",
+ "flow": "bdd/bdd-1517-leave-reapply_20260921_220000.json",
+ "runs": [
+  {
+   "run": 1,
+   "duration": 0.162,
+   "timestamp": "2026-09-21T15:41:32.440837",
+   "returncode": 0,
+   "stderr": "",
+   "verify": {
+    "errors": "",
+    "warnings": "  - [W009/warning] 字段 f_days 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\n  - [W009/warning] 字段 f_leaveType 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\n  - [W009/warning] 字段 f_reason 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']"
+   },
+   "reset": {
+    "code": 0,
+    "msg": "成功",
+    "data": null
+   },
+   "start": {
+    "code": 0,
+    "msg": "成功",
+    "data": {
+     "processInstanceId": "92135928222812"
+    }
+   },
+   "step": 0
+  },
+  {
+   "run": 2,
+   "duration": 0.166,
+   "timestamp": "2026-09-21T15:41:33.019159",
+   "returncode": 0,
+   "stderr": "",
+   "verify": {
+    "errors": "",
+    "warnings": "  - [W009/warning] 字段 f_days 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\n  - [W009/warning] 字段 f_reason 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\n  - [W009/warning] 字段 f_leaveType 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']"
+   },
+   "reset": {
+    "code": 0,
+    "msg": "成功",
+    "data": null
+   },
+   "start": {
+    "code": 0,
+    "msg": "成功",
+    "data": {
+     "processInstanceId": "92135928817759"
+    }
+   },
+   "step": 0
+  },
+  {
+   "run": 3,
+   "duration": 0.166,
+   "timestamp": "2026-09-21T15:41:33.588171",
+   "returncode": 0,
+   "stderr": "",
+   "verify": {
+    "errors": "",
+    "warnings": "  - [W009/warning] 字段 f_reason 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\n  - [W009/warning] 字段 f_days 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\n  - [W009/warning] 字段 f_leaveType 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']"
+   },
+   "reset": {
+    "code": 0,
+    "msg": "成功",
+    "data": null
+   },
+   "start": {
+    "code": 0,
+    "msg": "成功",
+    "data": {
+     "processInstanceId": "92135929395298"
+    }
+   },
+   "step": 0
+  },
+  {
+   "run": 4,
+   "duration": 0.162,
+   "timestamp": "2026-09-21T15:41:34.152701",
+   "returncode": 0,
+   "stderr": "",
+   "verify": {
+    "errors": "",
+    "warnings": "  - [W009/warning] 字段 f_leaveType 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\n  - [W009/warning] 字段 f_reason 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\n  - [W009/warning] 字段 f_days 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']"
+   },
+   "reset": {
+    "code": 0,
+    "msg": "成功",
+    "data": null
+   },
+   "start": {
+    "code": 0,
+    "msg": "成功",
+    "data": {
+     "processInstanceId": "92135929980005"
+    }
+   },
+   "step": 0
+  },
+  {
+   "run": 5,
+   "duration": 0.164,
+   "timestamp": "2026-09-21T15:41:34.719044",
+   "returncode": 0,
+   "stderr": "",
+   "verify": {
+    "errors": "",
+    "warnings": "  - [W009/warning] 字段 f_days 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\n  - [W009/warning] 字段 f_reason 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\n  - [W009/warning] 字段 f_leaveType 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']"
+   },
+   "reset": {
+    "code": 0,
+    "msg": "成功",
+    "data": null
+   },
+   "start": {
+    "code": 0,
+    "msg": "成功",
+    "data": {
+     "processInstanceId": "92135930555496"
+    }
+   },
+   "step": 0
+  }
+ ],
+ "verify_patterns": {
+  "W009": 5,
+  "errors": 0,
+  "warnings": 5
+ },
+ "audit_deltas": [
+  {
+   "after_run": 1,
+   "count": 2,
+   "delta": 2
+  },
+  {
+   "after_run": 2,
+   "count": 2,
+   "delta": 0
+  },
+  {
+   "after_run": 3,
+   "count": 2,
+   "delta": 0
+  },
+  {
+   "after_run": 4,
+   "count": 2,
+   "delta": 0
+  },
+  {
+   "after_run": 5,
+   "count": 2,
+   "delta": 0
+  }
+ ]
+}

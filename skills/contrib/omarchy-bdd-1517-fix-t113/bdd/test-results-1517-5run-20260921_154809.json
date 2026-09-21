@@ -1,0 +1,178 @@
+{
+ "timestamp": "20260921_154809",
+ "flow": "bdd/bdd-1517-leave-reapply-fix1_20260921_154132.json",
+ "runs": [
+  {
+   "run": 1,
+   "duration": 0.193,
+   "timestamp": "2026-09-21T15:48:09.584417",
+   "returncode": 0,
+   "stderr": "",
+   "verify": {
+    "errors": "",
+    "warnings": "  - [W009/warning] 字段 f_reason 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\n  - [W009/warning] 字段 f_leaveType 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\n  - [W009/warning] 字段 f_days 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']"
+   },
+   "reset": {
+    "code": 0,
+    "msg": "成功",
+    "data": null
+   },
+   "start": {
+    "code": 0,
+    "msg": "成功",
+    "data": {
+     "processInstanceId": "92136334876826"
+    }
+   },
+   "step": 0,
+   "final": {
+    "state": 20,
+    "output": "bdd/bdd-1517-r1-20260921_154809.out.json"
+   }
+  },
+  {
+   "run": 2,
+   "duration": 0.184,
+   "timestamp": "2026-09-21T15:48:10.182441",
+   "returncode": 0,
+   "stderr": "",
+   "verify": {
+    "errors": "",
+    "warnings": "  - [W009/warning] 字段 f_leaveType 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\n  - [W009/warning] 字段 f_reason 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\n  - [W009/warning] 字段 f_days 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']"
+   },
+   "reset": {
+    "code": 0,
+    "msg": "成功",
+    "data": null
+   },
+   "start": {
+    "code": 0,
+    "msg": "成功",
+    "data": {
+     "processInstanceId": "92136335492254"
+    }
+   },
+   "step": 0,
+   "final": {
+    "state": 20,
+    "output": "bdd/bdd-1517-r2-20260921_154809.out.json"
+   }
+  },
+  {
+   "run": 3,
+   "duration": 0.2,
+   "timestamp": "2026-09-21T15:48:10.784969",
+   "returncode": 0,
+   "stderr": "",
+   "verify": {
+    "errors": "",
+    "warnings": "  - [W009/warning] 字段 f_days 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\n  - [W009/warning] 字段 f_reason 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\n  - [W009/warning] 字段 f_leaveType 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']"
+   },
+   "reset": {
+    "code": 0,
+    "msg": "成功",
+    "data": null
+   },
+   "start": {
+    "code": 0,
+    "msg": "成功",
+    "data": {
+     "processInstanceId": "92136336110754"
+    }
+   },
+   "step": 0,
+   "final": {
+    "state": 20,
+    "output": "bdd/bdd-1517-r3-20260921_154809.out.json"
+   }
+  },
+  {
+   "run": 4,
+   "duration": 0.178,
+   "timestamp": "2026-09-21T15:48:11.365419",
+   "returncode": 0,
+   "stderr": "",
+   "verify": {
+    "errors": "",
+    "warnings": "  - [W009/warning] 字段 f_reason 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\n  - [W009/warning] 字段 f_leaveType 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\n  - [W009/warning] 字段 f_days 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']"
+   },
+   "reset": {
+    "code": 0,
+    "msg": "成功",
+    "data": null
+   },
+   "start": {
+    "code": 0,
+    "msg": "成功",
+    "data": {
+     "processInstanceId": "92136336710822"
+    }
+   },
+   "step": 0,
+   "final": {
+    "state": 20,
+    "output": "bdd/bdd-1517-r4-20260921_154809.out.json"
+   }
+  },
+  {
+   "run": 5,
+   "duration": 0.211,
+   "timestamp": "2026-09-21T15:48:11.979106",
+   "returncode": 0,
+   "stderr": "",
+   "verify": {
+    "errors": "",
+    "warnings": "  - [W009/warning] 字段 f_days 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\n  - [W009/warning] 字段 f_reason 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\n  - [W009/warning] 字段 f_leaveType 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']"
+   },
+   "reset": {
+    "code": 0,
+    "msg": "成功",
+    "data": null
+   },
+   "start": {
+    "code": 0,
+    "msg": "成功",
+    "data": {
+     "processInstanceId": "92136337337514"
+    }
+   },
+   "step": 0,
+   "final": {
+    "state": 20,
+    "output": "bdd/bdd-1517-r5-20260921_154809.out.json"
+   }
+  }
+ ],
+ "verify_patterns": {
+  "W009": 5,
+  "errors": 0,
+  "warnings": 5
+ },
+ "audit_deltas": [
+  {
+   "after_run": 1,
+   "count": 3,
+   "delta": 3
+  },
+  {
+   "after_run": 2,
+   "count": 3,
+   "delta": 0
+  },
+  {
+   "after_run": 3,
+   "count": 3,
+   "delta": 0
+  },
+  {
+   "after_run": 4,
+   "count": 3,
+   "delta": 0
+  },
+  {
+   "after_run": 5,
+   "count": 3,
+   "delta": 0
+  }
+ ]
+}
