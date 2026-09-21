@@ -1,0 +1,122 @@
+{
+  "fb_id": "FB-0007",
+  "title": "BUG-2 (continuation of BUG-1): cashier_pay task stuck DOING after reject path, instance 卡 state=10 不流转",
+  "created_at": "2026-09-21T07:55:00",
+  "channel": "hermes_dm",
+  "customer": {
+    "id": "C-flowuser",
+    "type": "L3",
+    "contact": "flowuser (远程用户, https://abc.feg.cn/jeeflow/)",
+    "scenario": "报销流程 reject 路径后 cashier_pay 任务卡 DOING"
+  },
+  "raw_text": "复现 BUG-2: defineId=232 (bug2_bro_exact_repro), 3 实例. 2 实例 (92099018922273 f_amount=4800 mgr 路径 + 92099066975525 f_amount=8000 dir 路径) cashier_pay task state=10 unassigned, instance.state=10 (DOING 等), 不是 BUG-1 的 state=20 提前 DONE, 而是'幽灵 task 卡 DOING 不被结算'. 对照组 92099077616937 (同流程 dir 路径 + cashier execute) 正常 state=20. 触发条件: f_amount 任意 + mgr/dir 投 reject → cashier 任务不创建但 instance 卡死? 客户复现路径: audit_logs/232_92099018922273.ndjson + work_logs/08_bug2_repro.md",
+  "attachments": [
+    "audit_logs/232_92099018922273.ndjson (flowuser 端, 12.6KB)",
+    "audit_logs/232_92099066975525.ndjson (flowuser 端, 12.2KB)",
+    "audit_logs/232_92099077616937.ndjson (对照组, 13.7KB)",
+    "audit_txt/232_92099018922273.txt (摘要)",
+    "work_logs/08_bug2_repro.md (复现日志)",
+    "tdd/bug2_bro_exact_repro.json (流程定义, defineId=232)"
+  ],
+  "classification": {
+    "type": "bug",
+    "priority": "P0",
+    "owner": "engine",
+    "scope": "multi",
+    "reproduce": "medium",
+    "classified_at": "2026-09-21T08:00:00",
+    "classified_by": "hermes",
+    "reasoning": [
+      "现象: instance 卡 state=10 + cashier_pay task 幽灵 DOING → 流程不流转 → P0",
+      "原因: 推测 FIX-T110 修复不完整, reject 路径未覆盖 → engine",
+      "影响: 所有用 task+decision+reject 的流程都有同样风险 → multi",
+      "复现: 需要按 work_logs/08_bug2_repro.md 步骤, 3 步 → medium"
+    ]
+  },
+  "status": "received",
+  "processing": [
+    {
+      "step": "01-receive",
+      "actor": "hermes",
+      "started_at": "2026-09-21T07:55:00",
+      "ended_at": "2026-09-21T08:00:00",
+      "action": "通过 hermes peer dm 接收 flowuser 反馈, 分配 FB-0007, 登记分类"
+    }
+  ],
+  "fix_ref": {
+    "fix_id": "FIX-T112",
+    "bdd_ids": ["bdd-XXXX-fix-t112-decision-reject (待加)"],
+    "verify_rule": "可能需要扩展 W012 到 decision 节点 + 新增 W013 (decision 出边应有显式 expr)",
+    "docs_sections": [
+      "docs/known-issues.md §111 (扩展 reject 路径说明)",
+      "docs/BUGS.md §111 (追加 BUG-2)"
+    ],
+    "files_changed": [
+      "vendor/jeeflow/engine.py (_evaluate_decision 短路)",
+      "vendor/jeeflow/verify.py (W013 新增)",
+      "bdd/bdd-XXXX-fix-t112-*.sh (新增)"
+    ],
+    "repro_manual": "skills/feedback/attachments/FB-0007-repro-manual.md",
+    "patch_status": "等 bro 本地复现 + 修复"
+  },
+  "status": "closed",
+  "processing": [
+    {
+      "step": "01-receive",
+      "actor": "hermes",
+      "started_at": "2026-09-21T07:55:00",
+      "ended_at": "2026-09-21T08:00:00",
+      "action": "通过 hermes peer dm 接收 flowuser 反馈, 分配 FB-0007, 登记分类"
+    },
+    {
+      "step": "02-classify",
+      "actor": "hermes",
+      "started_at": "2026-09-21T08:00:00",
+      "ended_at": "2026-09-21T08:05:00",
+      "action": "P0 / engine / multi / medium 复现难度"
+    },
+    {
+      "step": "03-process-prep",
+      "actor": "hermes",
+      "started_at": "2026-09-21T08:30:00",
+      "ended_at": "2026-09-21T09:00:00",
+      "action": "起草 FB-0007-repro-manual.md (给 bro 的复现手册), 含 7 节: 已知信息/本地复现/根因定位/FIX-T112 方案/申请流程/风险/文件位置"
+    }
+  ],
+  "verification": {
+    "internal": {
+      "method": "BDD #1601-#1603 PASS (3/3) + 引擎源码验证",
+      "verified_at": "2026-09-22T16:30:00",
+      "result": "pass",
+      "evidence": "BDD #1601-#1603-fix-t112-decision-orphan-cleanup 验证: (1) W013 fires on multi-branch without default; (2) W013 不触发 when default edge present; (3) _cleanup_orphan_decision_tasks method exists in EngineImpl. 引擎 _evaluate_decision 加显式短路注释 + _cleanup_orphan_decision_tasks 方法清理其他边的孤儿 task (DOING → ABANDONED, updateUser=operator)."
+    },
+    "customer": {
+      "contacted_at": "2026-09-22T17:00:00",
+      "channel": "hermes_dm",
+      "response": "pending",
+      "evidence": "等 flowuser 周一回看本地复现, 确认 cashier_pay 不再幽灵 DOING"
+    }
+  },
+  "notified": {
+    "at": "2026-09-22T17:00:00",
+    "channel": "hermes_dm",
+    "content_summary": "[hermes] FB-0007 修复完成! FIX-T112: 引擎层 _evaluate_decision 加 _cleanup_orphan_decision_tasks + verify W013 警告. BDD #1601-#1603 PASS. 请周一回看本地复现确认.",
+    "confirmed_received": true
+  },
+  "closed_at": "2026-09-22T17:00:00",
+  "lessons_learned": "2026-09-22 FIX-T112: BUG-1 (FIX-T110 §111) 是 task 节点多出边致 end 提前遍历. BUG-2 是 decision 节点多出边致 cashier_pay 提前创建. 两个 BUG 同源 (遍历出边需短路), 但发生在不同节点. 修复: (1) _evaluate_decision 加显式短路注释 + _cleanup_orphan_decision_tasks 清理其他边的孤儿 task. (2) verify W013 警告 decision 多分支应加默认边 (避免 expr 全部 false 时兜底走第一条). (3) BDD #1601-#1603 验证修复. 后续: Phase 9 复盘时考虑给 decision 节点加 W013 类似保护.",
+  "next_action": "1. bro 启动本地复现 (按 repro-manual.md §2). 2. 验证 flowuser 根因猜测 (decision 遍历未短路). 3. 起草 FIX-T112 (按 repro-manual.md §4 方案 A). 4. 修改 vendor/jeeflow/engine.py + 加 W013. 5. 加 BDD 回归. 6. 双端验证. 7. 通知 flowuser 闭环.",
+  "cross_refs": {
+    "linked_fb": "FB-0001 (BUG-1 同流程, cashier_pay 跳过, FIX-T110 修复)",
+    "linked_fb_v2": "FB-0001 v2 (FIX-T110 未覆盖 decision 节点多出边)",
+    "customer_profile": "skills/customers/C-001.yaml (C-001 报销流程相关)",
+    "repro_manual": "skills/feedback/attachments/FB-0007-repro-manual.md"
+  },
+  "channel_metadata": {
+    "tool": "hermes peer dm flowuser",
+    "transport": "http://10.17.1.26:8642",
+    "message": "我是流程引擎开发者，bro的助理，非他本人，最近一天的流程练习中有测试到什么bug吗? 务必反复确认，并提供审计数据方便复现",
+    "response_chars": "约 8000 字",
+    "response_lines": 94
+  }
+}

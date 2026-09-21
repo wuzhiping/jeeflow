@@ -1,0 +1,41 @@
+{
+  "batch": "countersign",
+  "results": [
+    {
+      "bdd_id": "BDD#266",
+      "name": "PARALLEL 3 actor",
+      "status": "FAIL",
+      "detail": "active=['countersign', 'countersign', 'countersign']"
+    },
+    {
+      "bdd_id": "BDD#267",
+      "name": "SEQUENTIAL 顺序",
+      "status": "PASS",
+      "detail": "首 actor DOING, active=['seq']"
+    },
+    {
+      "bdd_id": "BDD#268-1",
+      "name": "REJECT 触发",
+      "status": "INFO",
+      "detail": "REJECT: 0 成功"
+    },
+    {
+      "bdd_id": "BDD#268",
+      "name": "PARALLEL REJECT 一票否决",
+      "status": "PASS",
+      "detail": "state=45 REJECT"
+    },
+    {
+      "bdd_id": "BDD#269",
+      "name": "countersignType 缺失",
+      "status": "FAIL",
+      "detail": "save: [ValueError] 流程 verify 失败 (1 个错误):\n  - [E008/error] 节点[cs] performType=1 但无 countersignType (会签必须配 P"
+    },
+    {
+      "bdd_id": "BDD#270",
+      "name": "addCandidate to PARALLEL",
+      "status": "WARN",
+      "detail": "userD todo=[]"
+    }
+  ]
+}

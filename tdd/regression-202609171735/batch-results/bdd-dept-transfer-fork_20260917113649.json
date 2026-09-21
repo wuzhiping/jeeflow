@@ -1,0 +1,50 @@
+=== memory bdd/bdd-dept-transfer-fork_20260917113649.json ===
+{
+  "ok": true,
+  "pdid": "280",
+  "inst_id": "91815587297005",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815587297005"
+    },
+    {
+      "step": "execute-userA",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-boss",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "hr_review",
+        "dept_leader_review",
+        "asset_handover"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

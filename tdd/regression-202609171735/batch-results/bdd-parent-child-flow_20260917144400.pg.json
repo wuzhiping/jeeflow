@@ -1,0 +1,37 @@
+=== pg bdd/bdd-parent-child-flow_20260917144400.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789663678926000",
+  "inst_id": "91815607226972",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815607226972"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "leader_review"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

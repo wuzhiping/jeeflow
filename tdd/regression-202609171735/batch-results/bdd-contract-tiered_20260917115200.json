@@ -1,0 +1,50 @@
+=== memory bdd/bdd-contract-tiered_20260917115200.json ===
+{
+  "ok": true,
+  "pdid": "246",
+  "inst_id": "91815586368210",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815586368210"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-manager",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userA",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "dept_leader",
+        "manager_review",
+        "legal_review"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

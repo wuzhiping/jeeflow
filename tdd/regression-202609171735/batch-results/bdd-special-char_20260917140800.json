@@ -1,0 +1,29 @@
+=== memory bdd/bdd-special-char_20260917140800.json ===
+{
+  "ok": true,
+  "pdid": "520",
+  "inst_id": "91815593474993",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815593474993"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "审 批"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

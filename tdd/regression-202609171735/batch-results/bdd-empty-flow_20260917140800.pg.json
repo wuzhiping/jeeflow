@@ -1,0 +1,28 @@
+=== pg bdd/bdd-empty-flow_20260917140800.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789663672023000",
+  "inst_id": "91815600158201",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815600158201"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": []
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

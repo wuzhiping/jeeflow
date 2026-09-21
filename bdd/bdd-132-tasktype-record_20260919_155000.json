@@ -1,0 +1,18 @@
+{
+  "name": "bdd-132-tasktype-record",
+  "displayName": "BDD #132 taskType=2 记录节点边界",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "apply", "type": "snaker:task", "x": 150, "y": 200, "properties": {"width": 100, "height": 50, "form": "tt-form", "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "申请"}},
+    {"id": "review", "type": "snaker:task", "x": 300, "y": 200, "properties": {"width": 100, "height": 50, "form": "", "assignee": "leader", "taskType": 0, "performType": 0}, "text": {"value": "主审"}},
+    {"id": "record", "type": "snaker:task", "x": 450, "y": 200, "properties": {"width": 100, "height": 50, "form": "", "assignee": "director", "taskType": 2, "performType": 0}, "text": {"value": "记录"}},
+    {"id": "end", "type": "snaker:end", "x": 600, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "review", "properties": {}},
+    {"id": "e2", "sourceNodeId": "review", "targetNodeId": "record", "properties": {}},
+    {"id": "e3", "sourceNodeId": "record", "targetNodeId": "end", "properties": {}}
+  ]
+}

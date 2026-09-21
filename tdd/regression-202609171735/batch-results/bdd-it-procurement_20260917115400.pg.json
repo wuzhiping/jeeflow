@@ -1,0 +1,51 @@
+=== pg bdd/bdd-it-procurement_20260917115400.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789663674907000",
+  "inst_id": "91815603112480",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815603112480"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userA",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "dept_approval",
+        "it_dept_approval",
+        "finance"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

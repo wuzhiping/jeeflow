@@ -1,0 +1,43 @@
+=== memory bdd/bdd-candidate-pool-take_20260917135000.json ===
+{
+  "ok": true,
+  "pdid": "226",
+  "inst_id": "91815585881794",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815585881794"
+    },
+    {
+      "step": "execute-userA",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userA",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "pool_review",
+        "finish_notify"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+=== memory bdd/bdd-it-procurement_20260917115400.json ===
+{
+  "ok": true,
+  "pdid": "352",
+  "inst_id": "91815589484325",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815589484325"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userA",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "dept_approval",
+        "it_dept_approval",
+        "finance"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

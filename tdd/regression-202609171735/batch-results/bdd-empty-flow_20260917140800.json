@@ -1,0 +1,27 @@
+=== memory bdd/bdd-empty-flow_20260917140800.json ===
+{
+  "ok": true,
+  "pdid": "301",
+  "inst_id": "91815587833598",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815587833598"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": []
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

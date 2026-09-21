@@ -1,0 +1,37 @@
+=== pg bdd/bdd-reject-rollback_20260917132200.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789663681502000",
+  "inst_id": "91815609865866",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815609865866"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "leader_review"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "bdd-187-spi-dept-main",
+  "displayName": "BDD #187 SPI DeptMainLeader (部门主负责人)",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "apply", "type": "snaker:task", "x": 130, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "申请"}},
+    {"id": "dept_main", "type": "snaker:task", "x": 280, "y": 200, "properties": {"width": 100, "height": 50, "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.DeptMainLeaderAssignmentHandler", "taskType": 0, "performType": 0}, "text": {"value": "部门主负责人"}},
+    {"id": "end", "type": "snaker:end", "x": 430, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "dept_main", "properties": {}},
+    {"id": "e2", "sourceNodeId": "dept_main", "targetNodeId": "end", "properties": {}}
+  ]
+}

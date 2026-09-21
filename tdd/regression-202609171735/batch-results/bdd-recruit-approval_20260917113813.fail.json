@@ -1,0 +1,10 @@
+=== memory bdd/bdd-recruit-approval_20260917113813.json ===
+{
+  "ok": false,
+  "step": "start",
+  "log": {
+    "code": 99999999,
+    "msg": "[ValueError] 节点[apply] handler 'com.mldong.jeeflow.interceptor.impl.FormFieldAssigneeHandler' SPI 角色匹配为空（检查 role_code）"
+  },
+  "pdid": "491"
+}

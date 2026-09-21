@@ -1,0 +1,18 @@
+{
+  "name": "bdd-156-multi-actor",
+  "displayName": "BDD #156 多 actor 任意一人办即可",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "apply", "type": "snaker:task", "x": 130, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "申请"}},
+    {"id": "joint_review", "type": "snaker:task", "x": 280, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "userA,userB,userC", "taskType": 0, "performType": 0}, "text": {"value": "任一人审"}},
+    {"id": "boss", "type": "snaker:task", "x": 430, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "boss", "taskType": 0, "performType": 0}, "text": {"value": "总经理"}},
+    {"id": "end", "type": "snaker:end", "x": 580, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "joint_review", "properties": {}},
+    {"id": "e2", "sourceNodeId": "joint_review", "targetNodeId": "boss", "properties": {}},
+    {"id": "e3", "sourceNodeId": "boss", "targetNodeId": "end", "properties": {}}
+  ]
+}

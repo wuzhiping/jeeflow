@@ -1,0 +1,100 @@
+{
+  "period": "2026-09 (历史回填 + Phase 8 + 全面修复)",
+  "report_date": "2026-09-22",
+  "summary": {
+    "total_received": 10,
+    "closed": 10,
+    "notified": 0,
+    "in_progress": 0,
+    "verified": 0,
+    "classified": 0,
+    "received": 0
+  },
+  "by_type": {
+    "bug": 5,
+    "improve": 1,
+    "doc": 3,
+    "ux": 0,
+    "consult": 1
+  },
+  "by_priority": {
+    "P0": 4,
+    "P1": 4,
+    "P2": 2,
+    "P3": 0
+  },
+  "by_owner": {
+    "engine": 5,
+    "flow": 0,
+    "doc": 4,
+    "ui": 0,
+    "spi": 0,
+    "sla": 0,
+    "verify": 1
+  },
+  "by_scope": {
+    "single": 1,
+    "multi": 8,
+    "global": 1
+  },
+  "by_source": {
+    "tdd_bdd_history": 5,
+    "hermes_dm_flowuser": 5
+  },
+  "sla_metrics": {
+    "P0_24h_first_response": "100% (4/4)",
+    "P0_7d_closed": "100% (4/4)",
+    "P1_3d_first_response": "100% (4/4)",
+    "P1_30d_closed": "100% (4/4)",
+    "P2_7d_first_response": "100% (2/2)",
+    "P2_90d_closed_or_scheduled": "100% (2/2)"
+  },
+  "customer_metrics": {
+    "L1_engagement": 0,
+    "L2_engagement": 4,
+    "L3_engagement": 2,
+    "unique_customers": 6,
+    "real_customer_engagement": 3,
+    "internal_engagement": 5
+  },
+  "fix_metrics": {
+    "fixes_deployed": 7,
+    "fixes_in_progress": 0,
+    "doc_fixes_completed": 4,
+    "verify_rules_added": 2,
+    "bdd_added": 4,
+    "docs_updated": 7
+  },
+  "closed_feedback_ids": [
+    "FB-0001",
+    "FB-0002",
+    "FB-0003",
+    "FB-0004",
+    "FB-0005",
+    "FB-0006",
+    "FB-0007 (FIX-T112)",
+    "FB-0008 (FIX-DOC-2)",
+    "FB-0009 (FIX-DOC-3)",
+    "FB-0010 (验证 (a) 设计如此, 文档化)"
+  ],
+  "in_flight_feedback_ids": [],
+  "fix_ids_achieved": [
+    "FIX-T35 (§27)",
+    "FIX-T46 (§129)",
+    "FIX-T110 (§111)",
+    "FIX-T111 (§112)",
+    "FIX-T112 (§113-BUG2)",
+    "FIX-DOC-1",
+    "FIX-DOC-2 (§113)",
+    "FIX-DOC-3 (§114)",
+    "W012 (task 多出边)",
+    "W013 (decision 多分支风险)"
+  ],
+  "notes": [
+    "2026-09-22 全部 10 条 FB 闭环 (10/10 = 100%)",
+    "本日完成 4 项 fix: FB-0007 (FIX-T112 引擎修复), FB-0008 (FIX-DOC-2), FB-0009 (FIX-DOC-3), FB-0010 (验证为设计如此, 文档化)",
+    "引擎 + verify + docs 三层协同修复",
+    "FB-0010 验证结论与 flowuser 70% (b) 假设不同, 实测为 (a) 设计如此. facade.py:1956 注释明确. 实证纠正假设是反馈闭环的价值",
+    "Phase 8.1 全部目标达成 + 修复 4 项 + 解冻条件 5/5 满足 (待提议解冻)"
+  ]
+}

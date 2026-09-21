@@ -1,0 +1,145 @@
+{
+  "batch": "batch3",
+  "results": [
+    {
+      "bdd_id": "BDD#791",
+      "name": "退回修改",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "active=['apply']"
+    },
+    {
+      "bdd_id": "BDD#791",
+      "name": "退回修改",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "active=['apply']"
+    },
+    {
+      "bdd_id": "BDD#792",
+      "name": "跳级 JUMP end",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#792",
+      "name": "跳级 JUMP end",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#793",
+      "name": "重复加签",
+      "host": "http://127.0.0.1:8101",
+      "status": "INFO",
+      "detail": "actors=['leader'], add=99999999"
+    },
+    {
+      "bdd_id": "BDD#793",
+      "name": "重复加签",
+      "host": "http://127.0.0.1:8102",
+      "status": "INFO",
+      "detail": "actors=['leader'], add=99999999"
+    },
+    {
+      "bdd_id": "BDD#794",
+      "name": "多人协作",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#794",
+      "name": "多人协作",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#795",
+      "name": "金额精度",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "f_amount=1234.56"
+    },
+    {
+      "bdd_id": "BDD#795",
+      "name": "金额精度",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "f_amount=1234.56"
+    },
+    {
+      "bdd_id": "BDD#796",
+      "name": "数量 0",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#796",
+      "name": "数量 0",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#797",
+      "name": "跨年",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#797",
+      "name": "跨年",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#798",
+      "name": "多年",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#798",
+      "name": "多年",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#799",
+      "name": "跨时区",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#799",
+      "name": "跨时区",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#800",
+      "name": "20 节点",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "tasks=20, state=20"
+    },
+    {
+      "bdd_id": "BDD#800",
+      "name": "20 节点",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "tasks=20, state=20"
+    }
+  ]
+}

@@ -1,0 +1,145 @@
+{
+  "batch": "hr",
+  "results": [
+    {
+      "bdd_id": "BDD#711",
+      "name": "请假 1天",
+      "host": "http://127.0.0.1:8101",
+      "status": "FAIL",
+      "detail": ">20 steps"
+    },
+    {
+      "bdd_id": "BDD#711",
+      "name": "请假 1天",
+      "host": "http://127.0.0.1:8102",
+      "status": "FAIL",
+      "detail": ">20 steps"
+    },
+    {
+      "bdd_id": "BDD#712",
+      "name": "请假 30天",
+      "host": "http://127.0.0.1:8101",
+      "status": "FAIL",
+      "detail": ">20 steps"
+    },
+    {
+      "bdd_id": "BDD#712",
+      "name": "请假 30天",
+      "host": "http://127.0.0.1:8102",
+      "status": "FAIL",
+      "detail": ">20 steps"
+    },
+    {
+      "bdd_id": "BDD#713",
+      "name": "调休 8h",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#713",
+      "name": "调休 8h",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#714",
+      "name": "年假 5天",
+      "host": "http://127.0.0.1:8101",
+      "status": "FAIL",
+      "detail": ">20 steps"
+    },
+    {
+      "bdd_id": "BDD#714",
+      "name": "年假 5天",
+      "host": "http://127.0.0.1:8102",
+      "status": "FAIL",
+      "detail": ">20 steps"
+    },
+    {
+      "bdd_id": "BDD#715",
+      "name": "病假 4h",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#715",
+      "name": "病假 4h",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#716",
+      "name": "事假",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#716",
+      "name": "事假",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#717",
+      "name": "哺乳假",
+      "host": "http://127.0.0.1:8101",
+      "status": "FAIL",
+      "detail": ">20 steps"
+    },
+    {
+      "bdd_id": "BDD#717",
+      "name": "哺乳假",
+      "host": "http://127.0.0.1:8102",
+      "status": "FAIL",
+      "detail": ">20 steps"
+    },
+    {
+      "bdd_id": "BDD#718",
+      "name": "加班 4h",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#718",
+      "name": "加班 4h",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#719",
+      "name": "加班 5天",
+      "host": "http://127.0.0.1:8101",
+      "status": "FAIL",
+      "detail": ">20 steps"
+    },
+    {
+      "bdd_id": "BDD#719",
+      "name": "加班 5天",
+      "host": "http://127.0.0.1:8102",
+      "status": "FAIL",
+      "detail": ">20 steps"
+    },
+    {
+      "bdd_id": "BDD#720",
+      "name": "销假 withdraw",
+      "host": "http://127.0.0.1:8101",
+      "status": "PASS",
+      "detail": "state=30"
+    },
+    {
+      "bdd_id": "BDD#720",
+      "name": "销假 withdraw",
+      "host": "http://127.0.0.1:8102",
+      "status": "PASS",
+      "detail": "state=30"
+    }
+  ]
+}

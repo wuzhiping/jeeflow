@@ -1,0 +1,18 @@
+{
+  "name": "bdd-236-multi-start-end",
+  "displayName": "BDD #236 多 start/end 边界",
+  "type": "approval",
+  "nodes": [
+    {"id": "start1", "type": "snaker:start", "x": 50, "y": 100, "properties": {"width": 50, "height": 50}, "text": {"value": "开始1"}},
+    {"id": "start2", "type": "snaker:start", "x": 50, "y": 300, "properties": {"width": 50, "height": 50}, "text": {"value": "开始2"}},
+    {"id": "apply", "type": "snaker:task", "x": 130, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "申请"}},
+    {"id": "end1", "type": "snaker:end", "x": 280, "y": 100, "properties": {"width": 50, "height": 50}, "text": {"value": "结束1"}},
+    {"id": "end2", "type": "snaker:end", "x": 280, "y": 300, "properties": {"width": 50, "height": 50}, "text": {"value": "结束2"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start1", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "start2", "targetNodeId": "apply", "properties": {}},
+    {"id": "e2", "sourceNodeId": "apply", "targetNodeId": "end1", "properties": {}},
+    {"id": "e3", "sourceNodeId": "apply", "targetNodeId": "end2", "properties": {}}
+  ]
+}

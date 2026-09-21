@@ -1,0 +1,43 @@
+=== memory flows/11-assignee-vars.json ===
+{
+  "ok": true,
+  "pdid": "172",
+  "inst_id": "91815579549336",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815579549336"
+    },
+    {
+      "step": "execute-deptLeader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userA",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "task1",
+        "task2"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

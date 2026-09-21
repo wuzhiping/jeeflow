@@ -1,0 +1,55 @@
+customer_id: C-001
+type: L3
+name: 报销人 user1 (化名)
+contact: hermes_dm
+first_seen: 2026-09-19
+last_touched: 2026-09-21
+
+scenario: |
+  员工提交差旅报销, 按金额分流:
+  - amount < 5000 → 经理审批 → 出纳付款
+  - amount >= 5000 → 总监审批 → 出纳付款
+  - 任一审批人 reject → 驳回
+
+key_pain_points:
+  - 报销流程跑通后出纳看不到付款任务 (已闭环 FB-0001)
+  - 偶尔通知延迟
+  - 移动端字段显示不全 (尚未反馈)
+
+recent_feedback:
+  - date: 2026-09-19
+    fb_id: FB-0001
+    issue: "报销流程出纳节点被跳过"
+    status: closed
+    closed_at: 2026-09-20
+    fix_ref: FIX-T110 + W012
+  - date: 2026-09-20
+    fb_id: (后续可能提)
+    issue: "移动端字段显示"
+    status: open
+  - date: 2026-09-21
+    fb_id: (N/A · 非 BUG)
+    issue: "user1 todoList 中出现非自己的待办 (assignee=user1, operator=userB/userA) — 真实场景, 非 BUG, 是 user1 作为审批人身份"
+    source: flowuser 二次对话 (2026-09-21)
+    status: documented
+
+stage_6_evidence:
+  status: 暂未触发
+  first_seen: 2026-09-19
+  tracking_until: 2026-09-27 (8 天跟踪期)
+  last_check: 2026-09-21
+  finding: "截至 2026-09-21, user1 未自然续办. 不主动跑污染. 跟踪期结束后再评估."
+  next_check: 2026-09-27 之后
+
+success_metrics:
+  - 平均报销时长: < 3 工作日
+  - 一次通过率: > 75%
+  - 出纳付款时效: < 24h
+
+notes: |
+  - 标杆 L3 客户, 反馈质量高
+  - 跑通了 expense_report_repro → expense_report_v2 完整路径
+  - 是 FB-0001 闭环成功的核心客户, 应作为 "customer success case"
+  - 后续关注: 移动端体验 / 通知触达
+  - 2026-09-21 flowuser 二次对话确认: 0 新 BUG, C-001 阶段 6 暂未触发, 同意不主动跑污染
+  - 2026-09-21 flowuser 诚实交代: user1 的 todoList 中可能有 assignee=user1 但 operator=别人的待办, 是真实场景 (user1 兼审批人), 不是 BUG

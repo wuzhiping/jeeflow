@@ -1,0 +1,65 @@
+{
+  "batch": "performance-deep",
+  "results": [
+    {
+      "bdd_id": "BDD#451",
+      "name": "20 instance 启动",
+      "status": "INFO",
+      "detail": "0.65s"
+    },
+    {
+      "bdd_id": "BDD#452",
+      "name": "20 detail",
+      "status": "INFO",
+      "detail": "0.64s"
+    },
+    {
+      "bdd_id": "BDD#453",
+      "name": "20 execute",
+      "status": "INFO",
+      "detail": "0.60s"
+    },
+    {
+      "bdd_id": "BDD#454",
+      "name": "100 f_ 字段",
+      "status": "INFO",
+      "detail": "0.03s"
+    },
+    {
+      "bdd_id": "BDD#455",
+      "name": "1MB 启动",
+      "status": "INFO",
+      "detail": "0.05s, len=1048576"
+    },
+    {
+      "bdd_id": "BDD#456",
+      "name": "50 节点启动",
+      "status": "INFO",
+      "detail": "0.03s, active=['t1']"
+    },
+    {
+      "bdd_id": "BDD#457",
+      "name": "10 actor 会签",
+      "status": "INFO",
+      "detail": "0.03s, cs_tasks=10"
+    },
+    {
+      "bdd_id": "BDD#458",
+      "name": "5 并发启动",
+      "status": "INFO",
+      "detail": "0.21s, instances=5"
+    },
+    {
+      "bdd_id": "BDD#459",
+      "name": "reset 性能",
+      "status": "INFO",
+      "detail": "0.0375s"
+    },
+    {
+      "bdd_id": "BDD#460",
+      "name": "100KB JSON",
+      "status": "INFO",
+      "detail": "0.08s, items=1000"
+    }
+  ]
+}

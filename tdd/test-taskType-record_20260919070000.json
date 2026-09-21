@@ -1,0 +1,48 @@
+{
+  "name": "tasktype-record",
+  "displayName": "测试-任务类型RECORD",
+  "type": "approval",
+  "nodes": [
+    {
+      "id": "start1",
+      "type": "snaker:start",
+      "x": 100, "y": 200,
+      "properties": {"width": 40, "height": 40}
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 200, "y": 200,
+      "properties": {
+        "assignee": "user1",
+        "form": "apply-form",
+        "taskType": 0,
+        "performType": 0
+      },
+      "text": {"value": "申请人填报"}
+    },
+    {
+      "id": "record1",
+      "type": "snaker:task",
+      "x": 350, "y": 200,
+      "properties": {
+        "assignee": "user1",
+        "form": "",
+        "taskType": 2,
+        "performType": 0
+      },
+      "text": {"value": "记录节点(RECORD)"}
+    },
+    {
+      "id": "end1",
+      "type": "snaker:end",
+      "x": 500, "y": 200,
+      "properties": {"width": 40, "height": 40}
+    }
+  ],
+  "edges": [
+    {"id": "e1", "sourceNodeId": "start1", "targetNodeId": "apply", "properties": {}, "text": {"value": ""}},
+    {"id": "e2", "sourceNodeId": "apply", "targetNodeId": "record1", "properties": {}, "text": {"value": ""}},
+    {"id": "e3", "sourceNodeId": "record1", "targetNodeId": "end1", "properties": {}, "text": {"value": ""}}
+  ]
+}

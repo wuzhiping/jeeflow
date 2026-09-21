@@ -1,0 +1,128 @@
+{
+  "name": "bug-fix-flow",
+  "displayName": "Bug修复流程",
+  "type": "approval",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "submit",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "bug-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_bug_desc": "",
+          "f_severity": ""
+        }
+      },
+      "text": {
+        "value": "提交Bug"
+      }
+    },
+    {
+      "id": "developer_fix",
+      "type": "snaker:task",
+      "x": 300,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "开发修复"
+      }
+    },
+    {
+      "id": "tester_verify",
+      "type": "snaker:task",
+      "x": 450,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "测试验证"
+      }
+    },
+    {
+      "id": "tech_lead_confirm",
+      "type": "snaker:task",
+      "x": 600,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "技术负责人确认"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 750,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "submit",
+      "properties": {}
+    },
+    {
+      "id": "e1",
+      "sourceNodeId": "submit",
+      "targetNodeId": "developer_fix",
+      "properties": {}
+    },
+    {
+      "id": "e2",
+      "sourceNodeId": "developer_fix",
+      "targetNodeId": "tester_verify",
+      "properties": {}
+    },
+    {
+      "id": "e3",
+      "sourceNodeId": "tester_verify",
+      "targetNodeId": "tech_lead_confirm",
+      "properties": {}
+    },
+    {
+      "id": "e4",
+      "sourceNodeId": "tech_lead_confirm",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

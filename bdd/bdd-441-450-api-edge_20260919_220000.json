@@ -1,0 +1,65 @@
+{
+  "batch": "api-edge",
+  "results": [
+    {
+      "bdd_id": "BDD#441",
+      "name": "pageNum=0",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#442",
+      "name": "pageSize=0",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#443",
+      "name": "pageNum=-1",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#444",
+      "name": "pageSize=10000",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#445",
+      "name": "operator 缺失",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#446",
+      "name": "id 缺失",
+      "status": "INFO",
+      "detail": "code=99999999"
+    },
+    {
+      "bdd_id": "BDD#447",
+      "name": "id 空字符串",
+      "status": "INFO",
+      "detail": "code=99999999"
+    },
+    {
+      "bdd_id": "BDD#448",
+      "name": "id null",
+      "status": "INFO",
+      "detail": "code=99999999"
+    },
+    {
+      "bdd_id": "BDD#449",
+      "name": "重复操作幂等",
+      "status": "INFO",
+      "detail": "r1=99999999, r2=99999999"
+    },
+    {
+      "bdd_id": "BDD#450",
+      "name": "20 并发",
+      "status": "INFO",
+      "detail": "success=20/20"
+    }
+  ]
+}

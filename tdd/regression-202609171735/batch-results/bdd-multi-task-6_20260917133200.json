@@ -1,0 +1,46 @@
+=== memory bdd/bdd-multi-task-6_20260917133200.json ===
+{
+  "ok": true,
+  "pdid": "410",
+  "inst_id": "91815590879060",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815590879060"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-manager",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-director",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "team_lead",
+        "dept_manager",
+        "director",
+        "hr_review"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 10
+    }
+  ]
+}

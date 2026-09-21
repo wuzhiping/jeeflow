@@ -1,0 +1,54 @@
+=== memory bdd/bdd-position-transfer_20260917115900.json ===
+{
+  "ok": true,
+  "pdid": "438",
+  "inst_id": "91815591594859",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815591594859"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userA",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userA",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "from_dept_approve",
+        "to_dept_approve",
+        "hr_review",
+        "hr_review",
+        "parallel_final",
+        "parallel_final"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 10
+    }
+  ]
+}

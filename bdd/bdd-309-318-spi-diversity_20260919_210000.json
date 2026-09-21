@@ -1,0 +1,65 @@
+{
+  "batch": "spi-diversity",
+  "results": [
+    {
+      "bdd_id": "BDD#309",
+      "name": "多 role 解析",
+      "status": "PASS",
+      "detail": "actors=['leader', 'manager']"
+    },
+    {
+      "bdd_id": "BDD#310",
+      "name": "@user:xxx",
+      "status": "INFO",
+      "detail": "actors=['@user:director']"
+    },
+    {
+      "bdd_id": "BDD#311",
+      "name": "@dept:xxx",
+      "status": "INFO",
+      "detail": "actors=['@dept:D01']"
+    },
+    {
+      "bdd_id": "BDD#312",
+      "name": "@leader:xxx",
+      "status": "INFO",
+      "detail": "actors=['@leader:userA']"
+    },
+    {
+      "bdd_id": "BDD#313",
+      "name": "applicant,userB",
+      "status": "PASS",
+      "detail": "actors=['userA', 'userB']"
+    },
+    {
+      "bdd_id": "BDD#314",
+      "name": "userB,leader 关键字",
+      "status": "INFO",
+      "detail": "actors=['userB', 'leader']"
+    },
+    {
+      "bdd_id": "BDD#315",
+      "name": "ghost role fallback",
+      "status": "INFO",
+      "detail": "state=None, active=[]"
+    },
+    {
+      "bdd_id": "BDD#316",
+      "name": "dept_lead",
+      "status": "INFO",
+      "detail": "actors=['manager']"
+    },
+    {
+      "bdd_id": "BDD#317",
+      "name": "big_project_reviewers",
+      "status": "INFO",
+      "detail": "actors=['leader', 'manager', 'director']"
+    },
+    {
+      "bdd_id": "BDD#318",
+      "name": "hr 角色",
+      "status": "INFO",
+      "detail": "actors=['cashier']"
+    }
+  ]
+}

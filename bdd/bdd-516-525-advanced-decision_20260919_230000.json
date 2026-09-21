@@ -1,0 +1,65 @@
+{
+  "batch": "advanced-decision",
+  "results": [
+    {
+      "bdd_id": "BDD#516",
+      "name": "dict.get()",
+      "status": "INFO",
+      "detail": "got ['b']"
+    },
+    {
+      "bdd_id": "BDD#517",
+      "name": "len()",
+      "status": "INFO",
+      "detail": "got ['b']"
+    },
+    {
+      "bdd_id": "BDD#518",
+      "name": "嵌套 5 层",
+      "status": "INFO",
+      "detail": "x=3 active=[]"
+    },
+    {
+      "bdd_id": "BDD#519",
+      "name": "5 边决策",
+      "status": "PASS",
+      "detail": "x=3 -> c"
+    },
+    {
+      "bdd_id": "BDD#520",
+      "name": "全部空 expr",
+      "status": "INFO",
+      "detail": "state=10, active=['a']"
+    },
+    {
+      "bdd_id": "BDD#521",
+      "name": "expr 抛错",
+      "status": "INFO",
+      "detail": "got []"
+    },
+    {
+      "bdd_id": "BDD#522",
+      "name": "list 字面量",
+      "status": "INFO",
+      "detail": "got ['b']"
+    },
+    {
+      "bdd_id": "BDD#523",
+      "name": "空字符串",
+      "status": "PASS",
+      "detail": "empty -> a"
+    },
+    {
+      "bdd_id": "BDD#524",
+      "name": "None 比较",
+      "status": "INFO",
+      "detail": "got ['a']"
+    },
+    {
+      "bdd_id": "BDD#525",
+      "name": "字符串拼接",
+      "status": "PASS",
+      "detail": "拼接 -> a"
+    }
+  ]
+}

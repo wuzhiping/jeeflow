@@ -1,0 +1,24 @@
+{
+  "name": "decision-string",
+  "displayName": "测试-决策字符串比较",
+  "type": "approval",
+  "nodes": [
+    {"id": "start1", "type": "snaker:start", "x": 100, "y": 200, "properties": {"width":40,"height":40}},
+    {"id": "apply", "type": "snaker:task", "x": 200, "y": 200, "properties": {"assignee":"user1","form":"apply-form","taskType":0,"performType":0}, "text":{"value":"申请人"}},
+    {"id": "dec1", "type": "snaker:decision", "x": 350, "y": 200, "properties":{"width":40,"height":40}, "text":{"value":"按类型分支"}},
+    {"id": "path_a", "type": "snaker:task", "x": 500, "y": 100, "properties": {"assignee":"leader","form":"","taskType":0,"performType":0}, "text":{"value":"A路-请假"}},
+    {"id": "path_b", "type": "snaker:task", "x": 500, "y": 250, "properties": {"assignee":"manager","form":"","taskType":0,"performType":0}, "text":{"value":"B路-报销"}},
+    {"id": "path_c", "type": "snaker:task", "x": 500, "y": 400, "properties": {"assignee":"director","form":"","taskType":0,"performType":0}, "text":{"value":"C路-其他"}},
+    {"id": "end1", "type": "snaker:end", "x": 650, "y": 250, "properties":{"width":40,"height":40}}
+  ],
+  "edges": [
+    {"id":"e1","sourceNodeId":"start1","targetNodeId":"apply","properties":{},"text":{"value":""}},
+    {"id":"e2","sourceNodeId":"apply","targetNodeId":"dec1","properties":{},"text":{"value":""}},
+    {"id":"e3","sourceNodeId":"dec1","targetNodeId":"path_a","properties":{"expr":"f_type=='leave'"},"text":{"value":"请假"}},
+    {"id":"e4","sourceNodeId":"dec1","targetNodeId":"path_b","properties":{"expr":"f_type=='reimburse'"},"text":{"value":"报销"}},
+    {"id":"e5","sourceNodeId":"dec1","targetNodeId":"path_c","properties":{},"text":{"value":"其他/默认"}},
+    {"id":"e6","sourceNodeId":"path_a","targetNodeId":"end1","properties":{},"text":{"value":""}},
+    {"id":"e7","sourceNodeId":"path_b","targetNodeId":"end1","properties":{},"text":{"value":""}},
+    {"id":"e8","sourceNodeId":"path_c","targetNodeId":"end1","properties":{},"text":{"value":""}}
+  ]
+}

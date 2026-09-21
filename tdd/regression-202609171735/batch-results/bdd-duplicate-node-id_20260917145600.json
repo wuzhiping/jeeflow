@@ -1,0 +1,29 @@
+=== memory bdd/bdd-duplicate-node-id_20260917145600.json ===
+{
+  "ok": true,
+  "pdid": "298",
+  "inst_id": "91815587696380",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815587696380"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

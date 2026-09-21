@@ -1,0 +1,37 @@
+=== pg flows/01-simple.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789663652668000",
+  "inst_id": "91815580340579",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815580340579"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "task1"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

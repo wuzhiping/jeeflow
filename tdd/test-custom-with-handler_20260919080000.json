@@ -1,0 +1,16 @@
+{
+  "name": "custom-with-handler",
+  "displayName": "测试-custom+handler",
+  "type": "approval",
+  "nodes": [
+    {"id":"start1","type":"snaker:start","x":100,"y":200,"properties":{"width":40,"height":40}},
+    {"id":"apply","type":"snaker:task","x":200,"y":200,"properties":{"assignee":"user1","form":"apply-form","taskType":0,"performType":0},"text":{"value":"申请人"}},
+    {"id":"custom1","type":"snaker:custom","x":350,"y":200,"properties":{"assignmentHandler":"com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler","clazz":"com.mldong.jeeflow.test.TestCustomHandler","methodName":"execute","args":"param1","val":"customResult"},"text":{"value":"通知外部系统"}},
+    {"id":"end1","type":"snaker:end","x":500,"y":200,"properties":{"width":40,"height":40}}
+  ],
+  "edges":[
+    {"id":"e1","sourceNodeId":"start1","targetNodeId":"apply","properties":{},"text":{"value":""}},
+    {"id":"e2","sourceNodeId":"apply","targetNodeId":"custom1","properties":{},"text":{"value":""}},
+    {"id":"e3","sourceNodeId":"custom1","targetNodeId":"end1","properties":{},"text":{"value":""}}
+  ]
+}

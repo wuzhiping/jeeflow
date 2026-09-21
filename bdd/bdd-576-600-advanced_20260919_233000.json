@@ -1,0 +1,155 @@
+{
+  "batch": "advanced",
+  "results": [
+    {
+      "bdd_id": "BDD#576",
+      "name": "10 instance 启动",
+      "status": "INFO",
+      "detail": "0.34s for 10"
+    },
+    {
+      "bdd_id": "BDD#577",
+      "name": "5 withdraw",
+      "status": "INFO",
+      "detail": "states=[30, 30, 30, 30, 30]"
+    },
+    {
+      "bdd_id": "BDD#578",
+      "name": "5 并发 start",
+      "status": "INFO",
+      "detail": "instances=5"
+    },
+    {
+      "bdd_id": "BDD#579",
+      "name": "1000 变量 detail",
+      "status": "INFO",
+      "detail": "vars=1011"
+    },
+    {
+      "bdd_id": "BDD#580",
+      "name": "todoList 大分页",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#581",
+      "name": "特殊 key 变量",
+      "status": "INFO",
+      "detail": "state=20, f_x={'a<': 'v>'}"
+    },
+    {
+      "bdd_id": "BDD#582",
+      "name": "值含 \\n",
+      "status": "INFO",
+      "detail": "f_x='line1\\nline2'"
+    },
+    {
+      "bdd_id": "BDD#583",
+      "name": "null 字节",
+      "status": "INFO",
+      "detail": "f_x='a\\x00b'"
+    },
+    {
+      "bdd_id": "BDD#584",
+      "name": "嵌套深度 50",
+      "status": "INFO",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#585",
+      "name": "非法 UTF-8",
+      "status": "INFO",
+      "detail": "f_x=中文"
+    },
+    {
+      "bdd_id": "BDD#586",
+      "name": "同一设计 10 instance",
+      "status": "INFO",
+      "detail": "states=[20, 20, 20, 20, 20, 20, 20, 20, 20, 20]"
+    },
+    {
+      "bdd_id": "BDD#587",
+      "name": "反复 deploy",
+      "status": "INFO",
+      "detail": "OK"
+    },
+    {
+      "bdd_id": "BDD#588",
+      "name": "ccActors",
+      "status": "INFO",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#589",
+      "name": "tf_nextNodeOperator",
+      "status": "PASS",
+      "detail": "actors=['director']"
+    },
+    {
+      "bdd_id": "BDD#590",
+      "name": "f_ccActors list",
+      "status": "INFO",
+      "detail": "code=0, cc=1"
+    },
+    {
+      "bdd_id": "BDD#591",
+      "name": "WITHDRAW 后再 start",
+      "status": "INFO",
+      "detail": "old=30, new=20"
+    },
+    {
+      "bdd_id": "BDD#592",
+      "name": "ABANDON 后 start",
+      "status": "INFO",
+      "detail": "内存后端无 ABANDON API"
+    },
+    {
+      "bdd_id": "BDD#593",
+      "name": "DONE instance 提交",
+      "status": "INFO",
+      "detail": "99999999, msg=[ValueError] 实例 state=20 不可执行任务（仅 DOING=10 可执行）"
+    },
+    {
+      "bdd_id": "BDD#594",
+      "name": "state=99 残留",
+      "status": "INFO",
+      "detail": "内存后端无 ABANDON 入口"
+    },
+    {
+      "bdd_id": "BDD#595",
+      "name": "状态切换日志",
+      "status": "INFO",
+      "detail": "无结构化日志"
+    },
+    {
+      "bdd_id": "BDD#596",
+      "name": "普通用户 admin 操作",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#597",
+      "name": "designer vs operator",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#598",
+      "name": "跨 tenant",
+      "status": "INFO",
+      "detail": "内存后端无 tenant (单租户)"
+    },
+    {
+      "bdd_id": "BDD#599",
+      "name": "操作日志",
+      "status": "INFO",
+      "detail": "无审计日志"
+    },
+    {
+      "bdd_id": "BDD#600",
+      "name": "异常告警",
+      "status": "INFO",
+      "detail": "无告警"
+    }
+  ]
+}

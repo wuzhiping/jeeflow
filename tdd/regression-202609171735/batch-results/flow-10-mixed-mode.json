@@ -1,0 +1,50 @@
+=== memory flows/10-mixed-mode.json ===
+{
+  "ok": true,
+  "pdid": "166",
+  "inst_id": "91815579421331",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815579421331"
+    },
+    {
+      "step": "execute-checker",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-reviewer",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-boss",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "task2",
+        "task3",
+        "task4"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

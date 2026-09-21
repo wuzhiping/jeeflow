@@ -1,0 +1,37 @@
+=== pg bdd/bdd-find-by-role_20260917145000.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789663673072000",
+  "inst_id": "91815601232392",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815601232392"
+    },
+    {
+      "step": "execute-finance",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "finance_review"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

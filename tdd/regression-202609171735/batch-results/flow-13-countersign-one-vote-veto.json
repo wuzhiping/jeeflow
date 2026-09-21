@@ -1,0 +1,50 @@
+=== memory flows/13-countersign-one-vote-veto.json ===
+{
+  "ok": true,
+  "pdid": "187",
+  "inst_id": "91815579912868",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815579912868"
+    },
+    {
+      "step": "execute-userA",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userB",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userC",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "task1",
+        "task1",
+        "task1"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

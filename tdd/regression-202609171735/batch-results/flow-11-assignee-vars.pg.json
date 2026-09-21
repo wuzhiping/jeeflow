@@ -1,0 +1,44 @@
+=== pg flows/11-assignee-vars.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789663655843000",
+  "inst_id": "91815583590803",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815583590803"
+    },
+    {
+      "step": "execute-deptLeader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userA",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "task1",
+        "task2"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

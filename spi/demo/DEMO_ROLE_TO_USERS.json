@@ -23,5 +23,319 @@
   ],
   "custom_role": [
     "userA"
+  ],
+  "to_dept_approve": [
+    "leader"
+  ],
+  "apply": [
+    "user1"
+  ],
+  "pm_review": [
+    "leader"
+  ],
+  "task1": [
+    "leader"
+  ],
+  "finance_sign": [
+    "cashier",
+    "manager"
+  ],
+  "travel_dept": [
+    "leader"
+  ],
+  "travel_finance": [
+    "leader",
+    "manager"
+  ],
+  "travel_manager": [
+    "manager"
+  ],
+  "travel_boss": [
+    "boss"
+  ],
+  "travel_cashier": [
+    "cashier"
+  ],
+  "finance_check": [
+    "leader",
+    "manager"
+  ],
+  "finance_final": [
+    "leader",
+    "manager"
+  ],
+  "manager_approve": [
+    "manager"
+  ],
+  "boss_approve": [
+    "boss"
+  ],
+  "cashier_pay": [
+    "cashier"
+  ],
+  "fleet_dispatch": [
+    "manager"
+  ],
+  "driver_confirm": [
+    "userA",
+    "userB"
+  ],
+  "user_confirm": [
+    "userC"
+  ],
+  "trip_finish": [
+    "user1"
+  ],
+  "rate": [
+    "user1"
+  ],
+  "legal_review": [
+    "director"
+  ],
+  "dept_approve": [
+    "leader"
+  ],
+  "company_approve": [
+    "manager"
+  ],
+  "board_approve": [
+    "boss"
+  ],
+  "sign_contract": [
+    "director",
+    "boss"
+  ],
+  "direct_leader": [
+    "leader"
+  ],
+  "hr_record": [
+    "director"
+  ],
+  "reimburse_apply": [
+    "user1"
+  ],
+  "reimburse_leader": [
+    "leader"
+  ],
+  "reimburse_finance_sign": [
+    "leader",
+    "manager"
+  ],
+  "reimburse_finance_seq": [
+    "leader",
+    "manager"
+  ],
+  "reimburse_finance_veto": [
+    "leader",
+    "manager",
+    "boss"
+  ],
+  "reimburse_finance_ratio": [
+    "leader",
+    "manager",
+    "boss"
+  ],
+  "reimburse_manager": [
+    "manager"
+  ],
+  "reimburse_boss": [
+    "boss"
+  ],
+  "reimburse_cashier": [
+    "cashier"
+  ],
+  "finance_seq": [
+    "leader",
+    "manager"
+  ],
+  "finance_veto": [
+    "leader",
+    "manager",
+    "boss"
+  ],
+  "finance_ratio": [
+    "leader",
+    "manager",
+    "boss"
+  ],
+  "travel_apply": [
+    "user1"
+  ],
+  "finance_approve": [
+    "leader",
+    "manager"
+  ],
+  "finance_audit": [
+    "manager"
+  ],
+  "finance_pay": [
+    "cashier"
+  ],
+  "hr_review": [
+    "director"
+  ],
+  "hr_approve": [
+    "director"
+  ],
+  "leave_apply": [
+    "user1"
+  ],
+  "dept_leader": [
+    "leader"
+  ],
+  "manager_review": [
+    "manager"
+  ],
+  "meeting_book": [
+    "userA"
+  ],
+  "asset_apply": [
+    "user1"
+  ],
+  "asset_leader": [
+    "leader"
+  ],
+  "asset_finance": [
+    "manager"
+  ],
+  "seal_apply": [
+    "user1"
+  ],
+  "seal_leader": [
+    "leader"
+  ],
+  "seal_director": [
+    "director"
+  ],
+  "doc_publish": [
+    "userA"
+  ],
+  "doc_leader": [
+    "leader"
+  ],
+  "doc_director": [
+    "director"
+  ],
+  "recruit_apply": [
+    "user1"
+  ],
+  "recruit_leader": [
+    "leader"
+  ],
+  "recruit_hr": [
+    "director"
+  ],
+  "recruit_boss": [
+    "boss"
+  ],
+  "train_apply": [
+    "userA"
+  ],
+  "train_leader": [
+    "leader"
+  ],
+  "train_hr": [
+    "director"
+  ],
+  "vehicle_apply": [
+    "user1"
+  ],
+  "project_apply": [
+    "user1"
+  ],
+  "new_leader_approve": [
+    "leader"
+  ],
+  "boss_path": [
+    "boss"
+  ],
+  "cashier_path": [
+    "cashier"
+  ],
+  "finance_sign_countersign": [
+    "cashier",
+    "manager"
+  ],
+  "step1": [
+    "leader"
+  ],
+  "step2": [
+    "manager"
+  ],
+  "step3": [
+    "director"
+  ],
+  "step4": [
+    "boss"
+  ],
+  "step5": [
+    "cashier"
+  ],
+  "high_handler": [
+    "director"
+  ],
+  "low_handler": [
+    "leader"
+  ],
+  "type_a": [
+    "director"
+  ],
+  "type_b": [
+    "manager"
+  ],
+  "type_c": [
+    "boss"
+  ],
+  "low_pay": [
+    "cashier"
+  ],
+  "high_review": [
+    "director"
+  ],
+  "custom1": [
+    "leader"
+  ],
+  "applicant": [
+    "user1"
+  ],
+  "checker": [
+    "user2"
+  ],
+  "reviewer": [
+    "user3"
+  ],
+  "deptLeader": [
+    "user4"
+  ],
+  "userA": [
+    "userA"
+  ],
+  "userB": [
+    "userB"
+  ],
+  "operator": [
+    "user1"
+  ],
+  "audit_team": [
+    "userA",
+    "userB",
+    "userC"
+  ],
+  "big_project_reviewers": [
+    "leader",
+    "manager",
+    "director"
+  ],
+  "hr": [
+    "userC",
+    "userD"
+  ],
+  "dept_lead": [
+    "manager"
+  ],
+  "engineer": [
+    "userA",
+    "userB",
+    "userC"
   ]
 }

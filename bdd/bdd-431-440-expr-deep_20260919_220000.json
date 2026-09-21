@@ -1,0 +1,65 @@
+{
+  "batch": "expr-deep",
+  "results": [
+    {
+      "bdd_id": "BDD#431",
+      "name": "True 比较",
+      "status": "PASS",
+      "detail": "True -> a"
+    },
+    {
+      "bdd_id": "BDD#432",
+      "name": "10^18 比较",
+      "status": "PASS",
+      "detail": "10^18 -> a"
+    },
+    {
+      "bdd_id": "BDD#433",
+      "name": "float 0.6",
+      "status": "PASS",
+      "detail": "0.6 -> a"
+    },
+    {
+      "bdd_id": "BDD#434",
+      "name": "\"0\" vs 0",
+      "status": "INFO",
+      "detail": "got ['b']"
+    },
+    {
+      "bdd_id": "BDD#435",
+      "name": "中文 unicode",
+      "status": "PASS",
+      "detail": "中文 -> a"
+    },
+    {
+      "bdd_id": "BDD#436",
+      "name": "emoji 比较",
+      "status": "PASS",
+      "detail": "🔥 -> a"
+    },
+    {
+      "bdd_id": "BDD#437",
+      "name": "单引号",
+      "status": "PASS",
+      "detail": "hello -> a"
+    },
+    {
+      "bdd_id": "BDD#438",
+      "name": "expr 注释",
+      "status": "PASS",
+      "detail": "1 -> a"
+    },
+    {
+      "bdd_id": "BDD#439",
+      "name": "多语句 禁",
+      "status": "PASS",
+      "detail": "b (兜底)"
+    },
+    {
+      "bdd_id": "BDD#440",
+      "name": "列表字面量",
+      "status": "INFO",
+      "detail": "got ['b']"
+    }
+  ]
+}

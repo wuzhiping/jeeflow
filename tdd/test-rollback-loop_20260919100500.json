@@ -1,0 +1,18 @@
+{
+  "name": "rollback-loop",
+  "displayName": "测试-ROLLBACK循环",
+  "type": "approval",
+  "nodes": [
+    {"id":"start1","type":"snaker:start","x":100,"y":200,"properties":{"width":40,"height":40}},
+    {"id":"apply","type":"snaker:task","x":200,"y":200,"properties":{"assignee":"user1","form":"apply-form","taskType":0,"performType":0},"text":{"value":""}},
+    {"id":"task1","type":"snaker:task","x":350,"y":200,"properties":{"assignee":"leader","form":"","taskType":0,"performType":0},"text":{"value":""}},
+    {"id":"task2","type":"snaker:task","x":500,"y":200,"properties":{"assignee":"manager","form":"","taskType":0,"performType":0},"text":{"value":""}},
+    {"id":"end1","type":"snaker:end","x":650,"y":200,"properties":{"width":40,"height":40}}
+  ],
+  "edges":[
+    {"id":"e1","sourceNodeId":"start1","targetNodeId":"apply","properties":{},"text":{"value":""}},
+    {"id":"e2","sourceNodeId":"apply","targetNodeId":"task1","properties":{},"text":{"value":""}},
+    {"id":"e3","sourceNodeId":"task1","targetNodeId":"task2","properties":{},"text":{"value":""}},
+    {"id":"e4","sourceNodeId":"task2","targetNodeId":"end1","properties":{},"text":{"value":""}}
+  ]
+}

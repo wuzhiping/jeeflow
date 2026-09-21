@@ -1,4 +1,4 @@
-"""jeeflow FastAPI demo（PostgreSQL 版）—— boot2 接口规范对齐。
+"""jeeflow FastAPI demo (PostgreSQL backend) —— boot2 接口规范对齐
 
 PG 模式与内存版（main.py）路由契约完全一致；差异：
 - pool / repo / ext_repo / facade / 流程定义种子 / 业务数据种子 全部在 FastAPI lifespan 异步上下文创建；
@@ -7,43 +7,68 @@ PG 模式与内存版（main.py）路由契约完全一致；差异：
 
 注意（2026-09-17 §36）：
 - 本入口使用 PG 后端（JdbcRepository），拦截器未注册严格抛错
-- 与 main.py（内存后端）行为有差异：main.py 拦截器未注册静默通过
-- 拦截器相关测试建议用本入口（契约级行为）
+- 与 main.py（内存后端）行为差异：main.py 拦截器未注册静默通过
 - 详见 docs/known-issues.md §36 / docs/flow.md §2
+
+2026-09-09 重构：公共代码上移到 main_common.py
 """
 import asyncio
 import json
-import mimetypes
 import os
 import sys
 from contextlib import asynccontextmanager
-from typing import Optional
 
-mimetypes.add_type("application/javascript", ".cjs")
+mimetypes_added = False
+try:
+    import mimetypes
+    mimetypes.add_type("application/javascript", ".cjs")
+except Exception:
+    pass
 
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from datetime import datetime
+# 优先 vendor（项目内嵌）— 必须在 main_common import 之前调，否则 main_common 内部
+# 的 `from jeeflow import ...` 会先命中 .venv site-packages 而非 vendor
+def _setup_vendor_path():
+    _VENDOR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "vendor")
+    if _VENDOR not in sys.path:
+        sys.path.insert(0, _VENDOR)
+    return _VENDOR
+_setup_vendor_path()
+
+# 优先 vendor
+from main_common import (
+    setup_vendor_path, SnowflakeIDGen, SimpleExprEvaluator, RatioCapableEngine,
+    build_ic_registry, build_custom_handlers, build_decision_handlers,
+    apply_extensions, install_resolve_actors_wrapper, register_routes,
+    install_metrics_endpoint, install_trace_endpoint,
+    install_trace_persistence, install_trace_purge,  # §6.4.1 FIX-T99 (2026-09-20)
+)
+
+setup_vendor_path()
 
 import asyncpg
-from jeeflow import EngineImpl, EventType, ProcessEvent, JeeflowFacade, \
-    EngineExtensions, HandlerRegistry, register_builtin_assignments, JdbcRepository
-from jeeflow.extensions import FlowInterceptor
-from jeeflow.engine import _find_node, _follow_edges, _sync_task_to_aggregate
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from jeeflow import JeeflowFacade, HandlerRegistry, register_builtin_assignments, JdbcRepository
 from jeeflow.repository.postgres import PostgresAdapter
 from jeeflow.repository.ext import JdbcProcessExtRepository
-from jeeflow.model import InstanceState, TaskState, ProcessDefine, ProcessInstance, ProcessTask, UserInfo, parse_flow_model
-from jeeflow.spi import IDGenerator, ExpressionEvaluator, OrgUserProvider
 
 import flows_resolver
-sys.path.insert(0, os.path.dirname(__file__))  # 确保 spi.py / seed_business.py 仓根模块可被 import
-from seed_business import seed_business
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-# ─── Setup ───────────────────────────────────────────────────────────────────────
-
-# 流程定义：只读本仓 flows/（flows_resolver 已在维护者机器上把 Java 源精确镜像进来）
 FLOWS_DIR = flows_resolver.dir()
+
+PG_DSN = os.environ.get(
+    "JEEFLOW_PG_DSN",
+    "postgresql://uid:pwd@127.0.0.1:5432/jeeflow",
+)
+
+# ─── 启动行为开关（与 main.py 对齐）────────────────────────────────────────────
+# FLOWS: 是否在 lifespan 启动时加载 flows/*.json
+# SEEDS: 是否在 lifespan 启动时跑业务种子
+# 都从同名环境变量读；任意一个为 false 则跳过。
+FLOWS = os.environ.get("FLOWS", "true").lower() in ("1", "true", "yes", "on")
+SEEDS = os.environ.get("SEEDS", "false").lower() in ("1", "true", "yes", "on")
 
 # 复位时统一清空的 PG 表清单（按 FK 依赖反序）
 PG_TABLES = [
@@ -57,139 +82,8 @@ PG_TABLES = [
     "wf_process_design",
 ]
 
-PG_DSN = os.environ.get(
-    "JEEFLOW_PG_DSN",
-    "postgresql://uid:pwd@127.0.0.1:5432/jeeflow",
-)
 
-
-class SnowflakeIDGen(IDGenerator):
-    """简化雪花 ID"""
-    def __init__(self):
-        self._epoch = 1700000000000
-        self._seq = 0
-
-    def next_id(self) -> int:
-        import time
-        ts = int(time.time() * 1000) - self._epoch
-        self._seq = (self._seq + 1) & 0xFFF
-        return (ts << 10) | self._seq
-
-
-class SimpleExprEvaluator(ExpressionEvaluator):
-    """简易 SpEL 表达式：支持 amount >/>=/</<=/== number 和 #var==str；OGNL 风格 #varname 同支持
-
-    v1.5.1-PG fix (FIX-T1 2026-09-17)：与 main.py 同步
-    expr 是数字但 value 是字符串时，原 `actual = float(actual)` 抛 ValueError
-    导致整个 startAndExecute 失败（code=99999999）。
-    修复：捕获 ValueError/TypeError 返回 False，与 regex 不匹配、value 为 None 行为一致
-    （走兜底首边）。
-
-    v1.6.0-PG fix (FIX-T3 2026-09-17)：与 main.py 同步
-    支持字符串相等比较 `#var==string` / `#var!=string`。
-    原版只支持数字，字符串比较走兜底。
-    """
-    async def eval(self, expr: str, vars: dict):
-        import re
-        # 数字比较: #var op number
-        m_num = re.match(r"^\s*(#?\w+)\s*(>=|<=|!=|==|>|<)\s*(\d+(?:\.\d+)?)\s*$", expr)
-        # 字符串比较: #var == "string" 或 #var == string
-        m_str = re.match(r'^\s*(#?\w+)\s*(==|!=)\s*"?([A-Za-z0-9_]+)"?\s*$', expr)
-        if m_num:
-            key, op, val = m_num.group(1).lstrip("#"), m_num.group(2), float(m_num.group(3))
-            actual = vars.get(key)
-            if actual is None:
-                return False
-            try:
-                actual = float(actual)
-            except (ValueError, TypeError):
-                return False
-            if op == ">": return actual > val
-            if op == ">=": return actual >= val
-            if op == "<": return actual < val
-            if op == "<=": return actual <= val
-            if op == "==": return actual == val
-            if op == "!=": return actual != val
-            return False
-        if m_str:
-            key, op, val = m_str.group(1).lstrip("#"), m_str.group(2), str(m_str.group(3))
-            actual = vars.get(key)
-            if actual is None:
-                return False
-            if op == "==": return str(actual) == val
-            if op == "!=": return str(actual) != val
-            return False
-        return False
-
-
-class RatioCapableEngine(EngineImpl):
-    """比例会签扩展引擎：支持通用 countersignCompletionCondition（OGNL 表达式）。
-
-    引擎默认 PARALLEL 仅识别 ONE_VOTE_VETO（jeeflow/engine.py:101）；其他 OGNL 条件
-    （如 "#nrOfCompletedInstances==2"）会被忽略。此子类在 execute_process_task 中：
-    1. 先调 EngineImpl.execute_process_task 原版完成当前 task（内部做 _prepare_execute_task + 推进）
-    2. 重新查实例，统计 cur_node 的 nrOfCompletedInstances/nrOfInstances
-    3. 若 cs_cond 非 ONE_VOTE_VETO + 求值通过 → 废弃剩余 DOING + 调用 _execute_node 推进下游
-
-    注意：必须先 super 再判断比例条件，因为 super 内部已经把当前 task 从 DOING 推到 DONE，
-    重复 _prepare_execute_task 会导致 "task not doing" 错误。
-
-    cs_cond 同时支持 properties.countersignCompletionCondition（引擎实际读）和
-    properties.field.countersignCompletionCondition（设计器输出），向后兼容。
-    """
-
-    async def execute_process_task(self, task_id: int, operator: str, args: dict = None):
-        result = await EngineImpl.execute_process_task(self, task_id, operator, args)
-        try:
-            from jeeflow.model import parse_flow_model as _parse
-            import json as _json
-            def_ = await self.repo.find_define_by_id(result.defineId)
-            if not def_: return result
-            flow = _parse(_json.loads(def_.content))
-            cur_task = await self.repo.find_task_by_id(task_id)
-            if not cur_task: return result
-            cur_node = _find_node(flow, cur_task.taskName)
-            if not cur_node: return result
-            ct = str(cur_node.properties.get("countersignType", "") or "").strip()
-            cs_cond = ""
-            p = cur_node.properties or {}
-            cs_cond = str(p.get("countersignCompletionCondition", "") or "").strip()
-            if not cs_cond:
-                field = p.get("field", {}) or {}
-                cs_cond = str(field.get("countersignCompletionCondition", "") or "").strip()
-            is_ratio = ct in ("PARALLEL", "RATIO") and cs_cond and cs_cond.upper() != "ONE_VOTE_VETO"
-            if not is_ratio:
-                return result
-            inst_after = result
-            node_tasks = [t for t in (inst_after.tasks or []) if t.taskName == cur_node.id]
-            completed = sum(1 for t in node_tasks if t.taskState == 20)
-            total = len(node_tasks)
-            eval_vars = dict(result.variables or {})
-            eval_vars["nrOfCompletedInstances"] = completed
-            eval_vars["nrOfInstances"] = total
-            try:
-                satisfied = bool(await self.expr_eval.eval(cs_cond, eval_vars))
-            except Exception:
-                satisfied = False
-            if satisfied:
-                now = datetime.now()
-                still_doing = [t for t in node_tasks if t.taskState == 10]
-                if still_doing:
-                    for t in still_doing:
-                        t.abandon(now)
-                        await self.repo.update_task(t)
-                        _sync_task_to_aggregate(inst_after, t)
-                    for node in _follow_edges(flow, cur_node.id):
-                        await self._execute_node(flow, inst_after, node, operator, eval_vars)
-                    return await self.repo.find_instance_by_id(inst_after.id)
-        except Exception as ex:
-            print(f"[RatioCapableEngine] ratio check failed: {ex!r}", file=sys.stderr)
-        return result
-
-
-from spi import SimpleUserProvider, SpiOrgUserProvider, spi_user_search, SPI_USERS, SPI_ROLES, SPI_DICTS
-
-
+# ─── async helpers ─────────────────────────────────────────────────────────────
 async def _truncate_all(adapter: PostgresAdapter) -> None:
     """清空 PG 演示表（identity 复位 + 级联）。单事务，保证重置原子性。"""
     conn = await adapter.acquire()
@@ -205,611 +99,146 @@ async def _truncate_all(adapter: PostgresAdapter) -> None:
         await adapter.release(conn)
 
 
-async def load_seed(repo: JdbcRepository) -> int:
-    """预加载流程定义（种子）——/api/reset 重置后复用。返回写入条数。"""
+async def load_seed_pg(repo: JdbcRepository) -> int:
+    """PG 异步版 load_seed：写入 wf_process_define 表。返回写入条数。"""
+    from main_common import build_seed_defines
     written = 0
-    for fname in sorted(os.listdir(FLOWS_DIR)):
-        if not fname.endswith(".json"):
-            continue
-        with open(os.path.join(FLOWS_DIR, fname), "r", encoding="utf-8") as f:
-            raw = json.loads(f.read())
-        d = ProcessDefine(
-            name=raw.get("name", fname),
-            displayName=raw.get("displayName", fname),
-            type=raw.get("type", ""),
-            state=1,
-            content=json.dumps(raw, ensure_ascii=False),
-        )
-        await repo.save_define(d)
+    for _, define in build_seed_defines(FLOWS_DIR):
+        await repo.save_define(define)
         written += 1
     return written
 
 
-# ─── 启动期补丁 ─────────────────────────────────────────────────────────────────
-# seed_business.py / spi.py / docs/pg_schema.sql 不可改动；本模块在 lifespan 内对
-# facade.flow 与 repo 的写方法做轻量 wrap，把入参规整成 PG 能接受的形态，再透传给原
-# 实现。三个 known issue：
-#   A. processSurrogate/save|update 调用方不一定传 enabled；facade._apply_surrogate_fields
-#      兜底写入 int 1；PG wf_process_surrogate.enabled 列是 BOOLEAN，asyncpg 拒收 → 在
-#      facade.flow 入口强转 args["enabled"]=bool(...)（无值则默认 True），并在 ext_repo 的
-#      save/update_surrogate 处再做一次 s.enabled 兜底（防御深度，覆盖 _apply_surrogate_fields
-#      在 _orig_flow 内部补默认值的情况）。
-#   B. seed_business.py 用 1..15 的 ordinal（= load_seed 按文件名字典序写入的次序）
-#      指代 processDefineId；PG 真实 id 是雪花 ID（远大于 10^13），按 ordinal 索引
-#      page_defines DESC 列表并翻序，写成真实的雪花 id。
-#   C. seed_business.py 触发的 startAndExecute 一路执行到 repo.save_task；
-#      ProcessTask.taskType / performType 默认 int 0，但 PG wf_process_task.task_type /
-#      perform_type 列是 VARCHAR(64)，asyncpg 会报 `$5/$6: 0 (expected str, got int)`。
-#      在 save_task 写入前强转 str 即可（base.py / model.py 均不可改）。
-#   D. processDesign/save|update|updateDefine|deploy 一律把 ProcessDesign.isDeployed
-#      写成 int 0/1（facade:382/400/462/501），PG wf_process_design.is_deployed 列是
-#      BOOLEAN，asyncpg 拒收 → 在 ext_repo.save_design / update_design 落 SQL 前把
-#      d.isDeployed 强转 bool（model.ProcessDesign.isDeployed 声明为 int: 0，不可改）。
-_DEFINE_ORDINAL_CACHE: dict[int, int] = {}
+async def seed_business_pg(facade):
+    from seed_business import seed_business
+    await seed_business(facade)
 
 
-async def _populate_define_ordinal_cache(repo: JdbcRepository) -> int:
-    """拉全表 page_defines，按 DESC 顺序翻序后映射 ordinal → 雪花 id。
-
-    page_defines 默认 ORDER BY id DESC；雪花 id 单调递增（ts 单调），所以 DESC 顺序
-    = 倒序插入序 = 倒序字典序；reversed 后第 0 行 = 字典序第 1 个 = seed 里的 ordinal 1。
-    """
-    _DEFINE_ORDINAL_CACHE.clear()
-    rows, _ = await repo.page_defines(page_num=1, page_size=999)
-    for ord_, row in enumerate(reversed(rows), start=1):
-        _DEFINE_ORDINAL_CACHE[ord_] = row.id
-    return len(_DEFINE_ORDINAL_CACHE)
-
-
-def _wrap_facade_flow(facade: JeeflowFacade, repo: JdbcRepository) -> None:
-    """monkey-patch facade.flow：按 action 在分发前规整入参，再透传给原 flow。"""
-    _orig_flow = facade.flow
-
-    async def _safe_flow(action, args=None):
-        args = dict(args or {})
-        # Issue A：委托 enabled → bool（PG BOOLEAN 列不接受 int）。即使调用方未传 enabled，
-        # facade._apply_surrogate_fields 会兜底写 int 1；此处先按 True 占位确保走 default 时
-        # 也是 bool。真正下 SQL 时 ext_repo.save/update_surrogate 的二次兜底也会再校一次。
-        if action in ("processSurrogate/save", "processSurrogate/update"):
-            args["enabled"] = bool(args.get("enabled", 1))
-        # Issue B：startAndExecute ordinal → 真实雪花 id
-        if action in ("processDefine/startAndExecute", "processInstance/startAndExecute"):
-            v = args.get("processDefineId")
-            if isinstance(v, int) and 0 < v < 10**13:
-                real = _DEFINE_ORDINAL_CACHE.get(v)
-                if real is None:
-                    # 缓存未命中（reset 后 ordinal 表变化）→ 实时刷新一次
-                    await _populate_define_ordinal_cache(repo)
-                    real = _DEFINE_ORDINAL_CACHE.get(v)
-                if real is not None:
-                    args["processDefineId"] = real
-            # Issue D：业务 variables 嵌套解包——startAndExecute 把 args 整体塞到
-            # inst.variables（jeeflow engine.start_process_instance_by_id:69）。
-            # 若调用方传 {variables: {amount: 5000}}，amount 会被嵌套到
-            # inst.variables.variables.amount，decision expr vars_.get("amount")
-            # 永远拿不到 → expr 永远 False → fallback 到 edges[0]。
-            # 此处把 variables 子字典就地展开到 args 顶层（key 不冲突时），
-            # 让 inst.variables = {amount: 5000, ...} 直接可被 expr 访问。
-            nested = args.get("variables")
-            if isinstance(nested, dict):
-                for k, val in nested.items():
-                    if k not in args:
-                        args[k] = val
-        return await _orig_flow(action, args)
-
-    facade.flow = _safe_flow
-
-
-def _coerce_task_str_fields(task: ProcessTask) -> None:
-    """Issue C 步骤 1：把 ProcessTask 中该是 VARCHAR 的列从 int 兜底成 str。
-
-    ProcessTask.taskType / performType 默认值是 int 0；PG wf_process_task.task_type /
-    perform_type 列是 VARCHAR(64)，asyncpg 严格类型校验会拒收。seed_business.py 启动期
-    触发的 startAndExecute 必然走这条路径。
-    """
-    if getattr(task, "taskType", None) is not None and not isinstance(task.taskType, str):
-        task.taskType = str(task.taskType)
-    if getattr(task, "performType", None) is not None and not isinstance(task.performType, str):
-        task.performType = str(task.performType)
-
-
-def _coerce_instance_str_fields(inst: ProcessInstance) -> None:
-    """Issue C 步骤 1 扩展：把 ProcessInstance 中 VARCHAR 列做同样兜底。
-
-    dataclass 默认值已是 str（parentNodeName="" 等），但 seed_business.py 路径中如
-    果给这些字段赋了 int，asyncpg 同样会拒收。属于 Issue C 同源的轻量兜底。
-    """
-    for fld in ("parentNodeName", "businessNo", "createUser", "updateUser"):
-        v = getattr(inst, fld, None)
-        if v is not None and not isinstance(v, str):
-            setattr(inst, fld, str(v))
-
-
-def _coerce_surrogate_enabled(s) -> None:
-    """Issue A 防御深度：ext_repo 写入前把 ProcessSurrogate.enabled 兜底成 bool。
-
-    facade._apply_surrogate_fields 在 _orig_flow 内部把 args["enabled"] 缺省补成 int 1
-    然后再写到 s.enabled；此处 ext_repo.save/update_surrogate 落 SQL 前再校一次，确保
-    PG BOOLEAN 列永远收到 bool 而非 int（避免双 wrap 之间的窗口期仍出错）。
-    """
-    v = getattr(s, "enabled", None)
-    if v is not None and not isinstance(v, bool):
-        s.enabled = bool(v)
-
-
-def _coerce_design_bool_fields(d) -> None:
-    """Issue D 防御深度：ext_repo 写入前把 ProcessDesign.isDeployed 兜底成 bool。
-
-    facade._processDesign_save/update/updateDefine/deploy 内部统一把 design.isDeployed
-    写成 int 0/1（facade.py:382/400/462/501），ProcessDesign dataclass 声明 isDeployed: int
-    = 0 也不可变；此处 ext_repo.save_design/update_design 落 SQL 前再校一次，确保 PG
-    wf_process_design.is_deployed（BOOLEAN）永远收到 bool 而非 int。
-    """
-    v = getattr(d, "isDeployed", None)
-    if v is not None and not isinstance(v, bool):
-        d.isDeployed = bool(v)
-
-
-def _wrap_repo_methods(repo: JdbcRepository, ext_repo: JdbcProcessExtRepository) -> None:
-    """Issue C 步骤 2 + Issue A/D 防御深度：monkey-patch 关键写方法。
-
-    - repo.save_task / repo.save_instance：调用前做 VARCHAR 兜底（_coerce_*_str_fields）。
-    - ext_repo.save_surrogate / ext_repo.update_surrogate：调用前把 s.enabled 强转 bool。
-    - ext_repo.save_design / ext_repo.update_design：调用前把 d.isDeployed 强转 bool。
-    全部原地修改 dataclass 字段（mutable），不会破坏其他已绑定同名对象的引用。
-    """
-    _orig_save_task = repo.save_task
-    _orig_save_instance = repo.save_instance
-
-    async def _safe_save_task(task):
-        _coerce_task_str_fields(task)
-        return await _orig_save_task(task)
-
-    async def _safe_save_instance(inst):
-        _coerce_instance_str_fields(inst)
-        return await _orig_save_instance(inst)
-
-    repo.save_task = _safe_save_task
-    repo.save_instance = _safe_save_instance
-
-    _orig_save_surrogate = ext_repo.save_surrogate
-    _orig_update_surrogate = ext_repo.update_surrogate
-
-    async def _safe_save_surrogate(s):
-        _coerce_surrogate_enabled(s)
-        return await _orig_save_surrogate(s)
-
-    async def _safe_update_surrogate(s):
-        _coerce_surrogate_enabled(s)
-        return await _orig_update_surrogate(s)
-
-    ext_repo.save_surrogate = _safe_save_surrogate
-    ext_repo.update_surrogate = _safe_update_surrogate
-
-    _orig_save_design = ext_repo.save_design
-    _orig_update_design = ext_repo.update_design
-
-    async def _safe_save_design(d):
-        _coerce_design_bool_fields(d)
-        return await _orig_save_design(d)
-
-    async def _safe_update_design(d):
-        _coerce_design_bool_fields(d)
-        return await _orig_update_design(d)
-
-    ext_repo.save_design = _safe_save_design
-    ext_repo.update_design = _safe_update_design
-
-    # Issue D 读路径：page_designs / page_surrogates 通过 _build_ext_where 构造
-    # "AND t.is_deployed = ?" / "AND t.enabled = ?" 时，前端传来的 0/1 是 int，
-    # BOOLEAN 列拒收（同 Issue A 写入路径同根因）。在条件构建层把布尔列的值强转 bool。
-    # 注意：原 _build_ext_where 对不在白名单的 condition 跳过但不计入 args，
-    # 因此要按"被接受"的子集对齐参数，避免把 LIKE 参数误转 bool。
-    _orig_build_ext_where = ext_repo._build_ext_where
-    _BOOL_COL_SUFFIXES = ("_deployed",)  # t.enabled 不是后缀匹配，下面单独处理
-    _BOOL_COL_EXACT = {"t.enabled"}
-
-    def _safe_build_ext_where(conditions, whitelist):
-        sql, args = _orig_build_ext_where(conditions, whitelist)
-        if not args:
-            return sql, args
-        accepted = [c for c in (conditions or []) if c.column in whitelist]
-        coerced = []
-        for c, v in zip(accepted, args):
-            col = getattr(c, "column", "")
-            is_bool_col = (col in _BOOL_COL_EXACT
-                           or any(col.endswith(suf) for suf in _BOOL_COL_SUFFIXES))
-            coerced.append(bool(v) if is_bool_col and not isinstance(v, bool) else v)
-        return sql, tuple(coerced)
-
-    ext_repo._build_ext_where = _safe_build_ext_where
-
-    # Issue E：stats_avg_completed_duration_seconds 里 SQL 是
-    # "AVG(ts.max_finish - i.create_time)"，PG 的 timestamp-timestamp 返回 INTERVAL，
-    # asyncpg 把 INTERVAL 解码为 datetime.timedelta。原代码 line 652 直接
-    # "return int(r[0])"，对 timedelta 抛 TypeError（int() 不接受 timedelta）。
-    # 原始实现位于 .venv/.../repository/base.py:637，不可改源；用 monkey-patch 覆盖。
-    import functools
-    _orig_stats_avg_dur = repo.stats_avg_completed_duration_seconds
-
-    @functools.wraps(_orig_stats_avg_dur)
-    async def _fixed_stats_avg_dur(start=None, end=None):
-        sql = ("SELECT AVG(ts.max_finish - i.create_time) FROM wf_process_instance i "
-               "INNER JOIN (SELECT process_instance_id, MAX(finish_time) AS max_finish "
-               "FROM wf_process_task WHERE task_state = 20 GROUP BY process_instance_id) ts "
-               "ON i.id = ts.process_instance_id WHERE i.state = 20")
-        args: list = []
-        if start:
-            sql += " AND i.create_time >= ?"; args.append(start)
-        if end:
-            sql += " AND i.create_time < ?"; args.append(end)
-        async with repo._conn() as conn:
-            r = await conn.fetchone(repo._sql(sql), tuple(args))
-        if not r or r[0] is None:
-            return 0
-        v = r[0]
-        if hasattr(v, "total_seconds"):
-            return int(v.total_seconds())
-        return int(v)
-
-    repo.stats_avg_completed_duration_seconds = _fixed_stats_avg_dur
-
-    # Issue F：stats_completed_task_aggregate SQL 里有 "perform_type = 1" 字面量，
-    # 但 wf_process_task.perform_type 在 PG 里是 VARCHAR(64)（对齐 jeeflow model
-    # ProcessTask.performType=IntEnum，PG schema 把枚举存为字符串，见
-    # docs/pg_schema.sql:42）。原 .venv/.../base.py:629 字面量 = 1 → PG 报
-    # "operator does not exist: character varying = integer"。把字面量改字符串。
-    _orig_stats_task_agg = repo.stats_completed_task_aggregate
-
-    @functools.wraps(_orig_stats_task_agg)
-    async def _fixed_stats_task_agg():
-        async with repo._conn() as conn:
-            r = await conn.fetchone(
-                repo._sql(
-                    "SELECT COUNT(*), "
-                    "SUM(CASE WHEN perform_type = '1' THEN 1 ELSE 0 END), "
-                    "SUM(CASE WHEN expire_time IS NOT NULL AND finish_time <= expire_time THEN 1 ELSE 0 END), "
-                    "SUM(CASE WHEN expire_time IS NOT NULL THEN 1 ELSE 0 END) "
-                    "FROM wf_process_task WHERE task_state = 20"
-                ), ())
-        if not r:
-            return 0, 0, 0, 0
-        return int(r[0] or 0), int(r[1] or 0), int(r[2] or 0), int(r[3] or 0)
-
-    repo.stats_completed_task_aggregate = _fixed_stats_task_agg
-
-
-# ─── 应用状态（lifespan 注入；路由闭包从这里取） ─────────────────────────────────
-
-state: dict = {
-    "pool": None,
-    "adapter": None,
-    "repo": None,
-    "ext_repo": None,
-    "facade": None,
-}
-
-
+# ─── lifespan ──────────────────────────────────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """启动：建连接池 + repo/ext_repo + facade + 流程定义种子 + 业务种子；
+    """启动：建连接池 + repo/ext_repo + facade + 流程定义种子；
     关闭：归还连接池。"""
-    pool = await asyncpg.create_pool(dsn=PG_DSN, min_size=1, max_size=10)
+    # BDD #1212 FIX-T90 (2026-09-20) §4.4.1：PG 端 connection pool 可配置
+    pg_min = int(os.environ.get("JEEFLOW_PG_POOL_MIN", "1"))
+    pg_max = int(os.environ.get("JEEFLOW_PG_POOL_MAX", "10"))
+    pool = await asyncpg.create_pool(dsn=PG_DSN, min_size=pg_min, max_size=pg_max)
     adapter = PostgresAdapter(pool)
     repo = JdbcRepository(adapter)
     ext_repo = JdbcProcessExtRepository(adapter)
 
     idgen = SnowflakeIDGen()
+    from spi import SimpleUserProvider, SpiOrgUserProvider
     user_prov = SimpleUserProvider()
     org_prov = SpiOrgUserProvider()
-    engine = RatioCapableEngine(repo, user_prov, idgen, SimpleExprEvaluator())
+    engine = RatioCapableEngine(repo, user_prov, idgen, SimpleExprEvaluator(), org_prov)
     _registry = HandlerRegistry()
     register_builtin_assignments(_registry, user_prov, org_prov)
+    apply_extensions(engine, _registry, build_ic_registry(), build_custom_handlers(), build_decision_handlers())
+    engine.set_ext_repo(ext_repo)
+    install_resolve_actors_wrapper(engine)
 
-    # 与 main.py 同步（BDD Task 24 2026-09-17）：注册 mock 拦截器，验证 _fire_post 调用链
-    class MockAuditInterceptor(FlowInterceptor):
-        """定义级拦截器：每次 pre/post_handle 写一条到 /tmp/jee-mock-audit.log"""
-        _audit_log = "/tmp/jee-mock-audit.log"
-        def __init__(self, name: str = "com.example.MockAuditInterceptor"):
-            self._name = name
-            try:
-                with open(self._audit_log, "a") as f:
-                    f.write(f"# init {self._name} pid={os.getpid()}\n")
-            except Exception:
-                pass
-        @property
-        def order(self) -> int:
-            return 0
-        async def pre_handle(self, node, instance) -> bool:
-            with open(self._audit_log, "a") as f:
-                f.write(f"PRE  {self._name} node={node.id} inst={instance.id}\n")
-            return True
-        async def post_handle(self, node, instance) -> None:
-            with open(self._audit_log, "a") as f:
-                f.write(f"POST {self._name} node={node.id} inst={instance.id} state={instance.state}\n")
+    facade = JeeflowFacade(engine, repo, ext_repo, user_search=None, org_prov=org_prov)
 
-    _ic_registry = {
-        "com.example.MockAuditInterceptor": MockAuditInterceptor(),
-    }
-    engine.set_extensions(EngineExtensions(registry=_registry, interceptor_registry=_ic_registry))
-    facade = JeeflowFacade(engine, repo, ext_repo, user_search=spi_user_search, org_prov=org_prov)
+    # BDD #128 FIX：注册 PG-mode meta_reader（v1.9.0+ 业务数据回显）
+    # PG asyncpg 与 JdbcTableReader (sqlite 风格) 接口不兼容，
+    # BDD #128 FIX + §6.1.2 FIX-T95 (2026-09-20)：PG-mode async meta_reader
+    # 即使没 meta_defs 也注册 AsyncMetaTableReader (走 fallback 返回原始 row)
+    from jeeflow.meta import AsyncMetaTableReader, JsonMetaProvider, AsyncJdbcTableReader
+    meta_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "meta_defs")
+    provider = JsonMetaProvider(meta_dir) if os.path.isdir(meta_dir) else JsonMetaProvider(None)
+    reader = AsyncJdbcTableReader(pool)
+    facade.set_meta_reader(AsyncMetaTableReader(reader, provider))
 
-    state["pool"] = pool
-    state["adapter"] = adapter
-    state["repo"] = repo
-    state["ext_repo"] = ext_repo
-    state["facade"] = facade
+    if FLOWS:
+        await load_seed_pg(repo)
+    if SEEDS:
+        await seed_business_pg(facade)
 
-    # Issue C：先 wrap repo 写方法（save_task / save_instance 类型兜底），
-    # 再 wrap facade.flow（入参规整）；顺序无所谓，互不依赖。
-    _wrap_repo_methods(repo, ext_repo)
-    _wrap_facade_flow(facade, repo)
+    app.state.pool = pool
+    app.state.adapter = adapter
+    app.state.repo = repo
+    app.state.ext_repo = ext_repo
+    app.state.engine = engine
+    app.state.facade = facade
 
-    # v1.5.2-PG fix (FIX-T2 2026-09-17)：与 main.py 同步
-    # handler 解析失败时记 warning 日志（stderr + /tmp/jee-fix.log）
-    # 原 engine._resolve_actors handler 解析不到返回 [] 静默失败，TDD 难以区分
-    # 错误 2 (FQCN 拼错 §25) 与 错误 3 (节点 id 不在 SPI) 都导致 activeTaskList=[]
-    _FIX_LOG = "/tmp/jee-fix.log"
-    def _fix_log(msg: str):
-        line = f"{msg}"
-        print(line, file=sys.stderr, flush=True)
-        try:
-            with open(_FIX_LOG, "a") as f:
-                f.write(line + "\n")
-        except Exception:
-            pass
-    _orig_resolve_actors = engine._resolve_actors
-    async def _logged_resolve_actors(node, inst, operator, vars_):
-        handler_name = node.properties.get("assignmentHandler", "")
-        if handler_name and engine.ext and engine.ext.registry:
-            h = engine.ext.registry.resolve_assignment(handler_name)
-            if not h:
-                _fix_log(f"[FIX-T2 WARN] handler not registered: FQCN='{handler_name}' node_id='{node.id}' (process={inst.defineId})")
-                return []
-        actors = await _orig_resolve_actors(node, inst, operator, vars_)
-        if handler_name and not actors:
-            _fix_log(f"[FIX-T2 WARN] handler '{handler_name}' returned empty actors for node_id='{node.id}' (process={inst.defineId}); check SPI role_code")
-        return actors
-    engine._resolve_actors = _logged_resolve_actors
-
+    # §7.3.3 FIX-T109 (2026-09-20) 断点续跑 - 启动时扫描 DOING 实例
     try:
-        pass
-        # n = await load_seed(repo)
-        # print(f"[main_pg] loaded {n} process definitions from {FLOWS_DIR}")
-        # await _populate_define_ordinal_cache(repo)
-        # print(f"[main_pg] define ordinal cache: {len(_DEFINE_ORDINAL_CACHE)}")
-        # await seed_business(facade)
-        # print("[main_pg] seed_business done")
+        doing_res = await facade.flow("processInstance/doingList", {"limit": 100})
+        if doing_res.get("code") == 0:
+            data = doing_res["data"]
+            print(f"[§7.3.3 startup] DOING 实例数: {data['instance_count']}, DOING 任务数: {data['task_count']}, 节点分布: {data['by_node']}")
+            if data['instance_count'] > 0:
+                print(f"[§7.3.3 startup] WARNING: 检测到未完成任务 (上次 server 重启残留), 详情见 /wf/processInstance/doingList")
     except Exception as e:
-        print(f"[main_pg] startup seed failed: {e!r}（PG 可能未就绪或表未建）", file=sys.stderr)
+        print(f"[§7.3.3 startup] DOING 扫描失败: {e}")
 
+    # §6.4.1 FIX-T99 (2026-09-20): trace span 持久化 + 7 天 TTL 清理
+    # 先建 wf_trace_span 表 (无则建)
     try:
-        yield
-    finally:
-        await pool.close()
+        async with pool.acquire() as c:
+            await c.execute("""
+                CREATE TABLE IF NOT EXISTS wf_trace_span (
+                    id BIGSERIAL PRIMARY KEY,
+                    trace_id VARCHAR(64) NOT NULL,
+                    span_id VARCHAR(64) NOT NULL,
+                    parent_span_id VARCHAR(64),
+                    name VARCHAR(128) NOT NULL,
+                    start_time DOUBLE PRECISION NOT NULL,
+                    end_time DOUBLE PRECISION,
+                    duration_ms INTEGER,
+                    status VARCHAR(16) DEFAULT 'ok',
+                    error TEXT,
+                    attributes JSONB,
+                    events JSONB,
+                    create_time TIMESTAMP DEFAULT NOW()
+                )""")
+            await c.execute("CREATE INDEX IF NOT EXISTS idx_wf_trace_span_trace_id ON wf_trace_span(trace_id)")
+            await c.execute("CREATE INDEX IF NOT EXISTS idx_wf_trace_span_create_time ON wf_trace_span(create_time)")
+    except Exception:
+        pass
+    install_trace_persistence(pool)
+    install_trace_purge(pool, retention_days=7)
+
+    yield
+
+    await pool.close()
 
 
-app = FastAPI(root_path=("/jeeflow"), title="jeeflow api", version="0.1.0", lifespan=lifespan)
-# CORS——允许 jeeflow-ui (localhost:5173) 跨域直连
+# ─── FastAPI app ───────────────────────────────────────────────────────────────
+app = FastAPI(root_path=("/jeeflow"), title="jeeflow api (PG)", version="0.1.0",
+              lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-from fastapi.staticfiles import StaticFiles
-app.mount(
-    "/ui/",
-    StaticFiles(
-        directory="ui/apps/demo/dist",
-        html=True,
-    ),
-    name="ui",
+
+async def _reset_pg():
+    """PG 端 reset：TRUNCATE + 按 FLOWS/SEEDS 重置种子。返回 {reloadedDefines: N}"""
+    await _truncate_all(app.state.adapter)
+    n = 0
+    if FLOWS:
+        n = await load_seed_pg(app.state.repo)
+    if SEEDS:
+        await seed_business_pg(app.state.facade)
+    return {"reloadedDefines": n}
+
+
+# ─── 注册路由 ──────────────────────────────────────────────────────────────────
+register_routes(
+    app,
+    get_facade=lambda: app.state.facade,
+    get_repo=lambda: app.state.repo,
+    get_pool=lambda: getattr(app.state, "pool", None),
+    reset_fn=_reset_pg,
 )
 
-
-# ─── Helpers（boot2 CommonResult：code=0 成功 / 99999999 失败，字段 code/msg/data）──
-
-def _ok(data=None):
-    return {"code": 0, "msg": "成功", "data": data}
-
-
-def _err(msg: str, code=99999999):
-    return JSONResponse({"code": code, "msg": msg}, status_code=200)
-
-
-def _page(rows, page_num=1, page_size=999):
-    return {"pageNum": page_num, "pageSize": page_size, "rows": rows, "recordCount": len(rows), "totalPage": 1}
-
-
-def _fmt_time(t):
-    return t.strftime("%Y-%m-%d %H:%M:%S") if t else None
-
-
-async def _inst_vo(inst: ProcessInstance, def_: ProcessDefine = None) -> dict:
-    """ProcessInstanceVO：Entity 字段 + displayName + jsonObject + activeTaskList"""
-    repo = state["repo"]
-    if def_ is None:
-        def_ = await repo.find_define_by_id(inst.defineId)
-    vo = {
-        "id": inst.id, "parentId": inst.parentId, "processDefineId": inst.defineId,
-        "state": inst.state, "parentNodeName": inst.parentNodeName,
-        "businessNo": inst.businessNo, "operator": inst.operator,
-        "expireTime": _fmt_time(inst.expireTime), "variable": json.dumps(inst.variables, ensure_ascii=False),
-        "createTime": _fmt_time(inst.createTime), "createUser": inst.createUser,
-        "updateTime": _fmt_time(inst.updateTime), "updateUser": inst.updateUser,
-    }
-    if def_:
-        vo["displayName"] = def_.displayName
-        vo["name"] = def_.name
-        vo["version"] = def_.version
-        if def_.content:
-            vo["jsonObject"] = json.loads(def_.content)
-    vo["activeTaskList"] = [_task_vo(t) for t in inst.tasks if t.taskState == TaskState.DOING]
-    return vo
-
-
-def _task_vo(t: ProcessTask, inst: ProcessInstance = None, def_: ProcessDefine = None) -> dict:
-    """ProcessTaskVO：Entity 字段 + 展示字段。注意 actorIds 在 JdbcRepository 水合时已填充（issues/110）。"""
-    vo = {
-        "id": t.id, "processInstanceId": t.processInstanceId,
-        "taskName": t.taskName, "displayName": t.displayName,
-        "taskType": t.taskType, "performType": t.performType,
-        "taskState": t.taskState, "operator": t.actorId,
-        "finishTime": _fmt_time(t.finishTime), "expireTime": _fmt_time(t.expireTime),
-        "formKey": t.formKey, "taskParentId": t.parentTaskId,
-        "variable": json.dumps(t.variables, ensure_ascii=False),
-        "createTime": _fmt_time(t.createTime), "createUser": t.createUser,
-        "updateTime": _fmt_time(t.updateTime), "updateUser": t.updateUser,
-    }
-    if inst and def_:
-        vo["processDefineName"] = def_.name
-        vo["processDefineDisplayName"] = def_.displayName
-        vo["instanceCreateTime"] = _fmt_time(inst.createTime)
-    vo["taskActorIdList"] = list(t.actorIds)
-    return vo
-
-
-async def _load_graph(define_id) -> Optional[dict]:
-    repo = state["repo"]
-    d = await repo.find_define_by_id(define_id)
-    return json.loads(d.content) if d and d.content else None
-
-
-# boot2 submitType 枚举
-APPLY, AGREE, REJECT, ROLLBACK, JUMP, RE_APPLY = 0, 1, 2, 3, 4, 5
-ROLLBACK_TO_OPERATOR, COUNTERSIGN_DISAGREE = 6, 20
-
-# Issue E (FIX-T4 2026-09-17): submitType=5 RE_APPLY 路由缺失
-# jeeflow facade.py L295-318 默认 else 分支把 5 当 AGREE 处理，
-# monkey-patch facade.flow：拦截 processTask/execute，把 submitType=5 替换为 6 (ROLLBACK_TO_OPERATOR)
-# 注：facade.flow 此时已是 _safe_flow（_wrap_facade_flow 包装），直接调用 facade.flow
-from jeeflow.model import SubmitType
-async def _reapply_flow_pg(action, args=None):
-    args = dict(args or {})
-    if action == "processTask/execute" and int(args.get("submitType") or 1) == int(SubmitType.RE_APPLY):
-        args["submitType"] = int(SubmitType.ROLLBACK_TO_OPERATOR)
-    return await facade.flow(action, args)
-facade.flow = _reapply_flow_pg
-
-# Issue F (FIX-T5 2026-09-17): processDesignHis/page action 未注册（facade 缺 _processDesignHis_*）
-# 与 main.py 同步：直接调 ext_repo.list_design_his() 累积读取，按 id 倒序。
-async def _processDesignHis_page_pg(args: dict) -> dict:
-    page_num = int(args.get("pageNum") or 1)
-    page_size = int(args.get("pageSize") or 10)
-    m_design_id = args.get("m_processDesignId") or args.get("m_designId")
-    design_id_filter = int(m_design_id) if m_design_id else None
-
-    rows_out = []
-    # JdbcProcessExtRepository 设计历史累积：扫所有 design_id 调 list_design_his
-    design_ids = list(ext_repo._designs.keys()) if hasattr(ext_repo, "_designs") else []
-    for did in design_ids:
-        if design_id_filter and did != design_id_filter:
-            continue
-        his_list = await ext_repo.list_design_his(did)
-        for h in his_list:
-            rows_out.append({
-                "id": h.id,
-                "processDesignId": h.processDesignId,
-                "content": h.content,
-                "createTime": h.createTime.isoformat() if h.createTime else None,
-                "createUser": h.createUser,
-            })
-    rows_out.sort(key=lambda r: -(r["id"] or 0))
-    total = len(rows_out)
-    start = (page_num - 1) * page_size
-    page_rows = rows_out[start:start + page_size]
-    return {
-        "pageNum": page_num, "pageSize": page_size,
-        "recordCount": total, "totalPage": (total + page_size - 1) // page_size,
-        "rows": page_rows,
-    }
-
-facade._processDesignHis_page = _processDesignHis_page_pg
-import jeeflow.facade as _jf2_pg
-if not hasattr(_jf2_pg.JeeflowFacade, "_processDesignHis_page"):
-    setattr(_jf2_pg.JeeflowFacade, "_processDesignHis_page", _processDesignHis_page_pg)
-
-# ─── 流程定义 ────────────────────────────────────────────────────────────────────
-
-
-@app.post("/wf/{action:path}")
-async def wf_flow(action: str, request: Request):
-    """单入口门面转发（v1.5.0）：/wf/{action}，action 多段（如 processDefine/page）"""
-    body = await request.json() if await request.body() else {}
-    return await state["facade"].flow(action, body)
-
-
-@app.post("/api/reset")
-async def api_reset():
-    """一键重置演示数据（issues/11）：清空 PG 表（identity 复位 + 级联）+ 重载流程定义种子 + 重跑业务种子。"""
-    adapter = state["adapter"]
-    repo = state["repo"]
-    facade = state["facade"]
-    await _truncate_all(adapter)
-    n = await load_seed(repo)
-    # await _populate_define_ordinal_cache(repo)
-    # await seed_business(facade)
-    return _ok({"reloadedDefines": n})
-
-
-@app.get("/healthz")
-async def healthz():
-    """健康检查（四端对齐）"""
-    pool_ok = state["pool"] is not None and not state["pool"]._closing
-    return {"status": "UP", "backend": "python", "pg": "ok" if pool_ok else "down"}
-
-
-@app.get("/api/stats")
-async def api_stats(userId: str = "user1"):
-    """统计：用户待办数（DOING 任务且用户为 actor）+ 我发起的实例数。
-
-    注：JdbcRepository.query_tasks_for_stats() 返回的 TaskStatsRow 不含任务 id，
-    无法按 actor 二次过滤；直接走 page_todo_tasks(actor_id=userId)，单查询拿 todo 行。
-    """
-    repo = state["repo"]
-    todo_rows, _ = await repo.page_todo_tasks(page_num=1, page_size=9999, actor_id=userId)
-    mine = await repo.query_instances_for_stats(state_in=None)
-    my_inst = sum(1 for i in mine if i.operator == userId)
-    return _ok({"todoCount": len(todo_rows), "myInstanceCount": my_inst})
-
-
-@app.post("/api/users")
-async def api_users(request: Request):
-    """演示用户列表（与四后端同一套 8 个具名用户）：body.keyword 可选模糊检索"""
-    body = await request.json() if await request.body() else {}
-    keyword = str(body.get("keyword") or "").strip().lower()
-    rows = []
-    for uid, info in SPI_USERS.items():
-        real_name = info["name"]
-        post_name = info["post"]
-        if keyword and keyword not in uid.lower() and keyword not in real_name.lower():
-            continue
-        rows.append({
-            "userId": uid, "realName": real_name,
-            "deptId": "D01", "deptName": "研发部",
-            "postId": "P01", "postName": post_name,
-        })
-    return _ok(rows)
-
-
-@app.post("/api/roles")
-async def api_roles(request: Request):
-    """演示角色列表（与四后端同一套 4 个角色）：body.keyword 可选模糊检索"""
-    body = await request.json() if await request.body() else {}
-    keyword = str(body.get("keyword") or "").strip().lower()
-    rows = []
-    for role_id, role_name in SPI_ROLES.items():
-        if keyword and keyword not in role_id.lower() and keyword not in role_name.lower():
-            continue
-        rows.append({"roleId": role_id, "roleName": role_name})
-    return _ok(rows)
-
-
-@app.post("/api/dicts")
-async def api_dicts(request: Request):
-    """演示字典全集（与四后端同一套 wf_* 字典）：返回 [{code, items:[{value,label}]}]，前端按 code 索引缓存"""
-    rows = [{"code": code, "items": list(items)} for code, items in SPI_DICTS.items()]
-    return _ok(rows)
+# BDD #1205 FIX-T83 §4.1.3：安装 Prometheus metrics 端点 (PG 端)
+install_metrics_endpoint(app)
+install_trace_endpoint(app)
 
 
 if __name__ == "__main__":
     import uvicorn
-    # 端口可覆盖（PORT 环境变量）：本机 8100 被残留进程占用时可 PORT=8101 起
-    uvicorn.run("main_pg:app", host="0.0.0.0", port=int(os.environ.get("PORT", "8101")), reload=True)
+    # main_pg.py 用 8102 端口（与 main.py 内存后端 8101 区分）
+    uvicorn.run("main_pg:app", host="0.0.0.0",
+                port=int(os.environ.get("PORT", "8102")),
+                reload=False, log_level="info")

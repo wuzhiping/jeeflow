@@ -1,0 +1,58 @@
+=== pg bdd/bdd-contract-parallel-sign_20260917113551.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789663668749000",
+  "inst_id": "91815596806599",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815596806599"
+    },
+    {
+      "step": "execute-manager",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userA",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userB",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userC",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "legal_review",
+        "countersign",
+        "countersign",
+        "countersign"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

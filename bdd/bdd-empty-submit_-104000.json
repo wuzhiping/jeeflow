@@ -1,0 +1,8 @@
+{
+  "name": "empty-submit",
+  "title": "测试-空submitType默认0",
+  "type": "approval",
+  "node_types": ["start","task","task","end"],
+  "features": ["空 submitType", "默认 APPLY=0"],
+  "errors": []
+}

@@ -1,0 +1,86 @@
+{
+  "fb_id": "FB-0004",
+  "title": "字段权限码文档与实际行为不符 (1=只读/2=编辑/3=隐藏, 但文档误写 2=隐藏)",
+  "created_at": "2026-09-18T09:00:00",
+  "channel": "tdd",
+  "customer": {
+    "id": "C-004",
+    "type": "L2",
+    "contact": "hermes (流程设计师, 自测)",
+    "scenario": "测试字段权限码语义时发现文档与实际行为不符"
+  },
+  "raw_text": "按 docs/flow.md §5.1 写 PERMISSION_f_xxx=2 期望隐藏字段, 实测字段仍可见可编辑. 反复测试确认 2=编辑, 3=隐藏. 文档原写'2=隐藏'是错误. 影响: 所有按文档设计字段权限的流程都可能错位 (字段未隐藏导致机密泄露).",
+  "attachments": [
+    "docs/flow.md §5.1 (修订前)",
+    "tdd/fix-formfield-bad_20260917122500.json",
+    "tdd/fix-formfield-good_20260917122500.json"
+  ],
+  "classification": {
+    "type": "doc",
+    "priority": "P0",
+    "owner": "doc",
+    "scope": "global",
+    "reproduce": "easy",
+    "classified_at": "2026-09-18T09:30:00",
+    "classified_by": "hermes",
+    "reasoning": [
+      "现象: 文档与实际行为不符, 可能导致机密字段未隐藏 → P0",
+      "原因: docs/flow.md §5.1 字段权限码说明错误 → doc",
+      "影响: 所有使用字段权限的流程 → global"
+    ]
+  },
+  "status": "closed",
+  "processing": [
+    {
+      "step": "03-process",
+      "subtype": "doc",
+      "actor": "hermes",
+      "started_at": "2026-09-18T10:00:00",
+      "ended_at": "2026-09-18T11:00:00",
+      "action": "FIX-DOC-1: 修订 docs/flow.md §5.1 + docs/AGENTS.md 约束 #16 + docs/known-issues.md §82, 明确 1=只读 / 2=编辑 / 3=隐藏. PERMISSION_* 必须用 PERMISSION_f_<name> 前缀.",
+      "result": "成功",
+      "fix_id": "FIX-DOC-1"
+    }
+  ],
+  "fix_ref": {
+    "fix_id": "FIX-DOC-1",
+    "bdd_ids": [],
+    "verify_rule": null,
+    "docs_sections": [
+      "docs/flow.md §5.1",
+      "docs/AGENTS.md §6 约束 #16",
+      "docs/known-issues.md §82"
+    ],
+    "files_changed": [
+      "docs/flow.md",
+      "docs/AGENTS.md",
+      "docs/known-issues.md §82"
+    ]
+  },
+  "verification": {
+    "internal": {
+      "method": "对比修订前后 + 跑验证用例",
+      "verified_at": "2026-09-18T12:00:00",
+      "result": "pass",
+      "evidence": "修订后 docs/flow.md §5.1 与实际行为一致. 验证 tdd/fix-formfield-good_20260917122500.json: PERMISSION_f_amount=3 → 字段隐藏 ✓; PERMISSION_tf_note=2 → 字段可编辑 ✓; PERMISSION_f_category=1 → 字段只读 ✓."
+    },
+    "customer": {
+      "contacted_at": "2026-09-18T12:30:00",
+      "channel": "internal (团队)",
+      "response": "confirmed",
+      "evidence": "团队成员均按新文档重新核对流程."
+    }
+  },
+  "notified": {
+    "at": "2026-09-18T13:00:00",
+    "channel": "internal (团队)",
+    "content_summary": "FB-0004 已修复: 字段权限码文档修正. 1=只读 / 2=编辑 / 3=隐藏. 所有流程请按新文档核对.",
+    "confirmed_received": true
+  },
+  "closed_at": "2026-09-18T13:00:00",
+  "lessons_learned": "文档与代码不一致是高危缺陷, 因为客户按文档设计的流程可能与实际行为冲突. 经验沉淀: (1) docs/AGENTS.md 加入'文档与代码一致性自检'流程; (2) 流程测试 Agent 必须在每次更新 docs/flow.md 后跑至少 1 个验证用例; (3) BDD 套件增加 'docs-and-behavior-consistency' 用例集 (季度回归). 防止: 类似错误应在 §X 中加跨文档引用, 让任何一处修改都触发其他位置核对.",
+  "cross_refs": {
+    "fix_doc": "docs/BUGS.md FIX-DOC-1",
+    "process_improvement": "建议在 SLA 检查加 'doc-vs-behavior' 用例"
+  }
+}

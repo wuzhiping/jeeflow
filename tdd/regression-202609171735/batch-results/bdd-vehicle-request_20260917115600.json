@@ -1,0 +1,57 @@
+=== memory bdd/bdd-vehicle-request_20260917115600.json ===
+{
+  "ok": true,
+  "pdid": "541",
+  "inst_id": "91815594078145",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815594078145"
+    },
+    {
+      "step": "execute-userB",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userC",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-manager",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "dispatch_assign",
+        "driver_assign",
+        "dept_approve",
+        "manager_confirm"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

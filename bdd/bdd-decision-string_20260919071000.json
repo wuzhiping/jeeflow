@@ -1,0 +1,8 @@
+{
+  "name": "decision-string",
+  "title": "测试 decision 字符串比较 f_type=='leave'",
+  "type": "approval",
+  "node_types": ["start","task","decision","task","task","task","end"],
+  "features": ["decision string compare", "3-分支", "default 边"],
+  "errors": []
+}

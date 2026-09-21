@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "find_user_by_role_dept": {
+      "T01:developer": ["dev01", "dev02"],
+      "T01:tester": ["dev03"],
+      "T02:architect": ["dev04"],
+      "T02:tech_lead": ["dev05"]
+    }
+  }
+}

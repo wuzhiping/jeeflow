@@ -1,0 +1,15 @@
+{
+  "name": "bdd-209-self-loop",
+  "displayName": "BDD #209 自环 (A→A)",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "loop", "type": "snaker:task", "x": 200, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "循环"}},
+    {"id": "end", "type": "snaker:end", "x": 350, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "loop", "properties": {}},
+    {"id": "e1", "sourceNodeId": "loop", "targetNodeId": "loop", "properties": {}},
+    {"id": "e2", "sourceNodeId": "loop", "targetNodeId": "end", "properties": {}}
+  ]
+}

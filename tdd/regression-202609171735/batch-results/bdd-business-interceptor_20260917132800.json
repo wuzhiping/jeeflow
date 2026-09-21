@@ -1,0 +1,36 @@
+=== memory bdd/bdd-business-interceptor_20260917132800.json ===
+{
+  "ok": true,
+  "pdid": "206",
+  "inst_id": "91815585305267",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815585305267"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "biz_review"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

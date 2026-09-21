@@ -1,0 +1,8 @@
+{
+  "name": "unicode-var",
+  "title": "测试-中文+emoji变量",
+  "type": "approval",
+  "node_types": ["start","task","end"],
+  "features": ["中文变量", "emoji 变量"],
+  "errors": []
+}

@@ -1,0 +1,57 @@
+=== memory bdd/bdd-serial-approval_20260917141500.json ===
+{
+  "ok": true,
+  "pdid": "495",
+  "inst_id": "91815592948635",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815592948635"
+    },
+    {
+      "step": "execute-manager",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-director",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-boss",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-user1",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "manager_review",
+        "director_review",
+        "boss_review",
+        "notify"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

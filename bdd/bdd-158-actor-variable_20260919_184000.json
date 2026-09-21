@@ -1,0 +1,18 @@
+{
+  "name": "bdd-158-actor-variable",
+  "displayName": "BDD #158 assignee = 变量 ($u_userId)",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "apply", "type": "snaker:task", "x": 130, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "申请"}},
+    {"id": "var_review", "type": "snaker:task", "x": 280, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "u_userId", "taskType": 0, "performType": 0}, "text": {"value": "发起人自审"}},
+    {"id": "boss", "type": "snaker:task", "x": 430, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "boss", "taskType": 0, "performType": 0}, "text": {"value": "总经理"}},
+    {"id": "end", "type": "snaker:end", "x": 580, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "var_review", "properties": {}},
+    {"id": "e2", "sourceNodeId": "var_review", "targetNodeId": "boss", "properties": {}},
+    {"id": "e3", "sourceNodeId": "boss", "targetNodeId": "end", "properties": {}}
+  ]
+}

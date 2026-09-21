@@ -1,0 +1,143 @@
+{
+  "batch": "edge-cases",
+  "results": [
+    {
+      "bdd_id": "BDD#551",
+      "name": "execute 不存在 task",
+      "status": "INFO",
+      "detail": "code=99999999"
+    },
+    {
+      "bdd_id": "BDD#553",
+      "name": "vars=None execute",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#555",
+      "name": "TODO list userA",
+      "status": "INFO",
+      "detail": "todo=0"
+    },
+    {
+      "bdd_id": "BDD#556",
+      "name": "TODO list ghost",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#557",
+      "name": "candidatePage",
+      "status": "INFO",
+      "detail": "code=99999999"
+    },
+    {
+      "bdd_id": "BDD#558",
+      "name": "jumpAbleTaskNameList",
+      "status": "INFO",
+      "detail": "code=99999999"
+    },
+    {
+      "bdd_id": "BDD#559",
+      "name": "bizData",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#560",
+      "name": "approvalRecord",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#561",
+      "name": "highLight",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#562",
+      "name": "非发起人 withdraw",
+      "status": "INFO",
+      "detail": "code=0, msg=成功"
+    },
+    {
+      "bdd_id": "BDD#563",
+      "name": "withdraw 不存在",
+      "status": "INFO",
+      "detail": "code=99999999"
+    },
+    {
+      "bdd_id": "BDD#564",
+      "name": "transfer 后 userB",
+      "status": "INFO",
+      "detail": "transfer=0, userB execute=99999999"
+    },
+    {
+      "bdd_id": "BDD#565",
+      "name": "comment",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#566",
+      "name": "extra",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#567",
+      "name": "surrogate",
+      "status": "INFO",
+      "detail": "surrogate save=0, userC todo=0, 含 inst: False"
+    },
+    {
+      "bdd_id": "BDD#568",
+      "name": "f_leader 变量",
+      "status": "INFO",
+      "detail": "actors=['userB']"
+    },
+    {
+      "bdd_id": "BDD#569",
+      "name": "业务环 d->apply",
+      "status": "INFO",
+      "detail": "deploy OK"
+    },
+    {
+      "bdd_id": "BDD#570",
+      "name": "极大数比较",
+      "status": "PASS",
+      "detail": "a"
+    },
+    {
+      "bdd_id": "BDD#571",
+      "name": "redeploy 失败",
+      "status": "INFO",
+      "detail": "code=99999999"
+    },
+    {
+      "bdd_id": "BDD#572",
+      "name": "stateIn 过滤",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#573",
+      "name": "design 大分页",
+      "status": "INFO",
+      "detail": "code=0"
+    },
+    {
+      "bdd_id": "BDD#574",
+      "name": "超大 pageNum",
+      "status": "INFO",
+      "detail": "code=0, rows=0"
+    },
+    {
+      "bdd_id": "BDD#575",
+      "name": "surrogate detail",
+      "status": "INFO",
+      "detail": "code=99999999"
+    }
+  ]
+}

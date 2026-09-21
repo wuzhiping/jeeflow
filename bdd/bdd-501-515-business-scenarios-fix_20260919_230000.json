@@ -1,0 +1,65 @@
+{
+  "batch": "business-fix",
+  "results": [
+    {
+      "bdd_id": "BDD#501",
+      "name": "业务 501",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#503",
+      "name": "业务 503",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#504",
+      "name": "业务 504",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#505",
+      "name": "业务 505",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#509",
+      "name": "业务 509",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#510",
+      "name": "业务 510",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#512",
+      "name": "业务 512",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#513",
+      "name": "业务 513",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#514",
+      "name": "业务 514",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#515",
+      "name": "业务 515",
+      "status": "PASS",
+      "detail": "state=20"
+    }
+  ]
+}

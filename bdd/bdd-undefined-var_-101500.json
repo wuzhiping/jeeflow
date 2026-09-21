@@ -1,0 +1,8 @@
+{
+  "name": "undefined-var",
+  "title": "测试-决策expr引用未定义变量",
+  "type": "approval",
+  "node_types": ["start","task","decision","task","task","end"],
+  "features": ["未定义变量 expr", "兜底"],
+  "errors": []
+}

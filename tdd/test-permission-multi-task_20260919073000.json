@@ -1,0 +1,18 @@
+{
+  "name": "permission-multi-task",
+  "displayName": "测试-多任务节点字段权限",
+  "type": "approval",
+  "nodes": [
+    {"id":"start1","type":"snaker:start","x":100,"y":200,"properties":{"width":40,"height":40}},
+    {"id":"apply","type":"snaker:task","x":200,"y":200,"properties":{"assignee":"user1","form":"apply-form","taskType":0,"performType":0},"text":{"value":"申请人填表"}},
+    {"id":"task_leader","type":"snaker:task","x":350,"y":200,"properties":{"assignee":"leader","form":"","taskType":0,"performType":0,"field":{"PERMISSION_f_amount":1,"PERMISSION_f_secret":2}},"text":{"value":"上级"}},
+    {"id":"task_manager","type":"snaker:task","x":500,"y":200,"properties":{"assignee":"manager","form":"","taskType":0,"performType":0,"field":{"PERMISSION_f_amount":2,"PERMISSION_f_secret":3}},"text":{"value":"经理"}},
+    {"id":"end1","type":"snaker:end","x":650,"y":200,"properties":{"width":40,"height":40}}
+  ],
+  "edges":[
+    {"id":"e1","sourceNodeId":"start1","targetNodeId":"apply","properties":{},"text":{"value":""}},
+    {"id":"e2","sourceNodeId":"apply","targetNodeId":"task_leader","properties":{},"text":{"value":""}},
+    {"id":"e3","sourceNodeId":"task_leader","targetNodeId":"task_manager","properties":{},"text":{"value":""}},
+    {"id":"e4","sourceNodeId":"task_manager","targetNodeId":"end1","properties":{},"text":{"value":""}}
+  ]
+}

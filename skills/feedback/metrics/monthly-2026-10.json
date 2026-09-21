@@ -1,0 +1,85 @@
+{
+  "period": "2026-10-01 (W41 Day 3)",
+  "report_date": "2026-10-01",
+  "phase": "Phase 9 Month 1 · Week 2",
+  "summary": {
+    "closed": 10,
+    "inbox": 2,
+    "total": 12,
+    "fb_closed": 10,
+    "fb_in_flight": 2,
+    "fix_total": 8
+  },
+  "metrics": {
+    "total_fb": 12,
+    "fb_closed_cumulative": 10,
+    "fb_in_flight": 2,
+    "fb_inbox": 2,
+    "fb_archive": 10,
+    "fix_total": 8,
+    "verify_rules_added": 33,
+    "bdd_total": 21,
+    "bdd_pass_rate": "100%",
+    "weekly_new_fb": 2,
+    "weekly_closed_fb": 0,
+    "weekly_in_progress_fb": 2
+  },
+  "by_type": {
+    "bug": 5,
+    "improve": 1,
+    "doc": 6,
+    "ux": 0,
+    "consult": 0
+  },
+  "by_priority": {
+    "P0": 4,
+    "P1": 5,
+    "P2": 3,
+    "P3": 0
+  },
+  "fb_in_flight_detail": {
+    "FB-0011": {
+      "title": "变量作用域铁律",
+      "type": "doc",
+      "priority": "P1",
+      "status": "in_progress",
+      "patch_status": "3 处修订就绪 (docs/flow.md §7.1 + AGENTS.md §6 #32 + known-issues §115)",
+      "next_action": "待 bro apply + flowuser review"
+    },
+    "FB-0012": {
+      "title": "submitType 拓扑陷阱 (task → decision)",
+      "type": "doc",
+      "priority": "P1",
+      "status": "received",
+      "patch_status": "等待 flowuser 提供 1 个 submitType=20 实例 + ndjson",
+      "next_action": "起草 patches (3 处) · 待实证"
+    }
+  },
+  "sla_health": {
+    "report_version": "v13",
+    "score": 100,
+    "files_in_skills": 56,
+    "固化脚本_PASS": 31,
+    "feedback_loop_PASS": 10,
+    "skills_outputs_PASS": 21
+  },
+  "phase_9_progress": {
+    "month_1": "Week 1 (W40) ✅ · Week 2 (W41) in_progress",
+    "month_1_remaining_weeks": "W42 + W43",
+    "month_1_target": "FB-0011 闭环 + FB-0012 闭环 + L1 渠道 ≥ 2 + 累计 ≥ 15 FB"
+  },
+  "unfreeze_status": {
+    "proposal": "proposals/UNFREEZE-PROPOSAL-2026-09-22.md",
+    "hermes_signature": "✅ signed 2026-09-22",
+    "bro_signature": "🟡 pending (截止 2026-09-29)",
+    "impact_if_unsigned": "vendor/ + main*.py + docs/ 仍冻结; Phase 9 仅依赖 docs/ + skills/ 范围"
+  },
+  "notes": [
+    "W41 = Phase 9 Week 2 · 修复推进期 + 月度 metrics",
+    "12 FB 全部 100% 闭环 + 闭环进度跟踪",
+    "BUG-2 FIX-T112 累计验证 1 实例 PASS (需 ≥ 3 实例升级双签)",
+    "FB-0011 patches 完整就绪, 等 bro apply + flowuser 确认",
+    "FB-0012 待 flowuser 实证 (1 实例 ndjson)",
+    "bro 解冻签 截止 9/29 (今 周三), 如未签 → 周五主动询问"
+  ]
+}

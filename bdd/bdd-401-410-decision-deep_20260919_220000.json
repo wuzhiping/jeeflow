@@ -1,0 +1,65 @@
+{
+  "batch": "decision-deep",
+  "results": [
+    {
+      "bdd_id": "BDD#401",
+      "name": "dict 字面量比较",
+      "status": "INFO",
+      "detail": "active=['b']"
+    },
+    {
+      "bdd_id": "BDD#402",
+      "name": "list 字面量",
+      "status": "INFO",
+      "detail": "active=['b']"
+    },
+    {
+      "bdd_id": "BDD#403",
+      "name": "全部 False 兜底",
+      "status": "INFO",
+      "detail": "state=10, active=['a']"
+    },
+    {
+      "bdd_id": "BDD#404",
+      "name": "负数",
+      "status": "PASS",
+      "detail": "-5 -> b"
+    },
+    {
+      "bdd_id": "BDD#405",
+      "name": "浮点数",
+      "status": "PASS",
+      "detail": "0.8 -> a"
+    },
+    {
+      "bdd_id": "BDD#406",
+      "name": "布尔 True",
+      "status": "PASS",
+      "detail": "True -> a"
+    },
+    {
+      "bdd_id": "BDD#407",
+      "name": "链式 and",
+      "status": "PASS",
+      "detail": "5 -> a"
+    },
+    {
+      "bdd_id": "BDD#408",
+      "name": "括号嵌套",
+      "status": "PASS",
+      "detail": "5 -> a"
+    },
+    {
+      "bdd_id": "BDD#409",
+      "name": "字符串拼接",
+      "status": "INFO",
+      "detail": "active=['a']"
+    },
+    {
+      "bdd_id": "BDD#410",
+      "name": "加减乘除",
+      "status": "PASS",
+      "detail": "6*2=12 -> a"
+    }
+  ]
+}

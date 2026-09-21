@@ -1,0 +1,17 @@
+{
+  "name": "bdd-216-business-flow",
+  "displayName": "BDD #216 业务流 type=business (无 task)",
+  "type": "business",
+  "instanceUrl": "/form/business-test",
+  "preInterceptors": "",
+  "postInterceptors": "",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "compute", "type": "snaker:custom", "x": 200, "y": 200, "properties": {"width": 100, "height": 50, "clazz": "com.mldong.jeeflow.test.TimestampHandler", "val": "ts1"}, "text": {"value": "计算"}},
+    {"id": "end", "type": "snaker:end", "x": 350, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "compute", "properties": {}},
+    {"id": "e1", "sourceNodeId": "compute", "targetNodeId": "end", "properties": {}}
+  ]
+}

@@ -1,0 +1,10 @@
+=== memory bdd/bdd-multi-actor-v2_20260917151800.json ===
+{
+  "ok": false,
+  "step": "start",
+  "log": {
+    "code": 99999999,
+    "msg": "[ValueError] 节点[co_sign] handler FQCN='com.jeeflow.builtin.handlers.TaskRoleAssigneeHandler' 未注册"
+  },
+  "pdid": "417"
+}

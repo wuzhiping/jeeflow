@@ -1,0 +1,37 @@
+=== pg bdd/bdd-business-interceptor_20260917132800.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789663666844000",
+  "inst_id": "91815594854830",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815594854830"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "biz_review"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

@@ -3,9 +3,7 @@ import App from './App.vue'
 import { createJeeflowUi, JeeflowUiKey } from '@mldong/jeeflow-ui'
 import ApplyForm from './forms/apply-form.vue'
 import ExpenseForm from './forms/expense-form.vue'
-
-// 演示用户（与四后端同一套 8 个具名用户）：启动时从后端 /api/users 拉取，本地缓存复用
-export const DEMO_USERS = []
+import { DEMO_USERS } from './demo-state.js'
 
 function currentBaseUrl() {
   return localStorage.getItem('jeeflow_backend')
@@ -24,12 +22,20 @@ export function fetchUsers() {
     .then((r) => r.json())
     .then((res) => {
       const list = Array.isArray(res?.data) ? res.data : []
-      DEMO_USERS.splice(0, DEMO_USERS.length, ...list)
-      return DEMO_USERS
+      DEMO_USERS.value.splice(0, DEMO_USERS.value.length, ...list)
+      // FIX-UI-1 (2026-09-18)：本地无 jeeflow_user 时，默认取后端返回的第一个用户，
+      // 避免 SPI_FOLDER 切换后硬编码 'user1' 找不到对应账号。
+      // dispatch event 传完整 user 对象（App.vue 的 currentUser 是 computed 从 DEMO_USERS 查表），
+      // localStorage 仍只存 userId（最小持久化）。
+      if (!localStorage.getItem('jeeflow_user') && list[0]?.userId) {
+        localStorage.setItem('jeeflow_user', list[0].userId)
+        window.dispatchEvent(new CustomEvent('jeeflow_user_changed', { detail: list[0] }))
+      }
+      return DEMO_USERS.value
     })
     .catch((e) => {
       console.error('fetch /api/users failed:', e)
-      return DEMO_USERS
+      return DEMO_USERS.value
     })
   return usersPromise
 }
@@ -97,7 +103,8 @@ const jeeflowUi = createJeeflowUi({
   // 懒求值：切换后端只改 localStorage，api 每次请求取最新（SPA 热切换，无需 reload）
   // 开发环境走 vite proxy（相对路径）；生产环境走 nginx proxy
   baseUrl: () => localStorage.getItem('jeeflow_backend') || '/jeeflow' || import.meta.env.VITE_BACKEND_PYTHON || '/python-api',
-  getOperator: () => localStorage.getItem('jeeflow_user') || 'user1',
+  // FIX-UI-1 (2026-09-18)：移除硬编码 'user1'，避免 SPI_FOLDER 切换后操作人无对应账号
+  getOperator: () => localStorage.getItem('jeeflow_user') || null,
   getToken: () => null,
   hasPermission: () => true, // demo 无权限体系：全放行（宿主接入时按 wf:{action} 权限码判断）
   adapters: {

@@ -1,0 +1,196 @@
+{
+  "name": "complex-approval",
+  "displayName": "复杂审批-5种能力",
+  "type": "approval",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "c-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_amount": "",
+          "f_type": ""
+        }
+      },
+      "text": {
+        "value": "提交"
+      }
+    },
+    {
+      "id": "leader_review",
+      "type": "snaker:task",
+      "x": 300,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "assignee": "leader",
+        "taskType": 0,
+        "performType": 0
+      },
+      "text": {
+        "value": "直属"
+      }
+    },
+    {
+      "id": "fork",
+      "type": "snaker:fork",
+      "x": 450,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "并行"
+      }
+    },
+    {
+      "id": "finance_sign",
+      "type": "snaker:task",
+      "x": 600,
+      "y": 100,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "performType": 1,
+        "countersignType": "PARALLEL",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "财务会签"
+      }
+    },
+    {
+      "id": "manager_approve",
+      "type": "snaker:task",
+      "x": 600,
+      "y": 300,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "经理审批"
+      }
+    },
+    {
+      "id": "join",
+      "type": "snaker:join",
+      "x": 750,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "汇合"
+      }
+    },
+    {
+      "id": "cashier_pay",
+      "type": "snaker:task",
+      "x": 900,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "出纳付款"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 1050,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e1",
+      "sourceNodeId": "apply",
+      "targetNodeId": "leader_review",
+      "properties": {}
+    },
+    {
+      "id": "e2",
+      "sourceNodeId": "leader_review",
+      "targetNodeId": "fork",
+      "properties": {}
+    },
+    {
+      "id": "e3",
+      "sourceNodeId": "fork",
+      "targetNodeId": "finance_sign",
+      "properties": {}
+    },
+    {
+      "id": "e4",
+      "sourceNodeId": "fork",
+      "targetNodeId": "manager_approve",
+      "properties": {}
+    },
+    {
+      "id": "e5",
+      "sourceNodeId": "finance_sign",
+      "targetNodeId": "join",
+      "properties": {}
+    },
+    {
+      "id": "e6",
+      "sourceNodeId": "manager_approve",
+      "targetNodeId": "join",
+      "properties": {}
+    },
+    {
+      "id": "e7",
+      "sourceNodeId": "join",
+      "targetNodeId": "cashier_pay",
+      "properties": {}
+    },
+    {
+      "id": "e8",
+      "sourceNodeId": "cashier_pay",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

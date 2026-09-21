@@ -1,0 +1,14 @@
+{
+  "name": "bdd-207-id-illegal",
+  "displayName": "BDD #207 节点 id 含特殊字符 (deploy 拒绝)",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "apply with space", "type": "snaker:task", "x": 130, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "申请"}},
+    {"id": "end", "type": "snaker:end", "x": 300, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply with space", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply with space", "targetNodeId": "end", "properties": {}}
+  ]
+}

@@ -1,0 +1,39 @@
+=== memory bdd/bdd-handler-chain_20260917135400.json ===
+{
+  "ok": true,
+  "pdid": "335",
+  "inst_id": "91815588964120",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815588964120"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "finance",
+        "approver",
+        "deptleader"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 10
+    }
+  ]
+}

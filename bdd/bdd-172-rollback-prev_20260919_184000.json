@@ -1,0 +1,18 @@
+{
+  "name": "bdd-172-rollback-prev",
+  "displayName": "BDD #172 ROLLBACK (submitType=3) 退回上一任务",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "apply", "type": "snaker:task", "x": 130, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "申请"}},
+    {"id": "leader", "type": "snaker:task", "x": 280, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "leader", "taskType": 0, "performType": 0}, "text": {"value": "组长"}},
+    {"id": "manager", "type": "snaker:task", "x": 430, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "manager", "taskType": 0, "performType": 0}, "text": {"value": "经理"}},
+    {"id": "end", "type": "snaker:end", "x": 580, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "leader", "properties": {}},
+    {"id": "e2", "sourceNodeId": "leader", "targetNodeId": "manager", "properties": {}},
+    {"id": "e3", "sourceNodeId": "manager", "targetNodeId": "end", "properties": {}}
+  ]
+}

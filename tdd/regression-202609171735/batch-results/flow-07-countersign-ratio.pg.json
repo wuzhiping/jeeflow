@@ -1,0 +1,46 @@
+=== pg flows/07-countersign-ratio.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789663654314000",
+  "inst_id": "91815582024060",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815582024060"
+    },
+    {
+      "step": "execute-userA",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userB",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "task1",
+        "task1",
+        "task1",
+        "task1"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

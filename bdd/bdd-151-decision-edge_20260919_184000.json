@@ -1,0 +1,31 @@
+{
+  "name": "bdd-151-decision-edge",
+  "displayName": "BDD #151 决策边界 (==/!=/>/< + 字符串/数字)",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "apply", "type": "snaker:task", "x": 130, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "申请"}},
+    {"id": "d1", "type": "snaker:decision", "x": 260, "y": 200, "properties": {"width": 80, "height": 50}, "text": {"value": "等于边界"}},
+    {"id": "d2", "type": "snaker:decision", "x": 380, "y": 100, "properties": {"width": 80, "height": 50}, "text": {"value": "大于边界"}},
+    {"id": "d3", "type": "snaker:decision", "x": 380, "y": 300, "properties": {"width": 80, "height": 50}, "text": {"value": "不等于"}},
+    {"id": "eq_path", "type": "snaker:task", "x": 510, "y": 30, "properties": {"width": 100, "height": 50, "assignee": "leader", "taskType": 0, "performType": 0}, "text": {"value": "等值分支"}},
+    {"id": "gt_path", "type": "snaker:task", "x": 510, "y": 130, "properties": {"width": 100, "height": 50, "assignee": "manager", "taskType": 0, "performType": 0}, "text": {"value": "大于分支"}},
+    {"id": "default_path", "type": "snaker:task", "x": 510, "y": 230, "properties": {"width": 100, "height": 50, "assignee": "director", "taskType": 0, "performType": 0}, "text": {"value": "默认分支"}},
+    {"id": "ne_path", "type": "snaker:task", "x": 510, "y": 330, "properties": {"width": 100, "height": 50, "assignee": "boss", "taskType": 0, "performType": 0}, "text": {"value": "不等于分支"}},
+    {"id": "end", "type": "snaker:end", "x": 660, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "d1", "properties": {}},
+    {"id": "e2", "sourceNodeId": "d1", "targetNodeId": "d2", "properties": {"expr": "score==100"}},
+    {"id": "e3", "sourceNodeId": "d1", "targetNodeId": "d3", "properties": {"expr": "score!=100"}},
+    {"id": "e4", "sourceNodeId": "d2", "targetNodeId": "eq_path", "properties": {"expr": "score>=100"}},
+    {"id": "e5", "sourceNodeId": "d2", "targetNodeId": "default_path", "properties": {}},
+    {"id": "e6", "sourceNodeId": "d3", "targetNodeId": "ne_path", "properties": {"expr": "score<50"}},
+    {"id": "e7", "sourceNodeId": "d3", "targetNodeId": "default_path", "properties": {}},
+    {"id": "e8", "sourceNodeId": "eq_path", "targetNodeId": "end", "properties": {}},
+    {"id": "e9", "sourceNodeId": "gt_path", "targetNodeId": "end", "properties": {}},
+    {"id": "e10", "sourceNodeId": "default_path", "targetNodeId": "end", "properties": {}},
+    {"id": "e11", "sourceNodeId": "ne_path", "targetNodeId": "end", "properties": {}}
+  ]
+}

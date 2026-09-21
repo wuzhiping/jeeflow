@@ -5,10 +5,15 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "aiomysql>=0.3.2",
+    "asyncpg>=0.31.0",
     "fastapi>=0.141.1",
     "iii-sdk>=0.23.0",
-    "jeeflow>=1.8.28",
     "pocketflow>=0.0.3",
     "temporalio>=1.33.0",
     "uvicorn>=0.52.4",
 ]
+
+[[tool.uv.index]]
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+default = true

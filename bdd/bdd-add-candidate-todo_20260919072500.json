@@ -1,0 +1,8 @@
+{
+  "name": "add-candidate-todo",
+  "title": "测试 addCandidate 后非 actor 可代办",
+  "type": "approval",
+  "node_types": ["start","task","task","end"],
+  "features": ["addCandidate 越权", "actor 动态扩展"],
+  "errors": []
+}

@@ -1,0 +1,23 @@
+{
+  "batch": "node-types",
+  "results": [
+    {
+      "bdd_id": "BDD#298",
+      "name": "fork/join",
+      "status": "PASS",
+      "detail": "t1+t2 并行 DOING"
+    },
+    {
+      "bdd_id": "BDD#299",
+      "name": "decision 路由",
+      "status": "PASS",
+      "detail": "f_x=1 -> a"
+    },
+    {
+      "bdd_id": "BDD#300",
+      "name": "custom node",
+      "status": "WARN",
+      "detail": "state=None, f_result=<not set>"
+    }
+  ]
+}

@@ -89,11 +89,17 @@
 | --- | --- | --- |
 | `data.id` | string | processInstanceId |
 | `data.state` | int | InstanceState 枚举（10/20/30/40/45/50/99） |
+| `data.parentId` | string\|null | 父实例 id (FIX-T33 §56，主子流程联动) |
+| `data.parentStatus` | string\|null | 主子状态 (FIX-T72 §3.1.1，CHILD_DONE/CHILD_REJECT) |
+| `data.variables.<node.id>_childInstanceId` | string | callActivity 子实例 id (FIX-T73 §3.1.2) |
 | `data.finish_state` | any | **恒为 null**（历史遗留字段，忽略） |
 | `data.tasks[]` | array | 全部 task（含已完成 + 活跃），含 `id/taskName/taskState/operator/taskActorIdList/variable` |
 | `data.tasks[].taskState` | int | TaskState 枚举（10=DOING / 20=DONE） |
 | `data.tasks[].taskActorIdList` | array | 候选执行人列表（来自 JSON `assignee` / `assignmentHandler`） |
 | `data.tasks[].variable` | string | JSON 字符串（**需 `JSON.parse`**），含 `submitType/u_*/f_*` 等 |
+| `data.tasks[].variable._delegate_of` | object | delegate 历史 (FIX-T69 §69) |
+| `data.tasks[].variable._comments` | array | comment 历史 (FIX-T70 §70) |
+| `data.tasks[].variable._extra` | object | 额外信息 (FIX-T70 §70) |
 | `data.activeTaskList[]` | array | 仅 taskState=10 的活跃 task（**测试 runner 直接读这里取 taskId，不必扫 tasks[]**） |
 | `data.activeTaskList[].formKey` | string | 表单 key（来自 JSON `form` 字段） |
 | `data.activeTaskList[].taskActorIdList` | array | 候选执行人 |
@@ -216,3 +222,134 @@ python ./tdd/regression_runner.py \
 - SubmitType 路由矩阵：`./docs/flow.md` §7a
 - 测试基建：`./tdd/README.md`
 - 示例流程索引：`./flows/README.md`
+
+---
+
+## 5. Phase 2 新增端点 (2026-09-20, FIX-T72-T78)
+
+### 5.1 processTask/delegateHistory
+返回 task 的委派历史 (按 delegate 顺序)
+
+```bash
+POST /wf/processTask/delegateHistory
+{"processTaskId": "91981833944067"}
+
+→ {
+  "code": 0,
+  "data": {
+    "taskId": "91981833944067",
+    "delegateHistory": [
+      {"from": "leader", "to": "boss2", "at": "2026-09-19T21:53:29.779423"}
+    ],
+    "delegateAt": "2026-09-19T21:53:29.779423",
+    "actorIds": ["leader", "boss1", "boss2"]
+  }
+}
+```
+
+### 5.2 processTask/transferAndAdd
+transfer + addCandidate 合并 (保留原 actor, 新增 targetUser)
+
+```bash
+POST /wf/processTask/transferAndAdd
+{"processTaskId": "...", "operator": "leader", "targetUserId": "leader2"}
+
+→ {
+  "code": 0,
+  "data": {
+    "taskId": "...",
+    "oldActors": ["leader", "leader2"],
+    "newActors": ["leader", "leader2"]
+  }
+}
+```
+
+业务场景: A 转给 B 后, A 仍需看流程后续动态 (审计场景)。
+
+### 5.3 processTask/withForm
+task 级表单绑定 (运行时动态, 与节点级 field.PERMISSION_* 区别)
+
+```bash
+POST /wf/processTask/withForm
+{
+  "processTaskId": "...",
+  "operator": "leader",
+  "formKey": "leave-form-v2",
+  "fields": {
+    "f_leaveType": {"type": "select", "required": true, "perm": 2},
+    "f_secret": {"type": "string", "required": false, "perm": 3}
+  }
+}
+
+→ {"code": 0, "data": {"taskId": "...", "formKey": "leave-form-v2", "fieldCount": 2}}
+```
+
+字段权限码: 1=只读 / 2=编辑 / 3=隐藏 (与节点级 PERMISSION_* 一致).
+
+### 5.4 processInstance/suspend / resume
+实例挂起/恢复 (FIX-T70)
+
+```bash
+POST /wf/processInstance/suspend {"id": "91975865463809"}
+→ {"code": 0, "data": {"id": "...", "state": 50}}
+
+POST /wf/processInstance/resume {"id": "91975865463809"}
+→ {"code": 0, "data": {"id": "...", "state": 10}}
+```
+
+suspended 实例不能 execute task (FIX-T56, 99999999 抛错).
+
+---
+
+## 6. 错误码表 (BDD #1210 FIX-T88 §4.3.4)
+
+所有 action 响应统一格式 `{code, msg, data}`:
+- `code = 0`: 成功
+- `code = 99999999`: 失败 (msg 含错误类型 + 详情)
+
+| 触发场景 | msg 前缀 | 触发条件 | 解决方案 |
+|---------|---------|----------|----------|
+| 必填参数缺失 | `[ValueError] xxx 缺失或非法` | body 缺关键字段 | 补全必填字段 (查 `docs/actions.md`) |
+| 未知 action | `未知 action: xxx` | action 名错或未注册 | 查 §1-§5 端点清单 |
+| 流程节点 actorIds 空 | `[ValueError] 节点[xxx]actorIds 为空` | 流程设计缺 assignee | 节点 properties 加 assignee / assignmentHandler |
+| handler 未注册 | `[ValueError] handler 'xxx' 未注册` | SPI 没装该 role | 注册 handler 或修改 DEMO_ROLE_TO_USERS.json |
+| SPI 角色匹配空 | `[ValueError] 节点[xxx] handler 'xxx' SPI 角色匹配为空` | role_code 无映射 | 补充 SPI 映射或修正 node.id |
+| postInterceptors 未注册 | `[ValueError] postInterceptors 声明的拦截器未注册: xxx` | 流程顶层 interceptor 未注册 | 在 main_common.py 注册 |
+| 流程未部署 | `[ValueError] define not found: xxx` | 用错 processDefineId | 重 deploy 取新 id |
+| operator 无权限 | `[ValueError] operator xxx not allowed` | 操作人不在 actorIds | 用 addCandidate 加权限 |
+| PENDING 实例 | `[ValueError] 实例 state=50 不可执行任务` | 挂起实例直接 execute | 先 resume |
+| decisionHandler 未注册 | `[ValueError] decisionHandler xxx 调用失败` | handler 名错或未注册 | 在 build_decision_handlers 注册 |
+| verify 校验失败 | `[ValueError] 流程 verify 失败 (N 个错误)` | 流程设计违规 | 修 verify 报错字段 |
+
+### 6.1 错误排查流程
+
+```bash
+# 1. 查响应 msg 字段
+RESP=$(curl -X POST /wf/xxx -d '...')
+echo "$RESP" | jq '.code, .msg'
+
+# 2. 查已知问题
+grep "msg 包含的关键词" docs/known-issues.md
+# 例: "postInterceptors" → §36
+# 例: "节点[] actorIds 为空" → §16
+# 例: "operator xxx not allowed" → §40/§69
+
+# 3. 启用 trace
+curl http://jeeFlow:8101/api/admin/trace?limit=10
+# 找到出错的 span, 看 attributes 字段
+
+# 4. 启用 Prometheus
+curl http://jeeFlow:8101/metrics | grep wf_task_completed
+# 看任务执行统计
+```
+
+### 6.2 默认错误码补充
+
+引擎实现中可能抛出的错误码 (不限于 0/99999999):
+
+| 场景 | 引擎行为 | 说明 |
+|------|----------|------|
+| custom node clazz 缺失 | 99999999 `[ValueError] custom 节点[x]缺少 properties.clazz` | §16 FIX-T38 |
+| custom handler 未注册 | 99999999 `[ValueError] custom 节点[x] handler='xxx' 未注册 (已注册: [...])` | §16 |
+| decisionHandler 返回未知节点 | 99999999 `[ValueError] decisionHandler xxx 返回未知节点: xxx` | §46 FIX-T46 |
+| callActivity 子流程未部署 | 99999999 `[ValueError] callActivity 节点[x]子流程 'xxx' 未部署` | §3.1.2 FIX-T73 |

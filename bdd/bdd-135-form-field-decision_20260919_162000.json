@@ -1,0 +1,21 @@
+{
+  "name": "bdd-135-form-field-decision",
+  "displayName": "BDD #135 表单字段 f_xxx 在 decision expr",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "apply", "type": "snaker:task", "x": 150, "y": 200, "properties": {"width": 100, "height": 50, "form": "ff-form", "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "申请"}},
+    {"id": "dec", "type": "snaker:decision", "x": 300, "y": 200, "properties": {"width": 60, "height": 60}, "text": {"value": "决策"}},
+    {"id": "big", "type": "snaker:task", "x": 450, "y": 100, "properties": {"width": 100, "height": 50, "form": "", "assignee": "boss", "taskType": 0, "performType": 0}, "text": {"value": "大额"}},
+    {"id": "small", "type": "snaker:task", "x": 450, "y": 200, "properties": {"width": 100, "height": 50, "form": "", "assignee": "leader", "taskType": 0, "performType": 0}, "text": {"value": "小额"}},
+    {"id": "end", "type": "snaker:end", "x": 600, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "dec", "properties": {}},
+    {"id": "e2", "sourceNodeId": "dec", "targetNodeId": "big", "properties": {"expr": "#f_amount > 10000"}},
+    {"id": "e3", "sourceNodeId": "dec", "targetNodeId": "small", "properties": {"expr": "#f_amount > 0"}},
+    {"id": "e4", "sourceNodeId": "big", "targetNodeId": "end", "properties": {}},
+    {"id": "e5", "sourceNodeId": "small", "targetNodeId": "end", "properties": {}}
+  ]
+}

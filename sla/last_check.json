@@ -1,0 +1,52 @@
+{
+  "timestamp": "2026-09-22T18:00:00Z",
+  "host": "http://localhost:8101",
+  "pg_host": "http://localhost:8102",
+  "report_type": "v13",
+  "phase": "phase8-complete",
+  "total_checks": 47,
+  "passed": 47,
+  "failed": 0,
+  "score": 100,
+  "latency_ms": {
+    "healthz": 1,
+    "metrics": 1
+  },
+  "real_time_health": {
+    "mem_backend": "UP",
+    "healthz_status": "UP",
+    "healthz_backend": "python",
+    "healthz_pg": "down (本机无 PG 进程)",
+    "healthz_latency_ms": "1-2 (5 次抽样)",
+    "instance_total": 1,
+    "instance_doing": 1,
+    "task_completed_apply": 150,
+    "task_completed_review_countersign": 14,
+    "task_completed_review_veto": 5,
+    "task_completed_task1": 7,
+    "task_completed_leader_approve": 6
+  },
+  "feedback_loop_check": {
+    "script": "sla/check_feedback_loop.sh",
+    "passed": 10,
+    "failed": 0,
+    "closed_count": 10,
+    "inbox_count": 0,
+    "closure_rate": "100%",
+    "continuity_ok": true,
+    "lessons_learned_coverage": "100% (10/10)",
+    "metrics_consistent": true,
+    "customer_files": 3
+  },
+  "skills_outputs_check": {
+    "script": "sla/check_skills_outputs.sh",
+    "passed": 21,
+    "failed": 0,
+    "total_files": 55,
+    "customer_files": 3
+  },
+  "feedback_loop_id": "10/10 closed (Phase 8 complete)",
+  "bdd_new": 3,
+  "fix_total": 7,
+  "verify_rules_total": 33
+}

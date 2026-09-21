@@ -1,0 +1,37 @@
+=== pg bdd/bdd-leave-approval_20260917115000.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789663675526000",
+  "inst_id": "91815603745322",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815603745322"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "leader_approve"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

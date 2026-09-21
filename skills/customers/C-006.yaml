@@ -1,0 +1,35 @@
+customer_id: C-006
+type: L2
+name: 中型企业 HR 集成方 (化名)
+contact: hermes_dm
+first_seen: 2026-09-20
+last_touched: 2026-09-20
+
+scenario: |
+  中型企业 (500+ 员工) HR 系统集成 jeeflow.
+  流程审批人应按组织架构自动选:
+  - 申请人所在部门总监
+  - 申请人上两级领导
+  - 申请人 HRBP
+  当前每个流程硬编码 assignee, 组织架构变动需改所有流程.
+
+key_pain_points:
+  - 流程审批人硬编码, 维护成本高
+  - 缺少组织架构感知的 assignmentHandler
+
+recent_feedback:
+  - date: 2026-09-20
+    fb_id: FB-0006
+    issue: "如何实现按组织架构自动选审批人?"
+    status: closed
+    fix_ref: docs/flow.md §6 + docs/integration.md
+
+success_metrics:
+  - 流程审批人维护成本: 1 次配置 vs N 次硬编码
+  - 组织架构变更同步时长: < 1h
+
+notes: |
+  - 潜在高价值 L2 客户, SPI 集成是必经路径
+  - 关注点: SPI 易用性 + 示例完整性
+  - 后续建议: 提供 spi/demo/org_assignee_handler.py 示例
+  - 需求可能演变为: skills/roadmap/candidates/auto-assignee-by-org.md

@@ -1,0 +1,30 @@
+customer_id: C-002
+type: L3
+name: 会签人 userA (化名)
+contact: hermes_dm
+first_seen: 2026-09-20
+last_touched: 2026-09-21
+
+scenario: |
+  多方会签场景: 3 人会签 (userA, userB, userC),
+  任 2 人通过即流转. 第 3 人的 task 应被标记 ABANDON,
+  且需要审计追溯"是谁触发的废弃".
+
+key_pain_points:
+  - ABANDON 触发人未记录, 审计无法追溯 (已闭环 FB-0002 修复中)
+
+recent_feedback:
+  - date: 2026-09-20
+    fb_id: FB-0002
+    issue: "3 人 PARALLEL 会签 ABANDON 触发人字段为空"
+    status: notified (待确认)
+    fix_ref: FIX-T111
+
+success_metrics:
+  - 会签完成时长: < 24h
+  - ABANDON 审计追溯率: 100%
+
+notes: |
+  - L3 业务审批人, 也是审计的"被审计人"
+  - 关注审计字段的完整性
+  - 后续测试 ABANDON updateUser 字段修复效果

@@ -1,0 +1,58 @@
+=== pg bdd/bdd-project-init_20260917114047.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789663679908000",
+  "inst_id": "91815608233582",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815608233582"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-manager",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-director",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "dept_leader",
+        "pm_form",
+        "mgr_audit",
+        "final_sign"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+=== pg bdd/bdd-dept-leader-test_20260917140800.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789663670586000",
+  "inst_id": "91815598687715",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815598687715"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "finance",
+        "approver",
+        "deptleader"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 10
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+=== pg bdd/bdd-document-approval_20260917115700.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789663671455000",
+  "inst_id": "91815599576560",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815599576560"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userA",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userB",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userC",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-boss",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "dept_review",
+        "parallel_veto",
+        "parallel_veto",
+        "parallel_veto",
+        "boss_sign"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

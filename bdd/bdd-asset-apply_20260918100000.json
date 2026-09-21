@@ -1,0 +1,108 @@
+{
+  "name": "asset-apply",
+  "displayName": "物资领用",
+  "type": "request",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "a-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_item": "",
+          "f_qty": ""
+        }
+      },
+      "text": {
+        "value": "提交领用"
+      }
+    },
+    {
+      "id": "asset_leader",
+      "type": "snaker:task",
+      "x": 300,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "主管审批"
+      }
+    },
+    {
+      "id": "asset_finance",
+      "type": "snaker:task",
+      "x": 450,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "资产部门审批"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 600,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e1",
+      "sourceNodeId": "apply",
+      "targetNodeId": "asset_leader",
+      "properties": {}
+    },
+    {
+      "id": "e2",
+      "sourceNodeId": "asset_leader",
+      "targetNodeId": "asset_finance",
+      "properties": {}
+    },
+    {
+      "id": "e3",
+      "sourceNodeId": "asset_finance",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "batch": "performance",
+  "results": [
+    {
+      "bdd_id": "BDD#374",
+      "name": "5 instance 启动",
+      "status": "PASS",
+      "detail": "0.16s for 5 instances"
+    },
+    {
+      "bdd_id": "BDD#375",
+      "name": "5 actor PARALLEL",
+      "status": "INFO",
+      "detail": "耗时 0.03s, cs_tasks=5"
+    },
+    {
+      "bdd_id": "BDD#376",
+      "name": "1MB 变量",
+      "status": "PASS",
+      "detail": "长度 1048576"
+    },
+    {
+      "bdd_id": "BDD#377",
+      "name": "50 节点",
+      "status": "PASS",
+      "detail": "deploy OK"
+    },
+    {
+      "bdd_id": "BDD#378",
+      "name": "30 actor PARALLEL",
+      "status": "INFO",
+      "detail": "cs tasks=30"
+    },
+    {
+      "bdd_id": "BDD#379",
+      "name": "20 todoList 查询",
+      "status": "INFO",
+      "detail": "0.59s"
+    },
+    {
+      "bdd_id": "BDD#380",
+      "name": "复杂 expr",
+      "status": "INFO",
+      "detail": "f_x=50 -> ['a']"
+    },
+    {
+      "bdd_id": "BDD#381",
+      "name": "嵌套深度 5",
+      "status": "INFO",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#382",
+      "name": "嵌套深度 10",
+      "status": "INFO",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#383",
+      "name": "taskType=999",
+      "status": "INFO",
+      "detail": "state=20"
+    }
+  ]
+}

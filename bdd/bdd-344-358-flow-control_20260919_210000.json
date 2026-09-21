@@ -1,0 +1,89 @@
+{
+  "batch": "flow-control",
+  "results": [
+    {
+      "bdd_id": "BDD#344",
+      "name": "fork 并发 ROLLBACK",
+      "status": "INFO",
+      "detail": "after rollback active=[('t2', 10)], all_tasks=[('apply', 20), ('t1', 20), ('t2', 10)]"
+    },
+    {
+      "bdd_id": "BDD#345",
+      "name": "JUMP target=start",
+      "status": "INFO",
+      "detail": "code=99999999, state=10"
+    },
+    {
+      "bdd_id": "BDD#346",
+      "name": "JUMP target=decision",
+      "status": "INFO",
+      "detail": "code=0, state=10, active=['a']"
+    },
+    {
+      "bdd_id": "BDD#347",
+      "name": "REJECT 后 state",
+      "status": "INFO",
+      "detail": "state=45"
+    },
+    {
+      "bdd_id": "BDD#348",
+      "name": "ROLLBACK_TO_OPERATOR",
+      "status": "INFO",
+      "detail": "code=0, state=10, active=['apply']"
+    },
+    {
+      "bdd_id": "BDD#349",
+      "name": "RE_APPLY",
+      "status": "INFO",
+      "detail": "code=0, state=10, active=['apply']"
+    },
+    {
+      "bdd_id": "BDD#350",
+      "name": "3 路决策兜底",
+      "status": "INFO",
+      "detail": "f_x=99 -> active=['c'] (期望 c)"
+    },
+    {
+      "bdd_id": "BDD#351",
+      "name": "空 expr 兜底",
+      "status": "INFO",
+      "detail": "active=['a']"
+    },
+    {
+      "bdd_id": "BDD#352",
+      "name": "中文变量名",
+      "status": "PASS",
+      "detail": "f_金额=5000 -> high"
+    },
+    {
+      "bdd_id": "BDD#353",
+      "name": "emoji 变量",
+      "status": "PASS",
+      "detail": "f_emoji='🔥' -> a"
+    },
+    {
+      "bdd_id": "BDD#354",
+      "name": "特殊字符串",
+      "status": "INFO",
+      "detail": "active=['a']"
+    },
+    {
+      "bdd_id": "BDD#355",
+      "name": "REJECT 后再 execute",
+      "status": "INFO",
+      "detail": "state=45, after execute: 99999999 [ValueError] 实例 state=45 不可执行任务（仅 DOING=10 可执行）"
+    },
+    {
+      "bdd_id": "BDD#356",
+      "name": "task 重复创建",
+      "status": "INFO",
+      "detail": "state=20, active=[]"
+    },
+    {
+      "bdd_id": "BDD#357",
+      "name": "重复启动",
+      "status": "INFO",
+      "detail": "inst1=91938527984741, inst2=91938528018535"
+    }
+  ]
+}

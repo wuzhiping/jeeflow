@@ -1,0 +1,65 @@
+{
+  "batch": "custom-handler",
+  "results": [
+    {
+      "bdd_id": "BDD#481",
+      "name": "TimestampHandler",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#482",
+      "name": "args JSON",
+      "status": "PASS",
+      "detail": "f_injected=999"
+    },
+    {
+      "bdd_id": "BDD#483",
+      "name": "args 字符串",
+      "status": "INFO",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#484",
+      "name": "args 数字",
+      "status": "INFO",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#485",
+      "name": "RaiseHandler",
+      "status": "INFO",
+      "detail": "state=None"
+    },
+    {
+      "bdd_id": "BDD#486",
+      "name": "不存在的 handler",
+      "status": "INFO",
+      "detail": "state=None, active=[]"
+    },
+    {
+      "bdd_id": "BDD#487",
+      "name": "handler 写 vars_",
+      "status": "PASS",
+      "detail": "f_written=value_487"
+    },
+    {
+      "bdd_id": "BDD#488",
+      "name": "handler 读 vars_",
+      "status": "INFO",
+      "detail": "f_x_in=999 (期望 999)"
+    },
+    {
+      "bdd_id": "BDD#489",
+      "name": "多 args",
+      "status": "INFO",
+      "detail": "a=1, b=2, c=3"
+    },
+    {
+      "bdd_id": "BDD#490",
+      "name": "嵌套 handler",
+      "status": "PASS",
+      "detail": "state=20, f_step1=a, f_step2=b"
+    }
+  ]
+}

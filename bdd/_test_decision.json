@@ -1,0 +1,135 @@
+{
+  "name": "decision-test",
+  "displayName": "decision test",
+  "type": "test",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_type": ""
+        }
+      },
+      "text": {
+        "value": "提交"
+      }
+    },
+    {
+      "id": "type_decision",
+      "type": "snaker:decision",
+      "x": 300,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "决策"
+      }
+    },
+    {
+      "id": "boss_path",
+      "type": "snaker:task",
+      "x": 450,
+      "y": 100,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "boss"
+      }
+    },
+    {
+      "id": "cashier_path",
+      "type": "snaker:task",
+      "x": 450,
+      "y": 300,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "cashier"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 600,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e1",
+      "sourceNodeId": "apply",
+      "targetNodeId": "type_decision",
+      "properties": {}
+    },
+    {
+      "id": "e2",
+      "sourceNodeId": "type_decision",
+      "targetNodeId": "boss_path",
+      "properties": {
+        "expr": "f_type=='project'"
+      }
+    },
+    {
+      "id": "e3",
+      "sourceNodeId": "type_decision",
+      "targetNodeId": "cashier_path",
+      "properties": {
+        "expr": "f_type=='reimburse'"
+      }
+    },
+    {
+      "id": "e4",
+      "sourceNodeId": "boss_path",
+      "targetNodeId": "end",
+      "properties": {}
+    },
+    {
+      "id": "e5",
+      "sourceNodeId": "cashier_path",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

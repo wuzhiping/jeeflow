@@ -1,0 +1,65 @@
+{
+  "batch": "flow-advanced",
+  "results": [
+    {
+      "bdd_id": "BDD#421",
+      "name": "跨节点变量",
+      "status": "INFO",
+      "detail": "got ['b']"
+    },
+    {
+      "bdd_id": "BDD#422",
+      "name": "decision 4 层",
+      "status": "INFO",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#423",
+      "name": "task 跨边",
+      "status": "INFO",
+      "detail": "active=['b']"
+    },
+    {
+      "bdd_id": "BDD#424",
+      "name": "fork 3 分支",
+      "status": "INFO",
+      "detail": "active=['t1', 't2', 't3']"
+    },
+    {
+      "bdd_id": "BDD#425",
+      "name": "join 3 完成",
+      "status": "INFO",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#426",
+      "name": "expireTime 属性",
+      "status": "INFO",
+      "detail": "expireTime=None"
+    },
+    {
+      "bdd_id": "BDD#427",
+      "name": "f_apply 表单",
+      "status": "INFO",
+      "detail": "f_apply=apply_val"
+    },
+    {
+      "bdd_id": "BDD#428",
+      "name": "f_leader 表单",
+      "status": "INFO",
+      "detail": "f_leader=leader_val"
+    },
+    {
+      "bdd_id": "BDD#429",
+      "name": "f_x 表单",
+      "status": "INFO",
+      "detail": "f_x=100"
+    },
+    {
+      "bdd_id": "BDD#430",
+      "name": "f_meta 表单",
+      "status": "INFO",
+      "detail": "f_meta={'k': 'v'}"
+    }
+  ]
+}

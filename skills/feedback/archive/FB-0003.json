@@ -1,0 +1,93 @@
+{
+  "fb_id": "FB-0003",
+  "title": "多入边 task 节点重复创建 (fork→[taskA,taskB]→task_collect 时出现 2 个同 task DOING)",
+  "created_at": "2026-09-19T11:00:00",
+  "channel": "bdd",
+  "customer": {
+    "id": "C-003",
+    "type": "L2",
+    "contact": "hermes (流程设计师, 自测)",
+    "scenario": "fork 节点分叉后, 用 task 节点作为汇合点"
+  },
+  "raw_text": "BDD #122/#123 跑通 fork1→[taskA,taskB]→task_collect→end 流程. taskA + taskB 都完成后, task_collect todo count = 2 (重复). director 待办列表出现 2 个同名 task_collect. 流程卡 state=10 永远不流转. 根因: 引擎 _create_task 入口不去重同 taskName 的 DOING task.",
+  "attachments": [
+    "docs/BUGS.md §27",
+    "bdd/bdd-1501-1503-fix-t110-task-multi-out_20260920.sh",
+    "bdd/bdd-122-multi-in-edge_20260919_160000.json"
+  ],
+  "classification": {
+    "type": "bug",
+    "priority": "P0",
+    "owner": "engine",
+    "scope": "multi",
+    "reproduce": "easy",
+    "classified_at": "2026-09-19T11:30:00",
+    "classified_by": "bro",
+    "reasoning": [
+      "现象: 流程卡死 → P0",
+      "原因: 引擎层 _create_task 缺少悲观锁 + DOING 去重 → engine",
+      "影响: fork+task 汇合场景全部中招 → multi"
+    ]
+  },
+  "status": "closed",
+  "processing": [
+    {
+      "step": "03-process",
+      "subtype": "engine",
+      "actor": "bro",
+      "started_at": "2026-09-19T12:00:00",
+      "ended_at": "2026-09-19T20:00:00",
+      "action": "FIX-T35: 引入 lock_instance_for_update 抽象方法, JdbcRepository 用 SELECT FOR UPDATE, MemoryRepository no-op. _create_task 入口加锁 + find_doing_tasks 去重. facade._processTask_execute + _startAndExecute 包 with_tx 事务.",
+      "result": "成功",
+      "fix_id": "FIX-T35"
+    },
+    {
+      "step": "03-process",
+      "subtype": "doc",
+      "actor": "hermes",
+      "started_at": "2026-09-19T20:30:00",
+      "ended_at": "2026-09-19T21:00:00",
+      "action": "更新 docs/BUGS.md §27 + docs/known-issues.md §27 + docs/AGENTS.md 反模式表 (汇合点推荐用 join).",
+      "result": "成功"
+    }
+  ],
+  "fix_ref": {
+    "fix_id": "FIX-T35",
+    "bdd_ids": ["bdd-122-multi-in-edge", "bdd-123-multi-in-edge-join"],
+    "verify_rule": null,
+    "docs_sections": ["docs/BUGS.md §27", "docs/known-issues.md §27"],
+    "files_changed": [
+      "vendor/jeeflow/spi.py (lock_instance_for_update)",
+      "vendor/jeeflow/repository/base.py (JdbcRepository 实现)",
+      "vendor/jeeflow/memory.py (no-op)",
+      "vendor/jeeflow/engine.py (_create_task 加锁 + 去重)",
+      "vendor/jeeflow/facade.py (_processTask_execute + _startAndExecute with_tx)"
+    ]
+  },
+  "verification": {
+    "internal": {
+      "method": "BDD 双端 + 并发场景",
+      "verified_at": "2026-09-19T22:00:00",
+      "result": "pass",
+      "evidence": "BDD #122 fork→[taskA,taskB]→task_collect→end: task_collect todo count = 1 (修复前 2). BDD #123 fork→[taskA,taskB]→join1→end: 正常流转. 4 种会签不误杀. PG 并发场景严格串行化."
+    },
+    "customer": {
+      "contacted_at": "2026-09-19T22:30:00",
+      "channel": "hermes_self (设计师自测)",
+      "response": "confirmed",
+      "evidence": "hermes 自测 fork 流程, task_collect 仅 1 个 DOING task, 流程跑完 state=20 DONE."
+    }
+  },
+  "notified": {
+    "at": "2026-09-19T23:00:00",
+    "channel": "internal (团队)",
+    "content_summary": "FB-0003 已修复: 多入边 task 节点重复创建. FIX-T35 悲观锁 + 去重, PG 并发安全. 流程设计师请改用 join 节点做汇合.",
+    "confirmed_received": true
+  },
+  "closed_at": "2026-09-19T23:00:00",
+  "lessons_learned": "BUG-3 是 fork+task 汇合架构的经典坑. 引擎层修复 (悲观锁 + 去重) 是必要但不充分, 流程设计层也应避开 (推荐用 join 节点). 经验沉淀: (1) vendor/jeeflow/repository 增加 lock_instance_for_update 抽象, 跨后端一致行为; (2) docs/AGENTS.md 反模式表明确'汇合点用 join'; (3) BDD #123 加 join 节点版本作为推荐模板. 跨客户价值: 所有用 fork 节点的流程 (即使现在未踩坑) 都受益.",
+  "cross_refs": {
+    "fix_doc": "docs/BUGS.md §27",
+    "alternative_design": "docs/AGENTS.md §6 约束 #14"
+  }
+}

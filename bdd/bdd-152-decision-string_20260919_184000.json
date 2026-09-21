@@ -1,0 +1,24 @@
+{
+  "name": "bdd-152-decision-string",
+  "displayName": "BDD #152 决策字符串比较 (== \"精确\")",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "apply", "type": "snaker:task", "x": 130, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "申请"}},
+    {"id": "d", "type": "snaker:decision", "x": 260, "y": 200, "properties": {"width": 80, "height": 50}, "text": {"value": "类型决策"}},
+    {"id": "leave", "type": "snaker:task", "x": 400, "y": 100, "properties": {"width": 100, "height": 50, "assignee": "leader", "taskType": 0, "performType": 0}, "text": {"value": "请假分支"}},
+    {"id": "expense", "type": "snaker:task", "x": 400, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "manager", "taskType": 0, "performType": 0}, "text": {"value": "报销分支"}},
+    {"id": "default", "type": "snaker:task", "x": 400, "y": 300, "properties": {"width": 100, "height": 50, "assignee": "director", "taskType": 0, "performType": 0}, "text": {"value": "其他"}},
+    {"id": "end", "type": "snaker:end", "x": 550, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "d", "properties": {}},
+    {"id": "e2", "sourceNodeId": "d", "targetNodeId": "leave", "properties": {"expr": "type==\"请假\""}},
+    {"id": "e3", "sourceNodeId": "d", "targetNodeId": "expense", "properties": {"expr": "type==\"报销\""}},
+    {"id": "e4", "sourceNodeId": "d", "targetNodeId": "default", "properties": {}},
+    {"id": "e5", "sourceNodeId": "leave", "targetNodeId": "end", "properties": {}},
+    {"id": "e6", "sourceNodeId": "expense", "targetNodeId": "end", "properties": {}},
+    {"id": "e7", "sourceNodeId": "default", "targetNodeId": "end", "properties": {}}
+  ]
+}

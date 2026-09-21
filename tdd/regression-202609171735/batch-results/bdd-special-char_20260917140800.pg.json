@@ -1,0 +1,30 @@
+=== pg bdd/bdd-special-char_20260917140800.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789663683454000",
+  "inst_id": "91815611863724",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815611863724"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "审 批"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+=== memory bdd/bdd-countersign-seq_20260917141900.json ===
+{
+  "ok": true,
+  "pdid": "252",
+  "inst_id": "91815586503383",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815586503383"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-manager",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-director",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "sign_review",
+        "sign_review",
+        "sign_review"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

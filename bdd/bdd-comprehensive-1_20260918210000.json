@@ -1,0 +1,166 @@
+{
+  "name": "comprehensive-1",
+  "displayName": "综合场景1",
+  "type": "approval",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "x-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_level": ""
+        }
+      },
+      "text": {
+        "value": "提交"
+      }
+    },
+    {
+      "id": "level_decision",
+      "type": "snaker:decision",
+      "x": 300,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "层级决策"
+      }
+    },
+    {
+      "id": "low_path",
+      "type": "snaker:task",
+      "x": 450,
+      "y": 50,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "assignee": "leader",
+        "taskType": 0,
+        "performType": 0
+      },
+      "text": {
+        "value": "低层级"
+      }
+    },
+    {
+      "id": "mid_path",
+      "type": "snaker:task",
+      "x": 450,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "中层级"
+      }
+    },
+    {
+      "id": "high_path",
+      "type": "snaker:task",
+      "x": 450,
+      "y": 350,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "高层级"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 600,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+    },
+    {
+      "id": "e1",
+      "sourceNodeId": "apply",
+      "targetNodeId": "level_decision",
+      "properties": {}
+    },
+    {
+      "id": "e2",
+      "sourceNodeId": "level_decision",
+      "targetNodeId": "low_path",
+      "properties": {
+        "expr": "f_level==1"
+      }
+    },
+    {
+      "id": "e3",
+      "sourceNodeId": "level_decision",
+      "targetNodeId": "mid_path",
+      "properties": {
+        "expr": "f_level==2"
+      }
+    },
+    {
+      "id": "e4",
+      "sourceNodeId": "level_decision",
+      "targetNodeId": "high_path",
+      "properties": {
+        "expr": "f_level==3"
+      }
+    },
+    {
+      "id": "e5",
+      "sourceNodeId": "low_path",
+      "targetNodeId": "end",
+      "properties": {}
+    },
+    {
+      "id": "e6",
+      "sourceNodeId": "mid_path",
+      "targetNodeId": "end",
+      "properties": {}
+    },
+    {
+      "id": "e7",
+      "sourceNodeId": "high_path",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "decision-all-empty",
+  "title": "测试-决策所有expr为空",
+  "type": "approval",
+  "node_types": ["start","task","decision","task","task","task","end"],
+  "features": ["decision 全部 expr 空", "兜底第一条"],
+  "errors": []
+}

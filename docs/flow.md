@@ -1,6 +1,13 @@
 # Flow JSON 定义规范
 
-本文档定义 jeeFlow 流程模型 JSON 的结构、字段语义与解析路径。JSON 在设计器面板保存、在引擎驱动流转时被解析执行，跨 Python/Java 通用。
+本文档定义 jeeFlow 流程模型 JSON 的结构、字段语义与解析路径。JSON 在设计器面板保存、在引擎驱动流转时被解析执行。
+
+> **📌 2026-09-19 决策**：本项目**独立使用 Python 引擎**，JSON 规范**不再考虑 Java 端兼容**。
+> - `custom.methodName` 字段已标记冗余（v1.9.0+）
+> - `assignmentHandler` 仅注册简化版 FQCN（v1.9.0+）
+> - 节点 id 命名仍保留 `^[A-Za-z0-9_]+$`（理由：JSON key / URL 路由安全，非 Java 兼容）
+>
+> 详见 `vendor/README.md §8` + `docs/AGENTS.md §6 #2`。
 
 ---
 
@@ -95,6 +102,37 @@
 | `TYPE_FORK` | `snaker:fork` | 并行分支发起 |
 | `TYPE_JOIN` | `snaker:join` | 并行汇合（无活跃任务时放行） |
 | `TYPE_CUSTOM` | `snaker:custom` | 自定义节点（外部处理器） |
+| `TYPE_CALL_ACTIVITY` | `snaker:callActivity` | 子流程触发节点 (FIX-T73 §3.1.2) |
+
+### 3.7 callActivity 子流程节点 (FIX-T73 §3.1.2)
+
+```json
+{
+  "id": "sub_flow",
+  "type": "snaker:callActivity",
+  "properties": {
+    "processDefineName": "leave-approval-sub",  // 子流程 name (必填, 按最新版本)
+    "assignee": "user2"                         // 子流程发起人 (缺省 = 主流程 operator)
+  }
+}
+```
+
+行为:
+1. 引擎查找 `wf_process_define` 中 name = `processDefineName` 的最新一版
+2. 启动子实例, parentId = 主实例 id
+3. 写 `childInstanceId` 到主实例 vars_[`<node.id>`_childInstanceId]
+4. 不阻塞主流程, 立即推进至下游节点
+5. 子实例完成时通过 §3.1.1 联动回写主实例 `parentStatus`
+
+约束:
+- 子流程必须先于主流程 deploy (引擎启动时按 name 查 definition)
+- callActivity 节点属性 `formKey` 可选, 但不强制 (用于子流程表单复用)
+- 主流程中可混合 callActivity 与 task/decision, 但 callActivity 不创建 task, 不阻塞流转
+
+§3.1.1 主子状态联动 (FIX-T72): `ProcessInstance.parentStatus` 字段
+- `None` (默认, 子未完成)
+- `"CHILD_DONE"` (子实例 DONE → state=20)
+- `"CHILD_REJECT"` (子实例 REJECT → state=45)
 
 ### 3.2 start / end / fork / join
 
@@ -115,15 +153,24 @@
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `assignee` | string | 否（与 `assignmentHandler` 互斥） | 处理人解析：`"applicant"`=发起人；`"leader"`=运营占位；逗号分隔多值；或流程变量 token（`f_xxx`/`xxx`，`engine.py:265-275`）|
-| `assignmentHandler` | string | 否 | 处理器全限定类名（Java 类名约定，跨语言通用，见 §6） |
+| `assignmentHandler` | string | 否 | 处理器注册 key（`EngineExtensions.registry` 内 `HandlerRegistry` 注册的 key，FQCN 风格字符串，见 §6） |
 | `form` | string | 否 | 表单 key（前端按 key 渲染；空串合法，见 10-mixed-mode.json task3） |
-| `taskType` | int | 是 | `0`=主审 `1`=副审（旁审）`2`=记录（`TaskType` 枚举，`model.py:80`）；样例 `04-fork-join.json` taskB 与 `10-mixed-mode.json` task3 均用 1 |
+| `taskType` | int | 是 | `0`=主审 `1`=副审（旁审）`2`=记录（`TaskType` 枚举，`model.py:80`）；**FIX-T30 (2026-09-18) 透传落库**；样例 `04-fork-join.json` taskB 与 `10-mixed-mode.json` task3 均用 1 |
 | `performType` | int/string | 是 | `0`/ `"0"`=普通，`1`/ `"1"`/`"ALL"`/`"COUNTERSIGN"`=会签；引擎容错解析（`engine.py:382-386`） |
 | `countersignType` | string | 会签时必填 | `"PARALLEL"` 并行；`"SEQUENTIAL"` 串行（`engine.py:282, 387`） |
-| `countersignCompletionCondition` | string | 否 | 会签完成条件；可放 `properties` 根下，也可放 `properties.field` 内。两种取值：① Activiti 表达式，如 `"#nrOfCompletedInstances==2"`（`flows/07`）；② 常量 `"ONE_VOTE_VETO"` 一票否决（`flows/13`） |
+| `countersignCompletionCondition` | string | 否 | 会签完成条件；**两种语义互斥**, 不可复合。可放 `properties` 根下, 也可放 `properties.field` 内。详见下方"会签完成模式表" |
 | `candidateUsers` | string | 否 | 候选人名单（逗号分隔）。可直接放 `properties` 根下（`flows/12-candidate-page.json`）也可放 `field` 内（`flows/05/06/07/13`）。前端候选人组件按此过滤 |
 | `candidateGroups` | string | 否 | 候选角色组（同上两种位置，逗号分隔） |
 | `field` | object | 否 | 字段集合：可放 `candidateUsers` / `candidateGroups` / `countersignCompletionCondition` / `PERMISSION_xxx`（任务字段权限，1=只读、2=隐藏，见 §5） |
+
+> ⚠️ **多出边警告（FIX-T110 2026-09-20 §111）**：
+> - task 节点**不应有多条无条件出边**。引擎 `engine.py:210 _follow_edges` 遍历所有出边，不分流；
+>   当 task 节点 ≥2 出边且 target 含 end 节点时，end 会被提前遍历 → `inst.finish()` → instance.state=20 DONE，
+>   但同时创建的 DOING task 因 instance.state=20 而无法 `execute`（code=99999999）。
+> - 正确做法：需要分支时**用 decision 节点分隔**（每条 decision 出边配显式 `expr`），或用 fork 节点（必须 join 汇合）。
+> - verify 规则 **W012**（`vendor/jeeflow/verify.py`）会在 deploy 时警告此反模式（不阻塞 save/deploy）。
+> - 范例：`tdd/expense_report_v2.json` (mgr_approve → decision_mgr → cashier_pay / end_rejected)。
+> - 详见 `docs/known-issues.md §111` + `AGENTS.md §6 约束 #29`。
 
 **assignee 解析规则（实测 2026-09-17 §35）**：
 - `"applicant"` → `inst.operator`（流程发起人）
@@ -168,9 +215,28 @@
 - 每次 task 完成时 evaluate 表达式；true → **abandon 剩余 DOING**（taskState=99 ABANDON）+ 推进下游
 - RatioCapableEngine 扩展（`main_pg.py:93-155`）
 
+**会签完成模式（实测 2026-09-21 FB-0008 flowuser 反馈）**：
+
+| 模式 | `countersignCompletionCondition` 字段值 | 行为 | 样例 |
+|------|---------------------------------------|------|------|
+| **全员通过 (默认)** | (字段省略) | PARALLEL: 全员 approve 才流转; 任何 reject 走 reject 边 | `flows/05` |
+| **比例通过 (N/M)** | `"#nrOfCompletedInstances>=K"` (OGNL 表达式) | 满足 K/M 立即流转 + 余者 taskState=99 ABANDON (updateUser=触发者, FIX-T111) | `flows/07` |
+| **一票否决** | `"ONE_VOTE_VETO"` (字符串常量) | 任一 reject (submitType=20) 立即流转 state=45 + 余者 ABANDON | `flows/13` |
+
+⚠️ **关键互斥 (FB-0008 flowuser 报告)**:
+- 字段值 = 表达式 → **放弃** 一票否决能力 (即使 reject, 引擎已按比例流转, reject 来不及)
+- 字段值 = 字符串 → **放弃** 比例能力 (引擎只识别 ONE_VOTE_VETO, 不评估表达式)
+- 这是引擎设计选择, 不是 bug. 设计师必须二选一, 不要试图"2/3 通过 OR 任一 reject"
+
+**如果需要"复合规则" (FB-0008 设计模式)**:
+- 2/3 通过 + 任一 reject 立即驳回: 用嵌套 decision + expr (`docs/flow.md §3.4`); 会签节点只做 2/3, 后接 decision 节点判 reject 边
+- 复杂多条件会签: 自定义节点 + handler (`docs/flow.md §3.5` + `main_common.build_custom_handlers`)
+
 ### 3.4 decision 节点 properties
 
-`engine._evaluate_decision`（`engine.py:353-375`）按出边 `properties.expr` 依次求值，第一个真值即沿该边。`properties.expr` 可空（默认边），`handleClass` 兼容 Java 扩展点（样例 03-decision-expr.json 与 10-mixed-mode.json 均保留 `"handleClass": ""` 占位，当前未触发，留作后续扩展）。
+`engine._evaluate_decision`（`engine.py:_evaluate_decision`）按出边 `properties.expr` 依次求值，第一个真值即沿该边。`properties.expr` 可空（默认边）。
+
+> **历史字段**：`handleClass` 是 v1.0.x 时期预留的扩展点字段（Java 反射式 decision handler）。Python 引擎 v1.9.0 起**不再使用**该字段；如需扩展决策逻辑，参考 `custom` 节点（§3.5）+ `EngineExtensions.decision_handler`。
 
 > 已知：Python 引擎 `_evaluate_decision` **不调用 `IDecisionHandler`**（register_decision 无效）。详见 `./known-issues.md §46`。要实现多条件路由请用嵌套 decision + expr。
 
@@ -204,16 +270,31 @@
 
 ### 3.5 custom 节点 properties
 
-来源：`flows/08-custom-node.json` + 引擎入口（`TYPE_CUSTOM` 与 `TYPE_TASK` 共用 `_create_task`，但 custom 不建任务，触发外部处理器）。
+来源：`flows/08-custom-node.json` + 引擎入口（`engine.py:_execute_node` 拆出 `TYPE_CUSTOM` 分支 → `_execute_custom_node`）。
 
-> ⚠️ **实测（2026-09-17 复测 08-custom-node）**：引擎**未实现** `clazz/methodName/args/val` 四个字段的反射调用。custom 节点被当 task 处理，要求 `assignee`/`assignmentHandler` 解析 actors；否则 `_create_task` 在 actors=[] 时 return，流程卡死。详见 `./known-issues.md` §16 + `./tdd/test_08-custom-node_20260917101500.md`。
+> ✅ **v1.9.0 FIX-T38 已实现**：custom 节点通过 `EngineExtensions.custom_handler_registry` 调度，handler 签名 `async def(node, inst, vars_, args) -> Any`。详见 `known-issues.md §16` + `tdd/test_fix37_fix38_20260919_143000.md`。
 
-| 字段 | 说明 |
-| --- | --- |
-| `clazz` | 外部处理器类全限定名（Java 约定） |
-| `methodName` | 调用方法名 |
-| `args` | 入参（字符串，可为流程变量） |
-| `val` | 返回值写入变量名 |
+| 字段 | 必填 | 说明 |
+| --- | --- | --- |
+| `clazz` | 是 | handler 注册 key（在 `EngineExtensions.custom_handler_registry` 注册的字符串，可 FQCN 风格或自定义短名） |
+| `methodName` | 否 | 冗余字段（保留向前兼容，无业务语义） |
+| `args` | 否 | 入参字符串（handler 自行解析为 dict/JSON/逗号分隔/任意格式） |
+| `val` | 否 | 返回值写入变量名（缺省不写；`result is None` 也不写） |
+
+**行为**：
+1. 触发前后调 `_fire_pre` / `_fire_post` 拦截器（同其他节点）
+2. 调 `handler(node, inst, vars_, args)` → 写回 `vars_[val]`
+3. **不创建 task**，直接 `_follow_edges` 推进下游
+4. handler 抛错向上冒泡（不静默）
+5. handler 未注册 / `clazz` 缺省 → 抛 `ValueError`（v1.8.0 之前静默，FIX-T17 改进）
+
+**注册示例**（`main_common.py:build_custom_handlers`）：
+```python
+def build_custom_handlers() -> dict:
+    return {
+        "com.mldong.jeeflow.test.TestCustomHandler": _builtin_custom_test_handler,
+    }
+```
 
 ---
 
@@ -283,11 +364,102 @@
 
 引擎在 `execute_process_task`（`engine.py:200-203`）按 `PERMISSION_` 前缀过滤提交入参 `_filter_field_by_perm`，只读/隐藏字段不进入实例变量。
 
+### 5.1 权限码语义（FIX-DOC-1 2026-09-18）
+
+| 权限码 | 含义 | 引擎行为 |
+|--------|------|----------|
+| `1` | 只读 | 提交时该字段被剔除，实例变量保留原值 |
+| `2` | 编辑 | 提交时该字段正常写入实例变量 |
+| `3` | 隐藏 | 提交时该字段被剔除，**实例变量也不可见**（前端不回传） |
+
+### 5.2 JSON key 规范（FIX-DOC-1）
+
+⚠️ **关键**：`field` 节点下 key **必须**以 `PERMISSION_` 前缀开头，否则引擎**完全忽略**该字段。
+
+```json
+// ✅ 正确格式
+"field": {
+  "PERMISSION_f_amount": "1",  // 只读
+  "PERMISSION_f_secret": "2"   // 编辑
+}
+
+// ❌ 错误格式（直接写 f_xxx：引擎不识别，权限完全失效）
+"field": {
+  "f_amount": "1",
+  "f_secret": "2"
+}
+```
+
+引擎代码 `engine.py:_filter_field_by_perm`：
+
+```python
+perm = field_perm.get(f"PERMISSION_f_{name}")  # 必须是 PERMISSION_f_xxx
+if perm is None:
+    perm = field_perm.get(f"PERMISSION_{name}")  # 兼容 PERMISSION_xxx（去 f_ 前缀）
+```
+
+实测 6 项断言（双端 PASS）见 `./known-issues.md §82`。
+
+### 5.3 委托代理（surrogate）
+
+> ⚠️ 当前实现缺自动展开：委托关系**不影响** `processTask/todoList` 的 actor 过滤，需手动 `processTask/surrogate` addCandidate。
+
+**API**：
+- 创建委托：`/wf/processSurrogate/save` `{operator, surrogate, processName, startTime, endTime, enabled}`
+- 我的委托：`/wf/processSurrogate/page` `{operator, pageNum, pageSize}`
+- 委托 addCandidate：`/wf/processTask/surrogate` `{processTaskId, actorIds}`（与 `addCandidate` 等价）
+
+**委托 ≠ 自动代办**：userA 委托给 userB 后，userB 仍需调用 surrogate addCandidate 才能在 todoList 看到 userA 的任务。
+
+详细测试见 `./known-issues.md §82`。
+
+### 5.3.1 任务级委托（delegate · per-task 临时）
+
+> 🆕 FIX-T69 v1.9.0+ 新增端点. 单任务一次性转交, 不影响其他任务.
+
+**API**: `/wf/processTask/delegate`
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `processTaskId` | string | 是 | 当前任务 ID (雪花 ID, 字符串) |
+| `operator` | string | 是 | 委托人 userId (实际操作人, 必须在 actorIds 里) |
+| `targetUserId` | string | 是 | 受托人 userId (**注意: 不是 `assignee`**) |
+| `comment` | string | 否 | 委托备注 |
+
+> ⚠️ **FB-0009 关键提示 (2026-09-21 flowuser 反馈)**:
+> - 字段名是 **`targetUserId`**, 不是 `assignee`
+> - 用户首次调用按 `assignee` 传 → `[ValueError] targetUserId 缺失` (code=99999999)
+> - 修正后立即生效
+
+**当前行为 (v1.9.0+ 实测)**:
+- delegate 后 `actorIds` = `[operator, targetUserId]` (双方都在 actorIds 里)
+- 双方都可在 `processTask/todoList` 看到该 task
+- 任何一方都可执行 `processTask/execute`
+- `processTask/delegateHistory` 端点可查委托历史
+
+**委托 ≠ 转交 (设计意图 vs 实现错位, FB-0010)**:
+- v1.9.0+ 当前是"协助"语义 (双方可见), 不是"移交"语义
+- 详见 `docs/known-issues.md §114` + `feedback/inbox/FB-0010` (设计缺陷候选, 等 Phase 9 修复)
+
+**示例**:
+```bash
+curl -X POST http://127.0.0.1:8101/wf/processTask/delegate \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "processTaskId": "92111791452258",
+    "operator": "deptLeader",
+    "targetUserId": "leader",
+    "comment": "我出差 1 周, 请 leader 帮我审批"
+  }'
+```
+
+详细测试见 `docs/known-issues.md §114`。
+
 ---
 
 ## 6. 参与者处理器（assignmentHandler）
 
-`flows/11-assignment-handler.json` 给出全部内置处理器全限定名（与 Java 类名一致，`builtin.py:13-22`）：
+`flows/11-assignment-handler.json` 给出全部内置处理器（注册 key 在 `EngineExtensions.registry` / `HandlerRegistry`，`builtin.py:13-22`）：
 
 | 处理器 | 行为 |
 | --- | --- |
@@ -333,11 +505,49 @@
 | `KEY_ADMIN_ID` | `flow.admin` | 管理员 ID |
 | `KEY_AUTO_GEN_TITLE` | — | 自动生成标题开关 |
 
+### 7.1 变量作用域铁律 (FB-0011 FIX-DOC-4 · 2026-09-24)
+
+> ⚠️ **关键陷阱**: 不同前缀的变量**作用域不同**, decision 节点 expr 只能读 `f_*` (instance 级) 和 `u_*`. **不能读 `tf_*`** (task 级临时).
+
+| 前缀 | 作用域 | 持久化 | 可见节点 | 典型用法 |
+|------|--------|--------|----------|----------|
+| **`f_*`** | **instance** | ✅ 启动持久化 | 全部下游节点 + decision expr | `f_amount` / `f_leaveType` |
+| **`tf_*`** | **task** | ❌ 执行临时 | 当前 task + 后置拦截器 | `tf_mgr_decision` / `tf_nextNodeOperator` |
+| **`u_*`** | **execution context** | ❌ 操作人临时 | 当前 execute + 当前 task | `u_userId` / `u_realName` |
+| `submitType` | execution context | ❌ | 当前 execute + 后置拦截器 | `submitType=0/1/2/3/5/6/20` |
+
+**铁律示例**:
+
+```bash
+# 启动时传 f_amount (启动持久化)
+POST /wf/processInstance/startAndExecute
+{"processDefineId": "...", "operator": "user1",
+ "variables": {"submitType": 0, "f_amount": 5000,
+              "u_userId": "user1", "u_realName": "用户1"}}
+
+# execute 时传 tf_mgr_decision (task 级, 不持久化)
+POST /wf/processTask/execute
+{"processTaskId": "...", "operator": "manager", "submitType": 0,
+ "variables": {"tf_mgr_decision": 2}}     # ❌ 决策节点读不到!
+```
+
+**正确做法**: 启动时 + execute 时**都传 f_* / tf_***:
+
+```bash
+# 启动时传 f_* (决策可读)
+{"variables": {"f_amount": 5000, "f_mgr_decision": 2}}
+
+# execute 时传 tf_* + 重新传 f_* (如果决策依赖)
+{"variables": {"tf_mgr_decision": 2, "f_mgr_decision": 2}}
+```
+
+**经验教训** (FB-0007 BUG-2 实证): flowuser 在 v1/v2 失败因只传 tf_*, 决策 expr 读不到 → fallback 兜底 → 幽灵 task. v3 PASS 因启动 + execute 都传 f_*. 详见 `docs/known-issues.md §115`.
+
 ---
 
 ## 7a. SubmitType 路由矩阵
 
-`SubmitType` 是实例变量 `submitType` 的枚举值（`jeeflow/model.py:45-52`，仅文档记录，不可改），决定任务节点执行后路由走向。
+`SubmitType` 是实例变量 `submitType` 的枚举值（`vendor/jeeflow/model.py:69-78`，**可修改但需测后**），决定任务节点执行后路由走向。
 
 > ROLLBACK 重审机制详见 `./known-issues.md §52`，submitType=2 REJECT → state=45 详见 §43。
 
@@ -424,3 +634,5 @@
 | 8 | `flows/` 现有 JSON 不可改 | 01-13 已固化（含两个 `11-`），所有改动走新增 + 晋升路径 | 新流程 JSON 先落 `./tdd/<key>.json`，测试稳定后 `cp` 晋升 `./flows/<key>.json` | `./flows/`（项目约定） |
 
 > 表格中"来源"列若引用源码行号，仅作历史定位参考，**禁止回读源码**，所有字段语义以本文档和 `./docs/actions.md` 为准。
+---
+

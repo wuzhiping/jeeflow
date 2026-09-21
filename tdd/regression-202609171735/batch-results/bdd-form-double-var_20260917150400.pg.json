@@ -1,0 +1,30 @@
+=== pg bdd/bdd-form-double-var_20260917150400.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789663673759000",
+  "inst_id": "91815601935889",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815601935889"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

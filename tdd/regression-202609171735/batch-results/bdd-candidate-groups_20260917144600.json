@@ -1,0 +1,36 @@
+=== memory bdd/bdd-candidate-groups_20260917144600.json ===
+{
+  "ok": true,
+  "pdid": "218",
+  "inst_id": "91815585647292",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815585647292"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "review"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

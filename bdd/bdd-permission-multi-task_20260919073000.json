@@ -1,0 +1,8 @@
+{
+  "name": "permission-multi-task",
+  "title": "测试多任务节点字段权限 PERMISSION",
+  "type": "approval",
+  "node_types": ["start","task","task","task","end"],
+  "features": ["PERMISSION 多任务", "字段只读/编辑/隐藏"],
+  "errors": []
+}

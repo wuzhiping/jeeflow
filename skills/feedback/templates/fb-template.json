@@ -1,0 +1,66 @@
+{
+  "fb_id": "FB-NNNN",
+  "title": "一句话标题",
+  "created_at": "YYYY-MM-DDTHH:MM:SS",
+  "channel": "hermes_dm | email | feishu_bot | ticket | api_error | tdd | bdd | other",
+  "customer": {
+    "id": "C-NNN",
+    "type": "L1 | L2 | L3",
+    "contact": "沟通通道 / 用户名",
+    "scenario": "客户在做什么业务"
+  },
+  "raw_text": "客户的原话 / 原始复现描述, 含上下文",
+  "attachments": [
+    "skills/feedback/attachments/FB-NNNN-repro.json"
+  ],
+  "classification": {
+    "type": "bug | improve | doc | ux | consult",
+    "priority": "P0 | P1 | P2 | P3",
+    "owner": "engine | flow | doc | ui | spi | sla",
+    "scope": "single | multi | global",
+    "reproduce": "easy | medium | hard",
+    "classified_at": "YYYY-MM-DDTHH:MM:SS",
+    "classified_by": "hermes | bro | cli"
+  },
+  "status": "received | classified | in_progress | verified | notified | closed",
+  "processing": [
+    {
+      "step": "03-process",
+      "subtype": "engine | flow | doc | ux | consult",
+      "actor": "bro | hermes | integ",
+      "started_at": "YYYY-MM-DDTHH:MM:SS",
+      "ended_at": "YYYY-MM-DDTHH:MM:SS",
+      "action": "具体做了什么",
+      "result": "成功 | 失败 | 转需求"
+    }
+  ],
+  "fix_ref": {
+    "fix_id": "FIX-Tnnn",
+    "bdd_ids": ["bdd-XXXX-...", "..."],
+    "verify_rule": "Wnnn (if any)",
+    "docs_sections": ["docs/BUGS.md §X", "docs/known-issues.md §Y"],
+    "files_changed": ["vendor/jeeflow/engine.py:NNN-MMM"]
+  },
+  "verification": {
+    "internal": {
+      "method": "BDD 双端 PASS",
+      "verified_at": "YYYY-MM-DDTHH:MM:SS",
+      "result": "pass | fail",
+      "evidence": "bdd-1501-1503-fix-t110-task-multi-out 9/9 PASS"
+    },
+    "customer": {
+      "contacted_at": "YYYY-MM-DDTHH:MM:SS",
+      "channel": "hermes_dm",
+      "response": "confirmed | silent | unhappy",
+      "evidence": "复现用例 expense_report_v2.json 通过"
+    }
+  },
+  "notified": {
+    "at": "YYYY-MM-DDTHH:MM:SS",
+    "channel": "feishu_dm | email | dm | doc",
+    "content_summary": "通知原文摘要",
+    "confirmed_received": true
+  },
+  "closed_at": "YYYY-MM-DDTHH:MM:SS",
+  "lessons_learned": "一段话总结学到了什么, 用于沉淀到 docs/ 或 skills/"
+}

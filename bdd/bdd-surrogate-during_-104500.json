@@ -1,0 +1,8 @@
+{
+  "name": "surrogate-during",
+  "title": "测试-surrogate期间任务流转",
+  "type": "approval",
+  "node_types": ["start","task","task","end"],
+  "features": ["surrogate 委托", "actor 过滤"],
+  "errors": []
+}

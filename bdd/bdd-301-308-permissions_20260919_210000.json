@@ -1,0 +1,53 @@
+{
+  "batch": "permissions",
+  "results": [
+    {
+      "bdd_id": "BDD#301",
+      "name": "hidden PARALLEL",
+      "status": "FAIL",
+      "detail": "active=['cs', 'cs']"
+    },
+    {
+      "bdd_id": "BDD#302",
+      "name": "read ROLLBACK",
+      "status": "INFO",
+      "detail": "active=['apply'], f_x=100"
+    },
+    {
+      "bdd_id": "BDD#303",
+      "name": "hidden 跨 task",
+      "status": "INFO",
+      "detail": "state=20, f_secret=X"
+    },
+    {
+      "bdd_id": "BDD#304",
+      "name": "多用户 task 字段",
+      "status": "INFO",
+      "detail": "active=[('multi', ['userB', 'userC'])]"
+    },
+    {
+      "bdd_id": "BDD#305",
+      "name": "applicant 关键字",
+      "status": "PASS",
+      "detail": "actors=['userA']"
+    },
+    {
+      "bdd_id": "BDD#306",
+      "name": "逗号 + applicant",
+      "status": "PASS",
+      "detail": "actors=['userB', 'userA']"
+    },
+    {
+      "bdd_id": "BDD#307",
+      "name": "f_<node_id> 变量",
+      "status": "INFO",
+      "detail": "actors=['userB'] (期望含 director if f_leader 解析)"
+    },
+    {
+      "bdd_id": "BDD#308",
+      "name": "列表变量",
+      "status": "INFO",
+      "detail": "state=20, f_list=['a', 'b', 'c']"
+    }
+  ]
+}

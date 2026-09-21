@@ -1,0 +1,2308 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "jeeFlow API",
+    "description": "私用定位的工作流引擎 API (BDD #1207 FIX-T85 §4.3.1)\n- 50 个 action 端点全部在 /wf/{action:path} 路由 (§7 新增 processInstance/rollback + doingList)\n- 兼容 Phase 1+2 所有 endpoint",
+    "version": "1.9.0+"
+  },
+  "paths": {
+    "/wf/{action}": {
+      "post": {
+        "summary": "Wf Flow",
+        "description": "单入口门面转发（v1.5.0）：/wf/{action}，action 多段（如 processDefine/page）",
+        "operationId": "wf_flow_wf__action__post",
+        "parameters": [
+          {
+            "name": "action",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Action"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wf/processDefine/deploy": {
+      "post": {
+        "summary": "processDefine/deploy",
+        "description": "Facade._processprocessDefine_deploy",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processDefine/detail": {
+      "post": {
+        "summary": "processDefine/detail",
+        "description": "Facade._processprocessDefine_detail",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processDefine/getLastByName": {
+      "post": {
+        "summary": "processDefine/getLastByName",
+        "description": "Facade._processprocessDefine_getLastByName",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processDefine/page": {
+      "post": {
+        "summary": "processDefine/page",
+        "description": "Facade._processprocessDefine_page",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processDefine/redeploy": {
+      "post": {
+        "summary": "processDefine/redeploy",
+        "description": "Facade._processprocessDefine_redeploy",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processDefine/remove": {
+      "post": {
+        "summary": "processDefine/remove",
+        "description": "Facade._processprocessDefine_remove",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processDefine/startAndExecute": {
+      "post": {
+        "summary": "processDefine/startAndExecute",
+        "description": "Facade._processprocessDefine_startAndExecute",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processDefine/upAndDown": {
+      "post": {
+        "summary": "processDefine/upAndDown",
+        "description": "Facade._processprocessDefine_upAndDown",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processDesign/deploy": {
+      "post": {
+        "summary": "processDesign/deploy",
+        "description": "Facade._processprocessDesign_deploy",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processDesign/detail": {
+      "post": {
+        "summary": "processDesign/detail",
+        "description": "Facade._processprocessDesign_detail",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processDesign/listByType": {
+      "post": {
+        "summary": "processDesign/listByType",
+        "description": "Facade._processprocessDesign_listByType",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processDesign/page": {
+      "post": {
+        "summary": "processDesign/page",
+        "description": "Facade._processprocessDesign_page",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processDesign/redeploy": {
+      "post": {
+        "summary": "processDesign/redeploy",
+        "description": "Facade._processprocessDesign_redeploy",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processDesign/remove": {
+      "post": {
+        "summary": "processDesign/remove",
+        "description": "Facade._processprocessDesign_remove",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processDesign/save": {
+      "post": {
+        "summary": "processDesign/save",
+        "description": "Facade._processprocessDesign_save",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processDesign/update": {
+      "post": {
+        "summary": "processDesign/update",
+        "description": "Facade._processprocessDesign_update",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processDesign/updateDefine": {
+      "post": {
+        "summary": "processDesign/updateDefine",
+        "description": "Facade._processprocessDesign_updateDefine",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processDesignHis/page": {
+      "post": {
+        "summary": "processDesignHis/page",
+        "description": "Facade._processprocessDesignHis_page",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processInstance/approvalRecord": {
+      "post": {
+        "summary": "processInstance/approvalRecord",
+        "description": "Facade._processprocessInstance_approvalRecord",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processInstance/bizData": {
+      "post": {
+        "summary": "processInstance/bizData",
+        "description": "Facade._processprocessInstance_bizData",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processInstance/ccList": {
+      "post": {
+        "summary": "processInstance/ccList",
+        "description": "Facade._processprocessInstance_ccList",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processInstance/createCCInstance": {
+      "post": {
+        "summary": "processInstance/createCCInstance",
+        "description": "Facade._processprocessInstance_createCCInstance",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processInstance/detail": {
+      "post": {
+        "summary": "processInstance/detail",
+        "description": "Facade._processprocessInstance_detail",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processInstance/getAssigneeTextData": {
+      "post": {
+        "summary": "processInstance/getAssigneeTextData",
+        "description": "Facade._processprocessInstance_getAssigneeTextData",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processInstance/highLight": {
+      "post": {
+        "summary": "processInstance/highLight",
+        "description": "Facade._processprocessInstance_highLight",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processInstance/page": {
+      "post": {
+        "summary": "processInstance/page",
+        "description": "Facade._processprocessInstance_page",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processInstance/resume": {
+      "post": {
+        "summary": "processInstance/resume",
+        "description": "Facade._processprocessInstance_resume",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processInstance/startAndExecute": {
+      "post": {
+        "summary": "processInstance/startAndExecute",
+        "description": "Facade._processprocessInstance_startAndExecute",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processInstance/stats/group": {
+      "post": {
+        "summary": "processInstance/stats/group",
+        "description": "Facade._processprocessInstance_stats_group",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processInstance/stats/overview": {
+      "post": {
+        "summary": "processInstance/stats/overview",
+        "description": "Facade._processprocessInstance_stats_overview",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processInstance/stats/trend": {
+      "post": {
+        "summary": "processInstance/stats/trend",
+        "description": "Facade._processprocessInstance_stats_trend",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processInstance/suspend": {
+      "post": {
+        "summary": "processInstance/suspend",
+        "description": "Facade._processprocessInstance_suspend",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processInstance/updateCCStatus": {
+      "post": {
+        "summary": "processInstance/updateCCStatus",
+        "description": "Facade._processprocessInstance_updateCCStatus",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processInstance/withdraw": {
+      "post": {
+        "summary": "processInstance/withdraw",
+        "description": "Facade._processprocessInstance_withdraw",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processSurrogate/detail": {
+      "post": {
+        "summary": "processSurrogate/detail",
+        "description": "Facade._processprocessSurrogate_detail",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processSurrogate/page": {
+      "post": {
+        "summary": "processSurrogate/page",
+        "description": "Facade._processprocessSurrogate_page",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processSurrogate/remove": {
+      "post": {
+        "summary": "processSurrogate/remove",
+        "description": "Facade._processprocessSurrogate_remove",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processSurrogate/save": {
+      "post": {
+        "summary": "processSurrogate/save",
+        "description": "Facade._processprocessSurrogate_save",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processSurrogate/update": {
+      "post": {
+        "summary": "processSurrogate/update",
+        "description": "Facade._processprocessSurrogate_update",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processTask/addCandidate": {
+      "post": {
+        "summary": "processTask/addCandidate",
+        "description": "Facade._processprocessTask_addCandidate",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processTask/candidatePage": {
+      "post": {
+        "summary": "processTask/candidatePage",
+        "description": "Facade._processprocessTask_candidatePage",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processTask/comment": {
+      "post": {
+        "summary": "processTask/comment",
+        "description": "Facade._processprocessTask_comment",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processTask/delegate": {
+      "post": {
+        "summary": "processTask/delegate",
+        "description": "Facade._processprocessTask_delegate",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processTask/delegateHistory": {
+      "post": {
+        "summary": "processTask/delegateHistory",
+        "description": "Facade._processprocessTask_delegateHistory",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processTask/detail": {
+      "post": {
+        "summary": "processTask/detail",
+        "description": "Facade._processprocessTask_detail",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processTask/doneList": {
+      "post": {
+        "summary": "processTask/doneList",
+        "description": "Facade._processprocessTask_doneList",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processTask/execute": {
+      "post": {
+        "summary": "processTask/execute",
+        "description": "Facade._processprocessTask_execute",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processTask/extra": {
+      "post": {
+        "summary": "processTask/extra",
+        "description": "Facade._processprocessTask_extra",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processTask/jumpAbleTaskNameList": {
+      "post": {
+        "summary": "processTask/jumpAbleTaskNameList",
+        "description": "Facade._processprocessTask_jumpAbleTaskNameList",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processTask/latest": {
+      "post": {
+        "summary": "processTask/latest",
+        "description": "Facade._processprocessTask_latest",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processTask/removeCandidate": {
+      "post": {
+        "summary": "processTask/removeCandidate",
+        "description": "Facade._processprocessTask_removeCandidate",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processTask/surrogate": {
+      "post": {
+        "summary": "processTask/surrogate",
+        "description": "Facade._processprocessTask_surrogate",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processTask/todoList": {
+      "post": {
+        "summary": "processTask/todoList",
+        "description": "Facade._processprocessTask_todoList",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processTask/transfer": {
+      "post": {
+        "summary": "processTask/transfer",
+        "description": "Facade._processprocessTask_transfer",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processTask/transferAndAdd": {
+      "post": {
+        "summary": "processTask/transferAndAdd",
+        "description": "Facade._processprocessTask_transferAndAdd",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/wf/processTask/withForm": {
+      "post": {
+        "summary": "processTask/withForm",
+        "description": "Facade._processprocessTask_withForm",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "99999999": {
+            "description": "业务异常 (见 docs/state.md)"
+          }
+        }
+      }
+    },
+    "/api/reset": {
+      "post": {
+        "summary": "Api Reset",
+        "description": "一键重置（issues/11）：清空存储 + 重载种子。reset_fn 处理双端差异（memory 清字典 / PG TRUNCATE）。",
+        "operationId": "api_reset_api_reset_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/healthz": {
+      "get": {
+        "summary": "Healthz",
+        "operationId": "healthz_healthz_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/health": {
+      "get": {
+        "summary": "Admin Health",
+        "description": "BDD #1201 FIX-T79 (2026-09-20) §4.1.1：管理端 health 监控\n\n详细健康检查 (区别于 /healthz 简版):\n- PG pool 状态 (size / idle / min_size / max_size)\n- 引擎缓存状态 (_def_cache 命中数)\n- repo 健康 (find_define_by_id 探测)\n- process count (active instances / active tasks)",
+        "operationId": "admin_health_api_admin_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stats": {
+      "get": {
+        "summary": "Api Stats",
+        "operationId": "api_stats_api_stats_get",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "user1",
+              "title": "Userid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/stats/overview": {
+      "get": {
+        "summary": "Admin Stats Overview",
+        "description": "BDD #1202 FIX-T80 (2026-09-20) §4.1.2：管理端看板总览\n\nGET 端点, 调用 facade._processInstance_stats_overview\nArgs (query string):\n  - start: ISO datetime\n  - end: ISO datetime\n  - stateIn: 逗号分隔状态码 (10/20/30/40/45/50/99)\nReturns: {total, inProgress, completed, rejected, withdrawn, suspended,\n          todayNew, avgDurationSeconds, pending, overdue, activeUsers,\n          countersignRate, onTimeRate, rejectRate}",
+        "operationId": "admin_stats_overview_api_admin_stats_overview_get",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Start"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "End"
+            }
+          },
+          {
+            "name": "stateIn",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Statein"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/stats/trend": {
+      "get": {
+        "summary": "Admin Stats Trend",
+        "description": "BDD #1203 FIX-T81 (2026-09-20) §4.1.2：管理端趋势图",
+        "operationId": "admin_stats_trend_api_admin_stats_trend_get",
+        "parameters": [
+          {
+            "name": "granularity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "day",
+              "title": "Granularity"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Start"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "End"
+            }
+          },
+          {
+            "name": "stateIn",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Statein"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/stats/group": {
+      "get": {
+        "summary": "Admin Stats Group",
+        "description": "BDD #1204 FIX-T82 (2026-09-20) §4.1.2：管理端分组聚合",
+        "operationId": "admin_stats_group_api_admin_stats_group_get",
+        "parameters": [
+          {
+            "name": "dimension",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "state",
+              "title": "Dimension"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Start"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "End"
+            }
+          },
+          {
+            "name": "stateIn",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Statein"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users": {
+      "post": {
+        "summary": "Api Users",
+        "operationId": "api_users_api_users_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/roles": {
+      "post": {
+        "summary": "Api Roles",
+        "operationId": "api_roles_api_roles_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dicts": {
+      "post": {
+        "summary": "Api Dicts",
+        "operationId": "api_dicts_api_dicts_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/metrics": {
+      "get": {
+        "summary": "Metrics",
+        "operationId": "metrics_metrics_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/trace": {
+      "get": {
+        "summary": "Admin Trace",
+        "operationId": "admin_trace_api_admin_trace_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 200,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/trace/spans/{trace_id}": {
+      "get": {
+        "summary": "Admin Trace By Id",
+        "description": "按 trace_id 返回完整调用链",
+        "operationId": "admin_trace_by_id_api_admin_trace_spans__trace_id__get",
+        "parameters": [
+          {
+            "name": "trace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Trace Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "0=成功, 99999999=失败"
+          },
+          "msg": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object"
+          }
+        }
+      },
+      "InstanceState": {
+        "type": "integer",
+        "enum": [
+          10,
+          20,
+          30,
+          40,
+          45,
+          50,
+          99
+        ],
+        "description": "10=DOING, 20=DONE, 30=WITHDRAW, 40=INTERRUPT, 45=REJECT, 50=PENDING, 99=ABANDON"
+      },
+      "SubmitType": {
+        "type": "integer",
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          20
+        ],
+        "description": "0=APPLY, 1=AGREE, 2=REJECT, 3=ROLLBACK, 4=JUMP, 5=RE_APPLY, 6=DELEGATE, 20=COUNTERSIGN_DISAGREE"
+      }
+    }
+  }
+}

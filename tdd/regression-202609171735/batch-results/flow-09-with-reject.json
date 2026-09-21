@@ -1,0 +1,43 @@
+=== memory flows/09-with-reject.json ===
+{
+  "ok": true,
+  "pdid": "161",
+  "inst_id": "91815579298447",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815579298447"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-manager",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "task1",
+        "task2"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "batch": "flow-control",
+  "results": [
+    {
+      "bdd_id": "BDD#271",
+      "name": "JUMP 跳 DONE 任务",
+      "status": "INFO",
+      "detail": "0 成功"
+    },
+    {
+      "bdd_id": "BDD#271",
+      "name": "JUMP 跳 DONE 任务",
+      "status": "PASS",
+      "detail": "active=['apply']"
+    },
+    {
+      "bdd_id": "BDD#272",
+      "name": "重复提交",
+      "status": "INFO",
+      "detail": "first=0, second=99999999"
+    },
+    {
+      "bdd_id": "BDD#272",
+      "name": "重复提交",
+      "status": "PASS",
+      "detail": "第二次被拒绝"
+    },
+    {
+      "bdd_id": "BDD#273",
+      "name": "submitType=0 APPLY",
+      "status": "INFO",
+      "detail": "99999999 [ValueError] task not doing"
+    },
+    {
+      "bdd_id": "BDD#274",
+      "name": "submitType=20 软拒绝",
+      "status": "INFO",
+      "detail": "0, state=45, active=[]"
+    },
+    {
+      "bdd_id": "BDD#275",
+      "name": "withdraw",
+      "status": "INFO",
+      "detail": "code=0, state=30"
+    },
+    {
+      "bdd_id": "BDD#276",
+      "name": "suspend 后 execute",
+      "status": "INFO",
+      "detail": "suspend code=0, execute after suspend: 0 成功"
+    },
+    {
+      "bdd_id": "BDD#277",
+      "name": "幂等 execute",
+      "status": "INFO",
+      "detail": "first=0, second=99999999"
+    },
+    {
+      "bdd_id": "BDD#277",
+      "name": "幂等 execute",
+      "status": "PASS",
+      "detail": "第二次拒绝"
+    },
+    {
+      "bdd_id": "BDD#278",
+      "name": "JUMP target=end",
+      "status": "INFO",
+      "detail": "0, state=20"
+    }
+  ]
+}

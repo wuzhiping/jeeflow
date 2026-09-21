@@ -1,0 +1,36 @@
+=== memory flows/14-decision-submitType.json ===
+{
+  "ok": true,
+  "pdid": "193",
+  "inst_id": "91815580041897",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815580041897"
+    },
+    {
+      "step": "execute-user2",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "task1"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

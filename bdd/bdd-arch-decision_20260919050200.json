@@ -1,0 +1,108 @@
+{
+  "name": "arch-decision-flow",
+  "displayName": "架构决策审批",
+  "type": "approval",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "开始"
+      }
+    },
+    {
+      "id": "submit",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "ad-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "f_decision_topic": "",
+          "f_impact": ""
+        }
+      },
+      "text": {
+        "value": "提交议题"
+      }
+    },
+    {
+      "id": "architect_review",
+      "type": "snaker:task",
+      "x": 300,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "架构师评审"
+      }
+    },
+    {
+      "id": "cto_approve",
+      "type": "snaker:task",
+      "x": 450,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler"
+      },
+      "text": {
+        "value": "CTO批准"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 600,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "结束"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "submit",
+      "properties": {}
+    },
+    {
+      "id": "e1",
+      "sourceNodeId": "submit",
+      "targetNodeId": "architect_review",
+      "properties": {}
+    },
+    {
+      "id": "e2",
+      "sourceNodeId": "architect_review",
+      "targetNodeId": "cto_approve",
+      "properties": {}
+    },
+    {
+      "id": "e3",
+      "sourceNodeId": "cto_approve",
+      "targetNodeId": "end",
+      "properties": {}
+    }
+  ]
+}

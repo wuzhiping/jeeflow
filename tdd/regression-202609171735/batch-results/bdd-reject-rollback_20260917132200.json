@@ -1,0 +1,36 @@
+=== memory bdd/bdd-reject-rollback_20260917132200.json ===
+{
+  "ok": true,
+  "pdid": "480",
+  "inst_id": "91815592553359",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815592553359"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "leader_review"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

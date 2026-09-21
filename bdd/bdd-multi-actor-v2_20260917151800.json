@@ -45,7 +45,7 @@
         "height": 50,
         "form": "m2-form",
         "assignee": "finance",
-        "assignmentHandler": "com.jeeflow.builtin.handlers.TaskRoleAssigneeHandler",
+        "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler",
         "roleCode": "finance",
         "taskType": 0,
         "performType": 1,

@@ -1,0 +1,8 @@
+{
+  "name": "tasktype-record",
+  "title": "测试 taskType=2 RECORD 节点落库字段",
+  "type": "approval",
+  "node_types": ["start", "task", "task", "end"],
+  "features": ["taskType RECORD", "BUG 发现"],
+  "errors": ["FIX-T30: engine._create_task 不读 node.properties.taskType，落库始终为 0"]
+}

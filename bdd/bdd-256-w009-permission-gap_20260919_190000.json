@@ -1,0 +1,46 @@
+{
+  "bdd_id": "#256",
+  "title": "W009 字段权限间隙规则 + 引擎 BUG 复现",
+  "timestamp": "2026-09-19T19:00:00",
+  "background": "BDD #256 发现: apply 节点声明 f_secret=hidden, 但下游 leader 节点未声明, 引擎默认'未声明即可写', 允许 userB 覆盖 hidden 字段",
+  "test_flow": "w009-gap-test (4 节点: start→apply→leader→end)",
+  "results": {
+    "verify_W009": {
+      "endpoint": "/wf/verify",
+      "request": {"name": "w009-gap-test"},
+      "response": {
+        "valid": true,
+        "warnings": [{
+          "code": "W009",
+          "level": "warning",
+          "message": "字段 f_secret 在节点 ['apply'] 声明为 read/hidden, 但节点 ['leader'] 未声明 (下游可覆盖, 建议显式声明)"
+        }]
+      },
+      "pass": true
+    },
+    "deploy_with_W009_warning": {
+      "endpoint": "/wf/processDesign/save",
+      "response": {"code": 0, "msg": "成功", "data": {"id": 3}},
+      "pass": true,
+      "note": "警告不阻塞部署 (仅 error 阻塞)"
+    },
+    "BUG_reproduce": {
+      "steps": [
+        "1. start: f_secret='TOP_SECRET'",
+        "2. userA agree apply: vars={f_secret:'TOP_SECRET'}",
+        "3. userB agree leader: vars={f_secret:'OVERWRITTEN'} ← 覆盖 hidden 字段",
+        "4. final: f_secret='OVERWRITTEN' (apply hidden 被覆盖)"
+      ],
+      "expected": "f_secret 保持 TOP_SECRET (apply hidden)",
+      "actual": "f_secret='OVERWRITTEN' (userB 覆盖成功, 引擎未拦截)",
+      "bug_confirmed": true,
+      "severity": "medium (W009 警告已阻止新增此类 flow, 但已部署的 flow 仍会触发覆盖)"
+    }
+  },
+  "fix_proposal": {
+    "rule": "W009: 字段在某节点声明 hidden/read, 但其他节点未声明",
+    "implementation": "verify.py:check_permission_gap()",
+    "limit_note": "verify 是设计期工具, 引擎运行时未拦截 (符合 Snaker 框架默认行为)",
+    "user_action": "开发者应看到 W009 警告后, 在所有下游节点也显式声明 hidden (PERMISSION_f_secret=1)"
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "batch": "error-handling",
+  "results": [
+    {
+      "bdd_id": "BDD#461",
+      "name": "无 Content-Type",
+      "status": "INFO",
+      "detail": "status=200, code=0"
+    },
+    {
+      "bdd_id": "BDD#462",
+      "name": "JSON 解析失败",
+      "status": "INFO",
+      "detail": "status=500"
+    },
+    {
+      "bdd_id": "BDD#463",
+      "name": "ID 10^18",
+      "status": "INFO",
+      "detail": "code=99999999, msg=[ValueError] 流程实例不存在"
+    },
+    {
+      "bdd_id": "BDD#464",
+      "name": "ID 字符串",
+      "status": "INFO",
+      "detail": "code=99999999, msg=[ValueError] id 缺失或非法"
+    },
+    {
+      "bdd_id": "BDD#465",
+      "name": "ID float",
+      "status": "INFO",
+      "detail": "code=99999999, msg=[ValueError] 流程实例不存在"
+    },
+    {
+      "bdd_id": "BDD#466",
+      "name": "ID None",
+      "status": "INFO",
+      "detail": "code=99999999, msg=[ValueError] id 缺失或非法"
+    },
+    {
+      "bdd_id": "BDD#467",
+      "name": "ID 列表",
+      "status": "INFO",
+      "detail": "code=99999999"
+    },
+    {
+      "bdd_id": "BDD#468",
+      "name": "ID 负数",
+      "status": "INFO",
+      "detail": "code=99999999"
+    },
+    {
+      "bdd_id": "BDD#469",
+      "name": "空 body",
+      "status": "INFO",
+      "detail": "status=200"
+    },
+    {
+      "bdd_id": "BDD#470",
+      "name": "10MB body",
+      "status": "INFO",
+      "detail": "status=500"
+    }
+  ]
+}

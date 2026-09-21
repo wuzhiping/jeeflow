@@ -1,0 +1,51 @@
+=== pg bdd/bdd-leave-form-permission_20260917143000.json ===
+[reset] ok
+{
+  "ok": true,
+  "pdid": "1789663675750000",
+  "inst_id": "91815603975725",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815603975725"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-manager",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-user1",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "leader_review",
+        "manager_review",
+        "notify"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

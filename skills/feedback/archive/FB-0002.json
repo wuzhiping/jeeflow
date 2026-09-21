@@ -1,0 +1,95 @@
+{
+  "fb_id": "FB-0002",
+  "title": "3 人 PARALLEL 会签 2/3 完成条件触发后 state=99 ABANDON 但未记录触发人",
+  "created_at": "2026-09-20T10:15:00",
+  "channel": "tdd",
+  "customer": {
+    "id": "C-002",
+    "type": "L3",
+    "contact": "userA (审批人, 多方会签场景)",
+    "scenario": "3 人会签审批, 任 2 人通过即流转, 第 3 人的 task 应被标记 ABANDON"
+  },
+  "raw_text": "跑 countersign_3of3_abandon_repro: userA 通过后 userB 通过, 满足 #nrOfCompletedInstances>=2, 第 3 个 task (userC) 状态变为 state=99 ABANDON. 但 ABANDON 的 updateUser 字段为空, 无法追溯是谁触发的废弃. 审计要求知道是 userB 触发的 (最后一个通过的人). 复现: tdd/bug3_countersign_3of3_abandon_repro.json",
+  "attachments": [
+    "tdd/bug3_countersign_3of3_abandon_repro.json",
+    "docs/known-issues.md §112"
+  ],
+  "classification": {
+    "type": "bug",
+    "priority": "P1",
+    "owner": "engine",
+    "scope": "multi",
+    "reproduce": "easy",
+    "classified_at": "2026-09-20T11:00:00",
+    "classified_by": "hermes",
+    "reasoning": [
+      "现象: ABANDON 触发人未记录 → 审计无法追溯 → P1",
+      "原因: TaskState.ABANDON.updateUser 未赋值 → engine",
+      "影响: 所有比例/PARALLEL 会签 + ONE_VOTE_VETO REJECT 场景 → multi",
+      "复现: 3 步可复现 → easy"
+    ]
+  },
+  "status": "closed",
+  "processing": [
+    {
+      "step": "03-process",
+      "subtype": "engine",
+      "actor": "bro",
+      "started_at": "2026-09-20T13:00:00",
+      "ended_at": "2026-09-20T18:00:00",
+      "action": "修复 TaskState.ABANDON.updateUser 语义: 触发废弃的人 (比例会签完成条件命中、流程撤回、ONE_VOTE_VETO REJECT 等场景必须显式传 abandoned_by). backward compat: 不传时保持 createUser. 文档更新 docs/known-issues.md §112.",
+      "result": "成功",
+      "fix_id": "FIX-T111"
+    },
+    {
+      "step": "03-process",
+      "subtype": "doc",
+      "actor": "hermes",
+      "started_at": "2026-09-20T18:30:00",
+      "ended_at": "2026-09-20T19:00:00",
+      "action": "更新 docs/known-issues.md §112 + docs/AGENTS.md 约束 #30.",
+      "result": "成功"
+    }
+  ],
+  "fix_ref": {
+    "fix_id": "FIX-T111",
+    "bdd_ids": ["bdd-1511-1516-fix-t111-taskstate-abandon_20260921"],
+    "verify_rule": null,
+    "docs_sections": [
+      "docs/known-issues.md §112",
+      "docs/AGENTS.md §6 约束 #30"
+    ],
+    "files_changed": [
+      "vendor/jeeflow/engine.py (TaskState.ABANDON 处理)",
+      "docs/known-issues.md §112"
+    ]
+  },
+  "verification": {
+    "internal": {
+      "method": "BDD 双端回归",
+      "verified_at": "2026-09-21T08:00:00",
+      "result": "pass",
+      "evidence": "bdd-1511-1516-fix-t111: 6/6 PASS. 验证用例: (1) 2/3 比例触发 ABANDON, updateUser=userB; (2) ONE_VOTE_VETO REJECT 触发 ABANDON, updateUser=rejecter; (3) ROLLBACK 触发 ABANDON, updateUser=rollbacker; (4) backward compat 不传 abandoned_by 时 updateUser=createUser. MEM+PG 双端一致."
+    },
+    "customer": {
+      "contacted_at": "2026-09-21T09:30:00",
+      "channel": "hermes_dm",
+      "response": "confirmed",
+      "evidence": "userA 复跑 countersign_3of3_abandon_repro (修复后版本): 2/3 完成触发 ABANDON, 第 3 个 task 的 updateUser 字段 = 'userB' (最后一个通过的人). 审计追溯 OK. userA DM: '审计能追溯了, 感谢.'"
+    }
+  },
+  "notified": {
+    "at": "2026-09-21T09:30:00",
+    "channel": "hermes_dm",
+    "content_summary": "FB-0002 已修复: TaskState.ABANDON.updateUser 语义补全. 触发废弃的人 (abandoned_by) 现在会正确记录. backward compat: 不传时保持 createUser. 验证: bdd-1511-1516 6/6 PASS. 建议复测 tdd/bug3_countersign_3of3_abandon_repro.json (请用修复后版本, vendor/jeeflow 已更新).",
+    "confirmed_received": true
+  },
+  "closed_at": "2026-09-21T09:45:00",
+  "lessons_learned": "审计追溯的需求不仅是'谁批了', 还有'谁触发了某事件'. ABANDON 触发人是审计必要字段. backward compat 设计: 不传时保持 createUser, 避免破坏现有调用方. 类似需关注的字段: WHO_DELEGATED, WHO_SUSPENDED, WHO_TRANSFERRED. 经验沉淀: (1) docs/AGENTS.md 约束 #30 已加入 (TaskState.ABANDON.updateUser 语义); (2) docs/known-issues.md §112 已文档化; (3) 与 FB-0005 (ONE_VOTE_VETO) 联动, 因为会签否决后剩余 task 必填 updateUser. 跨客户价值: 所有用比例会签 / ONE_VOTE_VETO / ROLLBACK 的流程都受益.",
+  "cross_refs": {
+    "linked_fb": "FB-0005 (ONE_VOTE_VETO 联动)",
+    "process_improvement": "建议在 verify 规则中加 W013: 'ABANDON 触发必须传 abandoned_by'"
+  },
+  "closure_path": "completed_via_customer_confirmation",
+  "closure_note": "客户在 24h 内回复确认, 走正常闭环路径, 非 14 天沉默归档."
+}

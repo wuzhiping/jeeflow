@@ -1,0 +1,71 @@
+{
+  "batch": "interfaces",
+  "results": [
+    {
+      "bdd_id": "BDD#284",
+      "name": "approvalRecord",
+      "status": "INFO",
+      "detail": "len=2"
+    },
+    {
+      "bdd_id": "BDD#285",
+      "name": "bizData",
+      "status": "INFO",
+      "detail": "keys=['f_x']"
+    },
+    {
+      "bdd_id": "BDD#286",
+      "name": "highLight",
+      "status": "INFO",
+      "detail": "keys=['activeNodeNames', 'historyNodeNames', 'historyEdgeNames', 'nodeProgress']"
+    },
+    {
+      "bdd_id": "BDD#287",
+      "name": "stats/overview",
+      "status": "INFO",
+      "detail": "keys=['total', 'inProgress', 'completed', 'rejected', 'withdrawn']"
+    },
+    {
+      "bdd_id": "BDD#288",
+      "name": "processDesign/remove",
+      "status": "INFO",
+      "detail": "0 成功"
+    },
+    {
+      "bdd_id": "BDD#288b",
+      "name": "remove 后 detail",
+      "status": "INFO",
+      "detail": "state=10"
+    },
+    {
+      "bdd_id": "BDD#289",
+      "name": "redeploy",
+      "status": "INFO",
+      "detail": "99999999 [ValueError] 流程设计不存在"
+    },
+    {
+      "bdd_id": "BDD#290",
+      "name": "candidatePage",
+      "status": "INFO",
+      "detail": "keys=[]"
+    },
+    {
+      "bdd_id": "BDD#291",
+      "name": "jumpAbleTaskNameList",
+      "status": "INFO",
+      "detail": "len=0"
+    },
+    {
+      "bdd_id": "BDD#292",
+      "name": "processTask/latest",
+      "status": "INFO",
+      "detail": "keys=['id', 'taskName', 'displayName', 'taskState', 'operator']"
+    },
+    {
+      "bdd_id": "BDD#293",
+      "name": "createCCInstance",
+      "status": "INFO",
+      "detail": "99999999 [ValueError] processInstanceId/actorIds 缺失"
+    }
+  ]
+}

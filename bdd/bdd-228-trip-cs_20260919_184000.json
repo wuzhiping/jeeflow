@@ -1,0 +1,18 @@
+{
+  "name": "bdd-228-trip-cs",
+  "displayName": "BDD #228 出差申请 (会签 + JUMP 回退)",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "apply", "type": "snaker:task", "x": 130, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "user1", "taskType": 0, "performType": 0}, "text": {"value": "出差申请"}},
+    {"id": "cs", "type": "snaker:task", "x": 280, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "leader,manager", "taskType": 0, "performType": 1, "countersignType": "PARALLEL", "countersignCompletionCondition": "ALL"}, "text": {"value": "部门会签"}},
+    {"id": "leader_final", "type": "snaker:task", "x": 430, "y": 200, "properties": {"width": 100, "height": 50, "assignee": "boss", "taskType": 0, "performType": 0}, "text": {"value": "总经理审批"}},
+    {"id": "end", "type": "snaker:end", "x": 580, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "cs", "properties": {}},
+    {"id": "e2", "sourceNodeId": "cs", "targetNodeId": "leader_final", "properties": {}},
+    {"id": "e3", "sourceNodeId": "leader_final", "targetNodeId": "end", "properties": {}}
+  ]
+}

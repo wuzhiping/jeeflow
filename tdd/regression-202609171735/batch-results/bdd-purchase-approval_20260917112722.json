@@ -1,0 +1,57 @@
+=== memory bdd/bdd-purchase-approval_20260917112722.json ===
+{
+  "ok": true,
+  "pdid": "454",
+  "inst_id": "91815591935865",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815591935865"
+    },
+    {
+      "step": "execute-manager",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userA",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userB",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "execute-userC",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "manager_review",
+        "countersign",
+        "countersign",
+        "countersign"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

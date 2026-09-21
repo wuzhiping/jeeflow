@@ -1,0 +1,13 @@
+{
+  "name": "bdd-215-decision-no-edges",
+  "displayName": "BDD #215 decision 无出边 (deploy 拒绝?)",
+  "type": "approval",
+  "nodes": [
+    {"id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "开始"}},
+    {"id": "d", "type": "snaker:decision", "x": 200, "y": 200, "properties": {"width": 80, "height": 50}, "text": {"value": "孤立"}},
+    {"id": "end", "type": "snaker:end", "x": 350, "y": 200, "properties": {"width": 50, "height": 50}, "text": {"value": "结束"}}
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "d", "properties": {}}
+  ]
+}

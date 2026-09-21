@@ -1,0 +1,36 @@
+=== memory bdd/bdd-parent-child-flow_20260917144400.json ===
+{
+  "ok": true,
+  "pdid": "426",
+  "inst_id": "91815591282529",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815591282529"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "leader_review"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

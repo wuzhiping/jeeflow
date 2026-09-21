@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-17T15:21:00",
+  "updated": "2026-09-18T14:30:00",
   "tasks": [
     {
       "id": "Task 16",
@@ -634,10 +634,1505 @@
         "API 修复"
       ],
       "errors": []
+    },
+    {
+      "id": "Task 59",
+      "name": "fix-t6-reapply-vendor",
+      "time": "20260917160000",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "FIX-T6 vendor",
+        "submitType=5 RE_APPLY",
+        "execute_and_jump_to_first_task_node"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 60",
+      "name": "fix-t7-design-his-vendor",
+      "time": "20260917160500",
+      "node_types": [
+        "design"
+      ],
+      "features": [
+        "FIX-T7 vendor",
+        "processDesignHis/page",
+        "_processDesignHis_page",
+        "m_processDesignId filter"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 61",
+      "name": "fix-t8-role-code-vendor",
+      "time": "20260917160800",
+      "node_types": [
+        "task"
+      ],
+      "features": [
+        "FIX-T8 vendor",
+        "TaskRoleAssigneeHandler.roleCode",
+        "fallback node.id"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 62",
+      "name": "fix-t9-owner-id-vendor",
+      "time": "20260917163000",
+      "node_types": [
+        "task",
+        "end"
+      ],
+      "features": [
+        "FIX-T9 vendor",
+        "ProcessInstance.ownerId",
+        "args.u_userId",
+        "m_EQ_ownerId filter",
+        "PG ALTER TABLE"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 63",
+      "name": "fix-t10-var-unpack-vendor",
+      "time": "20260917164200",
+      "node_types": [
+        "decision"
+      ],
+      "features": [
+        "FIX-T10 vendor",
+        "business variables nested unpack",
+        "setdefault",
+        "decision expr amount"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 64",
+      "name": "fix-t11-stats-avg-dur-vendor",
+      "time": "20260917164800",
+      "node_types": [
+        "stats"
+      ],
+      "features": [
+        "FIX-T11 vendor",
+        "stats_avg_completed_duration_seconds timedelta 兜底",
+        "PG INTERVAL→total_seconds"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 65",
+      "name": "fix-t12-stats-task-agg-vendor",
+      "time": "20260917164800",
+      "node_types": [
+        "stats"
+      ],
+      "features": [
+        "FIX-T12 vendor",
+        "stats_completed_task_aggregate",
+        "perform_type='1' PG VARCHAR 兼容"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 66",
+      "name": "fix-t13-surrogate-enabled-bool",
+      "time": "20260917165500",
+      "node_types": [
+        "surrogate"
+      ],
+      "features": [
+        "FIX-T13",
+        "ProcessSurrogate.enabled bool",
+        "PG BOOLEAN 列兼容"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 67",
+      "name": "fix-t14-design-isdeployed-bool",
+      "time": "20260917165500",
+      "node_types": [
+        "design"
+      ],
+      "features": [
+        "FIX-T14",
+        "ProcessDesign.isDeployed bool",
+        "PG BOOLEAN 列兼容"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 68",
+      "name": "fix-t15-build-ext-where-bool",
+      "time": "20260917165500",
+      "node_types": [
+        "design"
+      ],
+      "features": [
+        "FIX-T15",
+        "_build_ext_where BOOLEAN 列自动 bool",
+        "m_EQ_isDeployed"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 69",
+      "name": "fix-t16-varchar-coerce",
+      "time": "20260917165500",
+      "node_types": [
+        "task",
+        "instance"
+      ],
+      "features": [
+        "FIX-T16",
+        "taskType/performType str",
+        "parentNodeName/businessNo str"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 70",
+      "name": "fix-t17-empty-actors-raise",
+      "time": "20260917165800",
+      "node_types": [
+        "task"
+      ],
+      "features": [
+        "FIX-T17",
+        "vendor engine._create_task actors=[] raise",
+        "instance ABANDON",
+        "PYTHONPATH vendor 优先级"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 71",
+      "name": "fix-t18-title-priority",
+      "time": "20260917170000",
+      "node_types": [
+        "task"
+      ],
+      "features": [
+        "FIX-T18",
+        "engine._add_auto_gen_title 优先级",
+        "args.title 覆盖"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 72",
+      "name": "fix-t19-error-type-prefix",
+      "time": "20260917170200",
+      "node_types": [],
+      "features": [
+        "FIX-T19",
+        "facade.flow 异常类型前缀",
+        "[ValueError] msg"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 73",
+      "name": "fix-t20-ext-where-ops",
+      "time": "20260917170500",
+      "node_types": [],
+      "features": [
+        "FIX-T20",
+        "_build_ext_where 操作符扩展",
+        "NE/GT/GE/LT/LE/NIN"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 74",
+      "name": "fix-t22-unknown-node",
+      "time": "20260917171200",
+      "node_types": [
+        "decision",
+        "fork",
+        "join",
+        "end"
+      ],
+      "features": [
+        "FIX-T22",
+        "engine._execute_node 未知类型 raise",
+        "防止静默卡死"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 75",
+      "name": "fix-t23-in-string",
+      "time": "20260917171800",
+      "node_types": [],
+      "features": [
+        "FIX-T23",
+        "IN/NIN 字符串逗号分隔兼容",
+        "memory+ext 双端"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 76",
+      "name": "fix-t24-page-designs",
+      "time": "20260917172200",
+      "node_types": [],
+      "features": [
+        "FIX-T24",
+        "page_designs 补齐切片",
+        "recordCount 正确"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 77",
+      "name": "fix-t25-page-surrogates",
+      "time": "20260917172500",
+      "node_types": [],
+      "features": [
+        "FIX-T25",
+        "page_surrogates 补齐切片",
+        "同 FIX-T24"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 78",
+      "name": "fix-t26-designhis-m-query",
+      "time": "20260917172800",
+      "node_types": [],
+      "features": [
+        "FIX-T26",
+        "designHis/page 支持 m_ 条件",
+        "_filter_rows_by_m_query"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 79",
+      "name": "fix-t27-active-users",
+      "time": "20260917173200",
+      "node_types": [],
+      "features": [
+        "FIX-T27",
+        "stats/overview 加 activeUserCount",
+        "memory+JDBC 双端"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 80",
+      "name": "flows-regression-all",
+      "time": "20260917174500",
+      "node_types": [],
+      "features": [
+        "flows/ 16 + bdd/ 68 = 84 流程回归",
+        "14/16 PASS + 62/68 PASS",
+        "5 个 FAIL 均为设计缺陷"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 81",
+      "name": "fix-all-fails",
+      "time": "20260917181000",
+      "node_types": [],
+      "features": [
+        "FIX-ALL (2026-09-17)",
+        "POST_ONE 注册",
+        "FQCN typo 修正",
+        "SPI 4 role 补充",
+        "runner 推断 FormField",
+        "runner custom fallback",
+        "FIX-T28 custom 节点 fallback"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 82",
+      "name": "fix-t28-custom-fallback",
+      "time": "20260917181000",
+      "node_types": [
+        "custom"
+      ],
+      "features": [
+        "FIX-T28",
+        "vendor/jeeflow/engine.py:_resolve_actors",
+        "custom 节点 fallback [operator]"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 83",
+      "name": "all-pass-regression",
+      "time": "20260917181000",
+      "node_types": [],
+      "features": [
+        "flows 17/17 + bdd 67/67 = 84/84 PASS 双端",
+        "100%"
+      ],
+      "errors": []
+    },
+    {
+      "id": 69,
+      "name": "项目立项审批 V2 (bdd-project-init-v2)",
+      "ts": "20260917184000",
+      "flows": [
+        "bdd-project-init-v2_20260917184000.json"
+      ],
+      "scenario": "apply→dept_approve→amount_decision(≤50万)→manager_approve→finance_sign(PARALLEL)→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager"
+      ],
+      "key_nodes": [
+        "finance_sign",
+        "amount_decision",
+        "assignmentHandler=TaskRoleAssigneeHandler"
+      ]
+    },
+    {
+      "id": 70,
+      "name": "差旅报销审批 (bdd-travel-reimbursement)",
+      "ts": "20260917200000",
+      "flows": [
+        "bdd-travel-reimbursement_20260917200000.json"
+      ],
+      "scenario": "apply→dept_approve→finance_check(PARALLEL)→category_decision→manager_approve→finance_final(PARALLEL)→cashier_pay→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager",
+        "cashier"
+      ],
+      "key_nodes": [
+        "finance_check",
+        "category_decision",
+        "manager_approve",
+        "finance_final",
+        "cashier_pay"
+      ]
+    },
+    {
+      "id": 71,
+      "name": "用车申请审批 (bdd-vehicle-request)",
+      "ts": "20260917210000",
+      "flows": [
+        "bdd-vehicle-request_20260917210000.json"
+      ],
+      "scenario": "apply→fleet_dispatch→FORK(driver_confirm+user_confirm)→JOIN→trip_finish→rate→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "manager",
+        "userA",
+        "userC"
+      ],
+      "key_nodes": [
+        "fork",
+        "join",
+        "driver_confirm",
+        "user_confirm"
+      ]
+    },
+    {
+      "id": 72,
+      "name": "合同审批 (bdd-contract-approval)",
+      "ts": "20260917220000",
+      "flows": [
+        "bdd-contract-approval_20260917220000.json"
+      ],
+      "scenario": "apply→legal_review→amount_decision(>=50万)→board_approve→sign_contract(PARALLEL)→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "director",
+        "boss"
+      ],
+      "key_nodes": [
+        "legal_review",
+        "amount_decision",
+        "board_approve",
+        "sign_contract"
+      ]
+    },
+    {
+      "id": 73,
+      "name": "请假申请 (bdd-leave-application)",
+      "ts": "20260917230000",
+      "flows": [
+        "bdd-leave-application_20260917230000.json"
+      ],
+      "scenario": "apply→direct_leader→days_decision(>=7)→boss_approve→hr_record→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "boss",
+        "director"
+      ],
+      "key_nodes": [
+        "direct_leader",
+        "days_decision",
+        "boss_approve",
+        "hr_record"
+      ]
+    },
+    {
+      "id": 74,
+      "name": "报销审批-普通模式 (bdd-reimburse-normal)",
+      "ts": "20260918010000",
+      "flows": [
+        "bdd-reimburse-normal_20260918010000.json"
+      ],
+      "scenario": "apply→leader_review→amount_decision→manager_review→cashier_pay→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager",
+        "cashier"
+      ],
+      "key_nodes": [
+        "amount_decision",
+        "manager_review",
+        "cashier_pay"
+      ]
+    },
+    {
+      "id": 75,
+      "name": "报销审批-会签PARALLEL",
+      "ts": "20260918020000",
+      "flows": [
+        "bdd-reimburse-cs-parallel_20260918020000.json"
+      ],
+      "scenario": "apply→leader_review→finance_sign(PARALLEL)→manager_review→cashier_pay→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager",
+        "cashier"
+      ],
+      "key_nodes": [
+        "finance_sign",
+        "PARALLEL",
+        "countersign"
+      ]
+    },
+    {
+      "id": 76,
+      "name": "报销-顺序会签",
+      "ts": "20260918030000",
+      "flows": [
+        "bdd-reimburse-cs-sequential_20260918030000.json"
+      ],
+      "scenario": "apply→leader_review→finance_seq(SEQUENTIAL)→manager_review→cashier_pay→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager",
+        "cashier"
+      ],
+      "key_nodes": [
+        "SEQUENTIAL",
+        "finance_seq"
+      ]
+    },
+    {
+      "id": 77,
+      "name": "报销-三人会签PARALLEL",
+      "ts": "20260918040000",
+      "flows": [
+        "bdd-reimburse-cs-parallel-3_20260918040000.json"
+      ],
+      "scenario": "apply→finance_veto(3人PARALLEL)→cashier_pay→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager",
+        "boss",
+        "cashier"
+      ],
+      "key_nodes": [
+        "PARALLEL",
+        "finance_veto",
+        "3人会签"
+      ]
+    },
+    {
+      "id": 78,
+      "name": "报销-比例会签",
+      "ts": "20260918050000",
+      "flows": [
+        "bdd-报销-比例会签_20260918050000.json"
+      ],
+      "scenario": "apply→finance_ratio(RATIO 2/3)→cashier_pay→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager",
+        "cashier"
+      ],
+      "key_nodes": [
+        "RATIO",
+        "finance_ratio"
+      ]
+    },
+    {
+      "id": 79,
+      "name": "加班申请",
+      "ts": "20260918060000",
+      "flows": [
+        "bdd-加班申请_20260918060000.json"
+      ],
+      "scenario": "apply→leader_approve→decision→manager/boss→hr_record→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager",
+        "director"
+      ],
+      "key_nodes": [
+        "decision",
+        "hours_decision"
+      ]
+    },
+    {
+      "id": 80,
+      "name": "转正申请",
+      "ts": "20260918070000",
+      "flows": [
+        "bdd-转正申请_20260918070000.json"
+      ],
+      "scenario": "apply→leader_review→hr_review→manager_approve→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "userA",
+        "leader",
+        "director",
+        "manager"
+      ],
+      "key_nodes": [
+        "hr_review",
+        "leader_review"
+      ]
+    },
+    {
+      "id": 81,
+      "name": "离职申请",
+      "ts": "20260918080000",
+      "flows": [
+        "bdd-离职申请_20260918080000.json"
+      ],
+      "scenario": "apply→leader_confirm→hr_approve→manager_approve→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "userA",
+        "leader",
+        "director",
+        "manager"
+      ],
+      "key_nodes": [
+        "leader_confirm",
+        "hr_approve"
+      ]
+    },
+    {
+      "id": 82,
+      "name": "调岗申请",
+      "ts": "20260918090000",
+      "flows": [
+        "bdd-transfer-apply_20260918090000.json"
+      ],
+      "scenario": "apply→old_leader→new_leader→hr_review→manager→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "userB",
+        "leader",
+        "director",
+        "manager"
+      ],
+      "key_nodes": [
+        "old_leader",
+        "new_leader",
+        "hr_review"
+      ]
+    },
+    {
+      "id": 83,
+      "name": "物资领用",
+      "ts": "20260918100000",
+      "flows": [
+        "bdd-物资领用_20260918100000.json"
+      ],
+      "scenario": "apply→asset_leader→asset_finance→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "userA",
+        "leader",
+        "manager"
+      ],
+      "key_nodes": [
+        "asset_leader",
+        "asset_finance"
+      ]
+    },
+    {
+      "id": 84,
+      "name": "印章使用",
+      "ts": "20260918110000",
+      "flows": [
+        "bdd-印章使用_20260918110000.json"
+      ],
+      "scenario": "apply→seal_leader→seal_director→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "userA",
+        "leader",
+        "director"
+      ],
+      "key_nodes": [
+        "seal_leader",
+        "seal_director"
+      ]
+    },
+    {
+      "id": 85,
+      "name": "公文发布",
+      "ts": "20260918120000",
+      "flows": [
+        "bdd-公文发布_20260918120000.json"
+      ],
+      "scenario": "apply→doc_leader→doc_director→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "userA",
+        "leader",
+        "director"
+      ],
+      "key_nodes": [
+        "doc_leader",
+        "doc_director"
+      ]
+    },
+    {
+      "id": 86,
+      "name": "会议室预订",
+      "ts": "20260918130000",
+      "flows": [
+        "bdd-会议室预订_20260918130000.json"
+      ],
+      "scenario": "apply→meeting_book→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "userA"
+      ],
+      "key_nodes": [
+        "meeting_book"
+      ]
+    },
+    {
+      "id": 87,
+      "name": "招聘申请",
+      "ts": "20260918140000",
+      "flows": [
+        "bdd-招聘申请_20260918140000.json"
+      ],
+      "scenario": "apply→recruit_leader→recruit_hr→recruit_boss→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "director",
+        "boss"
+      ],
+      "key_nodes": [
+        "recruit_leader",
+        "recruit_hr",
+        "recruit_boss"
+      ]
+    },
+    {
+      "id": 88,
+      "name": "培训申请",
+      "ts": "20260918150000",
+      "flows": [
+        "bdd-培训申请_20260918150000.json"
+      ],
+      "scenario": "apply→train_leader→train_hr→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "userA",
+        "leader",
+        "director"
+      ],
+      "key_nodes": [
+        "train_leader",
+        "train_hr"
+      ]
+    },
+    {
+      "id": 89,
+      "name": "用车申请v2",
+      "ts": "20260918160000",
+      "flows": [
+        "bdd-用车申请v2_20260918160000.json"
+      ],
+      "scenario": "apply→fleet→fork(driver+user)→join→rate→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "manager",
+        "userA",
+        "userC"
+      ],
+      "key_nodes": [
+        "fork",
+        "join"
+      ]
+    },
+    {
+      "id": 90,
+      "name": "立项审批v3",
+      "ts": "20260918170000",
+      "flows": [
+        "bdd-立项审批v3_20260918170000.json"
+      ],
+      "scenario": "apply→dept→amount_decision→company/board→type→finance_sign/manager→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager"
+      ],
+      "key_nodes": [
+        "amount_decision",
+        "type_decision",
+        "multi-decision"
+      ]
+    },
+    {
+      "id": 91,
+      "name": "合同审批v2",
+      "ts": "20260918180000",
+      "flows": [
+        "bdd-合同审批v2_20260918180000.json"
+      ],
+      "scenario": "apply→legal→amount_decision(3分支)→sign_contract→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "director",
+        "leader",
+        "boss"
+      ],
+      "key_nodes": [
+        "legal_review",
+        "amount_decision",
+        "sign_contract"
+      ]
+    },
+    {
+      "id": 92,
+      "name": "报销审批v3",
+      "ts": "20260918190000",
+      "flows": [
+        "bdd-报销审批v3_20260918190000.json"
+      ],
+      "scenario": "apply→leader→fork(finance+manager)→join→cashier→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager",
+        "cashier"
+      ],
+      "key_nodes": [
+        "fork",
+        "join",
+        "finance_check"
+      ]
+    },
+    {
+      "id": 93,
+      "name": "复杂审批",
+      "ts": "20260918200000",
+      "flows": [
+        "bdd-complex-approval_20260918200000.json"
+      ],
+      "scenario": "apply→leader→fork→join→decision→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager",
+        "cashier"
+      ],
+      "key_nodes": [
+        "fork",
+        "join",
+        "decision",
+        "countersign"
+      ]
+    },
+    {
+      "id": 94,
+      "name": "综合场景1",
+      "ts": "20260918210000",
+      "flows": [
+        "bdd-综合场景1_20260918210000.json"
+      ],
+      "scenario": "apply→level_decision(3分支)→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader"
+      ],
+      "key_nodes": [
+        "level_decision",
+        "multi-decision"
+      ]
+    },
+    {
+      "id": 95,
+      "name": "综合场景2",
+      "ts": "20260918220000",
+      "flows": [
+        "bdd-综合场景2_20260918220000.json"
+      ],
+      "scenario": "fork+join+decision",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "cashier",
+        "manager"
+      ],
+      "key_nodes": [
+        "fork",
+        "join",
+        "decision"
+      ]
+    },
+    {
+      "id": 96,
+      "name": "综合场景3",
+      "ts": "20260918230000",
+      "flows": [
+        "bdd-综合场景3_20260918230000.json"
+      ],
+      "scenario": "5 节点串行 handler",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager",
+        "director",
+        "boss",
+        "cashier"
+      ],
+      "key_nodes": [
+        "multi-handler"
+      ]
+    },
+    {
+      "id": 97,
+      "name": "角色权限",
+      "ts": "20260919000000",
+      "flows": [
+        "bdd-角色权限_20260919000000.json"
+      ],
+      "scenario": "apply→dept_leader→hr_review→end",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "userA",
+        "leader",
+        "director"
+      ],
+      "key_nodes": [
+        "dept_leader",
+        "hr_review"
+      ]
+    },
+    {
+      "id": 98,
+      "name": "变量传递",
+      "ts": "20260919010000",
+      "flows": [
+        "bdd-变量传递_20260919010000.json"
+      ],
+      "scenario": "变量在节点间传递",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager"
+      ],
+      "key_nodes": [
+        "variable",
+        "pass"
+      ]
+    },
+    {
+      "id": 99,
+      "name": "表单字段",
+      "ts": "20260919020000",
+      "flows": [
+        "bdd-表单字段_20260919020000.json"
+      ],
+      "scenario": "表单字段+优先级决策",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager",
+        "director"
+      ],
+      "key_nodes": [
+        "form_field",
+        "priority_decision"
+      ]
+    },
+    {
+      "id": 100,
+      "name": "大综合流程",
+      "ts": "20260919030000",
+      "flows": [
+        "bdd-大综合流程_20260919030000.json"
+      ],
+      "scenario": "决策+handler 7 节点",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager",
+        "cashier"
+      ],
+      "key_nodes": [
+        "decision",
+        "handler"
+      ]
+    },
+    {
+      "id": 101,
+      "name": "代码评审流程",
+      "ts": "20260919050000",
+      "flows": [
+        "bdd-代码评审流程_20260919050000.json"
+      ],
+      "scenario": "code_review 角色会签",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "dev01",
+        "dev04",
+        "dev05"
+      ],
+      "key_nodes": [
+        "countersign",
+        "handler"
+      ]
+    },
+    {
+      "id": 102,
+      "name": "Bug修复流程",
+      "ts": "20260919050100",
+      "flows": [
+        "bdd-Bug修复流程_20260919050100.json"
+      ],
+      "scenario": "developer/tester/tech_lead 角色链",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "dev01",
+        "dev03",
+        "dev05"
+      ],
+      "key_nodes": [
+        "handler",
+        "role_chain"
+      ]
+    },
+    {
+      "id": 103,
+      "name": "架构决策审批",
+      "ts": "20260919050200",
+      "flows": [
+        "bdd-架构决策审批_20260919050200.json"
+      ],
+      "scenario": "architect→cto 角色链",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "dev04",
+        "dev06"
+      ],
+      "key_nodes": [
+        "handler",
+        "cto_role"
+      ]
+    },
+    {
+      "id": 104,
+      "name": "新功能开发",
+      "ts": "20260919050300",
+      "flows": [
+        "bdd-新功能开发_20260919050300.json"
+      ],
+      "scenario": "复杂度决策+两条路径",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "dev01",
+        "dev05"
+      ],
+      "key_nodes": [
+        "decision",
+        "handler"
+      ]
+    },
+    {
+      "id": 105,
+      "name": "部署上线",
+      "ts": "20260919050400",
+      "flows": [
+        "bdd-部署上线_20260919050400.json"
+      ],
+      "scenario": "fork+join+会签 5 节点",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "dev01",
+        "dev03",
+        "dev04",
+        "dev05"
+      ],
+      "key_nodes": [
+        "fork",
+        "join",
+        "countersign"
+      ]
+    },
+    {
+      "id": 106,
+      "name": "抄送权限委托综合",
+      "ts": "20260919060000",
+      "flows": [
+        "bdd-cc-perm-surrogate_20260919060000.json"
+      ],
+      "scenario": "字段权限+委托代理+抄送+表单回写 4 大能力",
+      "memory": "PASS",
+      "pg": "PASS",
+      "actors_tested": [
+        "user1",
+        "leader",
+        "manager",
+        "director"
+      ],
+      "key_nodes": [
+        "PERMISSION_field",
+        "surrogate_addCandidate",
+        "ccList",
+        "form_writeback"
+      ]
+    },
+    {
+      "id": "Task 107",
+      "name": "tasktype-record",
+      "time": "20260919070000",
+      "node_types": [
+        "start",
+        "task",
+        "task",
+        "end"
+      ],
+      "features": [
+        "taskType RECORD",
+        "BUG 发现"
+      ],
+      "errors": [
+        "FIX-T30: engine._create_task 不读 node.properties.taskType"
+      ]
+    },
+    {
+      "id": "Task 108",
+      "name": "decision-string",
+      "time": "20260919071000",
+      "node_types": [
+        "start",
+        "task",
+        "decision",
+        "task",
+        "task",
+        "task",
+        "end"
+      ],
+      "features": [
+        "decision string compare",
+        "3-分支",
+        "default 边"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 109",
+      "name": "add-candidate-todo",
+      "time": "20260919072500",
+      "node_types": [
+        "start",
+        "task",
+        "task",
+        "end"
+      ],
+      "features": [
+        "addCandidate 越权",
+        "actor 动态扩展"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 110",
+      "name": "permission-multi-task",
+      "time": "20260919073000",
+      "node_types": [
+        "start",
+        "task",
+        "task",
+        "task",
+        "end"
+      ],
+      "features": [
+        "PERMISSION 多任务",
+        "字段只读/编辑/隐藏"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 111",
+      "name": "known-issues-verify",
+      "time": "20260919090000",
+      "node_types": [],
+      "features": [
+        "全面回归 known-issues",
+        "3 BUG 修复"
+      ],
+      "errors": [
+        "FIX-T31",
+        "FIX-T32",
+        "FIX-T33"
+      ]
+    },
+    {
+      "id": "Task 112",
+      "name": "decision-all-empty",
+      "time": "20260919-100000",
+      "node_types": [
+        "start",
+        "task",
+        "decision",
+        "task",
+        "task",
+        "task",
+        "end"
+      ],
+      "features": [
+        "decision 全部 expr 空",
+        "兜底第一条"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 113",
+      "name": "rollback-loop",
+      "time": "20260919-100500",
+      "node_types": [
+        "start",
+        "task",
+        "task",
+        "task",
+        "end"
+      ],
+      "features": [
+        "ROLLBACK 多轮",
+        "§52 复现"
+      ],
+      "errors": [
+        "§52"
+      ]
+    },
+    {
+      "id": "Task 114",
+      "name": "nested-var",
+      "time": "20260919-101000",
+      "node_types": [
+        "start",
+        "task",
+        "end"
+      ],
+      "features": [
+        "嵌套对象变量",
+        "数组变量"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 115",
+      "name": "undefined-var",
+      "time": "20260919-101500",
+      "node_types": [
+        "start",
+        "task",
+        "decision",
+        "task",
+        "task",
+        "end"
+      ],
+      "features": [
+        "未定义变量 expr",
+        "兜底"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 116",
+      "name": "self-cc",
+      "time": "20260919-102000",
+      "node_types": [
+        "start",
+        "task",
+        "end"
+      ],
+      "features": [
+        "自抄送",
+        "CC actor 是发起人"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 117",
+      "name": "weird-id",
+      "time": "20260919-102500",
+      "node_types": [
+        "start",
+        "task",
+        "end"
+      ],
+      "features": [
+        "节点 id 含空格",
+        "FIX-T34"
+      ],
+      "errors": [
+        "FIX-T34"
+      ]
+    },
+    {
+      "id": "Task 118",
+      "name": "tasktype-secondary",
+      "time": "20260919-103000",
+      "node_types": [
+        "start",
+        "task",
+        "task",
+        "end"
+      ],
+      "features": [
+        "taskType 副审",
+        "FIX-T30 验证"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 119",
+      "name": "unicode-var",
+      "time": "20260919-103500",
+      "node_types": [
+        "start",
+        "task",
+        "end"
+      ],
+      "features": [
+        "中文变量",
+        "emoji 变量"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 120",
+      "name": "empty-submit",
+      "time": "20260919-104000",
+      "node_types": [
+        "start",
+        "task",
+        "task",
+        "end"
+      ],
+      "features": [
+        "空 submitType",
+        "默认 APPLY=0"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 121",
+      "name": "surrogate-during",
+      "time": "20260919-104500",
+      "node_types": [
+        "start",
+        "task",
+        "task",
+        "end"
+      ],
+      "features": [
+        "surrogate 委托",
+        "actor 过滤"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 122",
+      "name": "fix27-fanin-task",
+      "time": "20260919-110000",
+      "node_types": [
+        "start",
+        "task",
+        "fork",
+        "task",
+        "task",
+        "task",
+        "end"
+      ],
+      "features": [
+        "§27 修复",
+        "悲观锁",
+        "task 去重",
+        "with_tx 事务"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 123",
+      "name": "fix27-concurrent",
+      "time": "20260919-110500",
+      "node_types": [
+        "start",
+        "task",
+        "fork",
+        "task",
+        "task",
+        "task",
+        "end"
+      ],
+      "features": [
+        "§27 修复",
+        "PG 悲观锁",
+        "并发场景"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 124",
+      "name": "fix52-rollback-first",
+      "time": "20260919-120000",
+      "node_types": [
+        "start",
+        "task",
+        "task",
+        "end"
+      ],
+      "features": [
+        "§52 修复",
+        "ROLLBACK 跳首任务",
+        "actor=发起人",
+        "复用 JUMP 路径"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 125",
+      "name": "fix20-decision-ast-evaluator",
+      "time": "20260919-130000",
+      "node_types": [
+        "start",
+        "task",
+        "decision",
+        "task",
+        "end"
+      ],
+      "features": [
+        "§20 修复",
+        "SimpleExprEvaluator 用 ast 解析",
+        "支持 and/or/not/#var",
+        "OGNL 风格兼容（|| / && / !）"
+      ],
+      "errors": []
+    },
+    {
+      "id": "Task 126",
+      "name": "fix16-custom-handler-registry",
+      "time": "20260919-130100",
+      "node_types": [
+        "start",
+        "task",
+        "custom",
+        "end"
+      ],
+      "features": [
+        "§16 修复",
+        "custom_handler_registry",
+        "按 clazz 查找 handler",
+        "调 handler 写回 vars_[val]",
+        "推进到下游节点"
+      ],
+      "errors": []
     }
   ],
   "summary": {
-    "total_tasks": 43,
+    "total_tasks": 126,
     "node_types_used": [
       "start",
       "end",
@@ -666,7 +2161,9 @@
       "FIX-T3 v1.6.0 SimpleExprEvaluator 字符串相等",
       "v1.5.3 _fix_log 文件日志",
       "SPI deptId 映射",
-      "MockAuditInterceptor 注册"
+      "MockAuditInterceptor 注册",
+      "FIX-T37 v1.7.0 ast 求值器（§20）",
+      "FIX-T38 §16 custom handler registry"
     ],
     "all_known_issues": [
       "§1-§10 已知引擎约束",
@@ -699,7 +2196,9 @@
       "§53 字典值 expr 集成",
       "§54 taskVariables vs instance.variables",
       "§55 doneList actorIdList=None",
-      "§56 parentId 参数未生效"
+      "§56 parentId 参数未生效",
+      "§16 custom 节点 handler",
+      "§20 复合表达式"
     ]
   },
   "statistics": {
@@ -712,7 +2211,7 @@
     },
     "by_feature_category": {
       "countersign": 1,
-      "decision_expr": 6,
+      "decision_expr": 7,
       "submitType_routing": 6,
       "candidate_or_cc": 6,
       "interceptor": 3,
@@ -725,7 +2224,8 @@
       "applicant_substitution": 1,
       "boundary_test": 1,
       "business_flow": 1,
-      "owner_operator": 1
+      "owner_operator": 1,
+      "custom_node": 1
     },
     "by_error_chapter": {
       "§36": 1,
@@ -756,7 +2256,9 @@
       "§65": 2,
       "§66": 1,
       "§67": 1,
-      "§68": 2
+      "§68": 2,
+      "§16": 1,
+      "§20": 1
     },
     "by_severity": {
       "critical": [
@@ -787,7 +2289,10 @@
         "§28",
         "§29",
         "§64",
-        "§65"
+        "§65",
+        "§16",
+        "§20",
+        "§52"
       ],
       "documented_only": [
         "§34",
@@ -856,7 +2361,143 @@
       "Task 50",
       "Task 51",
       "Task 54",
-      "Task 55"
+      "Task 55",
+      "Task 125",
+      "Task 126"
+    ]
+  },
+  "nodeType_stats": {
+    "snaker:task": 1,
+    "snaker:start": 1,
+    "snaker:end": 1,
+    "snaker:decision": 1
+  },
+  "task_stats": {
+    "completed": [
+      "Task 127",
+      "Task 128",
+      "Task 129",
+      "Task 130",
+      "Task 131",
+      "Task 132",
+      "Task 133",
+      "Task 134",
+      "Task 135",
+      "Task 136",
+      "Task 137",
+      "Task 138",
+      "Task 139",
+      "Task 140",
+      "Task 141",
+      "Task 142",
+      "Task 143",
+      "Task 144",
+      "Task 145",
+      "Task 146",
+      "Task 147",
+      "Task 148",
+      "Task 149",
+      "Task 150",
+      "Task 151",
+      "Task 152",
+      "Task 153",
+      "Task 154",
+      "Task 155",
+      "Task 156",
+      "Task 157",
+      "Task 158",
+      "Task 159",
+      "Task 160",
+      "Task 161",
+      "Task 162",
+      "Task 163",
+      "Task 164",
+      "Task 165",
+      "Task 166",
+      "Task 167",
+      "Task 168",
+      "Task 169",
+      "Task 170",
+      "Task 171",
+      "Task 172",
+      "Task 173",
+      "Task 174",
+      "Task 175",
+      "Task 176",
+      "Task 177",
+      "Task 178",
+      "Task 179",
+      "Task 180",
+      "Task 181",
+      "Task 182",
+      "Task 183",
+      "Task 184",
+      "Task 185",
+      "Task 186",
+      "Task 187",
+      "Task 188",
+      "Task 189",
+      "Task 190",
+      "Task 191",
+      "Task 192",
+      "Task 193",
+      "Task 194",
+      "Task 195",
+      "Task 196",
+      "Task 197",
+      "Task 198",
+      "Task 199",
+      "Task 200",
+      "Task 201",
+      "Task 202",
+      "Task 203",
+      "Task 204",
+      "Task 205",
+      "Task 206",
+      "Task 207",
+      "Task 208",
+      "Task 209",
+      "Task 210",
+      "Task 211",
+      "Task 212",
+      "Task 213",
+      "Task 214",
+      "Task 215",
+      "Task 216",
+      "Task 217",
+      "Task 218",
+      "Task 219",
+      "Task 220",
+      "Task 221",
+      "Task 222",
+      "Task 223",
+      "Task 224",
+      "Task 225",
+      "Task 226",
+      "Task 227",
+      "Task 228",
+      "Task 229",
+      "Task 230",
+      "Task 231",
+      "Task 232",
+      "Task 233",
+      "Task 234",
+      "Task 235",
+      "Task 236",
+      "Task 237",
+      "Task 238",
+      "Task 239",
+      "Task 240",
+      "Task 241",
+      "Task 242",
+      "Task 243",
+      "Task 244",
+      "Task 245",
+      "Task 246",
+      "Task 247",
+      "Task 248",
+      "Task 249",
+      "Task 250"
     ]
   }
 }

@@ -12,7 +12,7 @@
 | --- | --- | --- |
 | 10 | `DOING` | 进行中（含被回退重新激活的节点） |
 | 20 | `DONE` | 已完成（按 plan 顺序走完到 end） |
-| 30 | `WITHDRAW` | 发起人撤回 |
+| 30 | `WITHDRAW` | 发起人撤回 / 流程回滚 (§7.3.1 FIX-T107: state=WITHDRAW, 废弃所有 DOING 任务) |
 | 40 | `INTERRUPT` | 中断（管理员手动干预） |
 | 45 | `REJECT` | 驳回（决策路由匹配 submitType==2 等拒绝分支） |
 | 50 | `PENDING` | 待激活（如并行汇聚前的等待状态） |
@@ -102,6 +102,47 @@
 > 💡 与 `InstanceState` 编号体系**部分重叠**（DOING=10, DONE=20），但语义不同：前者是任务粒度，后者是实例粒度。
 > 
 > ⚠️ **2026-09-17 实测补（07-countersign-ratio）**：比例会签满足 `countersignCompletionCondition` 后，未完成的子任务 `taskState=99 ABANDON`。`approvalRecord` 中这些 task 仍记录但 `operator` 为空字符串。详见 `./tdd/test_07-countersign-ratio_20260917120200.md`。
+
+### 5.1 TaskState.ABANDON 字段语义（FIX-T111 §112 2026-09-21 实测补）
+
+| 字段 | DONE (state=20) | ABANDON (state=99) |
+|---|---|---|
+| `finishTime` | ✅ 有值（执行时间） | ❌ 永久 NULL（ABANDON 不算 finish） |
+| `updateTime` | 执行完成时刻 | ABANDON 触发时刻 |
+| `updateUser` | 实际执行人 (operator) | **触发废弃的人**（FIX-T111 之前误为 createUser=发起人） |
+| `createUser` | task 创建时的人 | task 创建时的人（不变） |
+| `operator` | 执行人 | 空字符串（未执行） |
+| `actorIds` | 执行人的 actor | 原应执行的人列表（未投的人） |
+| 是否进 `activeTaskList` | ❌ 不进（DONE） | ❌ 不进（ABANDON 已结束） |
+| 是否进 `todoList` | ❌ 不进 | ❌ 不进（不作为待办） |
+| 是否进 `approvalRecord` | ✅ 进 | ✅ 进（审计可见，operator="" + updateUser=触发者） |
+| 是否进 `bizData` | ✅ 进 | ✅ 进（actorIds 仍可见，原应执行者） |
+
+### 5.2 ABANDON 触发场景（FIX-T111 §112）
+
+| 场景 | updateUser 期望值（修复后） |
+|---|---|
+| 比例/PARALLEL 会签完成条件命中 | 命中条件的最后提交人 (e.g. 2/3 → 第 2 个同意的人) |
+| ONE_VOTE_VETO REJECT (submitType=20) | 否决人 (engine.py:202 显式赋值,一直正确) |
+| 流程撤回 (withdraw) | 撤回人 (facade.py:586 已修复) |
+| `start_process_instance_by_id` 异常回滚 | 发起人 (engine.py:123) |
+
+> **修复背景**：FIX-T111 之前，所有比例/PARALLEL 废弃路径的 `updateUser` 都隐式沿用 `createUser`（=发起人 `user1`），导致审计追溯错乱——看上去是「发起人废弃了未投的会签子任务」，实际是「另一个会签人的提交触发了完成条件」。详见 `./docs/known-issues.md §112` + `./bdd/bdd-1511-1516-fix-t111-taskstate-abandon_20260921.sh`。
+
+### 5.3 `abandon()` API 约定
+
+```python
+# vendor/jeeflow/model.py
+def abandon(self, now, abandoned_by: str = "") -> None:
+    self.taskState = TaskState.ABANDONED
+    self.updateTime = now
+    if abandoned_by:
+        self.updateUser = abandoned_by
+```
+
+- `abandoned_by` **非空时**：写 `updateUser = abandoned_by`（审计追溯）
+- `abandoned_by` **为空时**：保持 backward compat（不覆盖 `updateUser`）
+- **调用约定**：所有 ABANDON 路径必须显式传 `abandoned_by`（engine.py:187 / engine.py:202 / facade.py:586 / main_common.py:248）
 
 ---
 

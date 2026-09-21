@@ -1,0 +1,36 @@
+=== memory bdd/bdd-form-data-decision_20260917151400.json ===
+{
+  "ok": true,
+  "pdid": "328",
+  "inst_id": "91815588579091",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815588579091"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "small"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

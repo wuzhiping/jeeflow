@@ -2,6 +2,10 @@
 
 本指南面向「流程设计 Agent」与「流程测试 Agent」。所有动作以仓库内已有文档为准，不得自由发挥。
 
+> **📌 2026-09-19 决策**：本项目**独立使用 Python 引擎**功能，**不再考虑与 Java 端兼容**。
+> 历史"对齐 Java"约束（节点 id 命名、handler FQCN 完整版、custom 节点 methodName 反射等）已放宽或标记为冗余。
+> 详见 `vendor/README.md §8` + `docs/flow.md §3.5` 更新。
+
 ---
 
 ## 1. 角色与边界
@@ -15,12 +19,30 @@
 
 **硬约束**：
 
-- 流程开发**不修改任何代码文件**（`main_pg.py`、jeeflow 包、其它 Python 源码均只读）
+- 流程开发**不修改** `main.py` / `main_pg.py` 之外的业务代码；`vendor/jeeflow/` 在**用户授权下可修改并改进**（2026-09-17 起开放）
 - 不得安装依赖；不得访问项目目录外
-- 进度仅在当前会话维护，不得落盘
+- 进度仅在当前会话维护不得落盘
 - 所有 action 调用必须来自 `./docs/actions.md` 已登记的清单（参见 §5 速查表），**禁止**臆造 action 名
-- 禁止阅读 jeeflow 源码（`engine.py` / `facade.py` / `builtin.py`）；字段语义疑问回查 `./docs/flow.md` / `./docs/actions.md`
+- `vendor/jeeflow/` 修改前必须：
+  1. 同步修改 `docs/known-issues.md` 相关章节（标记 FIX 编号）
+  2. 在 `bdd/` 或 `tdd/` 写测试报告验证
+  3. 同步 `main.py` / `main_pg.py`（如有兼容性问题）
 - 所有文件路径引用一律使用 `./` 开头的相对路径，**禁止**使用绝对路径 `/opt/jupyter/...`
+
+### vendor/jeeflow 改进工作流
+
+```bash
+# 1. 直接编辑 vendor/jeeflow/*.py
+# 2. 记录到 docs/known-issues.md §XX（FIX-Tn + 实测）
+# 3. 重启 main.py 验证（无需重装依赖，sys.path 优先用 vendor）
+# 4. 同步到 main_pg.py 兼容（如 PG 后端）
+```
+
+**vendor/jeeflow 优先级**：main.py + main_pg.py + spi/__init__.py 顶部已加
+`sys.path.insert(0, os.path.join(os.path.dirname(__file__), "vendor"))`，
+启动时**优先使用 vendor/jeeflow**，不依赖 `.venv/site-packages/jeeflow`。
+
+`.venv/site-packages/jeeflow` 保留作为参考对照（不删除），但实际运行用 vendor。
 
 ---
 
@@ -30,10 +52,12 @@
 | --- | --- | --- |
 | `./docs/flow.md` | 流程 JSON 完整规范（10 节 + 速查） | 设计前读全文；测试中遇到歧义回查 §3-§7 |
 | `./docs/actions.md` | 47 action + 路由解析 + curl 模板（端口 8101） | 测试时按 action 名查表 |
+| **`./docs/BUGS.md`** | **27 BUG（已修 27+仍存 0）+ 5 已知限制 + 16 项自检清单（v1.9.0 2026-09-19 更新）** | **设计前必读，避开引擎能力边界** |
 | `./flows/*.json` | 15 个真实样例（01-13） | 设计时挑最相似的样例 fork（**只读模板，不得改写**） |
 | `./tdd/*.json` | WIP 流程 JSON | 当前会话要开发的新流程；测试通过后再决定是否晋升到 `./flows/` |
 | `./tdd/README.md` | TDD 目录使用约定 | 写新流程前必读 |
 | `./docs/pg_schema.sql` | 真实 PostgreSQL 表 DDL（仅参考） | 查字段含义 |
+| `./docs/known-issues.md` | 87 个章节详细问题（§1-§86） | 测试中遇到具体问题时按 §X 索引 |
 
 ---
 
@@ -68,7 +92,15 @@
 
 ### 3.3 节点 id / 边 id 命名
 
-参见 `./docs/flow.md §4a`。**禁止**节点 id 含空格 / `-` / 中文（引擎底层有部分宽限，但跨语言 Java 端会触发键映射问题）。
+参见 `./docs/flow.md §4a`。**禁止**节点 id 含空格 / `-` / 中文 / 特殊字符（FIX-T34 deploy 校验 `^[A-Za-z0-9_]+$`）。
+
+**理由**（Python 引擎独立使用，无需考虑跨语言兼容）：
+- 防止 JSON key 编码歧义（空格/中文在某些 JSON parser 中行为不一致）
+- 防止 URL 路由冲突（API path 用节点 id 作 path param）
+- 防止 SQL 列名转义问题（v1.0.x `_INSTANCE_WHITELIST` 列名直接拼）
+- 防止审批记录 / highLight historyNodeNames 显示异常
+
+**放宽建议**：如果你明确不需要以上场景，可以提交 issue 申请放宽（目前 v1.9.0 保持严格）。
 
 ---
 
@@ -84,7 +116,7 @@
 | 串行会签（按顺序审） | `./flows/06-countersign-sequential.json` | `countersignType=SEQUENTIAL` |
 | 比例会签（✅ 已实现，RatioCapableEngine 扩展） | `./flows/07-countersign-ratio.json` | `countersignCompletionCondition: "#nrOfCompletedInstances==2"`（OGNL 表达式，`nrOfCompletedInstances`/`nrOfInstances` 自动注入） |
 | 一票否决会签 | `./flows/13-countersign-one-vote-veto.json` | `countersignCompletionCondition: "ONE_VOTE_VETO"` |
-| 自定义节点 | `./flows/08-custom-node.json` | `clazz + methodName + args + val` ⚠️ **引擎未实现**（详见 §known-issues §16） |
+| 自定义节点 | `./flows/08-custom-node.json` | `clazz + args + val` ✅ **v1.9.0 FIX-T38 已实现**：`clazz` 查 `EngineExtensions.custom_handler_registry`，handler 签名 `async def(node, inst, vars_, args) -> Any`，结果写回 `vars_[val]`（详见 `known-issues.md §16`） |
 | 驳回路径 | `./flows/09-with-reject.json` | submitType=Reject 走 reject 边 |
 | 业务流 + 拦截器 | `./flows/10-mixed-mode.json` | 顶层 `preInterceptors/postInterceptors`；`type: "business"` |
 | 处理人为变量 | `./flows/11-assignee-vars.json` | `assignee: "deptLeader"` / `"userA,userB"` |
@@ -131,7 +163,7 @@ curl -s -X POST http://127.0.0.1:8101/api/reset | jq
 > - PG 后端 `processDesign.id` 和 `processDefine.id` 是 **19 位雪花 ID**（time-ordered bigint），非 sqlite 自增格式（如 1-17 或累积 113）
 > - 本轮 17 个 flow PG 回归实测：design_id 形如 `1789614853725000`，processDefineId 形如 `1789614853782000`
 > - runner **必须**从 `processDesign/save` 响应取 `data.id`，从 `processDesign/deploy` 响应取 `data.processDefineId`；**不可假设任何固定值**
-> - 17 个流程 PG 行为与 sqlite 完全一致（除 ID 格式）；唯一 FAIL 是 `08-custom-node`（已知 §16 引擎缺陷，跨后端一致）
+> - 17 个流程 PG 行为与 sqlite 完全一致（除 ID 格式）；v1.9.0 起 `08-custom-node` + `14-decision-submitType` 已修复（FIX-T37/T38）
 
 **约束**：
 - **非工作流 action**，不走 `/wf/{action}` 门面，AGENTS.md §5.3-§5.8 的 action 替换规则对它无效。
@@ -247,18 +279,27 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 
 ### 5.7 字段权限核验
 
-启动实例时传 `PERMISSION_f_<field>=1`（只读）或 `2`（隐藏）。完成后查 `bizData`：
+启动实例时传 `PERMISSION_f_<field>=1`（只读）/`2`（编辑）/`3`（隐藏）。完成后查 `bizData`：
 - 只读字段：值回传，但任务行不允许再写
 - 隐藏字段：值丢弃，前端不可见
 
+> ⚠️ **FIX-DOC-1（2026-09-18）**：原文档误写"2=隐藏"，实测 2=编辑，3=隐藏。详见 `known-issues.md §82` + `flow.md §5.1`。
+
 ### 5.8 会签测试
 
-| 类型 | curl 操作 | 预期 `performType/countersignType` | 预期完成条件 |
-| --- | --- | --- | --- |
-| 并行 | 三用户按序 `processTask/execute` | `1 / PARALLEL` | **全员通过才流转**（剩余成员 taskState 仍 10，不自动废弃） |
-| 串行 | 三个用户按顺序 `processTask/execute` | `1 / SEQUENTIAL` | 仅最后一个通过即流转 |
-| 比例 | N 个用户中 K 个通过 | `1 / PARALLEL` | `countersignCompletionCondition` 在 field 下 |
-| 一票否决 | 任一用户 reject（submitType=20） | `1 / PARALLEL` | `ONE_VOTE_VETO`（仅当配置时生效；剩余成员废弃） |
+| 类型 | curl 操作 | 预期 `performType/countersignType` | `countersignCompletionCondition` 字段值 | 预期完成条件 |
+| --- | --- | --- | --- | --- |
+| 并行 (全员通过) | 三用户按序 `processTask/execute` (全部 submitType=0) | `1 / PARALLEL` | (字段省略) | **全员通过才流转**（剩余成员 taskState 仍 10，不自动废弃） |
+| 串行 | 三个用户按顺序 `processTask/execute` | `1 / SEQUENTIAL` | (字段省略) | 仅最后一个通过即流转 |
+| 比例 (N/M) | N 个用户中 K 个 submitType=0 | `1 / PARALLEL` | `"#nrOfCompletedInstances>=K"` (OGNL 表达式) | 满足 K/M 立即流转; 余者 taskState=99 ABANDON (updateUser=触发者, FIX-T111) |
+| 一票否决 | 任一用户 reject (submitType=20) | `1 / PARALLEL` | `"ONE_VOTE_VETO"` (字符串常量) | 立即流转 state=45 + 余者 ABANDON (updateUser=rejecter, FIX-T46+T111) |
+
+> ⚠️ **FB-0008 关键提示 (2026-09-21 flowuser 反馈)**:
+> - 字段值 = 表达式 → 引擎按比例模式处理, **放弃** 一票否决能力
+> - 字段值 = 字符串 "ONE_VOTE_VETO" → 引擎按一票否决处理, **放弃** 比例能力
+> - 这两种语义 **互斥**, 不能复合 (如设计师想"2/3 通过 OR 任一 reject"是行不通的)
+> - 设计师必须二选一, 不要试图构造"复合规则"
+> - 详见 `docs/flow.md §3.3` (修订后) + `docs/known-issues.md §113`
 
 > ⚠️ **修正（2026-09-17 实测 05-countersign-parallel）**：原表写 PARALLEL "任一通过即流转"，实测**全员通过才流转**。`engine.py:121-123` 完成任务后检查 `find_doing_tasks`，有 doing 直接 return 不流转。剩下成员 taskState 仍 10 (DOING)，由后续完成者继续推进；最后一个完成时所有 doing 已清空才往下走。
 
@@ -269,7 +310,7 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 | # | 约束 | 出处 |
 | --- | --- | --- |
 | 1 | 顶层 `name` 全局唯一 | `./docs/flow.md §2` |
-| 2 | 节点 id 不含空格 / `-` / 中文 | Java 端兼容性 |
+| 2 | 节点 id 不含空格 / `-` / 中文（FIX-T34 regex `^[A-Za-z0-9_]+$`） | Python 引擎 JSON key / URL 路由安全 |
 | 3 | 流程图必须 `start` 开 / `end` 收 | `./docs/flow.md §3.1` |
 | 4 | decision 出边按顺序评估，首个真值即流转 | `./docs/flow.md §3.4` |
 | 5 | `performType=1` 必须配 `countersignType` | `./docs/flow.md §3.3` |
@@ -277,9 +318,31 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 | 7 | `assignmentHandler` 与 `assignee` 互斥；同时写则 handler 优先 | `./docs/flow.md §6` |
 | 8 | 操作人 `u_*` 只进执行上下文，不写回实例 | `./docs/flow.md §7` |
 | 9 | 实例变量 `f_*`（发起时） vs `tf_*`（执行时）分工 | `./docs/flow.md §7` |
-| 10 | 字段权限码 `1`=只读 `2`=隐藏 | `./docs/flow.md §5` |
+| 10 | 字段权限码 `1`=只读 `2`=编辑 `3`=隐藏 | `./docs/flow.md §5.1` |
 | 11 | `instanceUrl` 用于前端发起跳转 | `./docs/flow.md §2` |
 | 12 | 顶层 `type` 默认 `approval`，`business` 见样例 10 | `./docs/flow.md §2` |
+| 13 | **节点 id 唯一**（FIX-T31 自动校验） | `./docs/BUGS.md §58` |
+| 14 | **汇合点用 join 节点**（FIX-T35 修复后可选；join 仍推荐） | `./docs/BUGS.md §27,§30` |
+| 15 | ~~决策 expr 单 key 单 op~~（v1.9.0 FIX-T37 已支持 `&&`/`\|\|`/复合条件，详见 `./docs/BUGS.md §20`） | `./docs/BUGS.md §20` |
+| 16 | **`PERMISSION_*` 字段必须用 `PERMISSION_f_<name>` 前缀** | `./docs/BUGS.md FIX-DOC-1` |
+| 17 | **`submitType=2/3/4/6` 走 facade 不走 decision** | `./docs/BUGS.md §20` |
+| 18 | ~~不要依赖 custom 节点 clazz/methodName~~（v1.9.0 FIX-T38 已通过 `EngineExtensions.custom_handler_registry` 实现；handler 签名 `async def(node, inst, vars_, args) -> Any`） | `./docs/BUGS.md §16` |
+| 19 | ~~**`preInterceptors` 静默未生效，用 `postInterceptors`**~~（FIX-T34 v1.9.0+ 已修复） | `./docs/BUGS.md §34` |
+| 20 | ~~**surrogate 不自动展开 todoList**~~（FIX-T62 v1.9.0+ 已修复：`engine._is_surrogate_allowed` 在 _load_and_check 中作 fallback） | `./docs/BUGS.md §40` |
+| 21 | **节点 id 命名规范**（FIX-T34 deploy 自动校验） | `./docs/BUGS.md §93` |
+| 22 | ~~**任务委派**需手动 addCandidate + removeActor~~（FIX-T69 v1.9.0+ 新增 `processTask/delegate` 端点） | `./docs/BUGS.md §69` |
+| 23 | **实例挂起/恢复**（FIX-T70 v1.9.0+ `processInstance/suspend` + `resume`） | `./docs/BUGS.md §70` |
+| 24 | **主子状态联动**（FIX-T72 v1.9.0+ ProcessInstance.parentStatus 字段） | `./docs/BUGS.md §107` |
+| 25 | **callActivity 子流程**（FIX-T73 v1.9.0+ `snaker:callActivity` 节点类型 + `processDefineName` 字段） | `./docs/BUGS.md §108` |
+| 26 | **delegate 历史查询**（FIX-T74 v1.9.0+ `processTask/delegateHistory` 端点） | `./docs/BUGS.md §109` |
+| 27 | **transfer + addCandidate 合并**（FIX-T75 v1.9.0+ `processTask/transferAndAdd` 端点） | `./docs/BUGS.md §109` |
+| 28 | **task 级表单绑定**（FIX-T76 v1.9.0+ `processTask/withForm` 端点） | `./docs/BUGS.md §109` |
+| 29 | **task 节点**不应有多条无条件出边（隐式 fork 致 end 被提前遍历,实例 state=20 但下游 task 仍 DOING;FIX-T110 v1.9.0+ verify W012 警告 + 用 decision 节点分隔） | `./docs/known-issues.md §111` |
+| 30 | **TaskState.ABANDON.updateUser** 语义 = 触发废弃的人（FIX-T111 §112；比例/PARALLEL 会签完成条件命中、流程撤回、ONE_VOTE_VETO REJECT 等场景必须显式传 abandoned_by；不传时保持 backward compat = 沿用 createUser） | `./docs/known-issues.md §112` |
+| 31 | **decision 节点**多分支建议加默认边（BUG-2 / FIX-T112 2026-09-22；如所有 expr 评估失败, 引擎兜底走第一条边, 可能创建孤儿 DOING task. 修复: 引擎层 _cleanup_orphan_decision_tasks + verify W013 警告加默认边 `expr=""`） | `./docs/known-issues.md §113` (注: §113 实为 countersignCompletionCondition, BUG-2 见 FB-0007) |
+| 32 | **变量作用域铁律**（FB-0011 / FIX-DOC-4 2026-09-24；`tf_*` 只在当前 task 作用域, 不到 instance.variables, decision expr 读不到 → 触发 BUG-2 类似现象. 启动时 + execute 时都传 `f_*` 或重启动传 `f_<name>`；`tf_*` 仅当前 task + 后置拦截器可见） | `./docs/known-issues.md §115` + `docs/flow.md §7.1` |
+
+> ⚠️ 约束 #13-#20 来自 `./docs/BUGS.md`，是 BDD 实战中**反复踩坑**的约束。设计前**必读**。
 
 ---
 
@@ -292,7 +355,7 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 | `performType` 字符串 "1" 但 `countersignType` 漏配 | 子任务生成但完成逻辑乱 | 引擎容错解析，但 `countersignType` 必须给 |
 | `countersignCompletionCondition` 写 `field` 但 assignees 全是变量 | 条件永远不评估 | 改用根 `properties` 写，或确保 field.candidateUsers 非空 |
 | `assignmentHandler` 拼写错（大小写） | 引擎走默认 handler = `inst.operator` | 严格照 `./docs/flow.md §6` FQCN |
-| `assignmentHandler` 用 `com.jeeflow.*` 前缀 | **FQCN 错误**：Python 引擎 FQCN 实际为 `com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler`（注意 `$`） | 详见 `known-issues.md §67` |
+| `assignmentHandler` 用未注册 key | **handler 未注册**：Python 引擎仅注册简化版 `com.mldong.jeeflow.interceptor.impl.*`（v1.9.0 起） | 详见 `known-issues.md §67` |
 | `TaskRoleAssigneeHandler` 配置 `properties.roleCode` | **字段被忽略**：handler 实际用 `node.id` 作为 role_code | 节点 id 必须等于 SPI `DEMO_ROLE_TO_USERS.json` 的 key，详见 `known-issues.md §68` |
 | 节点 `form: ""` 但后续字段回写 | `args` 没字段 | 让 form 为 None 或省略，提交时也只给 `u_*` |
 | 发起人 `u_realName` 想每次改 | 引擎恒以发起人为准 | 设计上不覆盖 |
@@ -301,6 +364,13 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 | 测试用 `/wf/processInstance/start` / `/wf/task/page` 等未登记 action | 404 或路由不命中 | 严格按 §5.1 速查表选用 action |
 | WIP JSON 直接写到 `./flows/` | 与稳定样例混在一起，无法区分 | 先写 `./tdd/<key>.json`，测试稳定后再 cp 晋升 |
 | 测试通过但没写 `./tdd/test_<key>_<YYYYMMDDHHMMSS>.md` | 复测 / 移交时无记录 | §3.2 step 8 是必做项 |
+| `assignmentHandler` 用 SPI 角色但 `DEMO_ROLE_TO_USERS.json` 没装该 role | **v1.8.0 FIX-T17 改进**：原静默返回 []，现抛 `ValueError(... SPI 角色匹配为空)` 让 runner 立即定位 | 在 `properties.roleCode` 显式声明，或向 SPI 包补充 role 映射（详见 `known-issues.md §71`） |
+| 流程顶层 `postInterceptors: "XXX"` 但 main.py 没注册 XXX | **vendor/jeeflow/engine.py:_resolve_interceptors** 抛 `ValueError(拦截器未注册: XXX)` | 在 `main.py` `EngineExtensions(interceptor_registry={...})` 注册（详见 `known-issues.md §72`） |
+| custom 节点 handler 未注册 | **v1.9.0 FIX-T38 改进**：原 F1X-T17 静默 raise，现抛 `ValueError(handler 未注册: ...)` 让 runner 立即定位 | 在 `main_common.py:build_custom_handlers` 注册 `EngineExtensions.custom_handler_registry`（详见 `known-issues.md §16`） |
+| `assignmentHandler` 用未注册 key | 引擎未注册，raise `handler 未注册` | 严格使用 `com.mldong.jeeflow.interceptor.impl.*` 简化版注册名（v1.9.0 起，详见 `known-issues.md §67`） |
+| `decision` 所有出边 `expr` 都为 False | 兜底走第一条边 | 加默认边 `expr=""`（详见 §3.4） |
+| 节点 id 含空格/`-`/中文 | **v1.9.0 FIX-T34 已修复**：deploy 时 regex 拒绝 `^[A-Za-z0-9_]+$` 以外的 id | 用纯字母/数字/下划线命名（详见 `known-issues.md §93`） |
+| 测试中调用 `task/processInstance/start` 而非 `startAndExecute` | API 不在 §5.1 速查表，返回 404 | 严格按 §5.1 action 名调用 |
 
 ---
 
@@ -310,7 +380,7 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 2. **对照预期** — `approvalRecord` 期望节点顺序 vs 实际
 3. **看 `highLight`** — 当前节点是否预期
 4. **查 `bizData`** — 实例变量是否注入；`u_*` 是否非持久化
-5. **回查文档** — `./docs/flow.md §3.3-§3.5` 节点字段语义、`./docs/actions.md §X` action 行为；**禁止**回查 jeeflow 源码
+5. **回查文档** — `./docs/flow.md §3.3-§3.5` 节点字段语义、`./docs/actions.md §X` action 行为；如需查 jeeflow 内部行为，可读 `vendor/jeeflow/*.py`（项目内嵌，**可修改**）
 
 必要时重启 uvicorn（不改代码）：
 
@@ -341,6 +411,63 @@ sleep 1
 | TDD 目录使用约定 | `./tdd/README.md` |
 | 47 个 action 路由 + curl | `./docs/actions.md §X` |
 | 一键重置测试环境 | §5.2.5（`/api/reset`，不在 action 清单） |
+| **存量 BUG + 已知限制** | **`./docs/BUGS.md`（设计前必读！）** |
+| **流程图自检清单** | **`./docs/BUGS.md` 末尾（部署前逐项检查）** |
+| **节点 id 命名规范** | **`./docs/known-issues.md §93`（FIX-T34）** |
+| 已知问题详细说明 | `./docs/known-issues.md §X` |
+
+---
+
+## 9.5 BUGS.md 使用指南
+
+`./docs/BUGS.md` 是**流程设计者的必读文档**，分三部分：
+
+### 第一部分：27 个 BUG 报表
+
+| 内容 | 用途 |
+|------|------|
+| **27 个已修复 BUG**（FIX-T1~T38） | 知道引擎已支持的能力 + 修复时间 |
+| **0 个仍存 BUG**（v1.9.0 2026-09-19 起） | — |
+
+> **v1.9.0 里程碑（2026-09-19）**：27 个 BUG 全部修复，包含 §16 / §20 / §27 / §52 等历史顽疾。
+
+### 第二部分：0 个已知限制（roadmap §2 + §3 全部完成 2026-09-20）
+
+> **v1.9.0+ 里程碑**：截至 2026-09-20，**roadmap §2 (16 项) + §3 (8 项) 共 24 项任务全部完成**，引擎能力边界 = 0。
+> 历史所有限制 §30 §32 §34 §40 §46 §56 §61 §69 §70 等全部 FIX。
+> Phase 2 新增能力：parentStatus 主子联动 / callActivity / delegate 历史 / transferAndAdd / withForm / AsyncJdbcTableReader / 流程定义缓存。
+> 详细见 `./docs/BUGS.md` + `./roadmap.md` + `./bdd/bdd-1101-1110-roadmap-phase2_20260920.md`。
+
+**每个限制都附"不要做"反例 + "替代方案"正例**，照搬正例即可安全设计。
+
+### 第三部分：16 项流程图设计自检清单
+
+部署前**逐项勾选**：
+- 节点 id 唯一（FIX-T31 deploy 自动校验，但有错先报）
+- 汇合点用 join 节点（避免 §30）
+- 决策 expr 可写 `&&`/`||`/复合条件（v1.9.0+ FIX-T37）
+- PERMISSION_* 前缀
+- 字段权限码 1/2/3
+- handler FQCN 用 `com.mldong.*`
+- TaskRoleAssigneeHandler 用 node.id 作为 role_code
+- 等等
+
+### 使用时机
+
+| 阶段 | 必读章节 |
+|------|----------|
+| **设计前** | 已知限制（§30-§46）+ 自检清单 |
+| **写 JSON 时** | 自检清单 16 项 |
+| **测试中遇 BUG** | 存量 BUG 报表（找类似 FIX-T 编号） |
+| **测试仍失败** | 详细 `./docs/known-issues.md §X` |
+
+### 错误用法（禁止）
+
+- ❌ **不读 BUGS.md 直接写流程**：必然撞到 §30 等限制
+- ❌ **遇到 BUG 不查 BUGS.md**：可能用已修复的旧 workaround 重新踩坑
+- ❌ **自检清单不勾选就 deploy**：可能因节点 id 重复/权限 key 错等问题被拒
+
+---
 
 ---
 
@@ -348,6 +475,8 @@ sleep 1
 
 设计 Agent 自检清单（提交前必检）：
 
+- [ ] **已读 `./docs/BUGS.md`**：避开了 5 个已知限制（§30/§32/§34/§40/§46）
+- [ ] **已勾选 BUGS.md 自检清单 16 项**：节点 id 唯一 / 汇合点用 join / 决策 expr 可用 `&&`/`||`（v1.9.0+）/ PERMISSION_* 前缀 / handler FQCN `com.mldong.*` 等
 - [ ] JSON 文件落在 `./tdd/<key>.json`（**不是** `./flows/`）
 - [ ] JSON 通过 `python -m json.tool` 校验
 - [ ] 节点 id / 边 id 符合命名约定

@@ -1,0 +1,95 @@
+{
+  "batch": "business-scenarios",
+  "results": [
+    {
+      "bdd_id": "BDD#501",
+      "name": "报销流程",
+      "status": "INFO",
+      "detail": "state=10"
+    },
+    {
+      "bdd_id": "BDD#502",
+      "name": "请假流程",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#503",
+      "name": "业务场景 503",
+      "status": "INFO",
+      "detail": "state=10"
+    },
+    {
+      "bdd_id": "BDD#504",
+      "name": "业务场景 504",
+      "status": "INFO",
+      "detail": "state=10"
+    },
+    {
+      "bdd_id": "BDD#505",
+      "name": "业务场景 505",
+      "status": "INFO",
+      "detail": "state=10"
+    },
+    {
+      "bdd_id": "BDD#506",
+      "name": "业务场景 506",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#507",
+      "name": "业务场景 507",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#508",
+      "name": "业务场景 508",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#509",
+      "name": "业务场景 509",
+      "status": "INFO",
+      "detail": "state=10"
+    },
+    {
+      "bdd_id": "BDD#510",
+      "name": "业务场景 510",
+      "status": "INFO",
+      "detail": "state=10"
+    },
+    {
+      "bdd_id": "BDD#511",
+      "name": "业务场景 511",
+      "status": "PASS",
+      "detail": "state=20"
+    },
+    {
+      "bdd_id": "BDD#512",
+      "name": "业务场景 512",
+      "status": "INFO",
+      "detail": "state=10"
+    },
+    {
+      "bdd_id": "BDD#513",
+      "name": "业务场景 513",
+      "status": "INFO",
+      "detail": "state=10"
+    },
+    {
+      "bdd_id": "BDD#514",
+      "name": "业务场景 514",
+      "status": "INFO",
+      "detail": "state=10"
+    },
+    {
+      "bdd_id": "BDD#515",
+      "name": "业务场景 515",
+      "status": "INFO",
+      "detail": "state=10"
+    }
+  ]
+}

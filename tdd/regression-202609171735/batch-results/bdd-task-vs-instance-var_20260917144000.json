@@ -1,0 +1,36 @@
+=== memory bdd/bdd-task-vs-instance-var_20260917144000.json ===
+{
+  "ok": true,
+  "pdid": "527",
+  "inst_id": "91815593697206",
+  "log": [
+    {
+      "step": "start",
+      "ok": true,
+      "inst_id": "91815593697206"
+    },
+    {
+      "step": "execute-leader",
+      "task": null,
+      "ok": true,
+      "msg": "成功"
+    },
+    {
+      "step": "end",
+      "state": 20,
+      "ok": true
+    },
+    {
+      "step": "approvalRecord",
+      "ok": true,
+      "history": [
+        "apply",
+        "leader_review"
+      ]
+    },
+    {
+      "step": "final-detail",
+      "state": 20
+    }
+  ]
+}

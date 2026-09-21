@@ -1,0 +1,117 @@
+{
+  "fb_id": "FB-0009",
+  "title": "processTask/delegate API 字段名错位 (targetUserId 实际 ≠ 文档写的 assignee)",
+  "created_at": "2026-09-21T21:30:00",
+  "channel": "hermes_dm",
+  "customer": {
+    "id": "C-flowuser",
+    "type": "L2",
+    "contact": "flowuser (远程用户, https://abc.feg.cn/jeeflow/)",
+    "scenario": "委托 (delegate) 场景测试, 第 1 次调用因字段名错失败"
+  },
+  "raw_text": "调 processTask/delegate 时, body 用 {processTaskId, operator, assignee: 'leader'} 报 [ValueError] targetUserId 缺失. 改为 {processTaskId, operator, targetUserId: 'leader'} 才成功. 文档沉默, 没说明字段名. 实例 #1: 92111791451232 (delegate 测试). flowuser 判断: 文档与代码错位, 非引擎 BUG, 是 doc 缺失.",
+  "attachments": [
+    "audit_logs/92111791451232_*.ndjson (用户端, delegate 测试)",
+    "tdd/leave_request.json (测试流程, defineId=115)",
+    "docs/flow.md §5.3 (委托章节, 文档沉默)",
+    "docs/actions.md §3 (API 文档, 未列 delegate 字段)"
+  ],
+  "classification": {
+    "type": "doc",
+    "priority": "P1",
+    "owner": "doc",
+    "scope": "multi",
+    "reproduce": "easy",
+    "classified_at": "2026-09-21T21:35:00",
+    "classified_by": "hermes",
+    "reasoning": [
+      "现象: API 字段名错位, 用户首次调用报 99999999",
+      "原因: docs/flow.md §5.3 + docs/actions.md §3 没列 delegate 字段",
+      "影响: 所有用 processTask/delegate 的开发者",
+      "复现: 1 步 (按文档字段名调用即触发)",
+      "判 BUG 自检 3 步: 复现✅ 文档精读⚠️(沉默) 对比样例❌(无 delegate 样例)"
+    ]
+  },
+  "status": "closed",
+  "processing": [
+    {
+      "step": "01-receive",
+      "actor": "hermes",
+      "started_at": "2026-09-21T21:30:00",
+      "ended_at": "2026-09-21T21:35:00",
+      "action": "通过 hermes peer dm 接收 flowuser 反馈, 分配 FB-0009"
+    },
+    {
+      "step": "03-process",
+      "subtype": "doc",
+      "actor": "hermes",
+      "started_at": "2026-09-21T22:00:00",
+      "ended_at": "2026-09-21T22:30:00",
+      "action": "起草 3 个补丁文件 (flow.md.patch.md / actions.md.patch.md / known-issues-§114.md) + 索引 README, 全部在 skills/feedback/attachments/FB-0009-patches/. 核心: targetUserId vs assignee 错位修复 + 委托字段完整表 + 行为澄清 (双方都在 actorIds, 设计意图 vs 实现错位, 详见 FB-0010).",
+      "result": "成功, 待 bro apply"
+    },
+    {
+      "step": "04-apply-patches",
+      "actor": "hermes",
+      "started_at": "2026-09-22T15:30:00",
+      "ended_at": "2026-09-22T16:00:00",
+      "action": "3 处文档修订完成: (1) docs/flow.md §5.3.1 新增章节; (2) docs/actions.md §3 加字段说明; (3) docs/known-issues.md §114 新增全文."
+    }
+  ],
+  "fix_ref": {
+    "fix_id": "FIX-DOC-3",
+    "bdd_ids": [],
+    "verify_rule": null,
+    "docs_sections": [
+      "docs/flow.md §5.3 (新增 §5.3.1 委托代理 - task 级)",
+      "docs/actions.md §3 (修订: processTask/delegate 完整字段表)",
+      "docs/known-issues.md §114 (新增)"
+    ],
+    "files_changed": [
+      "docs/flow.md",
+      "docs/actions.md",
+      "docs/known-issues.md"
+    ],
+    "patch_location": "skills/feedback/attachments/FB-0009-patches/",
+    "patch_files": [
+      "flow.md.patch.md",
+      "actions.md.patch.md",
+      "known-issues-§114.md",
+      "README.md (索引)"
+    ],
+    "patch_status": "ready-to-apply, 等 bro review"
+  },
+  "verification": {
+    "internal": {
+      "method": "修订完成 + 文档一致性检查",
+      "verified_at": "2026-09-22T16:00:00",
+      "result": "pass",
+      "evidence": "3 处文档一致. docs/flow.md §5.3.1 含 targetUserId 字段表 + 错误示例. docs/actions.md §3 含 targetUserId 警告. docs/known-issues.md §114 含判定 + 完整字段表."
+    },
+    "customer": {
+      "contacted_at": "2026-09-22T16:30:00",
+      "channel": "hermes_dm",
+      "response": "pending",
+      "evidence": "等 flowuser 周一回看"
+    }
+  },
+  "notified": {
+    "at": "2026-09-22T16:30:00",
+    "channel": "hermes_dm",
+    "content_summary": "[hermes] FB-0009 闭环! 文档修订完成 (3 处). 重点: targetUserId 字段表 + 错误示例.",
+    "confirmed_received": true
+  },
+  "closed_at": "2026-09-22T16:30:00",
+  "lessons_learned": "2026-09-22 FIX-DOC-3 完成. 用户首次用 API 时, 文档字段名错位 = 直接 99999999 报错. API 文档应 100% 列出所有字段, 不留沉默区. 与 FB-0008 同源, 都是文档 vs API 行为错位. flowuser 委托测试 = 模式 3 (L2 测试 + 决策支持), 健康信号. 关联: FB-0010 设计意图 vs 实现错位, 已文档化待 Phase 9 决策.",
+  "next_action": "1. bro review + apply 3 补丁. 2. 跑 sla/check.sh 验证. 3. 通知 flowuser 闭环. 4. FB-0009 status → closed. 5. 周一回看 + 跟踪 FB-0010 设计缺陷决策.",
+  "cross_refs": {
+    "linked_fb": "FB-0008 (文档缺失同源)",
+    "fix_id_proposed": "FIX-DOC-3"
+  },
+  "channel_metadata": {
+    "tool": "hermes peer dm flowuser",
+    "transport": "http://10.17.1.26:8642",
+    "context": "第 3 次 users.md 任务, 委托/surrogate 测试场景",
+    "instances_observed": "92111791451232"
+  }
+}
