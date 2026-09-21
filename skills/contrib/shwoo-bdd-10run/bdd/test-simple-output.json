@@ -1,0 +1,408 @@
+{
+ "instanceId": "92132445970476",
+ "detail": {
+  "code": 0,
+  "msg": "成功",
+  "data": {
+   "id": "92132445970476",
+   "parentId": null,
+   "processDefineId": "20",
+   "state": 20,
+   "parentNodeName": "",
+   "businessNo": "",
+   "operator": "user1",
+   "ownerId": "user1",
+   "parentStatus": null,
+   "variables": {
+    "title": "BDD Simple Approval Test",
+    "assignees": {
+     "apply": "user1",
+     "leader": "leader"
+    },
+    "variables": {
+     "submitType": 0,
+     "f_leaveType": "annual",
+     "days": 3,
+     "u_userId": "user1",
+     "u_realName": "张三"
+    },
+    "submitType": 1,
+    "f_leaveType": "annual",
+    "days": 3,
+    "u_userId": "user1",
+    "u_realName": "张三",
+    "u_deptId": "D01",
+    "u_deptName": "研发部",
+    "u_postId": "P01",
+    "u_postName": "工程师",
+    "autoGenTitle": "BDD Simple Approval Test"
+   },
+   "formData": {
+    "f_leaveType": "annual",
+    "leaveType": "annual"
+   },
+   "createTime": "2026-09-21T14:44:51.768275",
+   "createUser": "user1",
+   "jsonObject": {
+    "name": "simple",
+    "displayName": "简单审批流程",
+    "type": "approval",
+    "instanceUrl": "/form/apply",
+    "nodes": [
+     {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 100,
+      "y": 200,
+      "properties": {
+       "width": 50,
+       "height": 50
+      },
+      "text": {
+       "value": "开始"
+      }
+     },
+     {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 200,
+      "y": 200,
+      "properties": {
+       "width": 100,
+       "height": 50,
+       "form": "apply-form",
+       "assignee": "applicant",
+       "taskType": 0,
+       "performType": 0
+      },
+      "text": {
+       "value": "发起申请"
+      }
+     },
+     {
+      "id": "task1",
+      "type": "snaker:task",
+      "x": 300,
+      "y": 200,
+      "properties": {
+       "width": 100,
+       "height": 50,
+       "form": "leave-form",
+       "assignee": "leader",
+       "taskType": 0,
+       "performType": 0,
+       "field": {
+        "PERMISSION_f_leaveType": 1,
+        "PERMISSION_days": 2
+       }
+      },
+      "text": {
+       "value": "上级审批"
+      }
+     },
+     {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 500,
+      "y": 200,
+      "properties": {
+       "width": 50,
+       "height": 50
+      },
+      "text": {
+       "value": "结束"
+      }
+     }
+    ],
+    "edges": [
+     {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+     },
+     {
+      "id": "e_apply_1",
+      "sourceNodeId": "apply",
+      "targetNodeId": "task1",
+      "properties": {}
+     },
+     {
+      "id": "e2",
+      "sourceNodeId": "task1",
+      "targetNodeId": "end",
+      "properties": {}
+     }
+    ]
+   },
+   "tasks": [
+    {
+     "id": "92132445970477",
+     "processInstanceId": "92132445970476",
+     "taskName": "apply",
+     "displayName": "发起申请",
+     "taskType": 0,
+     "performType": 0,
+     "taskState": 20,
+     "operator": "user1",
+     "finishTime": "2026-09-21T14:44:51.769651",
+     "expireTime": null,
+     "formKey": "apply-form",
+     "taskParentId": null,
+     "variable": "{\"title\": \"BDD Simple Approval Test\", \"assignees\": {\"apply\": \"user1\", \"leader\": \"leader\"}, \"variables\": {\"submitType\": 0, \"f_leaveType\": \"annual\", \"days\": 3, \"u_userId\": \"user1\", \"u_realName\": \"张三\"}, \"submitType\": 0, \"f_leaveType\": \"annual\", \"days\": 3, \"u_userId\": \"user1\", \"u_realName\": \"张三\", \"u_deptId\": \"D01\", \"u_deptName\": \"研发部\", \"u_postId\": \"P01\", \"u_postName\": \"工程师\", \"autoGenTitle\": \"BDD Simple Approval Test\"}",
+     "createTime": "2026-09-21T14:44:51.768404",
+     "createUser": "user1",
+     "updateTime": "2026-09-21T14:44:51.769651",
+     "updateUser": "user1",
+     "taskActorIdList": [
+      "user1"
+     ],
+     "taskFormData": {},
+     "ext": {
+      "title": "BDD Simple Approval Test",
+      "assignees": {
+       "apply": "user1",
+       "leader": "leader"
+      },
+      "variables": {
+       "submitType": 0,
+       "f_leaveType": "annual",
+       "days": 3,
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "submitType": 0,
+      "f_leaveType": "annual",
+      "days": 3,
+      "u_userId": "user1",
+      "u_realName": "张三",
+      "u_deptId": "D01",
+      "u_deptName": "研发部",
+      "u_postId": "P01",
+      "u_postName": "工程师",
+      "autoGenTitle": "BDD Simple Approval Test",
+      "isFirstTaskNode": false
+     }
+    },
+    {
+     "id": "92132445972526",
+     "processInstanceId": "92132445970476",
+     "taskName": "task1",
+     "displayName": "上级审批",
+     "taskType": 0,
+     "performType": 0,
+     "taskState": 20,
+     "operator": "leader",
+     "finishTime": "2026-09-21T14:44:51.774846",
+     "expireTime": null,
+     "formKey": "leave-form",
+     "taskParentId": null,
+     "variable": "{\"title\": \"BDD Simple Approval Test\", \"assignees\": {\"apply\": \"user1\", \"leader\": \"leader\"}, \"variables\": {\"submitType\": 0, \"f_leaveType\": \"annual\", \"days\": 3, \"u_userId\": \"user1\", \"u_realName\": \"张三\"}, \"submitType\": 1, \"f_leaveType\": \"annual\", \"days\": 3, \"u_userId\": \"leader\", \"u_realName\": \"李四\", \"u_deptId\": \"D01\", \"u_deptName\": \"研发部\", \"u_postId\": \"P01\", \"u_postName\": \"组长\", \"autoGenTitle\": \"BDD Simple Approval Test\"}",
+     "createTime": "2026-09-21T14:44:51.770021",
+     "createUser": "user1",
+     "updateTime": "2026-09-21T14:44:51.774846",
+     "updateUser": "leader",
+     "taskActorIdList": [
+      "leader"
+     ],
+     "taskFormData": {},
+     "ext": {
+      "title": "BDD Simple Approval Test",
+      "assignees": {
+       "apply": "user1",
+       "leader": "leader"
+      },
+      "variables": {
+       "submitType": 0,
+       "f_leaveType": "annual",
+       "days": 3,
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "submitType": 1,
+      "f_leaveType": "annual",
+      "days": 3,
+      "u_userId": "leader",
+      "u_realName": "李四",
+      "u_deptId": "D01",
+      "u_deptName": "研发部",
+      "u_postId": "P01",
+      "u_postName": "组长",
+      "autoGenTitle": "BDD Simple Approval Test",
+      "isFirstTaskNode": false
+     }
+    }
+   ],
+   "activeTaskList": [],
+   "displayName": "简单审批流程",
+   "name": "simple",
+   "version": 2
+  }
+ },
+ "highLight": {
+  "code": 0,
+  "msg": "成功",
+  "data": {
+   "activeNodeNames": [],
+   "historyNodeNames": [
+    "apply",
+    "task1",
+    "end"
+   ],
+   "historyEdgeNames": [
+    "e0",
+    "e_apply_1",
+    "e2"
+   ],
+   "nodeProgress": {
+    "apply": {
+     "members": [
+      {
+       "id": "user1",
+       "name": "张三",
+       "done": true
+      }
+     ]
+    },
+    "task1": {
+     "members": [
+      {
+       "id": "leader",
+       "name": "李四",
+       "done": true
+      }
+     ]
+    }
+   }
+  }
+ },
+ "approvalRecord": {
+  "code": 0,
+  "msg": "成功",
+  "data": [
+   {
+    "taskName": "apply",
+    "displayName": "发起申请",
+    "taskType": 0,
+    "performType": 0,
+    "taskState": 20,
+    "operator": "user1",
+    "finishTime": "2026-09-21 14:44:51",
+    "variable": {
+     "title": "BDD Simple Approval Test",
+     "assignees": {
+      "apply": "user1",
+      "leader": "leader"
+     },
+     "variables": {
+      "submitType": 0,
+      "f_leaveType": "annual",
+      "days": 3,
+      "u_userId": "user1",
+      "u_realName": "张三"
+     },
+     "submitType": 0,
+     "f_leaveType": "annual",
+     "days": 3,
+     "u_userId": "user1",
+     "u_realName": "张三",
+     "u_deptId": "D01",
+     "u_deptName": "研发部",
+     "u_postId": "P01",
+     "u_postName": "工程师",
+     "autoGenTitle": "BDD Simple Approval Test"
+    },
+    "ext": {
+     "title": "BDD Simple Approval Test",
+     "assignees": {
+      "apply": "user1",
+      "leader": "leader"
+     },
+     "variables": {
+      "submitType": 0,
+      "f_leaveType": "annual",
+      "days": 3,
+      "u_userId": "user1",
+      "u_realName": "张三"
+     },
+     "submitType": 0,
+     "f_leaveType": "annual",
+     "days": 3,
+     "u_userId": "user1",
+     "u_realName": "张三",
+     "u_deptId": "D01",
+     "u_deptName": "研发部",
+     "u_postId": "P01",
+     "u_postName": "工程师",
+     "autoGenTitle": "BDD Simple Approval Test"
+    }
+   },
+   {
+    "taskName": "task1",
+    "displayName": "上级审批",
+    "taskType": 0,
+    "performType": 0,
+    "taskState": 20,
+    "operator": "leader",
+    "finishTime": "2026-09-21 14:44:51",
+    "variable": {
+     "title": "BDD Simple Approval Test",
+     "assignees": {
+      "apply": "user1",
+      "leader": "leader"
+     },
+     "variables": {
+      "submitType": 0,
+      "f_leaveType": "annual",
+      "days": 3,
+      "u_userId": "user1",
+      "u_realName": "张三"
+     },
+     "submitType": 1,
+     "f_leaveType": "annual",
+     "days": 3,
+     "u_userId": "leader",
+     "u_realName": "李四",
+     "u_deptId": "D01",
+     "u_deptName": "研发部",
+     "u_postId": "P01",
+     "u_postName": "组长",
+     "autoGenTitle": "BDD Simple Approval Test"
+    },
+    "ext": {
+     "title": "BDD Simple Approval Test",
+     "assignees": {
+      "apply": "user1",
+      "leader": "leader"
+     },
+     "variables": {
+      "submitType": 0,
+      "f_leaveType": "annual",
+      "days": 3,
+      "u_userId": "user1",
+      "u_realName": "张三"
+     },
+     "submitType": 1,
+     "f_leaveType": "annual",
+     "days": 3,
+     "u_userId": "leader",
+     "u_realName": "李四",
+     "u_deptId": "D01",
+     "u_deptName": "研发部",
+     "u_postId": "P01",
+     "u_postName": "组长",
+     "autoGenTitle": "BDD Simple Approval Test"
+    }
+   }
+  ]
+ },
+ "bizData": {
+  "code": 0,
+  "msg": "成功",
+  "data": {
+   "f_leaveType": "annual"
+  }
+ },
+ "verify_errors": "",
+ "verify_warnings": "  - [W009/warning] 字段 f_leaveType 在节点 ['task1'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']"
+}
