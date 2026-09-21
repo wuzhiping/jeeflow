@@ -1,0 +1,14 @@
+{
+  "name": "bug2_bro_exact_repro",
+  "displayName": "BUG-2 精确复现: decision_mgr reject → 应走 end_rejected 但 cashier_pay 仍创建",
+  "type": "approval",
+  "instanceUrl": "/form/bug2-bro",
+  "source": "flowuser 反馈, FB-0007 附件 (2026-09-21)",
+  "processDefineId_at_user_side": 232,
+  "instances_at_user_side": [
+    "92099018922273 (mgr reject, BUG)",
+    "92099066975525 (dir reject, BUG)",
+    "92099077616937 (happy path, 对照)"
+  ],
+  "notes": "本 JSON 仅记录 metadata, 完整流程定义见 flowuser 提供的原始版本 (取件码 bug2-bro-json). 客户实例不可直接复制, 因为 processDefineId 在用户实例上."
+}

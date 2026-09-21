@@ -1,0 +1,122 @@
+{
+  "fb_id": "FB-0008",
+  "title": "countersignCompletionCondition 字段语义不清晰 (数字表达式 vs 字符串常量 互斥, 文档缺失)",
+  "created_at": "2026-09-21T08:15:00",
+  "channel": "hermes_dm",
+  "customer": {
+    "id": "C-flowuser",
+    "type": "L2",
+    "contact": "flowuser (远程用户, https://abc.feg.cn/jeeflow/)",
+    "scenario": "会签流程设计: 3 reviewer 并行, 想达到 '2/3 通过 OR 任何 1 人一票否决' 复合规则"
+  },
+  "raw_text": "countersignCompletionCondition 字段填 #nrOfCompletedInstances>=K (数字表达式) 和 填 ONE_VOTE_VETO (字符串常量) 是两种互斥的会签语义, 不能复合. 但文档没说清楚, 导致设计师以为可以'2/3 通过 OR 任何 1 人 reject'这种复合规则. 实测 92107706646829: 2/3 触发后, 第 3 人 (boss) 想 reject 被报 '实例 state=20 不可执行任务' (因为 director 第 2 票时引擎已流转). flowuser 判定: 不是引擎 BUG, 是文档缺失 (FIX-DOC-2).",
+  "attachments": [
+    "audit_logs/245_92107706646829.ndjson",
+    "work_logs/09_supplier_evaluation.md",
+    "flows/07-countersign-ratio.json (单字段单语义)",
+    "flows/13-countersign-one-vote-veto.json (单字段单语义)",
+    "docs/flow.md §3.3 (没说字段值类型)",
+    "docs/AGENTS.md §5.8 (没说字段值类型)"
+  ],
+  "classification": {
+    "type": "doc",
+    "priority": "P1",
+    "owner": "doc",
+    "scope": "multi",
+    "reproduce": "easy",
+    "classified_at": "2026-09-21T08:20:00",
+    "classified_by": "hermes",
+    "reasoning": [
+      "现象: 文档没说明字段值的两种语义 (数字表达式 vs 字符串常量) 互斥",
+      "原因: docs/flow.md §3.3 + docs/AGENTS.md §5.8 描述模糊",
+      "影响: 所有用 countersignCompletionCondition 的会签流程设计师",
+      "复现: 容易, 但属于设计误解, 不是 BUG"
+    ]
+  },
+  "status": "received",
+  "processing": [
+    {
+      "step": "01-receive",
+      "actor": "hermes",
+      "started_at": "2026-09-21T08:15:00",
+      "ended_at": "2026-09-21T08:20:00",
+      "action": "通过 hermes peer dm 接收 flowuser 反馈, 分配 FB-0008"
+    }
+  ],
+  "fix_ref": {
+    "fix_id": "FIX-DOC-2",
+    "bdd_ids": [],
+    "verify_rule": null,
+    "docs_sections": [
+      "docs/flow.md §3.3 (修订)",
+      "docs/AGENTS.md §5.8 (修订)",
+      "docs/known-issues.md §113 (新增)"
+    ],
+    "files_changed": [
+      "docs/flow.md",
+      "docs/AGENTS.md",
+      "docs/known-issues.md"
+    ],
+    "patch_location": "skills/feedback/attachments/FB-0008-patches/",
+    "patch_files": [
+      "flow.md.patch.md",
+      "AGENTS.md.patch.md",
+      "known-issues-§113.md",
+      "README.md (索引)"
+    ],
+    "patch_status": "ready-to-apply, 等 bro review"
+  },
+  "status": "in_progress",
+  "processing": [
+    {
+      "step": "01-receive",
+      "actor": "hermes",
+      "started_at": "2026-09-21T08:15:00",
+      "ended_at": "2026-09-21T08:20:00",
+      "action": "通过 hermes peer dm 接收 flowuser 反馈, 分配 FB-0008"
+    },
+    {
+      "step": "03-process",
+      "subtype": "doc",
+      "actor": "hermes",
+      "started_at": "2026-09-21T08:30:00",
+      "ended_at": "2026-09-21T09:00:00",
+      "action": "起草 3 个补丁文件 (flow.md.patch.md / AGENTS.md.patch.md / known-issues-§113.md) + 索引 README, 全部在 skills/feedback/attachments/FB-0008-patches/. 补丁明确三种会签模式 + 字段值互斥性, 引用 flowuser 实证 (92107706646829 + work_logs/09). 风险评估: 低 (仅文档, 不改引擎), 兼容性 0 影响.",
+      "result": "成功, 待 bro apply"
+    }
+  ],
+  "verification": {
+    "internal": {
+      "method": "bro apply 后跑 sla/check.sh",
+      "verified_at": null,
+      "result": null,
+      "evidence": null
+    },
+    "customer": {
+      "contacted_at": null,
+      "channel": null,
+      "response": null,
+      "evidence": null
+    }
+  },
+  "notified": {
+    "at": "2026-09-21T08:30:00",
+    "channel": "hermes_dm",
+    "content_summary": "[hermes] FB-0008 补丁已就绪, 3 文件在 skills/feedback/attachments/FB-0008-patches/. 等 bro apply + 验证. 本周闭环.",
+    "confirmed_received": true
+  },
+  "closed_at": null,
+  "lessons_learned": "(待定, bro apply 后补充) 关键洞察: 文档缺失不等于引擎 BUG (按 docs/AGENTS.md §9.5 判 BUG 自检 3 步严格判定). 设计师应该读懂两种语义, 不能'复合'. 文档必须明确: 字段值要么是数字表达式 (比例模式), 要么是字符串常量 (一票否决模式), 不能同时. flowuser 的'判 BUG 自检 3 步'方法论非常专业, 应作为后续客户反馈的模板.",
+  "next_action": "1. bro review + apply 3 个补丁 (按 FREEZE.md §6 例外条款, FB-0008 关联的文档修订). 2. 跑 sla/check.sh 验证. 3. 通知 flowuser 闭环. 4. FB-0008 status → closed.",
+  "cross_refs": {
+    "linked_fb": "FB-0001 / FB-0002 (BUG-1 / BUG-3 会签场景)",
+    "fix_id_proposed": "FIX-DOC-2",
+    "patch_index": "skills/feedback/attachments/FB-0008-patches/README.md"
+  },
+  "channel_metadata": {
+    "tool": "hermes peer dm flowuser",
+    "transport": "http://10.17.1.26:8642",
+    "discovery": "flowuser 在响应 FB-0007 确认时主动提供",
+    "response_chars": "约 6000 字"
+  }
+}

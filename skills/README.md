@@ -112,21 +112,24 @@ skills/README.md (本文) ─── 总入口, 持续更新
 
 | 指标 | 数值 | 目标 | 状态 |
 |------|------|------|------|
-| 反馈闭环数 | 6 | ≥ 5 | ✅ |
-| **闭环率** | **100% (6/6)** | > 80% | ✅ |
-| P0 闭环率 | 100% (3/3) | 100% | ✅ |
-| P1 闭环率 | 100% (2/2) | > 80% | ✅ |
-| **客户旅程实证** | **4/6 段** | ≥ 3 段 | ✅ |
+| **总反馈数** | **8** (历史 6 + 本次 2) | — | 🟢 |
+| 闭环数 | 6 | ≥ 5 | ✅ |
+| **闭环率** | **75% (6/8)** | > 80% | 🟡 (2 个 in flight) |
+| P0 闭环率 | 75% (3/4) | 100% | 🟡 (FB-0007 notified) |
+| P1 闭环率 | 67% (2/3) | > 80% | 🟡 (FB-0008 notified) |
+| **真实客户协同** | **3 条 FB (来自 flowuser)** | ≥ 1 | ✅ |
+| **首次协同完成** | **2026-09-21** | 9月底前 | ✅ |
+| 客户旅程实证 | 4/6 段 | ≥ 3 段 | ✅ |
 | 客户档案 | 3 | ≥ 3 | ✅ |
-| **L1 招揽策略** | **已就位** | 有策略 | ✅ |
+| **取件码机制** | **验证成功** | 可工作 | ✅ |
 | 候选改进 | 1 | — | 🟢 |
-| **解冻条件** | **5/5** | 5/5 | ✅ |
+| 解冻条件 | 5/5 | 5/5 | ✅ |
 | 文档沉淀 | 4 处 | — | ✅ |
 
 ### 4.3 团队当前重心
 
-- **hermes**: 客户对话 + 流程设计 + 文档 + 反馈接收 + 客户档案维护
-- **bro**: 引擎 + 反馈处理 (engine 类) + 双端一致性
+- **hermes**: 客户对话 (新) + 流程设计 + 文档 + 反馈接收 + 客户档案维护
+- **bro**: 引擎 + 反馈处理 (engine 类) + 双端一致性 + 启动 BUG-2 复现 (FB-0007)
 - **CLI (新增)**: 客户接口人 = hermes 兼
 
 ⏱️ Last updated: 2026-09-21
@@ -143,25 +146,32 @@ skills/README.md (本文) ─── 总入口, 持续更新
 | FB ID | 标题 | 类型 | 优先级 | 状态 | 修复 | 闭环日 |
 |-------|------|------|--------|------|------|--------|
 | **FB-0001** | 报销流程出纳节点被跳过 | bug | P0 | ✅ closed | FIX-T110 + W012 | 2026-09-20 |
-| **FB-0002** | 会签 ABANDON 触发人字段为空 | bug | P1 | 🟡 notified | FIX-T111 | (待客户确认) |
+| **FB-0002** | 会签 ABANDON 触发人字段为空 | bug | P1 | ✅ closed | FIX-T111 | 2026-09-21 |
 | **FB-0003** | 多入边 task 节点重复创建 | bug | P0 | ✅ closed | FIX-T35 | 2026-09-19 |
 | **FB-0004** | 字段权限码文档与行为不符 | doc | P0 | ✅ closed | FIX-DOC-1 | 2026-09-18 |
 | **FB-0005** | ONE_VOTE_VETO REJECT 状态错 | bug | P1 | ✅ closed | FIX-T46 | 2026-09-19 |
 | **FB-0006** | SPI assignmentHandler 咨询 | consult | P2 | ✅ closed | (文档指向) | 2026-09-20 |
+| **FB-0007** | BUG-2 reject 路径 cashier 幽灵 DOING | bug | P0 | 🟡 notified | (FIX-T112 起草中) | (等 bro 1 周) |
+| **FB-0008** | countersignCompletionCondition 文档缺失 | doc | P1 | 🟡 notified | (FIX-DOC-2 起草中) | (本周闭环) |
 
-### 5.2 标杆案例: FB-0001
+### 5.2 标杆案例: FB-0007 (首次真实客户协同)
 
-**客户**: C-001 (报销人 user1, L3)
-**问题**: 报销流程跑通后出纳看不到付款任务, 流程卡死
-**修复**: FIX-T110 + W012 verify 规则 (task 多出边应改用 decision)
-**验证**: bdd-1501-1503 双端 9/9 PASS, user1 DM 确认
+**客户**: flowuser (远程 L3, https://abc.feg.cn/jeeflow/)
+**问题**: BUG-2 (BUG-1 修复未覆盖 reject 路径) - mgr/dir reject 后 cashier_pay 任务幽灵 DOING, instance 卡 state=10
+**触发**: hermes peer dm flowuser 一次性提问 → 客户 94 行响应 → 5 个文件取件码 → 逐个 DM 索取
+**修复**: (待 bro 本地复现, 预计 FIX-T112)
+**验证**: (待跑通)
 **沉淀**:
-- `docs/known-issues.md §111`
-- `docs/flow.md §7` (反模式表)
-- `skills/feedback/archive/FB-0001.json` (完整档案)
-- `skills/customers/C-001.yaml` (客户档案)
+- `skills/feedback/inbox/FB-0007.json` (登记)
+- `skills/feedback/attachments/FB-0007-INDEX.md` (附件清单)
+- `skills/feedback/retrospectives/2026-09-21-users-md-task.md` (任务复盘)
+- `users.md` 话术升级
 
-**关键洞察**: 客户反馈 → 引擎修复 → 文档沉淀 → 客户档案 → 路线图输入, **五者联动**.
+**关键洞察**: 
+- 真实客户反馈 = 客户实证, 不是模拟
+- 取件码机制 = 高效文件共享
+- 客户主动反哺 = FB-0008 (从 FB-0007 确认中冒出)
+- **多轮小问比一次性轰炸有效**
 
 ⏱️ Last updated: 2026-09-21
 
@@ -172,6 +182,52 @@ skills/README.md (本文) ─── 总入口, 持续更新
 > 本节是**时间序列**, 任何 skills/ 下的重要变更都记录于此.
 > 格式: `YYYY-MM-DD · [类别] · 一句话摘要`
 
+### 2026-09-21 · v1.6 · CLI 角色正式化 (backlog BL-008)
+
+- 🎯 **扩充** `SKILL-TREE.md §补充 D` · CLI 角色从简述升级为 11 节完整定义
+  - §1 定位 + 不做什么
+  - §2 为什么需要 (5 项改进)
+  - §3 与其他角色关系 (8 项)
+  - §4 7 层详细能力 (含当前状态)
+  - §5 关键产出物清单
+  - §6 实战案例 (FB-0001~0008)
+  - §7 工具与话术
+  - §8 失败模式 (8 项反模式)
+  - §9 晋升路径
+  - §10 交叉引用 (7 个文档)
+  - §11 当前评级 (L4)
+- 📝 **更新** `RACI.md §2` · 加 CLI 角色 ⓘ 提示指向 SKILL-TREE.md
+- 📝 **更新** `backlog/index.md` · BL-008 决议落地
+
+### 2026-09-21 · v1.5 · 补丁就绪 + 复现手册
+
+- 🎯 **新建** `feedback/attachments/FB-0008-patches/` · 3 个文档补丁 (FIX-DOC-2)
+  - `flow.md.patch.md` · docs/flow.md §3.3 修订方案
+  - `AGENTS.md.patch.md` · docs/AGENTS.md §5.8 修订方案
+  - `known-issues-§113.md` · docs/known-issues.md §113 新增全文
+  - `README.md` · 补丁索引
+- 🎯 **新建** `feedback/attachments/FB-0007-repro-manual.md` · 7 节复现手册给 bro (FIX-T112)
+- 📝 **更新** `feedback/inbox/FB-0007.json` · status=in_progress + linked repro manual
+- 📝 **更新** `feedback/inbox/FB-0008.json` · status=in_progress + linked patch set
+
+### 2026-09-21 · v1.4 · 首次真实用户协同 (FB-0007 + FB-0008)
+
+- 🎯 **完成** `users.md` 任务 · `hermes peer dm flowuser` 通道验证成功
+- 🎯 **新建** `feedback/inbox/FB-0007.json` · BUG-2 真 BUG (P0 / engine) 来自 flowuser
+- 🎯 **新建** `feedback/inbox/FB-0008.json` · countersignCompletionCondition 文档缺失 (P1 / doc)
+- 🎯 **新建** `feedback/retrospectives/2026-09-21-users-md-task.md` · 任务执行复盘
+- 🎯 **新建** `feedback/attachments/FB-0007-INDEX.md` · 取件码机制验证记录
+- 🎯 **新建** `feedback/retrospectives/` 目录 · 复盘存档
+- 📝 **升级** `users.md` · 推荐话术模板 + 工具说明 + 实战案例
+
+### 2026-09-21 · v1.3 · 客户数据硬约束 + 节奏机制
+
+- 🔒 **强化** `FREEZE.md §6.2` · 客户数据绝对不可触碰 (reset 禁令)
+- 🔒 **强化** `users.md` · 顶部加 reset 限制警告
+- 🎯 **新建** `weekly/` 目录 + `2026-W39.md` · 周报机制
+- 🎯 **新建** `backlog/` 目录 + `index.md` · 想法池 (8 条)
+- 📝 **更新** README.md · 架构图加 `weekly/` + `backlog/` 节奏层
+
 ### 2026-09-21 · v1.2 · Phase 8.1 完成 + 解冻条件 5/5 满足
 
 - 🎯 **新建** `customers/C-001/journey-evidence/2026-09-full-journey.md` · 4/6 段旅程实证
@@ -180,7 +236,7 @@ skills/README.md (本文) ─── 总入口, 持续更新
 - 🎯 **新建** `feedback/metrics/monthly-2026-09.json` v2 · 6/6 闭环
 - 🎯 **新建** `feedback/metrics/trends.md` v2 · 解冻条件 5/5 满足
 - 🎯 **更新** `SKILLS.md` · 让位 README.md 为首要入口
-- 🎉 **里程碑** · 可提议解冻 (按 `FREEZE.md §7`)
+- 🎉 **里程碑** · 可提议解冻 (按 `FREEZE.md §7`, 但本阶段不提议, 见 weekly/2026-W39.md)
 
 ### 2026-09-21 · v1.1 · Phase 8.1 跑通首个闭环
 
@@ -242,7 +298,9 @@ skills/README.md (本文) ─── 总入口, 持续更新
 
 | 改进 | 状态 | 负责人 | 关联 |
 |------|------|--------|------|
-| 提议解冻 (FREEZE.md §7) | 待启动 | hermes + bro | `FREEZE.md §4.1` (5/5 ✅) |
+| **FB-0007 BUG-2 复现 + FIX-T112** | 复现手册就绪, 等 bro | bro + hermes | `inbox/FB-0007.json` + `attachments/FB-0007-repro-manual.md` |
+| **FB-0008 文档修订 + FIX-DOC-2** | 3 补丁就绪, 等 bro apply | bro + hermes | `inbox/FB-0008.json` + `attachments/FB-0008-patches/` |
+| 提议解冻 (FREEZE.md §7) | **暂缓** (节奏优先, 见 weekly/W39) | hermes + bro | `FREEZE.md §4.1` (5/5 ✅) |
 | 起草 Phase 9 90 天工作清单 | 待启动 | hermes | `ROADMAP.md §3` |
 | 启动 L1 客户招揽 | 渠道待选 | hermes | `customers/l1-acquisition.md` |
 | 跟踪 C-001 阶段 6 (复盘) | 待启动 | hermes | `customers/C-001/` |
@@ -251,10 +309,17 @@ skills/README.md (本文) ─── 总入口, 持续更新
 
 | 改进 | 完成日 | 关联 |
 |------|--------|------|
+| **FB-0007 repro manual** (7 节, 给 bro) | 2026-09-21 | `feedback/attachments/FB-0007-repro-manual.md` |
+| **FB-0008 补丁 3 件** (flow.md + AGENTS.md + known-issues §113) | 2026-09-21 | `feedback/attachments/FB-0008-patches/` |
+| **首次真实用户协同** (FB-0007 + FB-0008) | 2026-09-21 | `feedback/retrospectives/2026-09-21-users-md-task.md` |
+| **取件码机制验证** (5 文件逐个 DM 索取) | 2026-09-21 | `feedback/attachments/FB-0007-INDEX.md` |
+| **users.md 话术升级** (推荐模板 + 工具说明) | 2026-09-21 | `users.md` |
 | **FB-0002 闭环** (C-002 24h 内确认) | 2026-09-21 | `archive/FB-0002.json` |
 | **C-001 旅程实证** (4/6 段完整) | 2026-09-21 | `customers/C-001/journey-evidence/2026-09-full-journey.md` |
 | **L1 招揽策略** (4 类画像 + 7 步流程) | 2026-09-21 | `customers/l1-acquisition.md` |
-| **metrics 完整化** (monthly + trends v2) | 2026-09-21 | `feedback/metrics/` |
+| **metrics 完整化** (monthly + trends v3) | 2026-09-21 | `feedback/metrics/` |
+| **客户数据硬约束** (FREEZE.md §6.2) | 2026-09-21 | `FREEZE.md` |
+| **weekly/backlog 节奏机制** | 2026-09-21 | `weekly/` + `backlog/` |
 | **SKILLS.md 让位** README.md | 2026-09-21 | `SKILLS.md` |
 | 建立反馈闭环基础设施 | 2026-09-21 | `feedback/README.md` |
 | 跑通 FB-0001 完整闭环 | 2026-09-20 | `archive/FB-0001.json` |
@@ -357,7 +422,11 @@ skills/README.md (本文) ─── 总入口, 持续更新
 
 - **v1.0** · 2026-09-21 · 起点 (RML.md + users.md)
 - **v1.1** · 2026-09-21 · 制度体系就位 + 首个闭环完成
-- **v1.2** · 2026-09-21 · **Phase 8.1 完成 + 解冻条件 5/5 满足** (本版本)
+- **v1.2** · 2026-09-21 · Phase 8.1 完成 + 解冻条件 5/5 满足
+- **v1.3** · 2026-09-21 · 客户数据硬约束 + weekly/backlog 节奏机制
+- **v1.4** · 2026-09-21 · 首次真实用户协同 (FB-0007 + FB-0008)
+- **v1.5** · 2026-09-21 · FB-0007 repro manual + FB-0008 补丁 3 件
+- **v1.6** · 2026-09-21 · **CLI 角色正式化 (backlog BL-008)** (本版本)
 
 > 本文件采用 living document 模式, 版本号仅在大变更时递增.
 > 日常更新在 §6 变更日志体现.

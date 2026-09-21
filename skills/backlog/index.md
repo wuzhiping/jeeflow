@@ -81,6 +81,22 @@
 **优先级**: P2
 **关联**: `SKILL-TREE.md §2 角色 +D`
 
+### BL-008 · 决议 ✅ 2026-09-21
+
+| 项 | 决议 | 落地 |
+|----|------|------|
+| 角色定位 | "在 jeeflow 与客户之间建立可持续双向对话" | `SKILL-TREE.md §补充 D §1` |
+| 不做什么 | 不修引擎 / 不设计流程 / 不冒充身份 | `SKILL-TREE.md §补充 D §1` |
+| 7 层能力 | L1 完成 → L7 造局, 当前 L4 | `SKILL-TREE.md §补充 D §4` |
+| 关键产出 | 客户档案 / FB 处理 / 闭环档案 / 季度洞察 | `SKILL-TREE.md §补充 D §5` |
+| 实战案例 | FB-0001~0008 (5 闭环 + 2 进行 + 1 反哺) | `SKILL-TREE.md §补充 D §6` |
+| 工具话术 | hermes peer dm + 多轮小问 + 取件码 | `SKILL-TREE.md §补充 D §7` |
+| 失败模式 | 8 项反模式 (含 reset 禁令) | `SKILL-TREE.md §补充 D §8` |
+| 交叉引用 | RACI + FEEDBACK + CUSTOMER + FREEZE | `SKILL-TREE.md §补充 D §10` |
+| RACI 指向 | 在角色表加 ⓘ 提示 | `RACI.md §2` |
+
+**状态**: ✅ 落地完成 (backlog → SKILL-TREE + RACI 同步)
+
 ---
 
 ## 评估日志

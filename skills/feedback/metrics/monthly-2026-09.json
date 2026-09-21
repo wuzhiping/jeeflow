@@ -1,10 +1,10 @@
 {
-  "period": "2026-09 (历史回填 + Phase 8.1 启动 + 闭环完成)",
+  "period": "2026-09 (历史回填 + Phase 8.1 + 首次真实协同)",
   "report_date": "2026-09-21",
   "summary": {
-    "total_received": 6,
+    "total_received": 8,
     "closed": 6,
-    "notified": 0,
+    "notified": 2,
     "in_progress": 0,
     "verified": 0,
     "classified": 0,
@@ -13,59 +13,63 @@
   "by_type": {
     "bug": 4,
     "improve": 0,
-    "doc": 1,
+    "doc": 2,
     "ux": 0,
-    "consult": 1
+    "consult": 2
   },
   "by_priority": {
-    "P0": 3,
-    "P1": 2,
+    "P0": 4,
+    "P1": 3,
     "P2": 1,
     "P3": 0
   },
   "by_owner": {
     "engine": 4,
     "flow": 0,
-    "doc": 2,
+    "doc": 3,
     "ui": 0,
     "spi": 0,
     "sla": 0
   },
   "by_scope": {
     "single": 1,
-    "multi": 4,
+    "multi": 6,
     "global": 1
   },
+  "by_source": {
+    "tdd_bdd_history": 5,
+    "hermes_dm_flowuser": 3
+  },
   "sla_metrics": {
-    "P0_24h_first_response": "100% (3/3)",
-    "P0_7d_closed": "100% (3/3)",
-    "P1_3d_first_response": "100% (2/2)",
-    "P1_30d_closed": "100% (2/2, FB-0002 在 30d SLA 内闭环)",
-    "P2_7d_first_response": "100% (1/1)",
-    "P2_90d_closed_or_scheduled": "100% (1/1, 闭环)"
+    "P0_24h_first_response": "100% (4/4)",
+    "P0_7d_closed": "75% (3/4, FB-0007 通知中)",
+    "P1_3d_first_response": "100% (3/3)",
+    "P1_30d_closed": "100% (2/2, FB-0002 已闭环, FB-0008 通知中)"
   },
   "customer_metrics": {
     "L1_engagement": 0,
-    "L2_engagement": 4,
-    "L3_engagement": 2,
-    "unique_customers": 6,
-    "repeat_feedback": 0,
-    "l1_acquisition_strategy": "skills/customers/l1-acquisition.md (新建)"
+    "L2_engagement": 5,
+    "L3_engagement": 3,
+    "unique_customers": 7,
+    "real_customer_engagement": 3,
+    "internal_engagement": 5
   },
   "fix_metrics": {
     "fixes_deployed": 5,
+    "fixes_in_progress": 1,
+    "doc_fixes_in_progress": 1,
     "bdd_added": 4,
     "verify_rules_added": 1,
     "docs_updated": 4
   },
   "closed_feedback_ids": ["FB-0001", "FB-0002", "FB-0003", "FB-0004", "FB-0005", "FB-0006"],
-  "in_flight_feedback_ids": [],
+  "in_flight_feedback_ids": ["FB-0007", "FB-0008"],
   "notes": [
-    "本报告为初始基线 + 完整闭环完成版",
-    "6/6 = 100% 闭环, 超出 Phase 8.1 目标 (>80%)",
-    "P0 闭环 100%, P1 闭环 100% (含 FB-0002 在 30d SLA 内闭环)",
-    "L1 引擎客户 = 0, 招揽策略已制定 (l1-acquisition.md)",
-    "FB-0002 闭环路径: 客户 24h 内确认, 走正常路径, 非 14 天沉默归档",
-    "客户旅程实证: 4/6 段完整实证 (C-001), 满足解冻条件 #2"
+    "本月首次真实客户协同完成 (2026-09-21 hermes peer dm flowuser)",
+    "本次验证: hermes peer dm 通道工作, 取件码机制验证成功, 多轮对话顺畅",
+    "发现 1 个真 BUG (BUG-2 / FB-0007, P0) + 1 个文档缺失 (FB-0008, P1)",
+    "flowuser 主动提供 FB-0008 (反哺机制工作)",
+    "复盘文档: skills/feedback/retrospectives/2026-09-21-users-md-task.md",
+    "users.md 话术模板已升级"
   ]
 }
