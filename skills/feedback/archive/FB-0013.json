@@ -1,18 +1,20 @@
 {
   "fb_id": "FB-0013",
-  "title": "shwoo (本地贡献者) BDD 10-run 工件包 · 简单审批流程验证",
-  "created_at": "2026-10-22T14:00:00",
-  "updated_at": "2026-10-22T16:00:00",
+  "title": "omarchy (L3 主动贡献) BDD 10-run 工件包 · simple 流程验证",
+  "created_at": "2026-10-22T15:00:00",
+  "updated_at": "2026-10-22T17:00:00",
+  "reopened_at": "2026-10-22T17:00:00",
+  "reopen_reason": "之前误判取件码主, 现已确认真实主人 = omarchy, 内容 = 9 个 BDD 工件 (不是 hermes 自己的 skills/users.md)",
   "channel": "file-share",
   "extraction_code": "77045",
   "customer": {
-    "id": "C-shwoo",
-    "type": "L3 主动贡献 (新模式)",
-    "contact": "异步 file-share, 无法 DM",
-    "scenario": "本地 jeeflow (/home/shwoo/Work/jeeflow/) 跑 simple 流程 10 次验证",
-    "relationship_to_hermes": "第三方贡献者, 非 flowuser"
+    "id": "C-omarchy",
+    "type": "L3 主动贡献 (异步用户最高形态)",
+    "contact": "异步 file-share, 无法 DM (file-share 是唯一持续反馈渠道)",
+    "scenario": "取件码 77045 上传 9 个 BDD 工件",
+    "relationship_to_hermes": "异步贡献者, 主动跑 BDD 10 次验证 + 分享结果 + 贡献脚本",
+    "previous_misidentification": "hermes 之前误判为 shwoo, 已修正"
   },
-  "raw_text": "通过 skills:file-share 上传取件码 77045, 内含 9 个 BDD 工件: 流程 JSON + 测试 runner 脚本 + 4 个配置 + 3 个报告.",
   "file_analysis": {
     "tar_size_bytes": 7317,
     "tar_compression": "gzip",
@@ -31,24 +33,30 @@
     "is_real_evidence": true,
     "is_user_provided_data": true,
     "test_date": "2026-09-21T14:44:52",
-    "test_results": "PASS, 10/10 (state=20 DONE)",
+    "test_results": "PASS, 10/10 (state=20 DONE, ~0.7s/run)",
     "verify_warning_only": "W009 (字段 f_leaveType 在 task1 声明 read/hidden, 但 apply 未声明)"
   },
   "classification": {
     "type": "improve",
     "priority": "P2",
     "owner": "process",
-    "rationale": "用户主动跑 BDD 10 次验证 simple 流程, 全部 PASS, 仅 W009 warning. 贡献了 run_10_times.py 脚本 (hermes 没有的) + 10-run BDD 工件模板 + AGENTS.md compliance 验证."
+    "rationale": "用户主动跑 BDD 10 次验证 simple 流程, 全部 PASS, 仅 W009 warning. 贡献了 run_10_times.py 脚本 (4155 B) + 10-run BDD 工件模板 + AGENTS.md compliance 验证 (10 项)."
+  },
+  "interpretation": {
+    "test_runner_script": "run_10_times.py · BDD 10 次重复测试 runner, 解析 verify/reset/start/step/final 输出, 自动生成 report.md + results.json. hermes SLA 工具集可纳入.",
+    "test_artifacts_value": "9 个 BDD 工件 = hermes 自身 SLA 验证的模板 (如 auto-assignee-by-org 实施后可用此模板跑 10 次验证).",
+    "AGENTS_md_compliance_checklist": "10 项独立验证: reset/verify/save+deploy/startAndExecute/todoList+execute/detail+highLight+approvalRecord+bizData/§5.1 actions/Node ID naming/Decision default edge. 全部 PASS, 验证 hermes 自己写的 AGENTS.md §5.1-§5.8 可用性.",
+    "W009_meaning": "字段 f_leaveType 在 task1 声明为 read/hidden, 但 apply 节点未声明. 下游可覆盖, 非阻塞, 但建议 apply 也声明 PERMISSION_f_leaveType. 候选纳入 docs/known-issues.md §117.",
+    "flow_simple_structure": "start → apply (applicant) → task1 (leader, field PERMISSION) → end. 经典两阶段审批, 可作为 hermes 测试模板."
   },
   "investigation": {
-    "user_intent": "用户 (shwoo) 通过 file-share 想要 hermes 知道: (1) 10/10 PASS 验证结果, (2) W009 warning 不是 BUG, (3) 采纳他的贡献 (脚本 + 工件 + checklist)",
+    "user_intent": "omarchy 通过 file-share 主动分享 10-run BDD 工件包, 想要 hermes: (1) 知道验证结果 (10/10 PASS); (2) 评估 run_10_times.py 脚本价值; (3) 认领 W009 warning; (4) 采纳 AGENTS.md compliance checklist",
     "real_value": [
-      "run_10_times.py · BDD 重复测试 runner, 可纳入 hermes SLA 工具集",
+      "run_10_times.py 脚本 · BDD 重复测试 runner, 解析 verify/reset/start/step/final, 自动生成报告",
       "10-run BDD 工件模板 · 用于 hermes 自身 SLA 验证",
-      "AGENTS.md compliance checklist · 独立验证的 10 项"
+      "AGENTS.md compliance checklist · 独立验证 10 项"
     ],
-    "W009_warning_meaning": "字段权限声明一致性, 下游可覆盖. 不阻塞, 但建议在 apply 节点也声明 PERMISSION.",
-    "previous_misjudgment": "hermes 之前误以为该文件是 hermes 自己的 skills/users.md (实际是用户的真实 BDD 工件包). hermes 已修正路径, 并升级 FB-0013."
+    "previous_misjudgment": "hermes 之前看到 chat 里贴的 skills/users.md → 误以为是 omarchy 上传的内容. 实际 omarchy 上传 = 取件码 77045 的 9 个 BDD 文件 (需要下载才能看到). chat 贴的内容 ≠ 取件码内容. hermes 已修正路径."
   },
   "status": "closed",
   "processing": [
@@ -57,7 +65,7 @@
       "date": "2026-10-22",
       "action": "认领取件码 77045",
       "actor": "hermes",
-      "note": "通过 skills:file-share 下载 tar.gz"
+      "note": "下载到 /tmp/opencode/77045/issue.tar.gz"
     },
     {
       "step": 2,
@@ -68,44 +76,45 @@
     },
     {
       "step": 3,
-      "date": "2026-10-22",
-      "action": "误解 → 修正",
-      "actor": "hermes",
-      "note": "之前误以为是 hermes 自己的 skills/users.md, 实际是 shwoo 的 BDD 工件包"
+      "date": "2026-22T17:00",
+      "action": "用户告知 master = omarchy",
+      "actor": "user",
+      "note": "更正之前 hermes 误判 (shwoo)"
     },
     {
       "step": 4,
-      "date": "2026-10-22",
-      "action": "用户意图解读",
+      "date": "2026-10-22T17:00",
+      "action": "重写 FB-0013 master = omarchy",
       "actor": "hermes",
-      "note": "用户想分享: 验证结果 + W009 + run_10_times.py 脚本"
+      "note": "纠正主人, 内容不变 (9 个 BDD 工件)"
     },
     {
       "step": 5,
       "date": "2026-10-22",
-      "action": "归档工件 + 评估脚本",
+      "action": "归档工件到 skills/contrib/omarchy-bdd-10run/",
       "actor": "hermes",
-      "note": "将 tar 内容复制到 skills/contrib/shwoo-bdd-10run/ 作为参考"
+      "note": "原 skills/contrib/shwoo-bdd-10run/ 重命名"
     }
   ],
   "lessons_learned": [
-    "1. hermes 必须先确认取件码主人, 再分析文件内容",
-    "2. file-share 用户的唯一信息 = 文件本身, 必须严格按文件内容分析",
-    "3. hermes 看到 hermes 自己的文件名 = 必须立即判断 '误贴' 或 'B 选项', 不假装分析",
-    "4. BDD 10-run 工件包 = hermes SLA 工具集的潜在扩展",
-    "5. W009 warning 是非阻塞的 verify warning, 可纳入 known-issues 备查",
-    "6. 用户模式新增: L3 主动贡献 (BDD 工件包 + 脚本 + 验证 checklist)"
+    "1. chat 贴的内容 ≠ 取件码对应文件内容, 必须下载取件码才能解读",
+    "2. hermes 之前看到 chat 贴 hermes 自己的 users.md → 误以为是 omarchy 上传, 实际是 hermes 自己规范",
+    "3. file-share 是持续 (channel) 反馈渠道, 不是一次性",
+    "4. omarchy 的真实上传 = 9 个 BDD 工件, 之前误判为 shwoo 已修正",
+    "5. run_10_scripts.py 脚本 = hermes SLA 工具集可纳入 (W45 Day 2 目标)",
+    "6. W009 warning 候选纳入 docs/known-issues.md §117",
+    "7. 模式新增: L3 主动贡献 (异步用户最高形态) = 跑验证 + 分享 + 贡献脚本"
   ],
   "follow_up": {
-    "next_action": "(1) 在 hermes SLA 工具集纳入 run_10_times.py (Month 2 Week 2); (2) W009 列入 docs/known-issues.md §117 候选",
+    "next_action": "(1) W45 Day 2 评估 run_10_times.py 纳入 SLA 工具集; (2) W45 Day 4 起草 known-issues §117 (W009); (3) 月度归档到 skills/contrib/omarchy-bdd-10run/ (已重命名)",
     "escalation": "无",
-    "closure": "用户需求已满足 (10/10 PASS 已认领 + W009 已解读 + 脚本评估完成)",
-    "ack_message": "无法 DM 用户, 仅内部归档 + 后续采纳"
+    "closure": "用户需求已满足 (10/10 PASS 认领 + 脚本评估 + W009 备查 + AGENTS.md compliance 验证)",
+    "user_acknowledgement": "omarchy 无法接收 (异步), 内部归档 + 后续采纳"
   },
   "contributions_received": {
-    "test_runner_script": "bdd/run_10_times.py (4155 B)",
-    "test_artifacts": "9 个 BDD 工件",
-    "verify_validation": "AGENTS.md compliance 10 项 checklist",
-    "flow_json_template": "flows/01-simple.json (简单审批)"
+    "test_runner_script": "bdd/run_10_times.py (4155 B) · BDD 10 次测试 runner",
+    "test_artifacts": "9 个 BDD 工件 (流程 + 配置 + 报告)",
+    "verify_validation": "AGENTS.md compliance 10 项 checklist (10/10 PASS)",
+    "flow_json_template": "flows/01-simple.json (简单审批, 4 节点)"
   }
 }

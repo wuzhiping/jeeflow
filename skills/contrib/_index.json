@@ -1,0 +1,14 @@
+{
+  "users": [
+    {
+      "user_id": "C-omarchy",
+      "first_seen": "2026-10-22",
+      "last_seen": "2026-10-22",
+      "level": "L3",
+      "extraction_codes": ["77045"],
+      "fb_archived": ["FB-0013"],
+      "monitoring_frequency": "daily",
+      "note": "主动贡献 10-run BDD 工件, run_10_times.py 脚本"
+    }
+  ]
+}
