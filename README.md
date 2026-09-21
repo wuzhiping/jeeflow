@@ -1,3 +1,5 @@
+# 此项目由OpenCode, 协同Hermes Agent共同开发完成，并持续迭代中
+
 <img width="1821" height="1073" alt="dc2e55f9-3d28-4fb8-ab35-19ca517870aa" src="https://github.com/user-attachments/assets/28b457fc-8761-4f7b-9341-8054542903b7" />
 
 # UI (可以略过)
