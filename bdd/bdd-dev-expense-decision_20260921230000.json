@@ -1,0 +1,96 @@
+{
+  "name": "dev-expense-decision",
+  "displayName": "BDD-DEV-报销审批-金额分支",
+  "type": "approval",
+  "instanceUrl": "/bdd/dev-expense-decision/form",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": { "width": 50, "height": 50 },
+      "text": { "value": "开始" }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "expense-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0
+      },
+      "text": { "value": "提交报销" }
+    },
+    {
+      "id": "decision_amount",
+      "type": "snaker:decision",
+      "x": 320,
+      "y": 200,
+      "properties": { "width": 100, "height": 50 },
+      "text": { "value": "金额判定" }
+    },
+    {
+      "id": "leader_approve_small",
+      "type": "snaker:task",
+      "x": 500,
+      "y": 100,
+      "properties": {
+        "width": 120, "height": 50,
+        "form": "expense-form",
+        "assignee": "u_be_lead",
+        "taskType": 0,
+        "performType": 0
+      },
+      "text": { "value": "组长审批" }
+    },
+    {
+      "id": "cto_approve_large",
+      "type": "snaker:task",
+      "x": 500,
+      "y": 300,
+      "properties": {
+        "width": 120, "height": 50,
+        "form": "expense-form",
+        "assignee": "u_cto",
+        "taskType": 0,
+        "performType": 0
+      },
+      "text": { "value": "CTO 审批" }
+    },
+    {
+      "id": "finance_record",
+      "type": "snaker:task",
+      "x": 680,
+      "y": 200,
+      "properties": {
+        "width": 120, "height": 50,
+        "assignee": "u_qa_lead",
+        "taskType": 0,
+        "performType": 0
+      },
+      "text": { "value": "财务登记" }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 850,
+      "y": 200,
+      "properties": { "width": 50, "height": 50 },
+      "text": { "value": "结束" }
+    }
+  ],
+  "edges": [
+    { "id": "e1", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {} },
+    { "id": "e2", "sourceNodeId": "apply", "targetNodeId": "decision_amount", "properties": {} },
+    { "id": "e3", "sourceNodeId": "decision_amount", "targetNodeId": "leader_approve_small", "properties": { "expr": "#f_amount<=5000" } },
+    { "id": "e4", "sourceNodeId": "decision_amount", "targetNodeId": "cto_approve_large", "properties": { "expr": "#f_amount>5000" } },
+    { "id": "e5", "sourceNodeId": "leader_approve_small", "targetNodeId": "finance_record", "properties": {} },
+    { "id": "e6", "sourceNodeId": "cto_approve_large", "targetNodeId": "finance_record", "properties": {} },
+    { "id": "e7", "sourceNodeId": "finance_record", "targetNodeId": "end", "properties": {} }
+  ]
+}

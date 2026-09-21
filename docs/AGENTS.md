@@ -354,6 +354,8 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 | 32 | **变量作用域铁律**（FB-0011 / FIX-DOC-4 2026-09-24；`tf_*` 只在当前 task 作用域, 不到 instance.variables, decision expr 读不到 → 触发 BUG-2 类似现象. 启动时 + execute 时都传 `f_*` 或重启动传 `f_<name>`；`tf_*` 仅当前 task + 后置拦截器可见） | `./docs/known-issues.md §115` + `docs/flow.md §7.1` |
 | 33 | **SPI 路由必须走 dispatcher**（v26+；新增 SPI 路由必须放在 `spi/api.py` (dispatcher 层) 或 `spi/<folder>/api.py` (实现层), 严禁直接在 `main.py` / `main_pg.py` / `main_common.py` 写 SPI 路由。注册统一用 `main_common.register_spi_routes(app)`. 6 个 `_data_*` 函数是 CLI/API 共享契约, 不允许修改签名). | `spi/SPEC.md §8` + `skills/RML.md §SPI dispatcher` |
 | 34 | **submitType=20 拓扑约束**（FB-0012 2026-11-17；COUNTERSIGN_DISAGREE 仅在会签 task → end 直连时生效. task → decision → 任意拓扑, cs_veto 路径被截断, 一票否决失效. 设计时必查 processDesign/detail 确认会签节点只连 end). | `docs/flow.md §3.3 submitType 拓扑约束表` + `docs/known-issues.md §116` + `docs/AGENTS.md §5.8` |
+| 35 | **decision 节点函数签名陷阱**（FIX-T113 2026-09-21 BDD-DEV；`_cleanup_orphan_decision_tasks` 调用点必须严格匹配函数签名 `(flow, inst, selected_edge, operator, vars_)`, 多传或漏传参数都会导致 `[TypeError]` 阻断流程启动. 任何新增 decision 路径必须同步更新 verify W014 函数签名一致性检查). | `docs/known-issues.md §117` + `vendor/jeeflow/engine.py:710` |
+| 36 | **`taskType` 语义陷阱**（BDD-DEV 实证；`taskType:2` RECORD 创建后自动完成, 不等待人工 execute; "汇合后由人办理"应使用 `taskType:0`. 跑完流程后查 `approvalRecord` 最后一节点 operator, 空字符串 = RECORD 自动完成). | `docs/flow.md §3.3 taskType 设计陷阱表` |
 
 > ⚠️ 约束 #13-#20 来自 `./docs/BUGS.md`，是 BDD 实战中**反复踩坑**的约束。设计前**必读**。
 

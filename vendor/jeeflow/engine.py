@@ -677,8 +677,10 @@ class EngineImpl(Engine):
                     if target:
                         # FIX-T112: 清理其他出边的下游 task (孤儿清理)
                         # 防止 expr 评估为真后, 之前遍历创建的 task 残留为 DOING
+                        # FIX-BUG-3 (2026-09-21 BDD-DEV): 函数签名是 (flow, inst, selected_edge, operator, vars_)
+                        # 函数内部已遍历 flow.edges, 不需要再传 edges 参数
                         await self._cleanup_orphan_decision_tasks(
-                            flow, inst, edges, edge, operator, vars_
+                            flow, inst, edge, operator, vars_
                         )
                         return await self._execute_node(flow, inst, target, operator, vars_)
         # 回退：取第一条没有 expr 的边作为默认路径
@@ -688,7 +690,7 @@ class EngineImpl(Engine):
                 target = _find_node(flow, edge.targetNodeId)
                 if target:
                     await self._cleanup_orphan_decision_tasks(
-                        flow, inst, edges, edge, operator, vars_
+                        flow, inst, edge, operator, vars_
                     )
                     return await self._execute_node(flow, inst, target, operator, vars_)
         # 最后的回退：取第一条边
@@ -703,7 +705,7 @@ class EngineImpl(Engine):
             target = _find_node(flow, edges[0].targetNodeId)
             if target:
                 await self._cleanup_orphan_decision_tasks(
-                    flow, inst, edges, edges[0], operator, vars_
+                    flow, inst, edges[0], operator, vars_
                 )
                 return await self._execute_node(flow, inst, target, operator, vars_)
 

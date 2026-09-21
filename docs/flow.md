@@ -284,6 +284,11 @@
 >   ```
 > - **回退顺序**：所有 expr False → 取第一条无 expr 的边（默认边）→ 取第一条边
 
+> ⚠️ **FIX-T113 (2026-09-21 BDD-DEV-002)**：`_cleanup_orphan_decision_tasks` 函数签名与调用点参数不匹配
+> - 决策节点求值时会调用该函数清理其他出边对应的下游孤儿 task
+> - 修复前任何含 `snaker:decision` 节点的流程启动都会抛 `[TypeError] takes 6 positional arguments but 7 were given`
+> - 详见 `docs/known-issues.md §117`
+
 ### 3.5 custom 节点 properties
 
 来源：`flows/08-custom-node.json` + 引擎入口（`engine.py:_execute_node` 拆出 `TYPE_CUSTOM` 分支 → `_execute_custom_node`）。
@@ -558,6 +563,25 @@ POST /wf/processTask/execute
 ```
 
 **经验教训** (FB-0007 BUG-2 实证): flowuser 在 v1/v2 失败因只传 tf_*, 决策 expr 读不到 → fallback 兜底 → 幽灵 task. v3 PASS 因启动 + execute 都传 f_*. 详见 `docs/known-issues.md §115`.
+
+---
+
+> ⚠️ **`taskType` 设计陷阱 (2026-09-21 BDD-DEV 实证)**：
+> | taskType | 行为 | 适用场景 |
+> |---|---|---|
+> | `0` (主审, 默认) | 创建 DOING task, 必须由 actor 手动 execute 才会流转 | 一般审批节点 |
+> | `1` (副审) | 同 taskType=0, 但 `taskType` 字段落库为 1 (FIX-T30 §3.3) | 主审 + 副审并行场景 |
+> | `2` (RECORD 记录) | **创建后立即自动完成** (operator="" + taskState=20 + finishTime=now), 无需 execute | 纯记录/登记节点, 流程自动通过 |
+>
+> **踩坑示例 (BDD-DEV-002/004)**：
+> - 设计 "汇合点 → 财务登记" 时, 误用 `taskType:2` 表示"自动登记"语义
+> - 实际效果：财务登记 task 创建后**立即自动完成**, 不等待人工办理; 同时触发下游 end → instance.state=20
+> - 表面看"流程跑通", 但 `approvalRecord` 中财务登记 task 的 `operator=""` 暴露问题
+> - **修正**: 期望"汇合后由人办理"用 `taskType:0`; 期望"自动通过"才用 `taskType:2`
+>
+> **检测建议**: 跑完流程后, 检查 `approvalRecord` 最后一节点的 `operator` 字段
+> - 空字符串 → 该节点是 RECORD (自动完成), 确认是否符合预期
+> - 有 user id → 该节点是手动审批
 
 ---
 

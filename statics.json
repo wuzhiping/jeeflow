@@ -1,10 +1,10 @@
 {
   "project": "jeeFlow",
   "version": "0.5.0",
-  "phase": "phase7-complete (T105-T109) + §7-recommended-completed + §111-§112-flowuser-driven-fixes (T110-T111)",
+  "phase": "phase7-complete (T105-T109) + §7-recommended-completed + §111-§112-flowuser-driven-fixes (T110-T111) + §117-decision-signature-fix (T113)",
   "phase4_ecosystem": "REMOVED 2026-09-20 (私用定位: 不输出 SDK/第三方/插件)",
-  "bdd_total": 1198,
-  "bdd_pass": 1198,
+  "bdd_total": 1203,
+  "bdd_pass": 1203,
   "bdd_fail": 0,
   "bdd_breakdown": {
     "p0_regression": 17,
@@ -14,10 +14,11 @@
     "section6_phase": 46,
     "section7": "28 (10 §7.2 双端 + 18 §7.3 dual PASS)",
     "section111_design_pitfall": "9 (#1501-#1503 FIX-T110, 双端 PASS)",
-    "section112_taskstate_abandon": "10 (#1511-#1516 FIX-T111)"
+    "section112_taskstate_abandon": "10 (#1511-#1516 FIX-T111)",
+    "section117_decision_signature": "5 (BDD-DEV-001-005 20260921230000, dev SPI 完整流程回归)"
   },
   "tdd_total": 19,
-  "fix_total": 108,
+  "fix_total": 109,
   "fix_breakdown": {
     "phase1_engine": "T1-T70 (70)",
     "phase2_capability": "T71-T78 (8)",
@@ -25,13 +26,58 @@
     "phase4_ha_deploy": "T91-T93 (3)",
     "section6_optimize": "T94-T103 (10)",
     "section7_complete": "T104-T109 (6)",
-    "flowuser_driven_fixes": "T110-T111 (2)"
+    "flowuser_driven_fixes": "T110-T111 (2)",
+    "decision_signature_drift": "T113 (1, vendor/jeeflow/engine.py:680/690/705)"
   },
-  "verify_rules": 32,
+  "verify_rules": 33,
   "verify_breakdown": {
     "errors": 15,
-    "warnings": 12,
+    "warnings": 13,
     "performance": 5
+  },
+  "last_bdd_session": {
+    "timestamp": "20260921230000",
+    "spi_folder": "dev",
+    "flow_files": [
+      "bdd/bdd-dev-leave-simple_20260921230000.json",
+      "bdd/bdd-dev-expense-decision_20260921230000.json",
+      "bdd/bdd-dev-release-fork_20260921230000.json",
+      "bdd/bdd-dev-asset-sequential_20260921230000.json",
+      "bdd/bdd-dev-recruit-ratio_20260921230000.json"
+    ],
+    "flow_pass": 5,
+    "flow_fail": 0,
+    "node_types_used": [
+      "snaker:start",
+      "snaker:task",
+      "snaker:decision",
+      "snaker:fork",
+      "snaker:join",
+      "snaker:end"
+    ],
+    "features_demonstrated": [
+      "linear approval",
+      "field permission (PERMISSION_f_*)",
+      "decision branching (#f_amount>5000)",
+      "fork/join parallel",
+      "taskType=1 副审",
+      "sequential countersign (PARALLEL→SEQUENTIAL, performType=1)",
+      "ratio countersign (#nrOfCompletedInstances>=2)",
+      "TaskState.ABANDONED (99) 自动废弃",
+      "taskType=2 RECORD 自动完成"
+    ],
+    "bugs_found": [
+      "FIX-T113 _cleanup_orphan_decision_tasks 函数签名与调用点参数不匹配 (engine.py:680/690/705)"
+    ],
+    "bugs_fixed": [
+      "FIX-T113: 删除 3 处调用点的多余 edges 参数, 函数体已用 flow.edges 遍历"
+    ],
+    "docs_updated": [
+      "docs/known-issues.md §117 (FIX-T113 详细根因 + 修复 + 经验教训)",
+      "docs/flow.md §3.3 taskType 设计陷阱表 + §3.4 FIX-T113 备注",
+      "docs/AGENTS.md §6 约束 #35 (FIX-T113) + #36 (taskType 语义陷阱)",
+      "vendor/jeeflow/verify.py W014 (decision 节点存在时提醒回归)"
+    ]
   },
   "openapi_paths": 70,
   "openapi_actions": 57,

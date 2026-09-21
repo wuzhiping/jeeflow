@@ -1,0 +1,106 @@
+{
+  "name": "dev-release-fork",
+  "displayName": "BDD-DEV-上线审批-并行汇合",
+  "type": "approval",
+  "instanceUrl": "/bdd/dev-release-fork/form",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": { "width": 50, "height": 50 },
+      "text": { "value": "开始" }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "release-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0
+      },
+      "text": { "value": "提交上线" }
+    },
+    {
+      "id": "fork1",
+      "type": "snaker:fork",
+      "x": 320,
+      "y": 200,
+      "properties": { "width": 50, "height": 50 },
+      "text": { "value": "并行评审" }
+    },
+    {
+      "id": "tech_review",
+      "type": "snaker:task",
+      "x": 460,
+      "y": 100,
+      "properties": {
+        "width": 120, "height": 50,
+        "form": "release-form",
+        "assignee": "u_be_lead",
+        "taskType": 0,
+        "performType": 0
+      },
+      "text": { "value": "技术评审" }
+    },
+    {
+      "id": "qa_review",
+      "type": "snaker:task",
+      "x": 460,
+      "y": 300,
+      "properties": {
+        "width": 120, "height": 50,
+        "form": "release-form",
+        "assignee": "u_qa_lead",
+        "taskType": 1,
+        "performType": 0
+      },
+      "text": { "value": "QA 复核(副审)" }
+    },
+    {
+      "id": "join1",
+      "type": "snaker:join",
+      "x": 620,
+      "y": 200,
+      "properties": { "width": 50, "height": 50 },
+      "text": { "value": "汇合" }
+    },
+    {
+      "id": "release_execute",
+      "type": "snaker:task",
+      "x": 750,
+      "y": 200,
+      "properties": {
+        "width": 120, "height": 50,
+        "form": "release-form",
+        "assignee": "u_cto",
+        "taskType": 0,
+        "performType": 0
+      },
+      "text": { "value": "执行上线" }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 920,
+      "y": 200,
+      "properties": { "width": 50, "height": 50 },
+      "text": { "value": "结束" }
+    }
+  ],
+  "edges": [
+    { "id": "e1", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {} },
+    { "id": "e2", "sourceNodeId": "apply", "targetNodeId": "fork1", "properties": {} },
+    { "id": "e_apply_1", "sourceNodeId": "fork1", "targetNodeId": "tech_review", "properties": {} },
+    { "id": "e_apply_2", "sourceNodeId": "fork1", "targetNodeId": "qa_review", "properties": {} },
+    { "id": "e_fork1_1", "sourceNodeId": "tech_review", "targetNodeId": "join1", "properties": {} },
+    { "id": "e_fork1_2", "sourceNodeId": "qa_review", "targetNodeId": "join1", "properties": {} },
+    { "id": "e_join1_1", "sourceNodeId": "join1", "targetNodeId": "release_execute", "properties": {} },
+    { "id": "e3", "sourceNodeId": "release_execute", "targetNodeId": "end", "properties": {} }
+  ]
+}

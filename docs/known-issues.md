@@ -4885,3 +4885,66 @@ submitType=20 的"会签软否决"语义**只在 task → end 直连时由 cs_ve
 - `docs/AGENTS.md §6` (约束待补 #34 - submitType=20 拓扑约束)
 - `skills/feedback/inbox/FB-0012.json` (原始 issue, 待移 archive)
 - `skills/feedback/retrospectives/2026-11-17-fb-0012-patches.md` (W47 Day 5 patches 复盘)
+
+---
+
+## §117 FIX-T113 `_cleanup_orphan_decision_tasks` 函数签名与调用点参数不匹配 (2026-09-21 BDD-DEV)
+
+**状态**: ✅ 已修复 (2026-09-21, BDD-DEV-002 实证)
+
+### 现象
+
+`processInstance/startAndExecute` 调用决策路由时返回：
+```
+[TypeError] EngineImpl._cleanup_orphan_decision_tasks() takes 6 positional arguments but 7 were given
+```
+
+### 根因
+
+`vendor/jeeflow/engine.py` 内 `_cleanup_orphan_decision_tasks` 函数签名：
+```python
+async def _cleanup_orphan_decision_tasks(self, flow, inst, selected_edge, operator, vars_):
+```
+(5 个位置参数, 不含 self)
+
+3 处调用点 `engine.py:680 / 690 / 705`:
+```python
+await self._cleanup_orphan_decision_tasks(
+    flow, inst, edges, edge, operator, vars_   # 6 个位置参数
+)
+```
+
+调用方多传了 `edges` 参数 (函数体内部已经迭代 `flow.edges`, 不需要再传)。
+
+引入时间: FIX-T112 (2026-09-22) 引入 `decision 孤儿清理` 时新增调用点, 函数签名未同步更新。
+
+### 修复
+
+`vendor/jeeflow/engine.py:680 / 690 / 705` 3 处调用点删除多余的 `edges,` 参数:
+```python
+await self._cleanup_orphan_decision_tasks(
+    flow, inst, edge, operator, vars_   # ✅
+)
+```
+
+### 复测
+
+- BDD-DEV-002 (20260921230000) 重启 main.py 后: ✅ decision 节点正常求值, 金额分支按 expr 正确分流
+- 修复前: 所有含 `snaker:decision` 节点的流程都会启动失败
+- 修复后: 5 个流程 (dev-leave-simple / dev-expense-decision / dev-release-fork / dev-asset-sequential / dev-recruit-ratio) 全部 PASS
+
+### 经验教训
+
+1. **重构 verify**: 类似 FIX-T112 改动应该跑完整流程回归, 而不仅是单元测试
+2. **函数签名 vs 调用点一致性**: 每次新增函数或新增调用点, 应立即在 verify 规则加 `E_FUNCTION_SIGNATURE` 检查 (类型不匹配可在 deploy 时检测)
+3. **建议改进 `vendor/jeeflow/verify.py`**: 新增 W014 警告 - 调用点参数超过函数签名 (静态 AST 扫描), 但该改进超出本次 BDD 范围, 列为待办
+4. **跨文档一致性**: 已同步更新 docs/flow.md §3.4 决策节点 (FIX-T113 备注) + docs/AGENTS.md §6 约束 #35 (新增)
+
+### 关联文档
+
+- `bdd/bdd-dev-expense-decision_20260921230000.md` (BUG-3 发现 + 修复记录)
+- `vendor/jeeflow/engine.py:680/690/705` (调用点, 已修复)
+- `vendor/jeeflow/engine.py:710` (函数定义)
+- `docs/flow.md §3.4` (decision 节点, 同步更新)
+
+---

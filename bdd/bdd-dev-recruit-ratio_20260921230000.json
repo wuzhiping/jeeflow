@@ -1,0 +1,78 @@
+{
+  "name": "dev-recruit-ratio",
+  "displayName": "BDD-DEV-招聘审批-比例会签",
+  "type": "approval",
+  "instanceUrl": "/bdd/dev-recruit-ratio/form",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": { "width": 50, "height": 50 },
+      "text": { "value": "开始" }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "recruit-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0
+      },
+      "text": { "value": "提交招聘" }
+    },
+    {
+      "id": "panel_vote",
+      "type": "snaker:task",
+      "x": 330,
+      "y": 200,
+      "properties": {
+        "width": 140, "height": 50,
+        "form": "recruit-form",
+        "assignee": "u_cto,u_rd_dir,u_ceo",
+        "taskType": 0,
+        "performType": 1,
+        "countersignType": "PARALLEL",
+        "countersignCompletionCondition": "#nrOfCompletedInstances>=2",
+        "field": {
+          "candidateUsers": "u_cto,u_rd_dir,u_ceo",
+          "PERMISSION_f_position": 1,
+          "PERMISSION_f_level": 2
+        }
+      },
+      "text": { "value": "评委投票(2/3)" }
+    },
+    {
+      "id": "hr_record",
+      "type": "snaker:task",
+      "x": 530,
+      "y": 200,
+      "properties": {
+        "width": 120, "height": 50,
+        "assignee": "u_rd_dir",
+        "taskType": 2,
+        "performType": 0
+      },
+      "text": { "value": "HR 备案(记录)" }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 700,
+      "y": 200,
+      "properties": { "width": 50, "height": 50 },
+      "text": { "value": "结束" }
+    }
+  ],
+  "edges": [
+    { "id": "e1", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {} },
+    { "id": "e2", "sourceNodeId": "apply", "targetNodeId": "panel_vote", "properties": {} },
+    { "id": "e3", "sourceNodeId": "panel_vote", "targetNodeId": "hr_record", "properties": {} },
+    { "id": "e4", "sourceNodeId": "hr_record", "targetNodeId": "end", "properties": {} }
+  ]
+}
