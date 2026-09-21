@@ -1,0 +1,96 @@
+{
+  "period": "2026-W40 (2026-09-22 ~ 2026-09-28)",
+  "report_date": "2026-09-29",
+  "summary": {
+    "phase": "Phase 9 Week 1 (启动 + 修复推进)",
+    "fb_total": 12,
+    "fb_closed_total": 10,
+    "fb_in_flight": 2,
+    "fix_total": 8,
+    "weekly_new_fb": 2,
+    "weekly_closed_fb": 1,
+    "weekly_new_fix": 1
+  },
+  "by_type": {
+    "bug": 5,
+    "improve": 1,
+    "doc": 6,
+    "ux": 0,
+    "consult": 0
+  },
+  "by_priority": {
+    "P0": 4,
+    "P1": 5,
+    "P2": 3,
+    "P3": 0
+  },
+  "weekly_milestones": [
+    {
+      "day": "Day 1 (周一)",
+      "action": "节奏启动",
+      "outputs": ["W40 周报", "解冻提案", "Phase 9 90 天计划", "L1 软接触策略", "FAQ 文档", "journey-evidence 模板", "SLA v13 报告"]
+    },
+    {
+      "day": "Day 2 (周二)",
+      "action": "客户跟进",
+      "outputs": ["BUG-2 复测 PASS (v3 实例 92116610518127)", "FB-0011 登记", "FB-0012 登记"]
+    },
+    {
+      "day": "Day 3 (周三)",
+      "action": "候选评估",
+      "outputs": ["auto-assignee-by-org 评估文档 + 整合洞察"]
+    },
+    {
+      "day": "Day 4 (周四)",
+      "action": "文档补丁",
+      "outputs": ["FB-0011 3 处修订 (docs/flow.md §7.1 + AGENTS.md #32 + known-issues §115)"]
+    },
+    {
+      "day": "Day 5 (周五)",
+      "action": "周复盘 + 通知",
+      "outputs": ["通知 flowuser FB-0011 patches 待 review"]
+    }
+  ],
+  "fb_status": {
+    "FB-0007": "closed (BUG-2 复测 PASS, 真正修复验证)",
+    "FB-0008": "closed (FIX-DOC-2 applied)",
+    "FB-0009": "closed (FIX-DOC-3 applied)",
+    "FB-0010": "closed (验证 (a) 设计如此)",
+    "FB-0011": "in_progress (3 处修订就绪, 等 bro apply)",
+    "FB-0012": "received (等 flowuser 实证 submitType=20 拓扑)"
+  },
+  "fix_metrics": {
+    "fix_total_cumulative": 8,
+    "weekly_new_fix": "FIX-T112 confirmed PASS",
+    "verify_rules_added": 33,
+    "bdd_total": 21,
+    "weekly_new_bdd": 3
+  },
+  "customer_metrics": {
+    "engagement": "5 条 (FB-0006/0007/0010/0011/0012)",
+    "processes_validated": 11,
+    "true_bug_rate": "3/11 = 27%",
+    "withdraw_false_bug": 9
+  },
+  "phase_8_closeout": {
+    "phase_8_complete": true,
+    "freeze_proposal_signed_hermes": true,
+    "freeze_proposal_signed_bro": "🟡 pending (2026-09-29 截止)",
+    "phase_9_90day_plan": "drafted (in roadmap/)"
+  },
+  "sla_health": {
+    "report_version": "v13",
+    "score": 100,
+    "fb_closure_rate": "100%",
+    "files_in_skills": 55,
+    "固化脚本_PASS": 31
+  },
+  "notes": [
+    "W40 = Phase 9 Week 1 启动. 5 天节奏全部完成.",
+    "BUG-2 FIX-T112 真正修复验证 PASS (首个 Phase 9 闭环实证)",
+    "3 个 doc FB 登记: FB-0011 (变量作用域), FB-0012 (submitType 拓扑)",
+    "FB-0011 文档补丁已完成 (3 处修订), 等 bro apply",
+    "L1 软接触 Step 2 (Camunda + Flowable 加入) pending 浏览器",
+    "bro 解冻提案 7 天签字期截止 2026-09-29"
+  ]
+}

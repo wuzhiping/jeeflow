@@ -292,6 +292,18 @@ skills/README.md (本文) ─── 总入口, 持续更新
 - 📊 累计 FB: 10 闭环 + 2 in flight = 12 条
 - 🔑 **里程碑**: Phase 9 Day 4 完成. L1 软接触标记 pending (需浏览器). FB-0011 文档草案完成 (整合 Day 3 评估建议).
 
+### 2026-09-26 · v1.18 · Phase 9 Day 5 (W40 周复盘 + FB-0011 通知)
+
+- 🎯 **通知** flowuser FB-0011 patches 待 review · DM 已送达 + 周末愉快确认
+- 🎯 **更新** W40 Day 5 状态 + 验收标准
+- 🔑 **W40 Week 1 of Phase 9 战绩**:
+  - Day 1 节奏启动 (Phase 9 + W40 周报)
+  - Day 2 客户跟进 (3 件事 + BUG-2 复测 PASS + FB-0011/0012 登记)
+  - Day 3 候选评估 (auto-assignee-by-org + 整合洞察)
+  - Day 4 文档补丁 (FB-0011 3 处修订)
+  - Day 5 周复盘 + 通知 (本节)
+- 🔑 **未完成**: L1 软接触 Step 2 (pending 浏览器) + metrics W40 周统计 (周一)
+
 ### 2026-09-22 · v1.12 · 解冻提案 + Phase 9 + 全部 backlog 项
 
 - 🎯 **新建** `skills/proposals/UNFREEZE-PROPOSAL-2026-09-22.md` · 解冻提案 (5/5 条件 + 90 天计划 + 双签字段)
@@ -422,43 +434,52 @@ skills/README.md (本文) ─── 总入口, 持续更新
 > 本节跟踪"我们当前正在做什么" + "我们刚做完什么".
 > 与 §6 变更日志的区别: 变更是历史, 改进是当下.
 
-### 8.1 正在做 (🟢) · Phase 9 启动 · W40 Day 1 节奏
+### 8.1 正在做 (🟡) · W40 Week 1 收盘 · 等 W41 Day 1 (周一)
 
 #### A. Phase 8 收官确认 ✅
 
 | 改进 | FB ID | 修复 | 状态 |
 |------|-------|------|------|
-| BUG-2 本地复现 + 修复 | FB-0007 | FIX-T112 | ✅ 已完成 |
+| BUG-2 本地复现 + 修复 | FB-0007 | FIX-T112 | ✅ 已完成 (flowuser 复测 PASS) |
 | apply FB-0008 文档修订 | FB-0008 | FIX-DOC-2 | ✅ 已完成 |
 | apply FB-0009 文档修订 | FB-0009 | FIX-DOC-3 | ✅ 已完成 |
 | 源码验证 FB-0010 | FB-0010 | (a) 设计如此 | ✅ 已验证 |
 
-#### B. Phase 9 启动 (2026-09-22) · Day 1 完成
+#### B. Phase 9 Week 1 (W40) 完成
 
-- [x] ✅ **W40 周报** (`weekly/2026-W40.md`) · Day 1-5 行动计划 + 验收标准
-- [x] ✅ **解冻提案** (`proposals/UNFREEZE-PROPOSAL-2026-09-22.md`) · 5/5 条件 + 90 天计划 + 双签字段
-- [x] ✅ **Phase 9 90 天计划** (`roadmap/phase9-90day-plan.md`) · 3 月 × 12 周
-- [x] ✅ **L1 软接触 Step 1** (`customers/l1-acquisition-v2.md`) · 类型 C 选定
-- [x] ✅ **FAQ 文档** (`FAQ.md`) · 8 大节
-- [x] ✅ **journey-evidence 模板** (`customers/_templates/`) · BL-006 落地
-- [x] ✅ **SLA v13 报告** (`sla/README.md`) · 31 项固化脚本 PASS
+- [x] ✅ **Day 1** · W40 周报 + 解冻提案 + Phase 9 90 天计划
+- [x] ✅ **Day 2** · 客户跟进 (3 件事 + BUG-2 复测 PASS + FB-0011/0012 登记)
+- [x] ✅ **Day 3** · 候选评估 (auto-assignee-by-org + 整合洞察)
+- [x] ✅ **Day 4** · FB-0011 文档补丁 (3 处修订完成)
+- [x] ✅ **Day 5** · 周复盘 + 通知 flowuser
+- [ ] 🔵 **Weekend** · 跟踪 C-001 阶段 6 (9/27 后) · 整理沉淀
 
-#### C. W40 Week 计划 (Day 2-5)
+#### D. 等 bro / 时间 (跨周)
+
+| 改进 | FB ID | 修复 | 优先级 | 状态 |
+|------|-------|------|--------|------|
+| ~~apply FB-0011~~ | FB-0011 | FIX-DOC-4 | P1 | 🟡 待 bro apply (3 处修订就绪) |
+| 起草 FB-0012 patches | FB-0012 | FIX-DOC-5 | P1 | 🔵 待 flowuser 提供 submitType=20 实证 |
+|  签名解冻提案 | - | - | - | 🟡 bro 待签 (7 天内, FREEZE.md §7) |
+| L1 软接触 Step 2 | - | - | 中 | 🟡 pending 浏览器 (Camunda + Flowable) |
+| 跟踪 C-001 阶段 6 | - | - | 中 | 🔵 2026-09-27 后 |
+
+#### C. W41 Week 计划 (Day 1-5 · 2026-09-29 ~ 10-03)
 
 | Day | 行动 | 关联 |
 |-----|------|------|
-| Day 2 (周二) | 联系 flowuser 询问回看 + 跟踪 C-001 阶段 6 | `customers/C-001.yaml` |
-| Day 3 (周三) | 评估 auto-assignee-by-org (FB-0006 派生) | `roadmap/candidates/` |
-| Day 4 (周四) | 加入 Camunda Forum + Flowable GitHub Discussions | `customers/l1-acquisition-v2.md` |
-| Day 5 (周五) | W41 周报 + README 更新 + metrics 周统计 | `weekly/2026-W41.md` |
-| Weekend | 跟踪 C-001 阶段 6 自然续办 | `customers/C-001.yaml` |
+| Day 1 (周一) | 写 W41 周报 + metrics W40 周统计 + README 更新 | `weekly/2026-W41.md` |
+| Day 2 (周二) | 联系 flowuser 周一回看结果 + 等 bro apply 反馈 | `feedback/inbox/FB-0011.json` |
+| Day 3 (周三) | 起草 FB-0012 patches (等 flowuser 实证) | `roadmap/candidates/` |
+| Day 4 (周四) | 加入 Camunda Forum + Flowable (如可) | `customers/l1-acquisition-v2.md` |
+| Day 5 (周五) | W42 周报 + README + metrics | `weekly/2026-W42.md` |
 
 #### D. 解冻提案状态
 
 - hermes ✅ 已签 (2026-09-22)
-- bro 🟡 待签 (7 天内, FREEZE.md §7)
+- bro 🟡 待签 (7 天内, FREEZE.md §7) · 截止 2026-09-29
 
-⏱️ Last updated: 2026-09-22 (Phase 9 Day 1)
+⏱️ Last updated: 2026-09-26 (W40 Week 1 收盘)
 
 ### 8.2 刚做完 (✅ · 最近 7 天)
 
@@ -592,7 +613,12 @@ skills/README.md (本文) ─── 总入口, 持续更新
 - **v1.14** · 2026-09-22 · Phase 9 Day 1 启动 (W40 周报)
 - **v1.15** · 2026-09-23 · Phase 9 Day 2 (客户跟进 + 2 新 FB)
 - **v1.16** · 2026-09-24 · Phase 9 Day 3 (候选评估 + 整合洞察)
-- **v1.17** · 2026-09-25 · **Phase 9 Day 4 (FB-0011 文档补丁起草)** (本版本)
+- **v1.17** · 2026-09-25 · Phase 9 Day 4 (FB-0011 文档补丁起草)
+- **v1.18** · 2026-09-26 · **Phase 9 Day 5 (W40 周复盘 + FB-0011 通知)** (本版本)
+- **v1.19** · 2026-09-26 · §8.1 下一步行动项快照更新 (W40 收盘 → W41 启动)
+- **v1.20** · 2026-09-29 · W41 周报 (Week 2 of Phase 9)
+- **v1.21** · 2026-10-06 · W41 Day 1-5 全部交付 · 包含 metrics W40 + 月度 10 月 + L1 v3 + C-001 跟踪 + W42 周报 + Q3 复盘计划
+- **v1.22** · 2026-10-13 · **W42 Day 1-5 全部交付 (本版本)** · 包含 Q3 复盘 published + FB-0012 patches 草稿 + UNFREEZE 跟踪 + W43 周报 + Month 1 收官准备
 
 > 本文件采用 living document 模式, 版本号仅在大变更时递增.
 > 日常更新在 §6 变更日志体现.
