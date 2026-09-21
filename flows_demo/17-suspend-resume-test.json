@@ -1,0 +1,55 @@
+{
+  "name": "suspend-resume-test",
+  "displayName": "挂起恢复测试",
+  "type": "approval",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "properties": {},
+      "text": {"value": "开始"}
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "properties": {
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0
+      },
+      "text": {"value": "发起申请"}
+    },
+    {
+      "id": "leader_approve",
+      "type": "snaker:task",
+      "properties": {
+        "assignee": "leader",
+        "taskType": 0,
+        "performType": 0
+      },
+      "text": {"value": "领导审批"}
+    },
+    {
+      "id": "manager_approve",
+      "type": "snaker:task",
+      "properties": {
+        "assignee": "manager",
+        "taskType": 0,
+        "performType": 0
+      },
+      "text": {"value": "经理审批"}
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "properties": {},
+      "text": {"value": "结束"}
+    }
+  ],
+  "edges": [
+    {"sourceNodeId": "start", "targetNodeId": "apply"},
+    {"sourceNodeId": "apply", "targetNodeId": "leader_approve"},
+    {"sourceNodeId": "leader_approve", "targetNodeId": "manager_approve"},
+    {"sourceNodeId": "manager_approve", "targetNodeId": "end"}
+  ]
+}

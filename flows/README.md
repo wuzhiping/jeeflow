@@ -1,6 +1,16 @@
-# ./flows 示例流程索引
+# ./flows 流程定义（spi.dev 适配版）
 
-本目录收录可直接部署到引擎的流程 JSON。每个文件 `name` 与文件名（不含 `.json`）严格一致，可作为 `/wf/processDesign/save` 的 `content` 字段提交。
+本目录收录**适配 spi.dev** 的流程 JSON，由引擎在启动时作为种子加载（`main.py:50` / `main_pg.py:60` 通过 `flows_resolver.dir()` 读取）。每个文件 `name` 与文件名（不含 `.json`）严格一致，可作为 `/wf/processDesign/save` 的 `content` 字段提交。
+
+## 与 `./flows_demo/` 的关系
+
+| 目录 | 用途 | 引擎加载 |
+|------|------|----------|
+| `./flows/` | **运行时加载**（已适配 spi.dev 的 13 个 dev 用户 / 8 个 role） | ✅ 由 `flows_resolver.dir()` 返回 |
+| `./flows_demo/` | 原 Java 仓 `test/resources/flows/` 精确副本（保留作为对照参考） | ❌ 仅供对比，不加载 |
+| `./tdd/` | WIP 流程 JSON（开发期暂存） | ❌ 仅供开发 |
+
+> **维护流程**：Java 源更新 → `flows_resolver._mirror()` 自动镜像到 `./flows_demo/` → 用户基于 `./flows_demo/` 修改"用户/组织相关设定"（保持流程逻辑不变）→ `cp` 到 `./flows/` → 引擎加载。
 
 > **使用约定**：所有改动需先落 `./tdd/<key>.json`，稳定后 `cp` 到本目录。现有文件（含双 `11-`）**只读**，禁止就地修改（详见 `../docs/known-issues.md` §8）。
 

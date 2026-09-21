@@ -19,7 +19,7 @@
 | 列 | `content TEXT`（见 `docs/pg_schema.sql:12`） |
 | 写入 | `POST /wf/processDesign/deploy`（设计器面板）→ `facade._deploy`（`facade.py:204`）`json.loads(content)` 取 `name/displayName/type`，落表 `wf_process_define` |
 | 读取 | `POST /wf/processInstance/start` / `complete_task` 等流程动作触发，`engine.py:202` `parse_flow_model(json.loads(def_.content))` 还原 `FlowModel` |
-| 范例 | `flows/01-simple.json` ~ `flows/13-countersign-one-vote-veto.json`（15 个真实样例） |
+| 范例 | `flows/01-simple.json` ~ `flows/17-suspend-resume-test.json`（17 个真实样例，spi.dev 适配版；原 Java 源 demo SPI 版见 `flows_demo/`） |
 
 ---
 
@@ -209,6 +209,12 @@
 | COUNTERSIGN_DISAGREE | 20 | execute_process_task + disagreeFlag | 会签否决（ONE_VOTE_VETO 场景） |
 
 注意：`submitType=2` REJECT **不走 decision**，facade 拦截后直接调 `execute_and_jump_to_end`（state=45）；decision 节点只看 submitType 1/5/20（其他 fallback 到首边）。
+
+> ⚠️ **ROLLBACK 设计陷阱 (FIX-T36 §52 + FIX-T114 2026-09-21)**:
+> - **不传 taskName (默认 ROLLBACK)**: 引擎找上一个任务节点, **覆写 `node.properties.assignee = 前任务完成人 or operator`**. 原 assignee 失去 re-process 能力. 这是 Java rejectTask 设计意图 (rejecter 期望重做前一步).
+> - **场景**: HR (u_rd_dir) 撤回上一节点 leader_approve (assignee=u_fe_lead) → 引擎覆写为 u_rd_dir → u_fe_lead 看不到 task.
+> - **设计师期望原 assignee 重新处理**: 必须显式传 `taskName="leader_approve"`.
+> - **taskName 位置兼容** (FIX-T114): 4 个位置都有效 — `顶层 taskName` / `顶层 targetTaskName` / `variables.taskName` / `variables.targetTaskName`. 详见 `docs/known-issues.md §118`.
 
 **submitType 拓扑约束表（FB-0012 2026-11-17 修订, flowuser 反馈）**：
 

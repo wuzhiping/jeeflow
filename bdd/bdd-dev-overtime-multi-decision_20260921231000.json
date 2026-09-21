@@ -1,0 +1,29 @@
+{
+  "name": "dev-overtime-multi-decision",
+  "displayName": "BDD-DEV-加班审批-多层决策",
+  "type": "approval",
+  "instanceUrl": "/bdd/dev-overtime-multi-decision/form",
+  "nodes": [
+    { "id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": { "width": 50, "height": 50 }, "text": { "value": "开始" } },
+    { "id": "apply", "type": "snaker:task", "x": 150, "y": 200, "properties": { "width": 100, "height": 50, "form": "overtime-form", "assignee": "applicant", "taskType": 0, "performType": 0 }, "text": { "value": "提交加班" } },
+    { "id": "decision_low_high", "type": "snaker:decision", "x": 320, "y": 200, "properties": { "width": 100, "height": 50 }, "text": { "value": "时长分级" } },
+    { "id": "decision_short", "type": "snaker:decision", "x": 500, "y": 100, "properties": { "width": 100, "height": 50 }, "text": { "value": "短期处理" } },
+    { "id": "leader_only", "type": "snaker:task", "x": 680, "y": 50, "properties": { "width": 120, "height": 50, "assignee": "u_fe_lead", "taskType": 0, "performType": 0 }, "text": { "value": "组长审批" } },
+    { "id": "rd_review", "type": "snaker:task", "x": 680, "y": 150, "properties": { "width": 120, "height": 50, "assignee": "u_rd_dir", "taskType": 0, "performType": 0 }, "text": { "value": "总监复核" } },
+    { "id": "cto_approve_high", "type": "snaker:task", "x": 500, "y": 300, "properties": { "width": 120, "height": 50, "assignee": "u_cto", "taskType": 0, "performType": 0 }, "text": { "value": "CTO 审批" } },
+    { "id": "hr_record", "type": "snaker:task", "x": 850, "y": 200, "properties": { "width": 120, "height": 50, "assignee": "u_rd_dir", "taskType": 0, "performType": 0 }, "text": { "value": "HR 备案" } },
+    { "id": "end", "type": "snaker:end", "x": 1000, "y": 200, "properties": { "width": 50, "height": 50 }, "text": { "value": "结束" } }
+  ],
+  "edges": [
+    { "id": "e1", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {} },
+    { "id": "e2", "sourceNodeId": "apply", "targetNodeId": "decision_low_high", "properties": {} },
+    { "id": "e3", "sourceNodeId": "decision_low_high", "targetNodeId": "decision_short", "properties": { "expr": "#f_hours<=8" } },
+    { "id": "e4", "sourceNodeId": "decision_low_high", "targetNodeId": "cto_approve_high", "properties": { "expr": "#f_hours>8" } },
+    { "id": "e5", "sourceNodeId": "decision_short", "targetNodeId": "leader_only", "properties": { "expr": "#f_hours<=4" } },
+    { "id": "e6", "sourceNodeId": "decision_short", "targetNodeId": "rd_review", "properties": { "expr": "#f_hours>4" } },
+    { "id": "e7", "sourceNodeId": "leader_only", "targetNodeId": "hr_record", "properties": {} },
+    { "id": "e8", "sourceNodeId": "rd_review", "targetNodeId": "hr_record", "properties": {} },
+    { "id": "e9", "sourceNodeId": "cto_approve_high", "targetNodeId": "hr_record", "properties": {} },
+    { "id": "e10", "sourceNodeId": "hr_record", "targetNodeId": "end", "properties": {} }
+  ]
+}

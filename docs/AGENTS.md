@@ -53,7 +53,8 @@
 | `./docs/flow.md` | 流程 JSON 完整规范（10 节 + 速查） | 设计前读全文；测试中遇到歧义回查 §3-§7 |
 | `./docs/actions.md` | 47 action + 路由解析 + curl 模板（端口 8101） | 测试时按 action 名查表 |
 | **`./docs/BUGS.md`** | **27 BUG（已修 27+仍存 0）+ 5 已知限制 + 16 项自检清单（v1.9.0 2026-09-19 更新）** | **设计前必读，避开引擎能力边界** |
-| `./flows/*.json` | 15 个真实样例（01-13） | 设计时挑最相似的样例 fork（**只读模板，不得改写**） |
+| `./flows/*.json` | **17 个真实样例**（spi.dev 适配版，01-17） | 设计时挑最相似的样例 fork（**只读模板，不得改写**）；流程逻辑保持原样，但用户/角色引用已适配 dev SPI（`u_fe_lead` / `u_rd_dir` / `u_ceo` 等） |
+| `./flows_demo/*.json` | 17 个原版 Java 源副本（demo SPI 用户 `leader` / `boss` / `userA,B,C` 等） | **不参与运行时加载**，仅作为对照参考；新流程应基于 `./flows_demo/` 修改后入 `./flows/` |
 | `./tdd/*.json` | WIP 流程 JSON | 当前会话要开发的新流程；测试通过后再决定是否晋升到 `./flows/` |
 | `./tdd/README.md` | TDD 目录使用约定 | 写新流程前必读 |
 | `./docs/pg_schema.sql` | 真实 PostgreSQL 表 DDL（仅参考） | 查字段含义 |
@@ -104,24 +105,26 @@
 
 ---
 
-## 4. 设计模板（基于 15 个样例）
+## 4. 设计模板（基于 17 个样例，spi.dev 适配版）
+
+> **字段语义说明**：样例中的用户/角色引用已适配 spi.dev（13 个用户 / 8 个 role）。原始 Java 源版本（demo SPI 用户 `leader` / `boss` / `manager` / `userA,B,C` 等）见 `./flows_demo/*.json`。
 
 | 业务场景 | 推荐样板 | 关键字段 |
 | --- | --- | --- |
-| 申请人→上级→结束 | `./flows/01-simple.json` | apply=`applicant`、task1=`leader`、`field.PERMISSION_*` |
-| 多层审批 | `./flows/02-multi-task.json` | 三个 task 节点串行 |
+| 申请人→上级→结束 | `./flows/01-simple.json` | apply=`applicant`、task1=`u_fe_lead`、`field.PERMISSION_*` |
+| 多层审批 | `./flows/02-multi-task.json` | task1=`u_fe_lead`、task2=`u_rd_dir`、task3=`u_ceo` |
 | 金额分支 | `./flows/03-decision-expr.json` | decision1 + 两出边 expr `amount>1000` / `amount<=1000` |
-| 并行审批 + 汇合 | `./flows/04-fork-join.json` | fork1→taskA/taskB→join1；taskB `taskType:1` |
-| 并行会签（多人同时审） | `./flows/05-countersign-parallel.json` | `performType=1, countersignType=PARALLEL`，assignee 多值 |
-| 串行会签（按顺序审） | `./flows/06-countersign-sequential.json` | `countersignType=SEQUENTIAL` |
+| 并行审批 + 汇合 | `./flows/04-fork-join.json` | fork1→taskA=`u_fe_eng`/taskB=`u_be_eng`→join1；taskB `taskType:1` |
+| 并行会签（多人同时审） | `./flows/05-countersign-parallel.json` | `performType=1, countersignType=PARALLEL`，assignee=`u_fe_eng,u_be_eng,u_qa_eng` |
+| 串行会签（按顺序审） | `./flows/06-countersign-sequential.json` | `countersignType=SEQUENTIAL`，assignee=`u_fe_eng,u_be_eng` |
 | 比例会签（✅ 已实现，RatioCapableEngine 扩展） | `./flows/07-countersign-ratio.json` | `countersignCompletionCondition: "#nrOfCompletedInstances==2"`（OGNL 表达式，`nrOfCompletedInstances`/`nrOfInstances` 自动注入） |
-| 一票否决会签 | `./flows/13-countersign-one-vote-veto.json` | `countersignCompletionCondition: "ONE_VOTE_VETO"` |
+| 一票否决会签 | `./flows/13-countersign-one-vote-veto.json` | `countersignCompletionCondition: "ONE_VOTE_VETO"`；assignee=`u_ceo,u_cto,u_arch` |
 | 自定义节点 | `./flows/08-custom-node.json` | `clazz + args + val` ✅ **v1.9.0 FIX-T38 已实现**：`clazz` 查 `EngineExtensions.custom_handler_registry`，handler 签名 `async def(node, inst, vars_, args) -> Any`，结果写回 `vars_[val]`（详见 `known-issues.md §16`） |
-| 驳回路径 | `./flows/09-with-reject.json` | submitType=Reject 走 reject 边 |
+| 驳回路径 | `./flows/09-with-reject.json` | submitType=2 走 reject 边 |
 | 业务流 + 拦截器 | `./flows/10-mixed-mode.json` | 顶层 `preInterceptors/postInterceptors`；`type: "business"` |
-| 处理人为变量 | `./flows/11-assignee-vars.json` | `assignee: "deptLeader"` / `"userA,userB"` |
-| 内置 handler 全部列示 | `./flows/11-assignment-handler.json` | 7 个 FQCN（见 `./docs/flow.md §6`） |
-| 候选人分页 | `./flows/12-candidate-page.json` | 节点级 `candidateUsers/candidateGroups`（properties 根下） |
+| 处理人为变量 | `./flows/11-assignee-vars.json` | `assignee: "deptLeader"`（运行时 vars.deptLeader=`u_be_lead`）、`assignee: "u_fe_eng,u_be_eng"` |
+| 内置 handler 全部列示 | `./flows/11-assignment-handler.json` | 7 个 FQCN（见 `./docs/flow.md §6`），含 `TaskRoleAssigneeHandler` 的 `properties.roleCode` 优先级（FIX-T8） |
+| 候选人分页 | `./flows/12-candidate-page.json` | 节点级 `candidateUsers`（`u_fe_eng,u_be_eng`）+ `candidateGroups`（`engineer`） |
 
 **复合场景**：`./flows/08-countersign-sequential-approve.json`（串行会签后并联 approve）。
 
@@ -356,6 +359,7 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 | 34 | **submitType=20 拓扑约束**（FB-0012 2026-11-17；COUNTERSIGN_DISAGREE 仅在会签 task → end 直连时生效. task → decision → 任意拓扑, cs_veto 路径被截断, 一票否决失效. 设计时必查 processDesign/detail 确认会签节点只连 end). | `docs/flow.md §3.3 submitType 拓扑约束表` + `docs/known-issues.md §116` + `docs/AGENTS.md §5.8` |
 | 35 | **decision 节点函数签名陷阱**（FIX-T113 2026-09-21 BDD-DEV；`_cleanup_orphan_decision_tasks` 调用点必须严格匹配函数签名 `(flow, inst, selected_edge, operator, vars_)`, 多传或漏传参数都会导致 `[TypeError]` 阻断流程启动. 任何新增 decision 路径必须同步更新 verify W014 函数签名一致性检查). | `docs/known-issues.md §117` + `vendor/jeeflow/engine.py:710` |
 | 36 | **`taskType` 语义陷阱**（BDD-DEV 实证；`taskType:2` RECORD 创建后自动完成, 不等待人工 execute; "汇合后由人办理"应使用 `taskType:0`. 跑完流程后查 `approvalRecord` 最后一节点 operator, 空字符串 = RECORD 自动完成). | `docs/flow.md §3.3 taskType 设计陷阱表` |
+| 37 | **ROLLBACK taskName 兼容性**（FIX-T114 2026-09-21 BDD-DEV-013；`submitType=3/4` 的 `taskName`/`targetTaskName` 参数可放在**顶层**或 **`variables` 内**, facade 已兼容两位置. 但若不传 taskName (默认 ROLLBACK), 引擎按 FIX-T36 §52 行为覆写 `assignee = 前任务完成人 or operator`, 原 assignee 失去 re-process 能力. 设计师期望原 assignee 重新处理时**必须显式传 taskName**). | `docs/known-issues.md §118` + `vendor/jeeflow/facade.py:737/741` |
 
 > ⚠️ 约束 #13-#20 来自 `./docs/BUGS.md`，是 BDD 实战中**反复踩坑**的约束。设计前**必读**。
 

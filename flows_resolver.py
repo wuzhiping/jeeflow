@@ -1,12 +1,16 @@
-"""解析本仓 flows/ 流程定义目录（维护者与用户统一入口）。
+"""解析本仓流程定义目录（维护者与用户统一入口）。
 
-唯一编辑源是 jeeflow-java 仓的 test/resources/flows/。本仓 flows/ 是其副本，
-入库 commit（单语言用户下载即用，不依赖隔壁 Java 仓）。
+目录布局：
+  flows/         适配 spi.dev 的版本（运行时引擎默认加载，作为种子流程）
+  flows_demo/    原 Java 源副本（保留作为对照参考，不参与运行时加载）
+
+唯一编辑源是 jeeflow-java 仓的 test/resources/flows/。本仓 flows_demo/ 是其精确副本，
+flows/ 由 flows_demo/ 经"用户/组织相关设定"适配生成后入库 commit。
 
 dir() 的语义：
   1. 环境变量 JEEFLOW_FLOWS_DIR 显式覆盖（容器/特殊部署）
   2. 否则从当前工作目录向上找第一个含 flows/（且有 .json）的目录 = 本仓根
-  3. 若本仓根的兄弟目录里有 Java 源（维护者机器）→ 精确镜像进本仓 flows/
+  3. 若本仓根的兄弟目录里有 Java 源（维护者机器）→ 精确镜像进本仓 flows_demo/
      （拷贝所有 .json + 删除本仓多出的孤儿 .json，防 id 按文件名排序错位）
   4. 始终返回本仓 flows/ 路径 —— 所有读取点只读这里，Java 仓不再被直接读取
 
@@ -20,7 +24,7 @@ _JAVA_FLOWS_REL = os.path.join("..", "jeeflow-java", "jeeflow-core", "src", "tes
 
 
 def dir() -> str:
-    """返回本仓 flows/ 绝对路径；维护者机器上会先把 Java 源精确镜像进来。"""
+    """返回本仓 flows/ 绝对路径（spi.dev 适配版, 运行时引擎加载此目录）；维护者机器上会先把 Java 源精确镜像进 flows_demo/。"""
     env = os.environ.get("JEEFLOW_FLOWS_DIR")
     if env:
         return env
@@ -51,10 +55,13 @@ def _has_flows(d):
 
 
 def _mirror(root):
-    """若 Java 源存在则精确镜像到本仓 flows/（拷所有 + 删孤儿），不存在则原样返回。"""
+    """若 Java 源存在则精确镜像到本仓 flows_demo/（拷所有 + 删孤儿），不存在则原样返回。
+
+    注意：镜像目标是 flows_demo/（保留 Java 原版），不是 flows/（spi.dev 适配版, 由 flows_demo/ 派生, 不应被覆盖）。
+    """
     import shutil
     src = os.path.join(root, _JAVA_FLOWS_REL)
-    dst = os.path.join(root, "flows")
+    dst = os.path.join(root, "flows_demo")
     if not os.path.isdir(src):  # 用户单仓 / 容器：无 Java 源，跳过镜像
         return
     os.makedirs(dst, exist_ok=True)

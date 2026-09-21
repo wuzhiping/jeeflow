@@ -1,0 +1,19 @@
+{
+  "name": "dev-rollback",
+  "displayName": "BDD-DEV-请假流程-回滚测试",
+  "type": "approval",
+  "instanceUrl": "/bdd/dev-rollback/form",
+  "nodes": [
+    { "id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": { "width": 50, "height": 50 }, "text": { "value": "开始" } },
+    { "id": "apply", "type": "snaker:task", "x": 150, "y": 200, "properties": { "width": 100, "height": 50, "form": "leave-form", "assignee": "applicant", "taskType": 0, "performType": 0 }, "text": { "value": "提交请假" } },
+    { "id": "leader_approve", "type": "snaker:task", "x": 320, "y": 200, "properties": { "width": 120, "height": 50, "assignee": "u_fe_lead", "taskType": 0, "performType": 0 }, "text": { "value": "组长审批" } },
+    { "id": "hr_approve", "type": "snaker:task", "x": 500, "y": 200, "properties": { "width": 120, "height": 50, "assignee": "u_rd_dir", "taskType": 0, "performType": 0 }, "text": { "value": "HR 审批" } },
+    { "id": "end", "type": "snaker:end", "x": 700, "y": 200, "properties": { "width": 50, "height": 50 }, "text": { "value": "结束" } }
+  ],
+  "edges": [
+    { "id": "e1", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {} },
+    { "id": "e2", "sourceNodeId": "apply", "targetNodeId": "leader_approve", "properties": {} },
+    { "id": "e3", "sourceNodeId": "leader_approve", "targetNodeId": "hr_approve", "properties": {} },
+    { "id": "e4", "sourceNodeId": "hr_approve", "targetNodeId": "end", "properties": {} }
+  ]
+}

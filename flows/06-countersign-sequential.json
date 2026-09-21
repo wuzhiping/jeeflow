@@ -42,12 +42,12 @@
         "width": 120,
         "height": 60,
         "form": "seq-form",
-        "assignee": "userA,userB",
+        "assignee": "u_fe_eng,u_be_eng",
         "taskType": 0,
         "performType": 1,
         "countersignType": "SEQUENTIAL",
         "field": {
-          "candidateUsers": "userA,userB"
+          "candidateUsers": "u_fe_eng,u_be_eng"
         }
       },
       "text": {

@@ -1,0 +1,17 @@
+{
+  "name": "dev-reject-flow",
+  "displayName": "BDD-DEV-请假驳回路径",
+  "type": "approval",
+  "instanceUrl": "/bdd/dev-reject-flow/form",
+  "nodes": [
+    { "id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": { "width": 50, "height": 50 }, "text": { "value": "开始" } },
+    { "id": "apply", "type": "snaker:task", "x": 150, "y": 200, "properties": { "width": 100, "height": 50, "form": "leave-form", "assignee": "applicant", "taskType": 0, "performType": 0 }, "text": { "value": "提交请假" } },
+    { "id": "leader_decision", "type": "snaker:task", "x": 320, "y": 200, "properties": { "width": 140, "height": 50, "assignee": "u_fe_lead", "taskType": 0, "performType": 0 }, "text": { "value": "组长决策" } },
+    { "id": "end", "type": "snaker:end", "x": 520, "y": 200, "properties": { "width": 50, "height": 50 }, "text": { "value": "结束" } }
+  ],
+  "edges": [
+    { "id": "e1", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {} },
+    { "id": "e2", "sourceNodeId": "apply", "targetNodeId": "leader_decision", "properties": {} },
+    { "id": "e3", "sourceNodeId": "leader_decision", "targetNodeId": "end", "properties": {} }
+  ]
+}

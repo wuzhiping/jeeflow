@@ -43,9 +43,9 @@
         "width": 100,
         "height": 50,
         "form": "review-form",
-        "assignee": "leader",
-        "candidateUsers": "userA,userB",
-        "candidateGroups": "finance",
+        "assignee": "u_fe_lead",
+        "candidateUsers": "u_fe_eng,u_be_eng",
+        "candidateGroups": "engineer",
         "taskType": 0,
         "performType": 0
       },

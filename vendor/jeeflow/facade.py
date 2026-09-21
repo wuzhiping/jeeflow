@@ -734,11 +734,27 @@ class JeeflowFacade:
                 # BDD #259 FIX-T54 (2026-09-19)：ROLLBACK 也支持 targetTaskName
                 # - 有 targetTaskName → 跳指定节点（与 JUMP 一致）
                 # - 无 targetTaskName → 退回上一任务节点（Snaker/Java 默认）
-                target = str(args.get("taskName") or args.get("targetTaskName") or "")
+                # FIX-T114 (2026-09-21 BDD-DEV-013): 兼容 taskName 在 args.variables.taskName 的常见调用姿势
+                # 之前只看顶层 taskName/targetTaskName, 用户习惯放 variables 内 → target="" 走"无 target"分支
+                # FIX-T36 §52 行为: assignee 被覆写为前任务完成人/operator, 失去原 assignee
+                target = str(
+                    args.get("taskName")
+                    or args.get("targetTaskName")
+                    or (args.get("variables") or {}).get("taskName")
+                    or (args.get("variables") or {}).get("targetTaskName")
+                    or ""
+                )
                 await self._engine.execute_and_jump_task(task_id, operator, flow_args, target)
             elif submit_type == SUBMIT_JUMP:
                 # BDD #173 FIX-T49 (2026-09-19)：兼容 targetTaskName 别名（与 pageNo 类似）
-                target = str(args.get("taskName") or args.get("targetTaskName") or "")
+                # FIX-T114 (2026-09-21 BDD-DEV-013): 同样兼容 variables.taskName
+                target = str(
+                    args.get("taskName")
+                    or args.get("targetTaskName")
+                    or (args.get("variables") or {}).get("taskName")
+                    or (args.get("variables") or {}).get("targetTaskName")
+                    or ""
+                )
                 await self._engine.execute_and_jump_task(task_id, operator, flow_args, target)
             elif submit_type == SUBMIT_ROLLBACK_TO_OPERATOR:
                 await self._engine.execute_and_jump_to_first_task_node(task_id, operator, flow_args)

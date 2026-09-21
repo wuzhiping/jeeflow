@@ -1,0 +1,19 @@
+{
+  "name": "dev-custom-calc",
+  "displayName": "BDD-DEV-费用分摊-custom 节点",
+  "type": "approval",
+  "instanceUrl": "/bdd/dev-custom-calc/form",
+  "nodes": [
+    { "id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": { "width": 50, "height": 50 }, "text": { "value": "开始" } },
+    { "id": "apply", "type": "snaker:task", "x": 150, "y": 200, "properties": { "width": 100, "height": 50, "form": "cost-form", "assignee": "applicant", "taskType": 0, "performType": 0 }, "text": { "value": "提交费用" } },
+    { "id": "auto_calculate", "type": "snaker:custom", "x": 330, "y": 200, "properties": { "width": 120, "height": 50, "clazz": "com.mldong.jeeflow.test.AppendVarsHandler", "args": "{\"key\":\"calc_result\",\"value\":\"auto_split\"}", "val": "f_calc_result" }, "text": { "value": "自动分摊计算" } },
+    { "id": "finance_review", "type": "snaker:task", "x": 520, "y": 200, "properties": { "width": 120, "height": 50, "assignee": "u_rd_dir", "taskType": 0, "performType": 0, "field": { "PERMISSION_f_calc_result": 1 } }, "text": { "value": "财务审核" } },
+    { "id": "end", "type": "snaker:end", "x": 700, "y": 200, "properties": { "width": 50, "height": 50 }, "text": { "value": "结束" } }
+  ],
+  "edges": [
+    { "id": "e1", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {} },
+    { "id": "e2", "sourceNodeId": "apply", "targetNodeId": "auto_calculate", "properties": {} },
+    { "id": "e3", "sourceNodeId": "auto_calculate", "targetNodeId": "finance_review", "properties": {} },
+    { "id": "e4", "sourceNodeId": "finance_review", "targetNodeId": "end", "properties": {} }
+  ]
+}

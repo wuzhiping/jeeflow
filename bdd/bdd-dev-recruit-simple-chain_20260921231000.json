@@ -1,0 +1,21 @@
+{
+  "name": "dev-recruit-simple-chain",
+  "displayName": "BDD-DEV-招聘简单-三任务链",
+  "type": "approval",
+  "instanceUrl": "/bdd/dev-recruit-simple-chain/form",
+  "nodes": [
+    { "id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": { "width": 50, "height": 50 }, "text": { "value": "开始" } },
+    { "id": "apply", "type": "snaker:task", "x": 150, "y": 200, "properties": { "width": 100, "height": 50, "form": "recruit-form", "assignee": "applicant", "taskType": 0, "performType": 0 }, "text": { "value": "提交简历" } },
+    { "id": "leader_screen", "type": "snaker:task", "x": 320, "y": 200, "properties": { "width": 120, "height": 50, "assignee": "u_be_lead", "taskType": 0, "performType": 0 }, "text": { "value": "组长筛选" } },
+    { "id": "tech_interview", "type": "snaker:task", "x": 500, "y": 200, "properties": { "width": 120, "height": 50, "assignee": "u_arch", "taskType": 0, "performType": 0 }, "text": { "value": "技术面" } },
+    { "id": "rd_final", "type": "snaker:task", "x": 680, "y": 200, "properties": { "width": 120, "height": 50, "assignee": "u_rd_dir", "taskType": 0, "performType": 0 }, "text": { "value": "总监终审" } },
+    { "id": "end", "type": "snaker:end", "x": 850, "y": 200, "properties": { "width": 50, "height": 50 }, "text": { "value": "结束" } }
+  ],
+  "edges": [
+    { "id": "e1", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {} },
+    { "id": "e2", "sourceNodeId": "apply", "targetNodeId": "leader_screen", "properties": {} },
+    { "id": "e3", "sourceNodeId": "leader_screen", "targetNodeId": "tech_interview", "properties": {} },
+    { "id": "e4", "sourceNodeId": "tech_interview", "targetNodeId": "rd_final", "properties": {} },
+    { "id": "e5", "sourceNodeId": "rd_final", "targetNodeId": "end", "properties": {} }
+  ]
+}

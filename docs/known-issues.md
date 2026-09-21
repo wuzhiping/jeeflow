@@ -4948,3 +4948,84 @@ await self._cleanup_orphan_decision_tasks(
 - `docs/flow.md §3.4` (decision 节点, 同步更新)
 
 ---
+
+## §118 FIX-T114 ROLLBACK/JUMP taskName 参数位置兼容 (2026-09-21 BDD-DEV-013)
+
+**状态**: ✅ 已修复 (2026-09-21)
+
+### 现象
+
+HR (u_rd_dir) 提交 `submitType=3` (ROLLBACK) + `taskName="leader_approve"` 回滚到组长审批后：
+- u_fe_lead (原 leader_approve assignee) 待办 = 0 (期望 1)
+- u_rd_dir (ROLLBACK 操作人) 待办 = 1 (期望 0)
+
+### 根因 (双重混淆)
+
+**第一层 (用户调用姿势)**: docs/AGENTS.md §5.5 curl 范例把 `taskName` 放在 `variables` 内部:
+```jsonc
+// ❌ 习惯姿势 (但实际引擎层看不到)
+{
+  "submitType": 3,
+  "operator": "u_rd_dir",
+  "variables": {"u_userId": "u_rd_dir", "taskName": "leader_approve"}
+}
+```
+
+**第二层 (Facade 解析)**: `vendor/jeeflow/facade.py:737/741` 只读**顶层**字段:
+```python
+target = str(args.get("taskName") or args.get("targetTaskName") or "")
+```
+
+由于 `args.get("taskName")` 返回 None (taskName 在 variables 内), `target = ""`, 走了"无 target"分支。
+
+**第三层 (引擎行为)**: `vendor/jeeflow/engine.py:240-259` 在 `if not target_task_name:` 分支:
+- 找上一个任务节点 (`_previous_task_name`)
+- **覆写 `prev.properties["assignee"] = task.actorId or operator`** (FIX-T36 §52 设计)
+- 这里 `task.actorId = u_rd_dir` (前任务 hr_approve 完成人), `operator = u_rd_dir`
+- 新 task actorIds 变成 `[u_rd_dir]`, 原 u_fe_lead 失去 re-process 能力
+
+### 修复
+
+`vendor/jeeflow/facade.py:737/741` (SUBMIT_ROLLBACK + SUBMIT_JUMP 分支):
+
+```python
+target = str(
+    args.get("taskName")
+    or args.get("targetTaskName")
+    or (args.get("variables") or {}).get("taskName")
+    or (args.get("variables") or {}).get("targetTaskName")
+    or ""
+)
+```
+
+兼容 4 个位置: 顶层 taskName / 顶层 targetTaskName / variables.taskName / variables.targetTaskName。
+
+### 复测
+
+| 姿势 | taskName 位置 | 期望 | 实际 | 结果 |
+|---|---|---|---|---|
+| 1 | 顶层 | u_fe_lead 待办=1 | ✅ | ✅ |
+| 2 | variables 内 (旧姿势) | u_fe_lead 待办=1 | ✅ | ✅ |
+
+### 引擎设计陷阱 (FIX-T36 §52)
+
+修复后, 若用户**故意不传 taskName** (走默认 ROLLBACK), 引擎仍按 Java rejectTask 语义:
+- 覆写 assignee = 前任务完成人 (or 操作人)
+- 适用场景: Java rejectTask (rejecter 期望重做前一步)
+- **陷阱场景**: 设计师期望"原 assignee 重新处理"时, 必须显式传 taskName, 否则 assignee 被覆写
+
+### 文档同步
+
+- `docs/flow.md` §3.3 submitType 路由: 新增 ROLLBACK 默认行为警告
+- `docs/AGENTS.md §5.5`: curl 范例明确两种 taskName 位置
+- `bdd/bdd-dev-rollback_20260921231000.md` (完整复盘)
+
+### 关联文档
+
+- `bdd/bdd-dev-rollback_20260921231000.md` (BUG-5 发现 + 修复记录)
+- `vendor/jeeflow/facade.py:737/741` (修复点)
+- `vendor/jeeflow/engine.py:240-269` (引擎行为, 已知 §52 FIX-T36)
+- `docs/flow.md §3.3` (submitType 路由)
+- `docs/AGENTS.md §5.5` (curl 范例)
+
+---

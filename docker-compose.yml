@@ -14,6 +14,6 @@ services:
       - /etc/timezone:/etc/timezone:ro
     environment:
       - SPI_FOLDER=dev
-      - FLOWS=false
+      - FLOWS=true
       - SEEDS=false
       - JEEFLOW_PG_DSN=postgresql://uid:pwd@127.0.0.1:5432/jeeflow
