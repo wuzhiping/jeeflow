@@ -272,6 +272,8 @@ CLI:  user   → python -m spi.cli → spi/cli.py → SPI_FOLDER 加载 → spi/
 
 **SPI_FOLDER 路由**:
 - `os.environ["SPI_FOLDER"] = "dev" | "demo" | "fdep" | ...`
+- **默认 SPI_FOLDER = dev** (本地开发/测试推荐, 22 DictProxy + helpers + verify() 完整)
+- **代码层默认 `"demo"`** (spi/__init__.py:14, FREEZE.md 冻结, 本地请显式设置)
 - 缺失 cli/api 时 dispatcher 返回 404 (`{"detail": "SPI_FOLDER=xxx 不支持 API/CLI"}`)
 
 ## 5. HTTP 路由分层

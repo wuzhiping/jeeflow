@@ -450,8 +450,8 @@ list-depts | show-dept <dept_id> | help
 
 | SPI_FOLDER | cli/api | 行为 |
 | --- | --- | --- |
-| `dev` | ✅ | 完整实现 |
-| `demo` | ✅ | 基础实现 (99 errors 是已知问题) |
+| `dev` (推荐默认) | ✅ | 完整实现 (22 DictProxy + 2 helpers + 9 SPI 函数 + verify()) |
+| `demo` (代码默认) | ✅ | 基础实现 (99 errors 是已知问题) |
 | `fdep` | ❌ | 404 (`{"detail": "SPI_FOLDER=fdep 不支持 API"}`) |
 
 ```python

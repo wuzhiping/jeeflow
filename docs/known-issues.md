@@ -4800,3 +4800,88 @@ flowuser W40 Day 2 跑通 expense_report_v3 (defineId=123):
 - `docs/AGENTS.md §9.5 判 BUG 自检 3 步` (方法论)
 - `skills/feedback/retrospectives/2026-09-21-users-md-task.md` (FB-0007 起源)
 
+
+## §116 submitType=20 (COUNTERSIGN_DISAGREE) 拓扑约束 (2026-11-17, FB-0012 FIX-DOC-5)
+
+> **首次报告**: 2026-09-23 / flowuser 反馈 (FB-0012, W40 Day 2)
+> **修复编号**: FIX-DOC-5
+> **优先级**: P1 (文档沉默陷阱, 设计阶段误导)
+> **状态**: 🟡 notified · W47 Day 5 起草 docs/3 处修订 + known-issues.md §116 + actions.md §3 引用
+> **关联**: FB-0008 (countersignCompletionCondition 互斥, §113) + FB-0007 (BUG-2 同源: 文档 vs 行为错位)
+
+### 现象
+
+设计师设计会签流程时, 想用 submitType=20 (COUNTERSIGN_DISAGREE, 会签软否决) + 后接 decision 节点判 reject/agree 分支:
+
+```
+[start] → [task 会签 + countersignType=PARALLEL] → [decision] → [end_agree] / [end_reject]
+                                                                    ↑
+                                                          (假设 decision 判 submitType=20)
+```
+
+**期望**: 任一会签人 reject (submitType=20) → decision 命中 reject 边 → end_reject (state=45)
+**实际**: decision 节点**看不到 cs_veto 路径**, 走 decision expr 评估 (而非 cs_veto) → 实例按决策流转, 一票否决能力消失
+
+### 根因
+
+引擎 `execute_process_task` 对 submitType=20 的处理路径有**拓扑依赖**:
+
+| 拓扑 | submitType=20 处理路径 |
+|------|----------------------|
+| `task → end` (直连) | ✅ cs_veto 路径生效: state=45 + 余者 ABANDON (FIX-T46) |
+| `task → decision → 任意` | ❌ **cs_veto 路径被截断**: 引擎按 decision expr 评估, submitType=20 退化为"普通 execute" |
+| `task → task` (其他 task) | ⚠️ 取决于下个 task 的 assignmentHandler, 通常无效 |
+
+submitType=20 的"会签软否决"语义**只在 task → end 直连时由 cs_veto 路径接管**. 中间任何节点 (尤其 decision) 都会让决策回到 decision expr 评估, submitType=20 失去效果.
+
+### 实证 (flowuser W40 Day 2)
+
+| 版本 | 拓扑 | 期望 | 实际 | 结论 |
+|------|------|------|------|------|
+| v1 | `countersign_task → decision(reject边) → end_reject / decision(agree边) → end_agree` | 任一 reject → end_reject | decision expr 永远 false → 走首边 (兜底) | ❌ 一票否决失效 |
+| v2 | `countersign_task → end` (直连) | 任一 reject → state=45 | state=45 + 余者 ABANDON | ✅ **PASS** |
+
+### 修复
+
+**已修订** (W47 Day 5 hermes 起草):
+- ✅ `docs/flow.md §3.3` (新增: submitType 拓扑约束表, 6 行覆盖 6 个 submitType 值)
+- ✅ `docs/AGENTS.md §5.8` (新增: submitType=20 拓扑约束说明, 含设计陷阱 + 正确做法 + 测试时必查拓扑)
+- ✅ `docs/actions.md §3` (新增: submitType 路由引用 + 拓扑约束 cross-ref)
+- ✅ `docs/known-issues.md §116` (本节)
+
+**修复内容**:
+1. **docs/flow.md §3.3 submitType 路由表**: 新增"submitType 拓扑约束表", 6 行覆盖:
+   - submitType=20 + `task → end` ✅ (生效)
+   - submitType=20 + `task → decision → 任意` ❌ (失效, 设计沉默陷阱)
+   - submitType=2/1/5/3/6 (任意拓扑, 全部生效)
+
+2. **docs/AGENTS.md §5.8**: 新增"submitType=20 拓扑约束"提示框, 含:
+   - 生效场景 (task → end 直连)
+   - 失效场景 (task → decision 后接)
+   - 设计陷阱 (decision 截断 cs_veto)
+   - 正确做法 (3 项)
+   - 测试时必查拓扑 (processDesign/detail 确认会签节点只连 end)
+
+3. **docs/actions.md §3**: 新增引用块, 指向 docs/flow.md §3.3 + docs/known-issues.md §116
+
+4. **docs/known-issues.md §116**: 本节全文 (现象 + 根因 + 实证 + 修复)
+
+### 经验教训
+
+1. **submitType 与拓扑耦合**: 引擎隐式假设 submitType=20 的语义只覆盖 task → end 直连. 用户从样例无法推断
+2. **文档沉默陷阱**: 设计师常用"会签 + decision"组合, 但 cs_veto 在中间节点被截断. 不是引擎 BUG, 是文档沉默
+3. **判 BUG 自检 3 步** (per FB-0007):
+   - 复现 ✅ (v1 拓扑确认失效)
+   - 精读 ⚠️ (docs/flow.md §3.3 没说拓扑依赖)
+   - 对比样例 ❌ (无 submitType=20 + decision 拓扑的样例)
+4. **设计阶段必查**: 跑会签测试前, 检查 processDesign/detail 确认会签节点只连 end
+5. **跨文档一致性**: 4 处修订形成闭环 (设计 + 测试 + API 参考 + 已知问题索引)
+
+### 关联文档
+
+- `docs/flow.md §3.3` (submitType 路由 + 拓扑约束表)
+- `docs/AGENTS.md §5.8` (会签测试 + submitType=20 拓扑说明)
+- `docs/actions.md §3` (submitType 路由引用)
+- `docs/AGENTS.md §6` (约束待补 #34 - submitType=20 拓扑约束)
+- `skills/feedback/inbox/FB-0012.json` (原始 issue, 待移 archive)
+- `skills/feedback/retrospectives/2026-11-17-fb-0012-patches.md` (W47 Day 5 patches 复盘)

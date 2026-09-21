@@ -303,6 +303,17 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 
 > ⚠️ **修正（2026-09-17 实测 05-countersign-parallel）**：原表写 PARALLEL "任一通过即流转"，实测**全员通过才流转**。`engine.py:121-123` 完成任务后检查 `find_doing_tasks`，有 doing 直接 return 不流转。剩下成员 taskState 仍 10 (DOING)，由后续完成者继续推进；最后一个完成时所有 doing 已清空才往下走。
 
+> ⚠️ **submitType=20 拓扑约束（FB-0012 2026-11-17 flowuser 反馈, hermes patches）**:
+> - **生效场景**: 会签 task 节点**直连 end** (`task → end` 拓扑) · 任一 reject 立即 state=45 + 余者 ABANDON
+> - **失效场景**: 会签 task 节点**后接 decision** (`task → decision → 任意` 拓扑) · submitType=20 不生效, 走 decision expr 评估 (而不是 cs_veto)
+> - **设计陷阱**: 设计师常用"会签 + 后接 decision 判 reject/agree 分支"模式, 但 decision 节点会**截断 cs_veto**, 一票否决能力消失
+> - **正确做法**:
+>   1. 会签节点只用比例 (`PARALLEL` + 表达式) 或 一票否决 (`ONE_VOTE_VETO`) — 二选一
+>   2. 后接 decision 不要基于 submitType=20 判断 (因 decision 已看不到 cs_veto)
+>   3. 一票否决后必须直连 end (不能接 decision)
+> - **测试时必查拓扑**: 在跑 ONE_VOTE_VETO 测试前, 检查 `processDesign/detail` 确认会签节点**只连 end**, 没有 decision 截断
+> - 详见 `docs/flow.md §3.3 submitType 拓扑约束表` + `docs/known-issues.md §116`
+
 ---
 
 ## 6. 关键约束（设计时必检）
@@ -342,6 +353,7 @@ curl -s -X POST http://127.0.0.1:8101/wf/processDefine/getLastByName \
 | 31 | **decision 节点**多分支建议加默认边（BUG-2 / FIX-T112 2026-09-22；如所有 expr 评估失败, 引擎兜底走第一条边, 可能创建孤儿 DOING task. 修复: 引擎层 _cleanup_orphan_decision_tasks + verify W013 警告加默认边 `expr=""`） | `./docs/known-issues.md §113` (注: §113 实为 countersignCompletionCondition, BUG-2 见 FB-0007) |
 | 32 | **变量作用域铁律**（FB-0011 / FIX-DOC-4 2026-09-24；`tf_*` 只在当前 task 作用域, 不到 instance.variables, decision expr 读不到 → 触发 BUG-2 类似现象. 启动时 + execute 时都传 `f_*` 或重启动传 `f_<name>`；`tf_*` 仅当前 task + 后置拦截器可见） | `./docs/known-issues.md §115` + `docs/flow.md §7.1` |
 | 33 | **SPI 路由必须走 dispatcher**（v26+；新增 SPI 路由必须放在 `spi/api.py` (dispatcher 层) 或 `spi/<folder>/api.py` (实现层), 严禁直接在 `main.py` / `main_pg.py` / `main_common.py` 写 SPI 路由。注册统一用 `main_common.register_spi_routes(app)`. 6 个 `_data_*` 函数是 CLI/API 共享契约, 不允许修改签名). | `spi/SPEC.md §8` + `skills/RML.md §SPI dispatcher` |
+| 34 | **submitType=20 拓扑约束**（FB-0012 2026-11-17；COUNTERSIGN_DISAGREE 仅在会签 task → end 直连时生效. task → decision → 任意拓扑, cs_veto 路径被截断, 一票否决失效. 设计时必查 processDesign/detail 确认会签节点只连 end). | `docs/flow.md §3.3 submitType 拓扑约束表` + `docs/known-issues.md §116` + `docs/AGENTS.md §5.8` |
 
 > ⚠️ 约束 #13-#20 来自 `./docs/BUGS.md`，是 BDD 实战中**反复踩坑**的约束。设计前**必读**。
 

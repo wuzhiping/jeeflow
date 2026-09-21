@@ -210,6 +210,22 @@
 
 注意：`submitType=2` REJECT **不走 decision**，facade 拦截后直接调 `execute_and_jump_to_end`（state=45）；decision 节点只看 submitType 1/5/20（其他 fallback 到首边）。
 
+**submitType 拓扑约束表（FB-0012 2026-11-17 修订, flowuser 反馈）**：
+
+| submitType | 拓扑 (task 后继) | 生效路径 | 失效场景 |
+|---|---|---|---|
+| `20` (COUNTERSIGN_DISAGREE) | `task → end` (直连) | ✅ 走 cs_veto 路径 → state=45 REJECT | — |
+| `20` (COUNTERSIGN_DISAGREE) | `task → decision → 任意` | ❌ **不生效** · 走 decision expr 评估 (而非 cs_veto) | 一票否决失效, 实例按决策流转 (设计沉默陷阱) |
+| `2` (REJECT) | 任意 | ✅ facade 拦截, 跳到 end (state=45) | 不受拓扑影响 (顶层 facade 行为) |
+| `1/5` (AGREE/RE_APPLY) | 任意 | ✅ 正常流转 | — |
+| `3` (ROLLBACK) | 任意 | ✅ execute_and_jump_task | 需 args.taskName |
+| `6` (ROLLBACK_TO_OPERATOR) | 任意 | ✅ 跳到流程图第一个 task 节点 | 不受拓扑影响 |
+
+> ⚠️ **关键陷阱（FB-0012）**:
+> - 设计师以为"会签节点用 submitType=20 + 后接 decision 节点判 reject/agree 分支" → 实际上一票否决**不生效**, 因 decision 节点拦住了 cs_veto 路径
+> - 正确做法: 要么 `task → end` 直连 (单纯一票否决), 要么会签节点**只用** submitType=1/20 (走 cs_veto), **后接 decision 不要基于 submitType 判断** (因为 decision 已看不到 cs_veto)
+> - 详情见 `docs/known-issues.md §116` + `docs/AGENTS.md §5.8`
+
 **比例会签（N/M 通过）扩展（实测 2026-09-17 BDD Task 16）**：
 - `countersignType=PARALLEL` + `countersignCompletionCondition="#nrOfCompletedInstances>=K"`
 - 每次 task 完成时 evaluate 表达式；true → **abandon 剩余 DOING**（taskState=99 ABANDON）+ 推进下游

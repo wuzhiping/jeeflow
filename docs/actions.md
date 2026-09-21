@@ -58,6 +58,12 @@ action 命名约定：`{实体}/{动作}`，统一驼峰、不带前缀下划线
 | 34 | `processInstance/rollback` | `_processInstance_rollback` | 461 | 流程实例回滚 (state=WITHDRAW, 废弃 DOING 任务, FIX-T107 §7.3.1) |
 | 35 | `processInstance/doingList` | `_processInstance_doingList` | 500 | DOING 实例扫描 (断点续跑 / startup hook, FIX-T109 §7.3.3) |
 
+> ⚠️ **submitType 路由相关**:
+> - `submitType` 是执行参数 (request body 字段), 由 `processTask/execute` 等 action 接收
+> - 完整 submitType 取值表 + 引擎行为见 `docs/flow.md §3.3` (submitType 路由)
+> - **submitType 拓扑约束 (FB-0012 2026-11-17 修订)**: submitType=20 (COUNTERSIGN_DISAGREE) 仅在会签 task → end 直连时生效; 后接 decision 节点会导致一票否决失效. 详见 `docs/flow.md §3.3 submitType 拓扑约束表` + `docs/known-issues.md §116`
+> - 拓扑约束是设计阶段关注 (processDesign 阶段), 不是 action 行为; 测试 agent 在跑会签一票否决用例时必查 `processDesign/detail` 确认拓扑
+
 ## 4. processTask — 流程任务（`wf_process_task`）
 
 | # | Action | 方法 | 行号 | 说明 |

@@ -53,7 +53,7 @@
 
 ### 1.5 SPI 数据端点（v26-v29, dispatcher 层, 双端共用）
 
-> **架构**: 路由注册在 `spi/api.py` (dispatcher 层), `main_common.register_spi_routes(app)` 双端调用. 数据源由环境变量 `SPI_FOLDER` 动态决定 (demo/dev/fdep). 详见 `spi/SPEC.md §8` 和 `skills/RML.md §SPI 能力`.
+> **架构**: 路由注册在 `spi/api.py` (dispatcher 层), `main_common.register_spi_routes(app)` 双端调用. 数据源由环境变量 `SPI_FOLDER` 动态决定 (demo/dev/fdep). **默认 SPI_FOLDER = dev** (本地开发/测试推荐, 13 用户 5 部门 + 22 DictProxy + 2 helpers + verify()). 详见 `spi/SPEC.md §8` 和 `skills/RML.md §SPI 能力`.
 
 | 方法 | 路径 | 用途 | SPI_FOLDER |
 | --- | --- | --- | --- |
@@ -67,11 +67,13 @@
 **请求示例**:
 
 ```bash
-# 启动 main.py (8101, MEM backend)
-SPI_FOLDER=dev python main.py
+# 启动 main.py (8101, MEM backend, 默认 SPI_FOLDER=dev)
+export SPI_FOLDER=dev
+python main.py
 
 # 或 main_pg.py (8102, PG backend)
-SPI_FOLDER=dev python main_pg.py
+export SPI_FOLDER=dev
+python main_pg.py
 
 # 验证数据
 curl http://localhost:8101/api/spi/verify

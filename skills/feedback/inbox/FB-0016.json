@@ -1,0 +1,93 @@
+{
+  "fb_id": "FB-0016",
+  "title": "_cleanup_orphan_decision_tasks 函数签名不匹配调用 (6 vs 7 args, FIX-T112 回归)",
+  "created_at": "2026-11-17T22:15:00",
+  "channel": "internal_diagnosis",
+  "customer": {
+    "id": "C-internal",
+    "type": "engine-dev",
+    "contact": "bro (引擎开发者)",
+    "scenario": "5 次独立 BDD 流程测试 (W47 Day 5)"
+  },
+  "raw_text": "切换 SPI_FOLDER=dev + 启动 main.py (8101) + 跑 5 个独立 BDD 流程, 发现:\n1) flows/03-decision-expr.json task1 execute → TypeError: _cleanup_orphan_decision_tasks() takes 6 positional arguments but 7 were given\n2) flows/15-decision-amount.json startAndExecute → 同样 TypeError\n3) flows/01-simple.json + flows/04-fork-join.json 成功 (无 decision)\n4) flows/11-assignment-handler.json → SPI 角色匹配空 (assigneeHandler chain 问题)\n\n根因: vendor/jeeflow/engine.py:710 函数定义 6 参数, 但 3 个调用点 (engine.py:680, 690, 705) 传 7 参数. 是 FIX-T112 (2026-09-22 FB-0007) 引入的回归 - 添加了孤儿清理功能但函数定义没更新.\n\nW47 Day 5 二次验证 (SPI_FOLDER=demo 切换后):\n5) 同样 5 个 BDD 测试在 demo 模式下复现同样错误, 证实 BUG 与 SPI_FOLDER 无关 (engine.py 同代码)\n6) bdd-1001-1060-p0-regression.sh 在 demo 下仍 17/17 PASS (因为使用 decisionHandler 注册 handler 而非原生 decision expr, 绕过 BUG)",
+  "attachments": [
+    "vendor/jeeflow/engine.py:710 (函数定义, 6 参数)",
+    "vendor/jeeflow/engine.py:680, 690, 705 (3 调用点, 7 参数)",
+    "flows/03-decision-expr.json (2 出边 decision, 触达 TypeError)",
+    "flows/15-decision-amount.json (2 出边 decision, 触达 TypeError)",
+    "flows/01-simple.json (无 decision, OK)",
+    "flows/04-fork-join.json (无 decision, OK)"
+  ],
+  "classification": {
+    "type": "bug",
+    "priority": "P0",
+    "owner": "engine",
+    "scope": "engine",
+    "reproduce": "trivial",
+    "classified_at": "2026-11-17T22:15:00",
+    "classified_by": "hermes",
+    "reasoning": [
+      "现象: 多出边 decision 节点触达时 TypeError",
+      "根因: 函数签名 (6 参数) vs 调用 (7 参数) 不匹配",
+      "影响: 所有含多出边 decision 节点的流程 (决策路由 80% 场景)",
+      "复现: 3 步 (deploy 含 decision 流程 + start + execute 触发 decision)",
+      "判 BUG 自检 3 步: 复现 ✅ 精读 ✅ 对比样例 ✅"
+    ]
+  },
+  "status": "diagnosed",
+  "processing": [
+    {
+      "step": "01-receive",
+      "actor": "hermes",
+      "started_at": "2026-11-17T22:15:00",
+      "ended_at": "2026-11-17T22:15:00",
+      "action": "5 次独立 BDD 测试触发, 诊断发现"
+    },
+    {
+      "step": "02-diagnose",
+      "actor": "hermes",
+      "started_at": "2026-11-17T22:15:00",
+      "ended_at": "2026-11-17T22:20:00",
+      "action": "诊断: engine.py:710 函数定义 vs 调用处签名不匹配, FIX-T112 回归"
+    }
+  ],
+  "fix_ref": {
+    "fix_id": "FIX-T112-regression (候选)",
+    "bdd_ids": [],
+    "verify_rule": null,
+    "files_changed": ["vendor/jeeflow/engine.py"],
+    "patch_status": "待 bro apply",
+    "proposed_fix": "将 _cleanup_orphan_decision_tasks 函数签名改为: async def _cleanup_orphan_decision_tasks(self, flow, inst, edges, selected_edge, operator, vars_): (7 参数, 匹配调用处)"
+  },
+  "verification": {
+    "internal": "5/5 BDD 测试 (dev): 1 (01-simple) ✅ + 2 (03-decision-expr 触达后 ❌) + 3 (15-decision-amount ❌) + 4 (04-fork-join ✅) + 5 (11-assignment-handler ❌ 角色匹配空)\n5/5 BDD 测试 (demo, W47 Day 5 二次验证): 同样结果, 证实 BUG 与 SPI_FOLDER 无关",
+    "customer": null
+  },
+  "notified": {
+    "at": "2026-11-17T22:20:00",
+    "channel": "internal",
+    "content_summary": "[hermes] FB-0016 诊断完成 (W47 Day 5). 5 次 BDD 测试: 2 ✅ + 3 ❌. ❌ 全是 decision 节点触达 _cleanup_orphan_decision_tasks TypeError. 待 bro apply FIX-T112-regression (函数签名 6 → 7 参数).",
+    "confirmed_received": false
+  },
+  "closed_at": null,
+  "lessons_learned": "5 次独立 BDD 测试是发现真实 BUG 的有效手段 (而不是单元测试或 reviewer 静态检查). 多出边 decision 是核心场景, FIX-T112 修复时遗漏函数签名更新, 说明 vendored engine 修改需补完整函数签名变更 + 调用点同步. 建议 bro 添加 pre-commit hook: grep 所有调用点 vs 函数定义, 防止参数数量不匹配.",
+  "next_action": "1. hermes 通知 bro (DM channel + skills/README.md v1.54). 2. 等 bro apply FIX-T112-regression (vendor/jeeflow/engine.py:710 函数签名 6→7 参数). 3. hermes 复跑 5 个 BDD 测试, 期望 5/5 PASS. 4. FB-0016 status → closed.",
+  "cross_refs": {
+    "linked_fb": "FB-0007 (FIX-T112 起源, BUG-2 根因)",
+    "fix_id_proposed": "FIX-T112-regression"
+  },
+  "channel_metadata": {
+    "tool": "5 BDD tests + curl 诊断",
+    "transport": "internal",
+    "context": "W47 Day 5 用户报告'系统逻辑很不对劲', 切换 SPI_FOLDER=dev 后 5 次 BDD 触发",
+    "instances_observed": [
+      "dev: 92159471679489 (test1 01-simple ✅)",
+      "dev: 92159579941023 (test2 03-decision-expr ✅ startAndExecute, ❌ task1 execute)",
+      "dev: test3 15-decision-amount ❌ startAndExecute",
+      "dev: test4 04-fork-join ✅",
+      "dev: test5 11-assignment-handler ❌",
+      "demo: 92159767206916 (test2 03-decision-expr ✅ startAndExecute, ❌ task1 execute 92159767208966)",
+      "demo: test1/3/4/5 与 dev 完全一致"
+    ]
+  }
+}

@@ -670,6 +670,7 @@ D91-180  L6+ 视情况
 - `proposals/UNFREEZE-TRACKING-2026-11-10.md` · bro 月度询问
 - `feedback/retrospectives/2026-11-month2-final.md` · Month 2 收官
 - `feedback/retrospectives/2026-q4-quarterly-prep.md` · Q4 季度复盘准备
+- `feedback/retrospectives/2026-11-17-flowuser-dm-no-feedback.md` · DM 通道 0 新反馈诚实交代 (W47 Day 5)
 
 ---
 
@@ -741,10 +742,13 @@ SPI_FOLDER=dev python -m spi.cli help  # 帮助
 
 ### 16.4 SPI_FOLDER 路由规则
 
+**默认 SPI_FOLDER = dev** (本地开发/测试推荐, 22 DictProxy + 2 helpers + verify() 完整).
+代码层默认仍是 `"demo"` (spi/__init__.py:14, FREEZE.md 冻结, 本地请显式设置).
+
 | SPI_FOLDER | cli/api | 行为 |
 | --- | --- | --- |
-| `dev` | ✅ | 完整实现 (22 DictProxy + 2 helpers + 9 SPI 函数 + verify()) |
-| `demo` | ✅ | 基础实现 (99 errors 是已知问题) |
+| `dev` (推荐默认) | ✅ | 完整实现 (22 DictProxy + 2 helpers + 9 SPI 函数 + verify()) |
+| `demo` (代码默认) | ✅ | 基础实现 (99 errors 是已知问题, v26 引入) |
 | `fdep` | ❌ | 走 dispatcher 返回 404 (`{"detail": "SPI_FOLDER=fdep 不支持 API"}`) |
 | 其它 | ❌ | 404 错误 |
 
