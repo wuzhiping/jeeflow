@@ -505,6 +505,44 @@ curl -X POST http://127.0.0.1:8101/wf/processTask/delegate \
 | `KEY_ADMIN_ID` | `flow.admin` | 管理员 ID |
 | `KEY_AUTO_GEN_TITLE` | — | 自动生成标题开关 |
 
+### 7.1 变量作用域铁律 (FB-0011 FIX-DOC-4 · 2026-09-24)
+
+> ⚠️ **关键陷阱**: 不同前缀的变量**作用域不同**, decision 节点 expr 只能读 `f_*` (instance 级) 和 `u_*`. **不能读 `tf_*`** (task 级临时).
+
+| 前缀 | 作用域 | 持久化 | 可见节点 | 典型用法 |
+|------|--------|--------|----------|----------|
+| **`f_*`** | **instance** | ✅ 启动持久化 | 全部下游节点 + decision expr | `f_amount` / `f_leaveType` |
+| **`tf_*`** | **task** | ❌ 执行临时 | 当前 task + 后置拦截器 | `tf_mgr_decision` / `tf_nextNodeOperator` |
+| **`u_*`** | **execution context** | ❌ 操作人临时 | 当前 execute + 当前 task | `u_userId` / `u_realName` |
+| `submitType` | execution context | ❌ | 当前 execute + 后置拦截器 | `submitType=0/1/2/3/5/6/20` |
+
+**铁律示例**:
+
+```bash
+# 启动时传 f_amount (启动持久化)
+POST /wf/processInstance/startAndExecute
+{"processDefineId": "...", "operator": "user1",
+ "variables": {"submitType": 0, "f_amount": 5000,
+              "u_userId": "user1", "u_realName": "用户1"}}
+
+# execute 时传 tf_mgr_decision (task 级, 不持久化)
+POST /wf/processTask/execute
+{"processTaskId": "...", "operator": "manager", "submitType": 0,
+ "variables": {"tf_mgr_decision": 2}}     # ❌ 决策节点读不到!
+```
+
+**正确做法**: 启动时 + execute 时**都传 f_* / tf_***:
+
+```bash
+# 启动时传 f_* (决策可读)
+{"variables": {"f_amount": 5000, "f_mgr_decision": 2}}
+
+# execute 时传 tf_* + 重新传 f_* (如果决策依赖)
+{"variables": {"tf_mgr_decision": 2, "f_mgr_decision": 2}}
+```
+
+**经验教训** (FB-0007 BUG-2 实证): flowuser 在 v1/v2 失败因只传 tf_*, 决策 expr 读不到 → fallback 兜底 → 幽灵 task. v3 PASS 因启动 + execute 都传 f_*. 详见 `docs/known-issues.md §115`.
+
 ---
 
 ## 7a. SubmitType 路由矩阵

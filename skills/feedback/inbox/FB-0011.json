@@ -1,0 +1,100 @@
+{
+  "fb_id": "FB-0011",
+  "title": "execute 时传的 tf_* 变量只写到 task.variable, 不到 instance.variables (decision expr 读不到)",
+  "created_at": "2026-09-23T10:30:00",
+  "channel": "hermes_dm",
+  "customer": {
+    "id": "C-flowuser",
+    "type": "L2",
+    "contact": "flowuser (远程用户, https://abc.feg.cn/jeeflow/)",
+    "scenario": "task 节点 submitType=0 + tf_* 变量传递 + 后续 decision 节点 expr 评估"
+  },
+  "raw_text": "execute task 时传的 tf_<name> 变量只写到 task.variable, 不到 instance.variables. 后续 decision 节点的 expr 读不到 tf_*, 导致: (1) decision expr 永远 false (2) 走 fallback 第一条边或创建孤儿 task. 不是引擎 BUG, 是文档沉默陷阱. 用户不易发现. 实测: expense_report_v3 实例 92116610518127 修复前因变量传递错误触发 BUG-2, 修复后 PASS (启动 + execute 都传 tf_mgr_decision). 详见 work_logs/13_bug2_fixt112_retest.md",
+  "attachments": [
+    "work_logs/13_bug2_fixt112_retest.md (flowuser 端, 复测日志)",
+    "tdd/expense_report_v3.json (用户端, defineId=123, 10 节点 11 边)",
+    "audit_logs/92116610518127_*.ndjson (用户端, 修复后实例)",
+    "docs/flow.md §7 (变量作用域章节, 沉默)",
+    "docs/known-issues.md (无对应章节)"
+  ],
+  "classification": {
+    "type": "doc",
+    "priority": "P1",
+    "owner": "doc",
+    "scope": "multi",
+    "reproduce": "medium",
+    "classified_at": "2026-09-23T10:35:00",
+    "classified_by": "hermes",
+    "reasoning": [
+      "现象: tf_* 变量只在 task 内可见, 不到 instance 级, decision expr 失效",
+      "原因: docs/flow.md §7 没说变量作用域 (task vs instance vs process)",
+      "影响: 所有用 tf_* + decision expr 的设计 (e.g. mgr reject 决策)",
+      "复现: 启动只传 f_amount, execute 不传 tf_mgr_decision → decision 永远 false",
+      "判 BUG 自检 3 步: 复现 ✅ 精读 ⚠️(沉默) 对比样例 ❌(无变量作用域示例)"
+    ]
+  },
+  "status": "in_progress",
+  "processing": [
+    {
+      "step": "01-receive",
+      "actor": "hermes",
+      "started_at": "2026-09-23T10:30:00",
+      "ended_at": "2026-09-23T10:35:00",
+      "action": "通过 hermes peer dm 接收 flowuser 反馈 (W40 Day 2), 分配 FB-0011"
+    },
+    {
+      "step": "03-process",
+      "subtype": "doc",
+      "actor": "hermes",
+      "started_at": "2026-09-24T16:00:00",
+      "ended_at": "2026-09-24T17:00:00",
+      "action": "起草 3 处文档修订: (1) docs/flow.md §7.1 新增变量作用域铁律章节; (2) docs/AGENTS.md §6 约束 #32 新增; (3) docs/known-issues.md §115 新增全文 (含 3 版本复测实证 + 铁律速查)."
+    }
+  ],
+  "fix_ref": {
+    "fix_id": "FIX-DOC-4",
+    "bdd_ids": [],
+    "verify_rule": null,
+    "docs_sections": [
+      "docs/flow.md §7.1 (新增章节: 变量作用域铁律)",
+      "docs/AGENTS.md §6 约束 #32 (新增)",
+      "docs/known-issues.md §115 (新增)"
+    ],
+    "files_changed": [
+      "docs/flow.md",
+      "docs/AGENTS.md",
+      "docs/known-issues.md"
+    ],
+    "patch_location": "skills/feedback/attachments/FB-0011-patches/",
+    "patch_files": [
+      "flow.md.patch.md (pending)",
+      "AGENTS.md.patch.md (pending)",
+      "known-issues-§115.md (applied)",
+      "README.md (索引)"
+    ],
+    "patch_status": "drafted · 等 bro review"
+  },
+  "verification": {
+    "internal": null,
+    "customer": null
+  },
+  "notified": {
+    "at": "2026-09-24T17:00:00",
+    "channel": "hermes_dm",
+    "content_summary": "[hermes] FB-0011 3 处修订完成. 等 bro review + flowuser 复测.",
+    "confirmed_received": true
+  },
+  "closed_at": null,
+  "lessons_learned": "2026-09-24 起草完成. 变量作用域是 jeeflow 隐式知识, 应在 docs/flow.md §7 明确: f_* (启动持久化) vs tf_* (执行临时) vs u_* (操作人). 关联 FB-0007 (BUG-2 本质原因之一). flowuser 实证 (v3 PASS) 验证铁律.",
+  "next_action": "1. 等 bro review 3 处修订 + 跑 sla/check.sh. 2. 通知 flowuser 闭环 + 复测. 3. FB-0011 status → closed.",
+  "cross_refs": {
+    "linked_fb": "FB-0007 (BUG-2 根因之一)",
+    "fix_id_proposed": "FIX-DOC-4"
+  },
+  "channel_metadata": {
+    "tool": "hermes peer dm flowuser",
+    "transport": "http://10.17.1.26:8642",
+    "context": "W40 Day 2 客户跟进 + BUG-2 复测 PASS",
+    "instances_observed": "92116610518127 (PASS)"
+  }
+}

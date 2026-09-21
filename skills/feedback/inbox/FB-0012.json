@@ -1,0 +1,79 @@
+{
+  "fb_id": "FB-0012",
+  "title": "submitType=20 (COUNTERSIGN_DISAGREE) 在 task → decision 拓扑下无效 (中间节点失效)",
+  "created_at": "2026-09-23T10:30:00",
+  "channel": "hermes_dm",
+  "customer": {
+    "id": "C-flowuser",
+    "type": "L2",
+    "contact": "flowuser (远程用户, https://abc.feg.cn/jeeflow/)",
+    "scenario": "会签 task 节点用 submitType=20 一票否决 + 后接 decision 节点"
+  },
+  "raw_text": "submitType=20 (COUNTERSIGN_DISAGREE) 仅在 task 节点直接连 end 边时生效. 如果 task → decision → 任意节点 拓扑, 中间节点的 submitType=20 不生效 (走 decision expr 评估, 而不是 cs_veto 路径). flowuser 实测: (略, 实例待定). 后果: 设计以为一票否决, 实际按决策走. 不是引擎 BUG, 是文档沉默陷阱. 应在 docs/flow.md §3.3 / AGENTS.md §5.8 加 'submitType 拓扑约束' 章节.",
+  "attachments": [
+    "docs/flow.md §3.3 (countersign 节点, 沉默)",
+    "docs/AGENTS.md §5.8 (会签测试, 沉默)",
+    "docs/actions.md §3 (submitType 表, 不含拓扑约束)"
+  ],
+  "classification": {
+    "type": "doc",
+    "priority": "P1",
+    "owner": "doc",
+    "scope": "multi",
+    "reproduce": "medium",
+    "classified_at": "2026-09-23T10:35:00",
+    "classified_by": "hermes",
+    "reasoning": [
+      "现象: submitType=20 在 task → decision 拓扑下不生效",
+      "原因: docs/flow.md §3.3 没说明 submitType 与拓扑的依赖关系",
+      "影响: 所有用会签 + 后续 decision 的设计",
+      "复现: 1 步 (task 接 submitType=20 + 后接 decision 节点)",
+      "判 BUG 自检 3 步: 复现 (待 flowuser 实证) 精读 ⚠️ 对比样例 ⚠️"
+    ]
+  },
+  "status": "received",
+  "processing": [
+    {
+      "step": "01-receive",
+      "actor": "hermes",
+      "started_at": "2026-09-23T10:30:00",
+      "ended_at": "2026-09-23T10:35:00",
+      "action": "通过 hermes peer dm 接收 flowuser 反馈 (W40 Day 2), 分配 FB-0012"
+    }
+  ],
+  "fix_ref": {
+    "fix_id": "FIX-DOC-5 (候选)",
+    "bdd_ids": [],
+    "verify_rule": null,
+    "docs_sections": [
+      "docs/flow.md §3.3 (修订: 加 submitType 拓扑约束表)",
+      "docs/AGENTS.md §5.8 (修订: 会签测试加拓扑说明)",
+      "docs/actions.md §3 (修订: submitType 表加拓扑列)",
+      "docs/known-issues.md §116 (新增)"
+    ],
+    "files_changed": ["docs/flow.md", "docs/AGENTS.md", "docs/actions.md", "docs/known-issues.md"],
+    "patch_status": "待起草"
+  },
+  "verification": {
+    "internal": null,
+    "customer": null
+  },
+  "notified": {
+    "at": "2026-09-23T10:35:00",
+    "channel": "hermes_dm",
+    "content_summary": "[hermes] FB-0012 收到 (W40 Day 2, doc P1, submitType=20 拓扑陷阱). 待起草 docs 补丁 (3 处修订 + 1 处新增).",
+    "confirmed_received": true
+  },
+  "closed_at": null,
+  "lessons_learned": "(待定) 关键洞察: submitType 与节点拓扑有隐式耦合, 用户从样例无法推断. 应加拓扑约束表 (e.g. submitType=20 仅在 task → end 直连时生效). 关联 FB-0001/FIX-DOC-1 类似 (文档 vs 行为错位).",
+  "next_action": "1. 等 flowuser 提供 submitType=20 在 task → decision 拓扑下的具体实例 + ndjson. 2. hermes 起草 docs 补丁 (3 处修订 + 1 处新增). 3. 等 bro apply + 客户复测.",
+  "cross_refs": {
+    "linked_fb": "FB-0008 / FB-0009 (同源: 文档 vs 行为错位)"
+  },
+  "channel_metadata": {
+    "tool": "hermes peer dm flowuser",
+    "transport": "http://10.17.1.26:8642",
+    "context": "W40 Day 2 客户跟进 + BUG-2 复测 PASS",
+    "instances_observed": "待 flowuser 提供"
+  }
+}

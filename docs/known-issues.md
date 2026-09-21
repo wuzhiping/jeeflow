@@ -4741,3 +4741,62 @@ POST /wf/processTask/delegate
 - `docs/actions.md §3` (processTask/delegate 字段说明)
 - `feedback/inbox/FB-0010` (设计缺陷候选)
 
+
+---
+
+## §115 变量作用域铁律 (execute 时 tf_* 不到 instance.variables · FIX-DOC-4)
+
+> **首次报告**: 2026-09-23 / flowuser 反馈 (FB-0011, W40 Day 2)
+> **修复编号**: FIX-DOC-4
+> **优先级**: P1 (文档)
+> **状态**: 🟡 notified, 修订方案就绪 (`skills/feedback/attachments/FB-0011-patches/`)
+> **关联**: FB-0007 (BUG-2 本质原因之一)
+
+### 现象
+
+设计师在 task → decision 拓扑下, 想用 `tf_mgr_decision` 控制决策走向. execute 时传 `tf_mgr_decision=2` (reject), 期望 decision 节点 expr `#tf_mgr_decision==2` 命中 → end_rejected.
+
+**实际**: decision expr 永远 false → 兜底走第一条边 → 幽灵 task 创建 (BUG-2).
+
+### 根因
+
+`tf_*` 前缀的变量**只在当前 task 作用域内可见** (写入 `task.variables`), **不持久化到 instance.variables** (除非显式传 `f_*`).
+
+decision 节点的 expr 评估上下文是 `instance.variables` + 执行上下文, **读不到 `tf_*`**.
+
+### 实证 (FB-0007 BUG-2 复测)
+
+flowuser W40 Day 2 跑通 expense_report_v3 (defineId=123):
+
+| 版本 | 变量传递 | 期望 | 实际 | 结论 |
+|------|----------|------|------|------|
+| v1 | 启动传 f_amount, execute 不传 tf_* | mgr reject → end_rejected | cashier_pay 幽灵 DOING | ❌ 触发 BUG-2 |
+| v2 | 启动传 f_amount, execute 只传 tf_* | mgr reject → end_rejected | cashier_pay 幽灵 DOING | ❌ 触发 BUG-2 |
+| v3 | 启动传 f_amount + f_mgr_decision, execute 传 tf_* + f_mgr_decision | mgr reject → end_rejected | state=20 DONE, 无 cashier_pay | ✅ **PASS** (实例 92116610518127) |
+
+### 修复
+
+**已修订** (W40 Day 4 起草):
+- ✅ `docs/flow.md §7.1` (新增章节: 变量作用域铁律)
+- ✅ `docs/AGENTS.md §7` (待 bro apply, 新增约束 #32)
+- ✅ `docs/known-issues.md §115` (本文, 新增)
+
+**未修改**:
+- 引擎代码 (设计如此, 变量作用域清晰)
+
+### 铁律速查
+
+| 想做什么 | 正确做法 |
+|----------|----------|
+| 决策依赖某字段 | 启动时传 `f_<name>`, execute 时**也传 `f_<name>`** (或重新启动) |
+| 任务级临时变量 (仅当前 task 可见) | `tf_<name>`, 仅后置拦截器可读 |
+| 操作人信息 (仅当前 execute 可见) | `u_<name>`, engine._add_user_info 自动注入 |
+| submitType 控制路由 | `submitType` (执行级, 不持久化) |
+
+### 关联文档
+
+- `docs/flow.md §7.1` (变量作用域铁律)
+- `docs/AGENTS.md §6 约束 #32` (待 bro 加)
+- `docs/AGENTS.md §9.5 判 BUG 自检 3 步` (方法论)
+- `skills/feedback/retrospectives/2026-09-21-users-md-task.md` (FB-0007 起源)
+
