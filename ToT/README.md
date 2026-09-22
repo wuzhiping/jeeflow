@@ -2,7 +2,7 @@
 
 > 本文档由协作者共同**逐步制定**，任何章节的增删改均需双方确认，并在文末「变更日志」留档。
 
-> 当前版本（**v2.11**）已落：§1 读写边界规则、§4 角色分工、§5 流程、§9 SOP 索引（10+1 个 SOP 含 ea-compliance）、§10 流程定义组织规范（v1.3 加强：文件名小写强制）、§11 引擎部署规范（v1.8 AI+人工协作）；附：
+> 当前版本（**v2.12**）已落：§1 读写边界规则、§4 角色分工、§5 流程、§9 SOP 索引（11+1 个 SOP 含 env-config）、§10 流程定义组织规范（v1.3 加强：文件名小写强制）、§11 引擎部署规范（v1.8 AI+人工协作）；附：
 
 | 层级 | 文件 | 定位 |
 |------|------|------|
@@ -10,7 +10,9 @@
 | 手册 | ToT/HANDBOOK.md v0.1 | 知识手册（30秒读懂 jeeFlow） |
 | 映射 | ToT/mapping.md v1.1 | R 角色 ↔ SPI ↔ 用户三层映射 |
 
-**SOPs（11 个）**：`spi-verify` / `tdd-flow` / `flow-folder` / `auto-deploy-fdep` / `engine-deploy` / `customer-data-reset` / `clean-customer-data` / `new-trip` / **`ea-compliance`**（自验证 §9 27 项） + 设计文档 `executor-api` / `gen-job-cards.py`
+**SOPs（12 个）**：`spi-verify` / `tdd-flow` / `flow-folder` / `auto-deploy-fdep` / `engine-deploy` / `customer-data-reset` / `clean-customer-data` / `new-trip` / `ea-compliance`（自验证 §9 31 项）/ **`env-config`**（集中管理 ToT/config/servers.json） + 设计文档 `executor-api` / `gen-job-cards.py`
+
+**配置中心**（**v2.12 起**）：`ToT/config/servers.json` —— 4 server URL 集中管理 + `ToT/sop/server_config.py` 加载器；改默认目标只改一处（`active` 字段）。
 
 **蓝本示例**：ToT/flows/fdep.json（v0.6.1 from jeeflow）+ ToT/flows/fdep/（6 文件 = README + ROLES + NODES + CHANGELOG + **RESPONSES.md v1.2 决策响应全表（含 job_card_url 审计）** + **job_cards/ 子目录含 6 张执行卡**）
 
@@ -319,3 +321,4 @@ ToT/flows/
 | **v2.9** | **2026-09-22** | **ea/ 飞轮第一版正式迭代（v1.0）**（用户口头指令："ok，开始迭代生成第一版ea架构"）：① **`ToT/ea/roadmap.md` v0.1.1 → v1.0**：从复盘型升级为正式架构文档，14 节（含新增 §2 核心原则 5 条 + §5 设计模式 7 个 + §9 合规检查清单 4 层）；② **复盘内容移出**到新文件 **`ToT/ea/iterations/2026-09-22.md`**（第一轮迭代归档 + 时间线 + 5 转折点 + 教训 + 数据快照 + ADR + 下一轮预测）；③ **新建 `ToT/ea/README.md`**（索引：目录结构 + 文件清单 + 使用方法 + 命名约定 + 维护原则）；④ **顶部摘要 v2.8 → v2.9**：`ea/roadmap.md` 版本升 v1.0 + 加 `README.md` + `iterations/` 提及；⑤ changelog 加 v2.9 行。 | 待确认 |
 | **v2.10** | **2026-09-22** | **ea/ 营销材料 PPT.md**（用户口头指令："先想办法把这套最有价值资产推销出去，准备一个PPT.md，用简短有力的文笔，一下自抓住目标客户的痛点，痒点. 让客户有动力和愿望，并且指引他们深入阅读了解完整的架构"）：① **新建 `ToT/ea/PPT.md`** v0.1（10 张 slide + 演讲者提示附录，结构：钩子 → 5 大痛点 → 痒点 → 一句话方案 → 4 组件 → 7 模式 → 实战数据 → 3 步 CTA → 验证 → 立即行动）；② **`ToT/ea/README.md` v0.1 → v0.2**：文件清单加 PPT.md + 命名约定加 PPT.md + 维护原则加"PPT.md 是营销"条款 + changelog 加 v0.2；③ **顶部摘要 v2.9 → v2.10**：飞轮行加 `PPT.md` 提及；④ changelog 加 v2.10 行。 | 待确认 |
 | **v2.11** | **2026-09-22** | **EA 自证闭环 · 第二轮飞轮转动**（用户口头指令："先想办法把飞轮跑起来吧，自证闭环"）：① **新建 `ToT/sop/ea-compliance.py`**（自动化跑 `roadmap.md §9` 27 项合规检查，260 行 Python）；② **跑检查 → 27/27 PASS (100%)** —— 自证 EA 自洽；③ 修 3 个 bug：regex 不匹配 `v3audit`（放宽 §9.3.5 命名规范为 `<X>[<feature>]?`）/ happy 路径匹配语义化 / `findall` 用 `re` 模块；④ **新增 `ToT/ea/iterations/2026-09-22_ea-self-audit.md`**（第二轮迭代记录：时间线 + 闭环示意图 + 修复 ADR + 度量对比 + 飞轮转动证据）；⑤ **`ToT/ea/roadmap.md` v1.0 → v1.1**：新增 **Pattern 8**（EA 合规自验证）+ §9.3.5 命名规范放宽 + §14 changelog 加 v1.1；⑥ **顶部摘要 v2.10 → v2.11**：SOP 数 10→11（含 ea-compliance）；⑦ changelog 加 v2.11 行。 | 待确认 |
+| **v2.12** | **2026-09-22** | **环境配置集中化 · 第三轮飞轮转动**（用户口头指令："客户测试服务器 https://abc.feg.cn/jeeflow 在不同的闭环环境是不一样的，希望可以集中到统一的地方修改"）：① **新建 `ToT/config/servers.json`**（4 servers + active 字段 = 单点切换；改造前散落 5+ 处硬编码 → 改造后 0 处）；② **新建 `ToT/sop/server_config.py`**（70 行加载器，CLI + import 双模式）；③ **新建 `ToT/sop/env-config.md`**（8 节 SOP：字段说明 / 切换流程 / 风险回滚 / SOP 关系）；④ `ea-compliance.py` §9.6 加 4 项配置集中化检查（servers.json 合法 / 加载器存在 / 不硬编码 / 含 customer-test）；⑤ `ea-compliance.py` 自身改造读 config；⑥ **§9 检查项 27 → 31，31/31 PASS (100%)**；⑦ **`ToT/ea/roadmap.md` v1.1 → v1.2**：新增 **Pattern 9**（环境配置集中化）+ §14 changelog 加 v1.2；⑧ 新增 `ToT/ea/iterations/2026-09-22_env-config.md`（第三轮迭代记录：闭环示意 + 度量对比 + ADR）；⑨ SOP 数 11→12（含 env-config）；⑩ changelog 加 v2.12 行。 | 待确认 |

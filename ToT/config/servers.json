@@ -1,0 +1,51 @@
+{
+  "$schema_version": "1.0",
+  "comment": "流程服务器配置 —— 系统所有脚本/SOP/留档的'单一真相源'",
+  "comment_usage": "修改 active 字段即可切换默认目标；新增/移除 server 编辑 servers map",
+  "servers": {
+    "local-memory": {
+      "name": "本地 dev (memory)",
+      "url": "http://127.0.0.1:8101",
+      "backend": "memory",
+      "purpose": "快速调试（启动即空数据）",
+      "spi_folder": "dev",
+      "share_pg_with": null,
+      "ssh": null,
+      "notes": "启动命令: python -m uvicorn main:app --port 8101"
+    },
+    "local-pg": {
+      "name": "本地 dev (PG)",
+      "url": "http://127.0.0.1:8102",
+      "backend": "pg",
+      "purpose": "集成测试（共享 PG 与 customer-test）",
+      "spi_folder": "dev",
+      "share_pg_with": ["customer-test"],
+      "ssh": null,
+      "notes": "启动命令: python -m uvicorn main_pg:app --port 8102"
+    },
+    "customer-test": {
+      "name": "客户测试服务器",
+      "url": "https://abc.feg.cn/jeeflow",
+      "backend": "pg",
+      "purpose": "客户验证 + 业务试用",
+      "spi_folder": "dev",
+      "share_pg_with": ["local-pg"],
+      "ssh": "ssh <user>@abc.feg.cn (无 AI 权限，仅人工可访问)",
+      "notes": "AI 通过 HTTPS API 操作；引擎代码 push 由人工负责"
+    },
+    "production-future": {
+      "name": "生产环境 (未来)",
+      "url": null,
+      "backend": "pg",
+      "purpose": "未来生产部署",
+      "status": "not_enabled",
+      "spi_folder": "prod",
+      "share_pg_with": null,
+      "ssh": null,
+      "notes": "占位，等正式生产部署后启用"
+    }
+  },
+  "active": "customer-test",
+  "default_target": "customer-test",
+  "default_spi_folder": "dev"
+}

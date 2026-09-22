@@ -340,6 +340,17 @@
 | **修正规范** | §9.3.5 baseline 命名放宽为 `<X>[<feature>]?`（实战用 feature 名比 X.Y.Z 更有信息量） |
 | **适用场景** | 任何"想证明方法论有效"的需求（产品 / 工程 / 流程） |
 
+### Pattern 9：环境配置集中化（v1.2+）
+
+| 项 | 内容 |
+|----|------|
+| **问题** | 服务器 URL 散落硬编码在多个文件（脚本 / SOP / 留档），改一处遗漏全漏 |
+| **解决方案** | **3 个配置文件**：`ToT/config/servers.json`（数据）+ `ToT/sop/server_config.py`（加载器）+ `ToT/sop/env-config.md`（管理 SOP） |
+| **FDEP 体现** | Iteration #3：5+ 处硬编码 → 0 处（除历史留档外）；改 URL 现只需 1 处 |
+| **关键设计** | 1) 单一 JSON 真相源；2) 加载器双模式（CLI + import）；3) §9.6 自动检查保证不变硬编码 |
+| **历史兼容** | 留档保留当时 URL（不替换），仅新脚本/SOP 用 config |
+| **适用场景** | 任何"多个环境 + 多脚本"的部署场景 |
+
 ---
 
 ## §6 SOP 编排（SOP Orchestration）
@@ -732,3 +743,4 @@ v4+ (候选：fork-join / 多 executor 接力 / 生产部署)
 | **v0.1.1** | 2026-09-22 | **强化飞轮定位**：新增 §0 飞轮定位段（4 维度 + 飞轮效应图 + 工具 vs 飞轮对比 + 关键资产价值排序 + 保护原则） |
 | **v1.0** | **2026-09-22** | **第一版正式架构**：① 从 v0.1.1 复盘型升级为架构型 —— 5 阶段框架 + 制品分层 + 10 SOP 编排 + 三环境拓扑 + 迭代机制 → 升级为正式 14 节架构文档；② **新增 §2 核心原则**（5 条哲学层原则：文档先行/协议落地/自动化留痕/可接力执行/演进式改进）；③ **新增 §5 设计模式**（7 个从 FDEP 提炼的可复用模式：Job Card 8 节结构 / Decision Mem 透传 / Pickup API / 审计链路 / Baseline 演化 / 三环境拓扑 / AI+人工协作）；④ **新增 §9 合规检查清单**（4 层检查：流程级 / Job Card 级 / 基线级 / 运维级 + 飞轮级）；⑤ **新增 §11 路线图 + §12 风险**（含"roadmap.md 自身失修"自指风险）；⑥ 复盘内容移至 `ToT/ea/iterations/2026-09-22.md`；⑦ 新增 `ToT/ea/README.md` 索引；⑧ v2.8 → v2.9 changelog 同步 |
 | **v1.1** | **2026-09-22** | **EA 自证闭环**（用户口头指令"自证闭环"）：① **新建 `ToT/sop/ea-compliance.py`**（自动化跑 §9 27 项合规检查，260 行）；② **跑检查 → 27/27 PASS (100%)** —— 自证 EA 自洽；③ 修 3 个 bug：regex 不匹配 v3audit（放宽 §9.3.5 命名规范）/ happy 路径匹配语义化 / findall 用 re 模块；④ **新增 iterations/2026-09-22_ea-self-audit.md**（第二轮迭代记录：时间线 + 闭环示意 + 修复 ADR + 度量对比）；⑤ **§5 新增 Pattern 8**（EA 合规自验证 —— "用 §9 清单自动化自证"）；⑥ **§9.3.5 命名规范放宽**：`<X>[<feature>]?`（feature 可选，实战用 `v3audit` / `v1decision_mems` 更有信息量）；⑦ v2.9 → v2.10 changelog 同步。 |
+| **v1.2** | **2026-09-22** | **环境配置集中化（Pattern 9）**（用户口头指令"客户测试服务器 https://abc.feg.cn/jeeflow 在不同的闭环环境是不一样的，希望可以集中到统一的地方修改"）：① **新建 `ToT/config/servers.json`**（4 servers：local-memory/local-pg/customer-test/production-future + active 字段 = 单点切换）；② **新建 `ToT/sop/server_config.py`**（70 行加载器，CLI + import 双模式）；③ **新建 `ToT/sop/env-config.md`**（8 节 SOP）；④ `ea-compliance.py` §9.6 加配置集中化 4 项检查（servers.json 合法 / 加载器存在 / ea-compliance 不硬编码 / 含 customer-test）；⑤ **`ea-compliance.py` 自身改造**：从硬编码 `TARGET = "https://..."` 改为读 config；⑥ **§9 检查项 27 → 31**（+4 项），**31/31 PASS (100%)**；⑦ **§5 新增 Pattern 9**（环境配置集中化 —— "3 件套：数据 + 加载器 + SOP"）；⑩ 新增 iterations/2026-09-22_env-config.md（第三轮迭代：5+ 处硬编码 → 0 处）；⑪ v2.10 → v2.11 changelog 同步。 |

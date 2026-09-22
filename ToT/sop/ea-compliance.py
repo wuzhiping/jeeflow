@@ -24,8 +24,12 @@ TDD_DIR = BASE / "ToT" / "tdd"
 CUSTOMER_RESETS = BASE / "ToT" / "customer-resets"
 CUSTOMER_CHECKS = BASE / "ToT" / "customer-checks"
 EA_DIR = BASE / "ToT" / "ea"
+CONFIG_PATH = BASE / "ToT" / "config" / "servers.json"
 
-TARGET = "https://abc.feg.cn/jeeflow"
+# 集中读 config（不再硬编码 URL）
+from server_config import load_config, get_url
+_config = load_config(CONFIG_PATH)
+TARGET = get_url(config=_config)
 
 
 def curl(url, method="GET", body=None, timeout=10):
@@ -269,6 +273,46 @@ def check_layer_flywheel():
     return items
 
 
+# ===== §9.6 配置集中化（4 项）=====
+def check_layer_config():
+    items = []
+    # 1. servers.json 存在且合法 JSON
+    config_exists = CONFIG_PATH.exists()
+    config_valid = False
+    if config_exists:
+        try:
+            cfg = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+            config_valid = "servers" in cfg and "active" in cfg
+        except Exception:
+            pass
+    items.append(check_item("config", "9.6.1", "ToT/config/servers.json 存在且合法",
+                             config_exists and config_valid,
+                             f"path={CONFIG_PATH}"))
+
+    # 2. server_config.py 加载器存在
+    loader_exists = (BASE / "ToT/sop/server_config.py").exists()
+    items.append(check_item("config", "9.6.2", "server_config.py 加载器存在",
+                             loader_exists, ""))
+
+    # 3. ea-compliance.py 不硬编码 URL（应读 config）
+    # 检查 TARGET 赋值是否为字面量 URL（避免被自身检测串触发假阳性）
+    comp_src = (BASE / "ToT/sop/ea-compliance.py").read_text(encoding="utf-8")
+    has_target_assignment = bool(re.search(r'TARGET\s*=\s*["\']https?://', comp_src))
+    uses_get_url = "get_url" in comp_src
+    items.append(check_item("config", "9.6.3", "ea-compliance.py 不硬编码 URL（读 config）",
+                             not has_target_assignment and uses_get_url,
+                             f"TARGET literal URL={'✗' if has_target_assignment else '✓'}, uses get_url()={'✓' if uses_get_url else '✗'}"))
+
+    # 4. config 含 customer-test（当前主目标）
+    has_customer = False
+    if config_valid:
+        cfg = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+        has_customer = "customer-test" in cfg["servers"] and cfg["servers"]["customer-test"].get("url")
+    items.append(check_item("config", "9.6.4", "config 含 customer-test 配置",
+                             has_customer, ""))
+    return items
+
+
 def main():
     all_items = []
     print("Running §9 compliance check on FDEP...")
@@ -279,6 +323,7 @@ def main():
         (check_layer_baseline, "§9.3 基线级"),
         (check_layer_ops, "§9.4 运维级"),
         (check_layer_flywheel, "§9.5 飞轮级"),
+        (check_layer_config, "§9.6 配置集中化"),
     ]:
         items = layer_fn()
         all_items.extend(items)
