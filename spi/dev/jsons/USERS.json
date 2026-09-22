@@ -1,6 +1,6 @@
 {
-  "version": "1.0.0",
-  "description": "FlowMatrix 科技研发组织 · 13 虚构人员 · 2026-11-17 重构 v6",
+  "version": "1.1.0",
+  "description": "FlowMatrix 科技研发组织 · 14 虚构人员（含 1 FDEP 占位） · 2026-09-22 新增 FDEP 占位用户",
   "users": {
     "u_ceo": {
       "name": "张伟",
@@ -92,6 +92,13 @@
       "deptId": "D01",
       "level": "P5",
       "email": "jianglei@flowmatrix.io"
+    },
+    "u_fdp_pm": {
+      "name": "占位·待分配",
+      "post": "FDEP 流程占位",
+      "deptId": "DFDEP",
+      "level": "P5",
+      "email": "fdp-pm@flowmatrix.io"
     }
   }
 }

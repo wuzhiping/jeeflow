@@ -1,0 +1,307 @@
+{
+  "name": "fdep",
+  "displayName": "jeeFlow 协作主流程 (Foundational Development & Engagement Process)",
+  "type": "collaboration",
+  "version": "0.6.1",
+  "schema": "snaker-2",
+  "metadata": {
+    "owner": "R1b",
+    "status": "draft",
+    "rationale": "v0.6: (1) 修 W012 —— stage_intake 后插入 decision_intake 节点 (snaker:decision) 用 submitType 分流 approve/reject; (2) assignee 从抽象 R 角色改为 u_fdp_pm 直接赋值 (SPI 角色 fdep_intake/rml/... 暂作占位标签，引擎自动解析需 assignmentHandler，留待 v0.7+ 引入)。W013 建议加 default edge，W014 是 decision 节点历史 BUG 提醒。",
+    "seeAlso": [
+      "ToT/README.md#4-角色分工",
+      "ToT/README.md#5-流程",
+      "ToT/mapping.md",
+      "ToT/tdd/test_FDEP_20260922081228.md"
+    ]
+  },
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 80,
+      "y": 300,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "任何来源提出"
+      },
+      "note": "提出者无角色限制：人类 / AI Agent / 外部用户均可触发"
+    },
+    {
+      "id": "stage_intake",
+      "type": "snaker:task",
+      "x": 220,
+      "y": 300,
+      "properties": {
+        "width": 130,
+        "height": 60,
+        "form": "intake-template",
+        "assignee": "u_fdp_pm",
+        "taskType": 0,
+        "performType": 0,
+        "stage": "0. PM 接收窗口（登记）",
+        "artifact": "原始请求登记记录",
+        "storage": "ToT/pm/intake/",
+        "exitCriteria": "登记完成 + 决定（立项 submitType=1 / 驳回 submitType=2）"
+      },
+      "text": {
+        "value": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)"
+      }
+    },
+    {
+      "id": "decision_intake",
+      "type": "snaker:decision",
+      "x": 410,
+      "y": 300,
+      "properties": {
+        "width": 60,
+        "height": 60,
+        "expr": "submitType==1 || submitType==2"
+      },
+      "text": {
+        "value": "接收决策"
+      }
+    },
+    {
+      "id": "stage_pm",
+      "type": "snaker:task",
+      "x": 590,
+      "y": 200,
+      "properties": {
+        "width": 130,
+        "height": 60,
+        "form": "rml-template",
+        "assignee": "u_fdp_pm",
+        "taskType": 0,
+        "performType": 0,
+        "stage": "1. RML 立项",
+        "artifact": "RML 文档",
+        "storage": "ToT/pm/rml/",
+        "exitCriteria": "RML 通过 R3 自审并指派下一阶段"
+      },
+      "text": {
+        "value": "1. RML 立项 (u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ 用 assignmentHandler)"
+      }
+    },
+    {
+      "id": "stage_design",
+      "type": "snaker:task",
+      "x": 780,
+      "y": 200,
+      "properties": {
+        "width": 130,
+        "height": 60,
+        "form": "arch-template",
+        "assignee": "u_fdp_pm",
+        "taskType": 0,
+        "performType": 0,
+        "stage": "2. 架构 / 接口设计",
+        "artifact": "架构文档 + 接口设计 + Mock 数据",
+        "storage": "ToT/design/",
+        "exitCriteria": "接口编号连续、Mock 数据覆盖正常/异常场景"
+      },
+      "text": {
+        "value": "2. 架构/接口设计 (u_fdp_pm 直接, SPI 角色 R7 映射待 v0.7+ 用 assignmentHandler)"
+      }
+    },
+    {
+      "id": "stage_dev",
+      "type": "snaker:task",
+      "x": 970,
+      "y": 200,
+      "properties": {
+        "width": 130,
+        "height": 60,
+        "form": "code-template",
+        "assignee": "u_fdp_pm",
+        "taskType": 0,
+        "performType": 0,
+        "stage": "3. 开发实现",
+        "artifact": "源代码 + 单元测试",
+        "storage": "ToT/src/ + ToT/tdd/",
+        "exitCriteria": "通过 R6 自动评审 + 自测通过"
+      },
+      "text": {
+        "value": "3. 开发实现 (u_fdp_pm 直接, SPI 角色 R2 映射待 v0.7+ 用 assignmentHandler)"
+      }
+    },
+    {
+      "id": "stage_review",
+      "type": "snaker:task",
+      "x": 1160,
+      "y": 200,
+      "properties": {
+        "width": 130,
+        "height": 60,
+        "form": "review-template",
+        "assignee": "u_fdp_pm",
+        "taskType": 0,
+        "performType": 0,
+        "stage": "4. 评审 / 验收 / 发布",
+        "artifact": "评审记录 + 发布说明",
+        "storage": "ToT/reviews/",
+        "exitCriteria": "R6 评审通过 + R3 验收签字"
+      },
+      "text": {
+        "value": "4. 评审/验收/发布 (u_fdp_pm 直接, SPI 角色 R6 映射待 v0.7+ 用 assignmentHandler)"
+      }
+    },
+    {
+      "id": "stage_feedback",
+      "type": "snaker:task",
+      "x": 1350,
+      "y": 200,
+      "properties": {
+        "width": 130,
+        "height": 60,
+        "form": "kb-template",
+        "assignee": "u_fdp_pm",
+        "taskType": 0,
+        "performType": 0,
+        "stage": "5. 反馈 / 知识沉淀",
+        "artifact": "Issue 追踪记录 + 知识库条目",
+        "storage": "ToT/issues/ + ToT/kb/",
+        "exitCriteria": "每条反馈关联到 Task 或 Issue；无孤立文档"
+      },
+      "text": {
+        "value": "5. 反馈/知识沉淀 (u_fdp_pm 直接, SPI 角色 R5 映射待 v0.7+ 用 assignmentHandler)"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 1550,
+      "y": 200,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "协作闭环"
+      }
+    },
+    {
+      "id": "end_rejected",
+      "type": "snaker:end",
+      "x": 410,
+      "y": 450,
+      "properties": {
+        "width": 50,
+        "height": 50
+      },
+      "text": {
+        "value": "驳回闭环"
+      },
+      "note": "驳回记录归 ToT/pm/intake/rejected/；保留可追溯"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "stage_intake",
+      "properties": {},
+      "text": {
+        "value": "任何来源提交"
+      }
+    },
+    {
+      "id": "e_intake_decision",
+      "sourceNodeId": "stage_intake",
+      "targetNodeId": "decision_intake",
+      "properties": {},
+      "text": {
+        "value": "登记完成"
+      }
+    },
+    {
+      "id": "e_decision_approve",
+      "sourceNodeId": "decision_intake",
+      "targetNodeId": "stage_pm",
+      "properties": {
+        "expr": "submitType==1"
+      },
+      "text": {
+        "value": "AGREE 立项"
+      }
+    },
+    {
+      "id": "e_decision_reject",
+      "sourceNodeId": "decision_intake",
+      "targetNodeId": "end_rejected",
+      "properties": {
+        "expr": "submitType==2"
+      },
+      "text": {
+        "value": "REJECT 驳回"
+      }
+    },
+    {
+      "id": "e_decision_default",
+      "sourceNodeId": "decision_intake",
+      "targetNodeId": "stage_pm",
+      "properties": {
+        "expr": ""
+      },
+      "text": {
+        "value": "默认（无明确决策时按立项处理，FIX-T112 兜底）"
+      }
+    },
+    {
+      "id": "e2",
+      "sourceNodeId": "stage_pm",
+      "targetNodeId": "stage_design",
+      "properties": {},
+      "text": {
+        "value": "RML 通过"
+      }
+    },
+    {
+      "id": "e3",
+      "sourceNodeId": "stage_design",
+      "targetNodeId": "stage_dev",
+      "properties": {},
+      "text": {
+        "value": "架构/接口 + Mock 就绪"
+      }
+    },
+    {
+      "id": "e4",
+      "sourceNodeId": "stage_dev",
+      "targetNodeId": "stage_review",
+      "properties": {},
+      "text": {
+        "value": "代码 + 单测完成"
+      }
+    },
+    {
+      "id": "e5",
+      "sourceNodeId": "stage_review",
+      "targetNodeId": "stage_feedback",
+      "properties": {},
+      "text": {
+        "value": "评审通过 + 验收"
+      }
+    },
+    {
+      "id": "e6",
+      "sourceNodeId": "stage_feedback",
+      "targetNodeId": "end",
+      "properties": {},
+      "text": {
+        "value": "知识入库"
+      }
+    }
+  ],
+  "openQuestions": [
+    "Q2 (沿用): stage_review 是否要拆为 fork-join（并行 R6 自动评审 + R3 人工验收）？",
+    "Q3 (沿用): stage_feedback 之后是否要回环到 stage_pm，形成持续改进环？",
+    "Q4 (沿用): R1b 规则变更如何挂入流程？是横切旁路、还是独立节点？",
+    "Q5 (沿用): 异常路径如何扩展？v0.6 已用 decision 拆分流，其他阶段驳回待补",
+    "Q6 (沿用): 是否需要拆 R3a/R3b 以避免自审自批？",
+    "Q7 (沿用): 驳回后能否被重新激活（resurrect）？当前 end_rejected 是终止态"
+  ]
+}

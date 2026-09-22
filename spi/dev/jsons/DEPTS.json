@@ -1,12 +1,16 @@
 {
-  "version": "1.1.0",
-  "description": "FlowMatrix 研发组织架构 · 5 部门 tree 结构 (重构 v9 · 替换 v8 LEV) · 13 人员分布 · 角色组合",
+  "version": "1.3.0",
+  "description": "FlowMatrix 研发组织架构 · 6 部门 tree 结构（顶层 2 根：D99 总经办 + DFDEP FDEP协作组） · 14 人员分布（含 1 FDEP 占位） · 角色组合",
   "encoding": {
-    "structure": "tree (扁平存储 + parent_id + 派生嵌套)",
-    "relationship": "父部门 = parent_id (顶层部门 parent_id = null)",
+    "structure": "tree with parallel roots (扁平存储 + parent_id + 派生嵌套；顶层部门 = parent_id = null，可多个)",
+    "relationship": "父部门 = parent_id (顶层部门 parent_id = null，含 D99 与 DFDEP 两个并行根)",
     "example": {
       "D99": {
         "name": "总经办",
+        "parent_id": null
+      },
+      "DFDEP": {
+        "name": "FDEP协作组",
         "parent_id": null
       },
       "D01": {
@@ -79,6 +83,32 @@
       "role_combinations": {
         "architect": [
           "u_arch"
+        ]
+      }
+    },
+    "DFDEP": {
+      "name": "FDEP协作组",
+      "parent_id": null,
+      "leader": "u_fdp_pm",
+      "main_leader": "u_fdp_pm",
+      "role_combinations": {
+        "fdep_intake": [
+          "u_fdp_pm"
+        ],
+        "fdep_rml": [
+          "u_fdp_pm"
+        ],
+        "fdep_arch": [
+          "u_fdp_pm"
+        ],
+        "fdep_dev": [
+          "u_fdp_pm"
+        ],
+        "fdep_review": [
+          "u_fdp_pm"
+        ],
+        "fdep_kb": [
+          "u_fdp_pm"
         ]
       }
     },

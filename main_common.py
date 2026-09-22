@@ -21,6 +21,7 @@ import json
 import os
 import sys
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Callable, Optional
 
 from fastapi import FastAPI, Request
@@ -561,6 +562,63 @@ def run_seed_business(facade):
 async def _seed_business_async(facade):
     from seed_business import seed_business
     await seed_business(facade)
+
+
+# ─── 临时任务：启动后自动检查并部署 fdep.json ────────────────────────────
+async def auto_deploy_fdep(facade):
+    """启动后自动检查并部署 ToT/flows/fdep.json
+
+    触发条件（AND）：
+      1. ToT/flows/fdep.json 文件存在
+      2. 引擎内尚未定义名为 "fdep" 的流程
+    满足两条 → 自动通过 facade.flow('processDefine/deploy', ...) 部署
+
+    退出条件（任一不满足）：
+      - 文件不存在 → 跳过
+      - 已部署 → 跳过
+      - 部署失败 → 打印错误，不抛异常（避免阻塞启动）
+    """
+    fdep_path = Path(__file__).resolve().parent / "ToT" / "flows" / "fdep.json"
+
+    # 条件 1: 文件存在
+    if not fdep_path.exists():
+        print(f"[auto-deploy-fdep] 跳过: {fdep_path} 不存在")
+        return
+
+    # 条件 2: 尚未定义
+    try:
+        existing = await facade.flow("processDefine/getLastByName", {"processDefineName": "fdep"})
+        if existing.get("code") == 0 and existing.get("data"):
+            print(f"[auto-deploy-fdep] 跳过: fdep 已部署 (id={existing['data'].get('id')})")
+            return
+    except Exception as e:
+        # 查询异常不阻塞启动，仅记录
+        print(f"[auto-deploy-fdep] 查询失败（忽略，继续部署）: {e}")
+
+    # 部署
+    try:
+        content = fdep_path.read_text(encoding="utf-8")
+        deploy_resp = await facade.flow("processDefine/deploy", {
+            "content": content,
+            "operator": "system",
+            "name": "fdep",
+        })
+        if deploy_resp.get("code") == 0:
+            print(f"[auto-deploy-fdep] ✅ 已部署: {deploy_resp.get('data')}")
+        else:
+            print(f"[auto-deploy-fdep] ❌ 部署失败: {deploy_resp}")
+    except Exception as e:
+        print(f"[auto-deploy-fdep] ❌ 部署异常: {e}")
+
+
+def run_auto_deploy_fdep(facade):
+    """同步包装：兼容 uvicorn reload（worker 事件循环）"""
+    import asyncio
+    try:
+        asyncio.get_running_loop()
+        asyncio.get_event_loop().create_task(auto_deploy_fdep(facade))
+    except RuntimeError:
+        asyncio.run(auto_deploy_fdep(facade))
 
 
 # ─── Routes Registration ───────────────────────────────────────────────────────

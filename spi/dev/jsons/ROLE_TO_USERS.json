@@ -1,6 +1,6 @@
 {
-  "version": "1.0.0",
-  "description": "FlowMatrix 研发组织 · 角色-用户映射 · 精简核心映射 (8 角色)",
+  "version": "1.1.0",
+  "description": "FlowMatrix 研发组织 · 角色-用户映射 · 核心映射 + FDEP 节点角色 (8 + 6 = 14 角色)",
   "role_to_users": {
     "ceo": ["u_ceo"],
     "cto": ["u_cto"],
@@ -9,6 +9,12 @@
     "architect": ["u_arch"],
     "senior_engineer": ["u_fe_senior", "u_be_senior1", "u_be_senior2"],
     "engineer": ["u_fe_eng", "u_be_eng"],
-    "qa_engineer": ["u_qa_lead", "u_qa_eng"]
+    "qa_engineer": ["u_qa_lead", "u_qa_eng"],
+    "fdep_intake": ["u_fdp_pm"],
+    "fdep_rml": ["u_fdp_pm"],
+    "fdep_arch": ["u_fdp_pm"],
+    "fdep_dev": ["u_fdp_pm"],
+    "fdep_review": ["u_fdp_pm"],
+    "fdep_kb": ["u_fdp_pm"]
   }
 }

@@ -42,6 +42,7 @@ from main_common import (
     install_metrics_endpoint, install_trace_endpoint,
     install_trace_persistence, install_trace_purge,  # §6.4.1 FIX-T99 (2026-09-20)
     register_spi_routes,  # v28: 双端共用 spi 路由
+    auto_deploy_fdep,  # 临时任务：启动后自动部署 ToT/flows/fdep.json
 )
 
 setup_vendor_path()
@@ -156,6 +157,11 @@ async def lifespan(app: FastAPI):
         await load_seed_pg(repo)
     if SEEDS:
         await seed_business_pg(facade)
+
+    # ─── 临时任务：启动后自动部署 ToT/flows/fdep.json ──────────────────────────
+    # 条件：fdep.json 存在 + 引擎内尚未定义 → 部署
+    # 与 main.py (memory 端) 同逻辑，PG 端首次启动部署、重启跳过
+    await auto_deploy_fdep(facade)
 
     app.state.pool = pool
     app.state.adapter = adapter

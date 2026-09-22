@@ -32,7 +32,7 @@ _setup_vendor_path()
 from main_common import (
     setup_vendor_path, SnowflakeIDGen, SimpleExprEvaluator, RatioCapableEngine,
     build_ic_registry, build_custom_handlers, apply_extensions, install_resolve_actors_wrapper,
-    _ok, register_routes, build_seed_defines, run_seed_business,
+    _ok, register_routes, build_seed_defines, run_seed_business, run_auto_deploy_fdep,
     install_metrics_endpoint, install_trace_endpoint, metrics_counter, metrics_histogram,
 )
 
@@ -101,6 +101,12 @@ try:
         print(f"[§7.3.3 startup] DOING 实例数: {data['instance_count']}, DOING 任务数: {data['task_count']}, 节点分布: {data['by_node']}")
 except Exception as e:
     print(f"[§7.3.3 startup] DOING 扫描失败: {e}")
+
+
+# ─── 临时任务：启动后自动部署 ToT/flows/fdep.json ──────────────────────────
+# 条件：fdep.json 存在 + 引擎内尚未定义 → 部署
+# 已在 main_common.auto_deploy_fdep / run_auto_deploy_fdep
+run_auto_deploy_fdep(facade)
 
 
 # ─── run_seed_business (兼容 reload) ──────────────────────────────────────────
