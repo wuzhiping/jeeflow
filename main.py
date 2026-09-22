@@ -167,6 +167,7 @@ install_trace_endpoint(app)
 
 if __name__ == "__main__":
     import uvicorn
+    # 默认端口 8101（memory 端，与 PG 端 8102 区分）；参见 ToT/sop/engine-deploy.md
     uvicorn.run("main:app", host="0.0.0.0",
                 port=int(os.environ.get("PORT", "8101")),
                 reload=False, log_level="info")

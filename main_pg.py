@@ -249,7 +249,7 @@ register_spi_routes(app)
 
 if __name__ == "__main__":
     import uvicorn
-    # main_pg.py 用 8102 端口（与 main.py 内存后端 8101 区分）
+    # main_pg.py 用 8102 端口（与 main.py 内存后端 8101 区分）；参见 ToT/sop/engine-deploy.md
     uvicorn.run("main_pg:app", host="0.0.0.0",
                 port=int(os.environ.get("PORT", "8102")),
                 reload=False, log_level="info")

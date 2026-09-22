@@ -1,7 +1,8 @@
 # jeeFlow 工作规范（Working Charter）
 
 > 本文档由协作者共同**逐步制定**，任何章节的增删改均需双方确认，并在文末「变更日志」留档。
-> 当前版本（v1.4）已落：§1 读写边界规则、§4 角色分工、§5 流程、§9 SOP 索引（4 个 SOP）、§10 流程定义组织规范（v1.3 加强：文件名小写强制）；附 ToT/mapping.md（v1.1）、ToT/sop/（spi-verify v0.2 + tdd-flow v0.1 + flow-folder v0.1 + flow-lint v0.1 + auto-deploy-fdep v0.1）、ToT/flows/fdep.json（v0.6.2）+ ToT/flows/fdep/（4 文件示范）、ToT/tdd/（含 INDEX.md + 多份测试日志）；其余章节为占位，待逐章确认后填充。
+
+> 当前版本（v1.6）已落：§1 读写边界规则、§4 角色分工、§5 流程、§9 SOP 索引（5 个 SOP）、§10 流程定义组织规范（v1.3 加强：文件名小写强制）、§11 引擎部署规范（端口 8101/8102 + 用户测试服务器 https://abc.feg.cn/jeeflow/ + Jira 审核）；附 ToT/mapping.md（v1.1）、ToT/sop/（spi-verify v0.2 + tdd-flow v0.1 + flow-folder v0.1 + flow-lint v0.1 + auto-deploy-fdep v0.1 + engine-deploy v0.1）、ToT/flows/fdep.json（v0.6.2）+ ToT/flows/fdep/（4 文件示范）、ToT/tdd/（含 INDEX.md + 多份测试日志）；其余章节为占位，待逐章确认后填充。
 
 ---
 
@@ -155,6 +156,7 @@
 | [tdd-flow.md](./sop/tdd-flow.md) | `tdd-flow.py` | 修改 `ToT/flows/*.json` 后 | 新增/修改流程定义 |
 | [flow-folder.md](./sop/flow-folder.md) | `flow-lint.py` | 流程定义组织合规检查 | 新增流程 / 文件夹结构变更 |
 | [auto-deploy-fdep.md](./sop/auto-deploy-fdep.md) | （内嵌 main_common） | 引擎启动后 | fdep.json 自动部署（memory/PG 双端） |
+| [engine-deploy.md](./sop/engine-deploy.md) | （手动） | 引擎级文件改动后 | 5 步部署流程：本地 → SOP → Jira 审核 → 人工部署 → healthz |
 
 **双轨调用顺序**：
 ```bash
@@ -218,6 +220,38 @@ ToT/flows/
 
 ---
 
+## 11. 引擎部署规范（Engine Deploy Spec）
+
+> 🔒 **永久规则** —— 所有引擎级更新必须走人工审核流程，操作细节见 `ToT/sop/engine-deploy.md`。
+
+### 11.1 环境拓扑
+
+| 环境 | 地址 | 端口 | 部署方式 |
+|------|------|------|----------|
+| 本地 dev（memory） | `127.0.0.1` | **8101** | `python -m uvicorn main:app --port 8101` |
+| 本地 dev（PG） | `127.0.0.1` | **8102** | `python -m uvicorn main_pg:app --port 8102` |
+| 用户测试服务器 | `https://abc.feg.cn/jeeflow/` | 443 | **人工 + Jira 审核** |
+
+> 🔒 用户真实需求入口 = `https://abc.feg.cn/jeeflow/`（即"测试服务器"承载生产前的实际用户需求）。
+
+### 11.2 引擎级 vs 非引擎级
+
+**引擎级（走本规范）**：`main.py` / `main_pg.py` / `main_common.py` / `main_meta.py` / `vendor/jeeflow/**` 的任何修改。
+
+**非引擎级**：spi 数据 / ToT/flows / ToT/sop 脚本 / 演示样例 —— 走各自 SOP。
+
+### 11.3 5 步流程（摘要）
+
+1. **本地开发**：`127.0.0.1:8101/8102` 调试
+2. **本地 SOP 全跑**：spi-verify / flow-lint / tdd-flow / auto-deploy-fdep
+3. **Jira 申请审核**：填写 `Engine Update Request` 工单模板（含 diff / SOP 结果 / 风险 / 回滚 / reviewer + approver）
+4. **人工部署**：SSH + 备份 + pull + restart（**不允许自动部署**）
+5. **健康检查**：curl `https://abc.feg.cn/jeeflow/healthz` + auto-deploy-fdep 启动日志 + fdep 流程可达性
+
+**任一步失败 → 回到上一步修复；Step 5 失败 → 立即回滚到 Step 4 的备份。**
+
+---
+
 ## 8. 变更日志（Change Log）
 
 | 版本 | 日期 | 变更内容 | 确认人 |
@@ -236,3 +270,5 @@ ToT/flows/
 | v1.2 | 2026-09-22 | **新增流程定义组织规范**：① §10 永久规则（6 条强制约束）+ §9 SOP 索引；② `ToT/sop/flow-folder.md` SOP（v0.1）+ 4 文件模板（README/ROLES/NODES/CHANGELOG）；③ FDEP 示范：`ToT/flows/fdep/` 文件夹创建 + 4 文件填充；④ `ToT/sop/flow-lint.py` 自动校验脚本（验证 name 与文件名一致 / 同名文件夹存在 / 4 文件齐全 / 节点 ID 覆盖 / 角色覆盖）。所有新增流程必须按 §10 组织。 | 待确认 |
 | v1.3 | 2026-09-22 | **文件名全小写永久规则**（用户口头授权，立即执行）：FDEP.json → fdep.json；FDEP/ 文件夹 → fdep/。§10 新增约束：文件名必须 `stem == stem.lower()`；`flow-lint.py` 升级加检查。全 ToT 文档同步引用（mapping.md / 4 SOP / README §10 / fdep/ 内 4 文件）。**保留不变的标识**：`DFDEP`（SPI 部门 ID，由更早规则锁定）/ `FDEP协作组`（部门 displayName）/ `fdep_*`（SPI 角色代码）/ `u_fdp_pm`（占位用户）/ `test_FDEP_*`（历史测试日志文件名，作为档案保留）。 | 待确认 |
 | v1.4 | 2026-09-22 | **新增临时任务**：main_common.py 加 `auto_deploy_fdep(facade)` + `run_auto_deploy_fdep(facade)`；main.py (memory 8101) 与 main_pg.py (PG 8102) 双端接入；启动后自动检查 ToT/flows/fdep.json 存在性 + 引擎是否已有 fdep 定义，满足条件则部署。**双测验证**：memory 2/2 deploy（预期行为，每次重启清空）；PG 1 deploy + 1 skip（修正 getLastByName 参数名 bug 后）。**新增 SOP** `ToT/sop/auto-deploy-fdep.md` 记录验证矩阵与错误处置。 | 待确认 |
+| v1.5 | 2026-09-22 | **新增 §11 引擎部署规范**：① 本地 dev 默认端口 **8101 (memory) / 8102 (PG)**；② 用户测试服务器 `https://abc.feg.cn/jeeflow/` 锁定为用户真实需求入口；③ 每次引擎级更新（`main.py` / `main_pg.py` / `main_common.py` / `main_meta.py` / `vendor/jeeflow/`）走人工审核流程：本地 SOP → Jira 申请 → 人工部署 → curl healthz 健康检查；④ 新增 SOP `ToT/sop/engine-deploy.md` v0.1 含 5 步流程 + Jira 工单模板 + 回滚预案 + 跳过审核例外。 | 待确认 |
+| v1.6 | 2026-09-22 | **误改回滚**：用户确认端口仍是 8101/8102，先前 v1.5 中错记的"端口变更 8101→8101"已清理；main.py / main_pg.py / README / SOP 文档全部恢复 8101/8102 引用。 | 待确认 |

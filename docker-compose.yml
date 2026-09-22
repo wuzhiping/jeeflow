@@ -5,8 +5,8 @@ services:
     image: shawoo/jeeflow:spi
     build: .
     restart: always
-    #command: ["uv", "run", "main_pg.py"]
-    command: ["uv", "run", "main.py"]
+    command: ["uv", "run", "main_pg.py"]
+    #command: ["uv", "run", "main.py"]
     ports:
       - "8101:8101"
     volumes:
@@ -14,6 +14,6 @@ services:
       - /etc/timezone:/etc/timezone:ro
     environment:
       - SPI_FOLDER=dev
-      - FLOWS=true
+      - FLOWS=false
       - SEEDS=false
-      - JEEFLOW_PG_DSN=postgresql://uid:pwd@127.0.0.1:5432/jeeflow
+      # - JEEFLOW_PG_DSN=postgresql://uid:pwd@127.0.0.1:5432/jeeflow
