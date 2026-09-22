@@ -62,8 +62,7 @@ FLOWS_DIR = flows_resolver.dir()
 
 PG_DSN = os.environ.get(
     "JEEFLOW_PG_DSN",
-    #"postgresql://uid:pwd@127.0.0.1:5432/jeeflow",
-    "postgresql://llmproxy:dbpassword9090@10.17.1.26:6432/litellm",
+    "postgresql://uid:pwd@127.0.0.1:5432/jeeflow",
 )
 
 # ─── 启动行为开关（与 main.py 对齐）────────────────────────────────────────────
