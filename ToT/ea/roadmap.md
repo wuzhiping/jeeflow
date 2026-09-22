@@ -351,6 +351,30 @@
 | **历史兼容** | 留档保留当时 URL（不替换），仅新脚本/SOP 用 config |
 | **适用场景** | 任何"多个环境 + 多脚本"的部署场景 |
 
+### Pattern 10：用户流程引导 + 完整性检测 + Issue 元闭环（v1.3+）
+
+| 项 | 内容 |
+|----|------|
+| **问题** | 用户想设计流程但不知道从哪开始；流程严谨度不知怎么把握；issue 跟踪无系统化 |
+| **解决方案** | **4 件套**（数据 + 脚本 + SOP + 元闭环）：① `flow_designer.py`（5 问 → flow.json 草稿）；② `flow_completeness.py`（6 层 31 项打分）；③ `issue_link.py`（FDEP 元闭环）；④ `flow-design.md`（8 节 SOP） |
+| **FDEP 体现** | Iteration #4：expense-approval（极简 50%）vs fdep（蓝本 100%）；issue_link 真实跑通 FDEP 元闭环（stage_pm 拿到 issue 数据含 source_instance_id） |
+| **核心原则** | **先跑通，再严谨** —— 完整性检测是工具不是门禁；用户按"下一步建议"自由演进 |
+| **关键设计** | 1) 5 问简化设计；2) 0-100% 分让用户看到进度；3) FDEP 自身作为 issue tracker（自包含）；4) stage_pm 决策 mems 包含 issue 元数据 |
+| **角色重定位** | FDEP 从"唯一流程"升级为"流程元平台"——任何流程都可在 EA 框架下自管理 |
+| **适用场景** | 任何"业务团队想自动化流程"+"需要演进式严谨度"+"需要 issue 系统化"的工程团队 |
+
+### Pattern 11：3 阶段环境流水线（v1.4+）
+
+| 项 | 内容 |
+|----|------|
+| **问题** | 流程定义在哪测？local 测完怎么推到客户？有没有"团队共享 dev"层级？ |
+| **解决方案** | **5 server × 3 tier × 权限矩阵**：`local-memory` / `local-pg`（stage-1-dev，AI 全权）→ `org-server`（stage-2-staging，AI 可推不可 reset）→ `customer-test` / `production-future`（stage-3-prod，AI 不可推不可 reset，需人工审批） |
+| **FDEP 体现** | Iteration #6：promote.py CLI 6 子命令（list/status/push/request-promote/promote/rollback）+ env-pipeline.md SOP（10 节） |
+| **核心原则** | **越接近生产，约束越严** —— Local 全自动 / Org 半自动 / Customer 强制人工审批 |
+| **关键设计** | 1) tier 字段标注阶段；2) ai_can_push / ai_can_reset 权限矩阵；3) promote.py 双保险（--confirm-ai flag + server ai_can_push 检查）；4) env-pipeline.md SOP 显式化规则 |
+| **闭环集成** | `ea-compliance.py` §9.7 加 4 项检查（35/35 PASS）—— 流水线不偏离自动检测 |
+| **适用场景** | 任何"多环境 + 多权限 + 多人协作"的流程部署 |
+
 ---
 
 ## §6 SOP 编排（SOP Orchestration）
@@ -744,3 +768,5 @@ v4+ (候选：fork-join / 多 executor 接力 / 生产部署)
 | **v1.0** | **2026-09-22** | **第一版正式架构**：① 从 v0.1.1 复盘型升级为架构型 —— 5 阶段框架 + 制品分层 + 10 SOP 编排 + 三环境拓扑 + 迭代机制 → 升级为正式 14 节架构文档；② **新增 §2 核心原则**（5 条哲学层原则：文档先行/协议落地/自动化留痕/可接力执行/演进式改进）；③ **新增 §5 设计模式**（7 个从 FDEP 提炼的可复用模式：Job Card 8 节结构 / Decision Mem 透传 / Pickup API / 审计链路 / Baseline 演化 / 三环境拓扑 / AI+人工协作）；④ **新增 §9 合规检查清单**（4 层检查：流程级 / Job Card 级 / 基线级 / 运维级 + 飞轮级）；⑤ **新增 §11 路线图 + §12 风险**（含"roadmap.md 自身失修"自指风险）；⑥ 复盘内容移至 `ToT/ea/iterations/2026-09-22.md`；⑦ 新增 `ToT/ea/README.md` 索引；⑧ v2.8 → v2.9 changelog 同步 |
 | **v1.1** | **2026-09-22** | **EA 自证闭环**（用户口头指令"自证闭环"）：① **新建 `ToT/sop/ea-compliance.py`**（自动化跑 §9 27 项合规检查，260 行）；② **跑检查 → 27/27 PASS (100%)** —— 自证 EA 自洽；③ 修 3 个 bug：regex 不匹配 v3audit（放宽 §9.3.5 命名规范）/ happy 路径匹配语义化 / findall 用 re 模块；④ **新增 iterations/2026-09-22_ea-self-audit.md**（第二轮迭代记录：时间线 + 闭环示意 + 修复 ADR + 度量对比）；⑤ **§5 新增 Pattern 8**（EA 合规自验证 —— "用 §9 清单自动化自证"）；⑥ **§9.3.5 命名规范放宽**：`<X>[<feature>]?`（feature 可选，实战用 `v3audit` / `v1decision_mems` 更有信息量）；⑦ v2.9 → v2.10 changelog 同步。 |
 | **v1.2** | **2026-09-22** | **环境配置集中化（Pattern 9）**（用户口头指令"客户测试服务器 https://abc.feg.cn/jeeflow 在不同的闭环环境是不一样的，希望可以集中到统一的地方修改"）：① **新建 `ToT/config/servers.json`**（4 servers：local-memory/local-pg/customer-test/production-future + active 字段 = 单点切换）；② **新建 `ToT/sop/server_config.py`**（70 行加载器，CLI + import 双模式）；③ **新建 `ToT/sop/env-config.md`**（8 节 SOP）；④ `ea-compliance.py` §9.6 加配置集中化 4 项检查（servers.json 合法 / 加载器存在 / ea-compliance 不硬编码 / 含 customer-test）；⑤ **`ea-compliance.py` 自身改造**：从硬编码 `TARGET = "https://..."` 改为读 config；⑥ **§9 检查项 27 → 31**（+4 项），**31/31 PASS (100%)**；⑦ **§5 新增 Pattern 9**（环境配置集中化 —— "3 件套：数据 + 加载器 + SOP"）；⑩ 新增 iterations/2026-09-22_env-config.md（第三轮迭代：5+ 处硬编码 → 0 处）；⑪ v2.10 → v2.11 changelog 同步。 |
+| **v1.3** | **2026-09-22** | **用户流程设计引导 + 完整性检测 + Issue 元闭环（Pattern 10）**（用户口头指令"教用户设计流程 ... 用户的流程一开始不需要像fdep这样严谨的结构 ... 通过 fdep 这个流程，闭环issue的解决"）：① **新建 `ToT/sop/flow_designer.py`**（280 行，5 问交互 → flow.json 草稿）；② **新建 `ToT/sop/flow_completeness.py`**（280 行，6 层 31 项打分 0-100% + 下一步建议 + 4 级评级）；③ **新建 `ToT/sop/issue_link.py`**（230 行，FDEP 元闭环：原 instance 问题 → 创建 fdep 实例 → 透传 issue 数据到 stage_pm）；④ **新建 `ToT/sop/flow-design.md`**（250 行，8 节 SOP：适用场景 / 设计原则 / 5 步引导 / 风险 / 命令清单）；⑤ **新建 `ToT/flows/expense-approval.json`**（极简示例，2654 字节，演示 50% 评分）；⑥ **§5 新增 Pattern 10**（用户流程引导 + 完整性检测 + Issue 元闭环）；⑦ **现场演示 4 件套串联**：expense-approval 打分 50%（🟡）/ fdep 100%（✅）/ issue_link 真实跑通（fdep instance 92226177114139 stage_pm.variable 完整含 issue 数据含 source_instance_id）；⑧ 新增 iterations/2026-09-22_user-flow-design.md（第四轮迭代记录）；⑨ SOP 数 12→13（+flow-design）；⑩ v2.12 → v2.13 changelog 同步。 |
+| **v1.4** | **2026-09-22** | **3 阶段环境流水线（Pattern 11）**（用户口头指令"我们提供和开发同步的快速实验环境 ... 1. 用户可以先本地memory 2. 上传至组织服务器 3. 正式发布流程，具体sop待定"）：① **`ToT/config/servers.json` v1.1**：加 `org-server`（stage-2-staging，tier=risk_level=ai_can_push=ai_can_reset 4 字段完整）；② **新建 `ToT/sop/env-pipeline.md`** v0.1（10 节 SOP：3 阶段模型 / 每阶段操作 / promote 流程 / 自动化范围 / 与其他 SOP 关系）；③ **新建 `ToT/sop/promote.py`** CLI（170 行，6 子命令：list/status/push/request-promote/promote/rollback，--confirm-ai 双保险 + ai_can_push 检查）；④ **`ea-compliance.py` §9.7 +4 项**（35/35 PASS，tier 完整 / ai_can_* 完整 / promote.py 存在 / env-pipeline.md 存在）；⑤ 演示完整流程（含 6 个边界场景全部正确处理：list / status / push / request-promote / 无 --confirm-ai 拒绝 / ai_can_push=false 拒绝）；⑥ **§5 新增 Pattern 11**（3 阶段环境流水线）；⑦ 新增 iterations/2026-09-22_env-pipeline.md（第六轮迭代记录：闭环示意 + ADR + 度量）；⑧ SOP 数 14→14（+env-pipeline）；⑨ v2.13 → v2.14 changelog 同步。 |

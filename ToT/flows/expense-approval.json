@@ -1,0 +1,129 @@
+{
+  "name": "expense-approval",
+  "displayName": "用于团队内部采购流程自动化：员工提交 → 主管审批 → 财务归档",
+  "type": "collaboration",
+  "schema": "snaker-1.0",
+  "version": "0.1",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "text": {
+        "value": "任意员工（占位用 u_test）"
+      }
+    },
+    {
+      "id": "decision_intake",
+      "type": "snaker:decision",
+      "x": 250,
+      "y": 200,
+      "properties": {
+        "expr": "true"
+      },
+      "text": {
+        "value": "路由"
+      }
+    },
+    {
+      "id": "submit",
+      "type": "snaker:task",
+      "x": 400,
+      "y": 200,
+      "properties": {
+        "assignee": "员工",
+        "form": "submit-template",
+        "artifact": "申请单",
+        "storage": "ToT/expense-approval/submit/",
+        "exitCriteria": "完成"
+      },
+      "text": {
+        "value": "1. 申请单（员工）"
+      }
+    },
+    {
+      "id": "approve",
+      "type": "snaker:task",
+      "x": 600,
+      "y": 200,
+      "properties": {
+        "assignee": "主管",
+        "form": "approve-template",
+        "artifact": "审批结果",
+        "storage": "ToT/expense-approval/approve/",
+        "exitCriteria": "完成"
+      },
+      "text": {
+        "value": "2. 审批结果（主管）"
+      }
+    },
+    {
+      "id": "archive",
+      "type": "snaker:task",
+      "x": 800,
+      "y": 200,
+      "properties": {
+        "assignee": "财务",
+        "form": "archive-template",
+        "artifact": "归档凭证",
+        "storage": "ToT/expense-approval/archive/",
+        "exitCriteria": "完成"
+      },
+      "text": {
+        "value": "3. 归档凭证（财务）"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 1000,
+      "y": 200,
+      "text": {
+        "value": "完成"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "decision_intake",
+      "text": {
+        "value": "发起"
+      }
+    },
+    {
+      "id": "e1",
+      "sourceNodeId": "decision_intake",
+      "targetNodeId": "submit",
+      "text": {
+        "value": "通过"
+      }
+    },
+    {
+      "id": "e2",
+      "sourceNodeId": "submit",
+      "targetNodeId": "approve",
+      "text": {
+        "value": ""
+      }
+    },
+    {
+      "id": "e3",
+      "sourceNodeId": "approve",
+      "targetNodeId": "archive",
+      "text": {
+        "value": ""
+      }
+    },
+    {
+      "id": "e_end",
+      "sourceNodeId": "archive",
+      "targetNodeId": "end",
+      "text": {
+        "value": ""
+      }
+    }
+  ]
+}

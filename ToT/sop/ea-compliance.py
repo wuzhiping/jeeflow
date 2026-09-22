@@ -313,6 +313,42 @@ def check_layer_config():
     return items
 
 
+# ===== §9.7 环境流水线（3 阶段）（4 项）=====
+def check_layer_pipeline():
+    items = []
+    # 1. servers.json 含 3 阶段 tier 标识
+    tiers_ok = False
+    if CONFIG_PATH.exists():
+        cfg = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+        tiers = [info.get("tier") for info in cfg.get("servers", {}).values()]
+        tiers_ok = ("stage-1-dev" in tiers and "stage-2-staging" in tiers
+                    and tiers.count("stage-3-prod") >= 1)
+    items.append(check_item("pipeline", "9.7.1", "servers.json 含 3 阶段 tier 标识",
+                             tiers_ok, ""))
+
+    # 2. ai_can_push / ai_can_reset 字段完整
+    acl_ok = False
+    if CONFIG_PATH.exists():
+        cfg = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+        acl_ok = all(
+            "ai_can_push" in info and "ai_can_reset" in info
+            for info in cfg.get("servers", {}).values()
+        )
+    items.append(check_item("pipeline", "9.7.2", "servers.json 含 ai_can_push / ai_can_reset 权限",
+                             acl_ok, ""))
+
+    # 3. promote.py 流水线工具存在
+    promote_exists = (BASE / "ToT/sop/promote.py").exists()
+    items.append(check_item("pipeline", "9.7.3", "promote.py 流水线 CLI 工具存在",
+                             promote_exists, ""))
+
+    # 4. env-pipeline.md SOP 存在
+    env_pipeline_exists = (BASE / "ToT/sop/env-pipeline.md").exists()
+    items.append(check_item("pipeline", "9.7.4", "env-pipeline.md SOP 存在",
+                             env_pipeline_exists, ""))
+    return items
+
+
 def main():
     all_items = []
     print("Running §9 compliance check on FDEP...")
@@ -324,6 +360,7 @@ def main():
         (check_layer_ops, "§9.4 运维级"),
         (check_layer_flywheel, "§9.5 飞轮级"),
         (check_layer_config, "§9.6 配置集中化"),
+        (check_layer_pipeline, "§9.7 环境流水线"),
     ]:
         items = layer_fn()
         all_items.extend(items)
