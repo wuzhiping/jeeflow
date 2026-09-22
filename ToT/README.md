@@ -2,7 +2,23 @@
 
 > 本文档由协作者共同**逐步制定**，任何章节的增删改均需双方确认，并在文末「变更日志」留档。
 
-> 当前版本（v2.7）已落：§1 读写边界规则、§4 角色分工、§5 流程、§9 SOP 索引（10 个 SOP）、§10 流程定义组织规范（v1.3 加强：文件名小写强制）、§11 引擎部署规范（v1.8 AI+人工协作）；附 ToT/HANDBOOK.md v0.1 知识手册、ToT/mapping.md（v1.1）、ToT/sop/（**10 个 SOP：spi-verify/tdd-flow/flow-folder/auto-deploy-fdep/engine-deploy/customer-data-reset/clean-customer-data/new-trip + 设计文档 executor-api/gen-job-cards.py**）、ToT/customer-resets/（4 份 reset 留档）、ToT/customer-checks/2026-09-22_ready.md + new-trip_20260922、ToT/flows/fdep.json（v0.6.1 from jeeflow）+ ToT/flows/fdep/（6 文件 = README + ROLES + NODES + CHANGELOG + **RESPONSES.md v1.2 决策响应全表（含 job_card_url 审计）** + **job_cards/ 子目录含 6 张执行卡**）、ToT/tdd/（**5 文件 = INDEX + 4 baselines (v0.6.2/v1/v2/v3)**）；其余章节为占位，待逐章确认后填充。
+> 当前版本（**v2.9**）已落：§1 读写边界规则、§4 角色分工、§5 流程、§9 SOP 索引（10 个 SOP）、§10 流程定义组织规范（v1.3 加强：文件名小写强制）、§11 引擎部署规范（v1.8 AI+人工协作）；附：
+
+| 层级 | 文件 | 定位 |
+|------|------|------|
+| 🚴 **飞轮** | **ToT/ea/roadmap.md v1.0** + **README.md** + **PPT.md** + **iterations/** | **流程全生命周期体系架构（方法论 + 落地 + 交付 + 改进闭环）—— 14 节正式架构文档 + 10 张营销 slide** |
+| 手册 | ToT/HANDBOOK.md v0.1 | 知识手册（30秒读懂 jeeFlow） |
+| 映射 | ToT/mapping.md v1.1 | R 角色 ↔ SPI ↔ 用户三层映射 |
+
+**SOPs（10 个）**：`spi-verify` / `tdd-flow` / `flow-folder` / `auto-deploy-fdep` / `engine-deploy` / `customer-data-reset` / `clean-customer-data` / `new-trip` + 设计文档 `executor-api` / `gen-job-cards.py`
+
+**蓝本示例**：ToT/flows/fdep.json（v0.6.1 from jeeflow）+ ToT/flows/fdep/（6 文件 = README + ROLES + NODES + CHANGELOG + **RESPONSES.md v1.2 决策响应全表（含 job_card_url 审计）** + **job_cards/ 子目录含 6 张执行卡**）
+
+**测试证据**：ToT/tdd/（5 文件 = INDEX + 4 baselines v0.6.2/v1/v2/v3）
+
+**运维留档**：ToT/customer-resets/（3 份）+ ToT/customer-checks/（2 份）；其余章节为占位，待逐章确认后填充。
+
+> **演进原则**（v2.8 起）：本顶部摘要是文档演进的"单一真相源"，每次新增重要产物（SOP / baseline / 工具脚本 / 体系架构文档）都应同步更新本表 + §8 变更日志。**`ToT/ea/roadmap.md` 是飞轮 —— 每轮迭代都让下一轮转得更快**（详见 §5 反馈闭环 + §7 路线图 + `ToT/ea/roadmap.md` §8）。
 
 ---
 
@@ -299,3 +315,6 @@ ToT/flows/
 | **v2.5** | **2026-09-22** | **Executor Pickup API v0.1 落地**（用户口头需求："need a api design for providing the docs to executor" + "very job_card_url after api developing completed"）：① **`ToT/sop/executor-api.md`** v0.1（API 设计文档：单端点 `POST /api/executor/pickup` 返回 4 部分：task / previousHandoff / jobCard / executeTemplate）；② **`main_common.py:executor_pickup`** 函数 + **`api_executor_pickup`** 路由（双端共用）；③ **本地 dev 8101 实测通过**：5/5 task pickup OK，4/4 next_handoff.job_card_url 指向真实文件，1/1 终态节点正确标记 terminal，instance state=20（DONE）；④ **新基线** `test_fdep_baseline_v2pickup_api.{md,json}`（demo cycle v3 instance 92210601465864）；⑤ INDEX.md v0.3→v0.4 加 v2 行 + changelog。 | 待确认 |
 | **v2.6** | **2026-09-22** | **job_card_url 审计字段落地**（用户口头指令："when record the mem log, recod the job_card_url also, that need be auditing also with log, need to be show in the tdd report"）：① **`ToT/flows/fdep/RESPONSES.md §0 v1.2 lite+`** 加 `job_card_url` 字段（top-level，与 decision_reason 同级，记录 executor 实际用的卡）+ 审计链验证规则（T.used == next(T).used-prev.handoff）；② **`ToT/sop/gen-job-cards.py`** §5 模板自动注入 `job_card_url` 字段（每节点指向自己的卡）；③ **重生成 6 张 Job Card** + JSON 合法性全通过；④ **demo cycle v4 实测** instance 92210956748829：5/5 task 提交带 `job_card_url` + `next_handoff`，5/5 文件存在，4/4 链路匹配 + 1/1 终态标记；⑤ **新基线** `test_fdep_baseline_v3audit.{md,json}`（含审计表 + 链路一致性 + 文件存在性）；⑥ INDEX.md v0.4→v0.5 加 v3 行 + changelog。 | 待确认 |
 | **v2.7** | **2026-09-22** | **clean-customer-data SOP 落地**（用户口头指令："create a sop for clear customer private data :clean customer-checks, customer-resets"）：① **新增 `ToT/sop/clean-customer-data.md`** v0.1（193 行，8 节：适用场景/清理原则/清理清单/执行步骤/风险回滚/关联文档/变更日志）；② **策略**：默认保留最近 3 份 + 归档到 `/tmp/opencode/customer_data_archive_<ts>/`（不直接删，可恢复）；③ **范围限定**：仅清 `customer-checks/` + `customer-resets/`，不动 `tdd/`（new-trip SOP 管）和 `customer-data-resets-backup/`（独立策略）；④ **一键命令**：默认 KEEP=3，可调；⑤ §9 SOP 索引加 clean-customer-data 条目；⑥ changelog 加 v2.7 行。 | 待确认 |
+| **v2.8** | **2026-09-22** | **流程全生命周期体系架构建立 + 文档演进原则确立 + ea/ 飞轮定位**（用户口头指令："这个流程开发闭环，是个可以并且值得复用的流程 ... 用来借鉴，生成新的fdep这样有完整生命周期 ... 让我们在ea/ 下建立roadmap.md,开始这个旅程" + "需要在README.md顶部的这个摘要，因为随着系统的演进，这个文档本身也是需要被改进，优化的" + **"ea/* 不但需要，而且是此系统最具价值的资产，包含了方法论，落地架构，交付，改进闭环，是飞轮，不是工具"**）：① **新建 `ToT/ea/` 元目录**（v0.1 28K/580 行 roadmap.md，10 节：复盘/5 阶段生命周期/制品分层/SOP 编排/三环境拓扑/迭代机制/传承教学/路线图/风险/索引），**只读引用** ToT 内 25 处文档，**0 处修改**；② **飞轮定位**：`ea/` 是系统**最具价值的资产**——方法论 + 落地架构 + 交付 + 改进闭环的飞轮，不是工具；③ **顶部摘要 v2.7→v2.8 重排**：以"层级表"形式呈现，`ea/roadmap.md` 标记为 🚴 **飞轮**置顶，**演进原则**段写明"每轮迭代让下一轮转得更快"；④ changelog 加 v2.8 行。 | 待确认 |
+| **v2.9** | **2026-09-22** | **ea/ 飞轮第一版正式迭代（v1.0）**（用户口头指令："ok，开始迭代生成第一版ea架构"）：① **`ToT/ea/roadmap.md` v0.1.1 → v1.0**：从复盘型升级为正式架构文档，14 节（含新增 §2 核心原则 5 条 + §5 设计模式 7 个 + §9 合规检查清单 4 层）；② **复盘内容移出**到新文件 **`ToT/ea/iterations/2026-09-22.md`**（第一轮迭代归档 + 时间线 + 5 转折点 + 教训 + 数据快照 + ADR + 下一轮预测）；③ **新建 `ToT/ea/README.md`**（索引：目录结构 + 文件清单 + 使用方法 + 命名约定 + 维护原则）；④ **顶部摘要 v2.8 → v2.9**：`ea/roadmap.md` 版本升 v1.0 + 加 `README.md` + `iterations/` 提及；⑤ changelog 加 v2.9 行。 | 待确认 |
+| **v2.10** | **2026-09-22** | **ea/ 营销材料 PPT.md**（用户口头指令："先想办法把这套最有价值资产推销出去，准备一个PPT.md，用简短有力的文笔，一下自抓住目标客户的痛点，痒点. 让客户有动力和愿望，并且指引他们深入阅读了解完整的架构"）：① **新建 `ToT/ea/PPT.md`** v0.1（10 张 slide + 演讲者提示附录，结构：钩子 → 5 大痛点 → 痒点 → 一句话方案 → 4 组件 → 7 模式 → 实战数据 → 3 步 CTA → 验证 → 立即行动）；② **`ToT/ea/README.md` v0.1 → v0.2**：文件清单加 PPT.md + 命名约定加 PPT.md + 维护原则加"PPT.md 是营销"条款 + changelog 加 v0.2；③ **顶部摘要 v2.9 → v2.10**：飞轮行加 `PPT.md` 提及；④ changelog 加 v2.10 行。 | 待确认 |
