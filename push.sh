@@ -15,4 +15,3 @@ echo "==> ToT fix batch $N"
 
 sudo git add .
 sudo git commit -m "ToT fix batch $N"
-sudo git push

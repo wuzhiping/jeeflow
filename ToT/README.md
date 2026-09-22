@@ -2,7 +2,7 @@
 
 > 本文档由协作者共同**逐步制定**，任何章节的增删改均需双方确认，并在文末「变更日志」留档。
 
-> 当前版本（v1.6）已落：§1 读写边界规则、§4 角色分工、§5 流程、§9 SOP 索引（5 个 SOP）、§10 流程定义组织规范（v1.3 加强：文件名小写强制）、§11 引擎部署规范（端口 8101/8102 + 用户测试服务器 https://abc.feg.cn/jeeflow/ + Jira 审核）；附 ToT/mapping.md（v1.1）、ToT/sop/（spi-verify v0.2 + tdd-flow v0.1 + flow-folder v0.1 + flow-lint v0.1 + auto-deploy-fdep v0.1 + engine-deploy v0.1）、ToT/flows/fdep.json（v0.6.2）+ ToT/flows/fdep/（4 文件示范）、ToT/tdd/（含 INDEX.md + 多份测试日志）；其余章节为占位，待逐章确认后填充。
+> 当前版本（v2.2）已落：§1 读写边界规则、§4 角色分工、§5 流程、§9 SOP 索引（7 个 SOP）、§10 流程定义组织规范（v1.3 加强：文件名小写强制）、§11 引擎部署规范（v1.8 AI+人工协作）；附 ToT/HANDBOOK.md v0.1 知识手册、ToT/mapping.md（v1.1）、ToT/sop/（7 个 SOP 含 new-trip v0.1）、ToT/customer-resets/（2 份 reset 留档）、ToT/customer-checks/2026-09-22_ready.md、ToT/flows/fdep.json（v0.6.1 from jeeflow）+ ToT/flows/fdep/（4 文件示范）、ToT/tdd/（**本次精简：3 文件 = INDEX + baseline_v0.6.2.md/.json**）；其余章节为占位，待逐章确认后填充。
 
 ---
 
@@ -157,6 +157,8 @@
 | [flow-folder.md](./sop/flow-folder.md) | `flow-lint.py` | 流程定义组织合规检查 | 新增流程 / 文件夹结构变更 |
 | [auto-deploy-fdep.md](./sop/auto-deploy-fdep.md) | （内嵌 main_common） | 引擎启动后 | fdep.json 自动部署（memory/PG 双端） |
 | [engine-deploy.md](./sop/engine-deploy.md) | （手动） | 引擎级文件改动后 | 5 步部署流程：本地 → SOP → Jira 审核 → 人工部署 → healthz |
+| [customer-data-reset.md](./sop/customer-data-reset.md) | （手动 SQL + curl） | 客户服务器首次发布/大版本升级前 | TRUNCATE wf_process_* + 重启 + auto-deploy + healthz；每次留档到 `./customer-resets/` |
+| [new-trip.md](./sop/new-trip.md) | （手动） | 新会话 / 新项目启动前 | 本地 tdd/ 等历史日志轻装；保留 baseline + INDEX；先备份到 /tmp/opencode/ 再清 |
 
 **双轨调用顺序**：
 ```bash
@@ -222,7 +224,16 @@ ToT/flows/
 
 ## 11. 引擎部署规范（Engine Deploy Spec）
 
-> 🔒 **永久规则** —— 所有引擎级更新必须走人工审核流程，操作细节见 `ToT/sop/engine-deploy.md`。
+> 🔒 **永久规则** —— 所有引擎级更新必须走人工 push + AI 通过 API 操作流程，操作细节见 `ToT/sop/engine-deploy.md`。
+
+### 11.0 职责分工（关键，v1.8 重写）
+
+| 操作 | 执行方 |
+|------|--------|
+| 修改 / push 引擎代码 + 重启 abc.feg.cn 服务 | **人工** |
+| 客户服务器数据 reset / 流程 deploy / 健康检查 / smoke test / 留档 | **AI（opencode）** |
+
+> 客户测试服务器 `https://abc.feg.cn/jeeflow/` 是协同开发服务器，AI 可直接通过 API 操作（已实测可达：`HTTP 200, {"status":"UP","backend":"python","pg":"ok"}`）。
 
 ### 11.1 环境拓扑
 
@@ -230,9 +241,9 @@ ToT/flows/
 |------|------|------|----------|
 | 本地 dev（memory） | `127.0.0.1` | **8101** | `python -m uvicorn main:app --port 8101` |
 | 本地 dev（PG） | `127.0.0.1` | **8102** | `python -m uvicorn main_pg:app --port 8102` |
-| 用户测试服务器 | `https://abc.feg.cn/jeeflow/` | 443 | **人工 + Jira 审核** |
+| 客户测试服务器 | `https://abc.feg.cn/jeeflow/` | 443 | **人工 push 引擎 + AI 通过 API 操作** |
 
-> 🔒 用户真实需求入口 = `https://abc.feg.cn/jeeflow/`（即"测试服务器"承载生产前的实际用户需求）。
+> 🔒 客户真实需求入口 = `https://abc.feg.cn/jeeflow/`（协同开发 + 用户需求双重身份）。
 
 ### 11.2 引擎级 vs 非引擎级
 
@@ -240,15 +251,19 @@ ToT/flows/
 
 **非引擎级**：spi 数据 / ToT/flows / ToT/sop 脚本 / 演示样例 —— 走各自 SOP。
 
-### 11.3 5 步流程（摘要）
+### 11.3 流程（v1.8 重写为 AI + 人工协作）
 
-1. **本地开发**：`127.0.0.1:8101/8102` 调试
-2. **本地 SOP 全跑**：spi-verify / flow-lint / tdd-flow / auto-deploy-fdep
-3. **Jira 申请审核**：填写 `Engine Update Request` 工单模板（含 diff / SOP 结果 / 风险 / 回滚 / reviewer + approver）
-4. **人工部署**：SSH + 备份 + pull + restart（**不允许自动部署**）
-5. **健康检查**：curl `https://abc.feg.cn/jeeflow/healthz` + auto-deploy-fdep 启动日志 + fdep 流程可达性
+| Step | 操作 | 执行方 |
+|------|------|--------|
+| 1 | **本地开发**（127.0.0.1:8101/8102） | 人工 |
+| 2 | **本地 SOP 全跑**（spi-verify / flow-lint / tdd-flow / auto-deploy-fdep） | 人工 |
+| 3 | **push 引擎代码到 abc.feg.cn**（git push / CI） | 人工 |
+| 4 | **重启 abc.feg.cn 服务**（ssh systemctl restart） | 人工 |
+| 5 | **AI 自动验证 + 部署 fdep.json**（通过 API） | AI |
+| 6 | **健康检查 + smoke test**（curl /healthz + startAndExecute） | AI |
+| 7 | **留档到 `ToT/customer-resets/`**（含 processDefineId / instanceId / 时间戳） | AI |
 
-**任一步失败 → 回到上一步修复；Step 5 失败 → 立即回滚到 Step 4 的备份。**
+**任一步失败 → 人工回滚（git revert + 重启）。**
 
 ---
 
@@ -272,3 +287,9 @@ ToT/flows/
 | v1.4 | 2026-09-22 | **新增临时任务**：main_common.py 加 `auto_deploy_fdep(facade)` + `run_auto_deploy_fdep(facade)`；main.py (memory 8101) 与 main_pg.py (PG 8102) 双端接入；启动后自动检查 ToT/flows/fdep.json 存在性 + 引擎是否已有 fdep 定义，满足条件则部署。**双测验证**：memory 2/2 deploy（预期行为，每次重启清空）；PG 1 deploy + 1 skip（修正 getLastByName 参数名 bug 后）。**新增 SOP** `ToT/sop/auto-deploy-fdep.md` 记录验证矩阵与错误处置。 | 待确认 |
 | v1.5 | 2026-09-22 | **新增 §11 引擎部署规范**：① 本地 dev 默认端口 **8101 (memory) / 8102 (PG)**；② 用户测试服务器 `https://abc.feg.cn/jeeflow/` 锁定为用户真实需求入口；③ 每次引擎级更新（`main.py` / `main_pg.py` / `main_common.py` / `main_meta.py` / `vendor/jeeflow/`）走人工审核流程：本地 SOP → Jira 申请 → 人工部署 → curl healthz 健康检查；④ 新增 SOP `ToT/sop/engine-deploy.md` v0.1 含 5 步流程 + Jira 工单模板 + 回滚预案 + 跳过审核例外。 | 待确认 |
 | v1.6 | 2026-09-22 | **误改回滚**：用户确认端口仍是 8101/8102，先前 v1.5 中错记的"端口变更 8101→8101"已清理；main.py / main_pg.py / README / SOP 文档全部恢复 8101/8102 引用。 | 待确认 |
+| v1.7 | 2026-09-22 | **首次发布客户服务器数据 reset 例外**（用户口头授权）：目标 `https://abc.feg.cn/jeeflow/`，PG 后端，不备份，全清 wf_process_* 表。**新增 SOP** `ToT/sop/customer-data-reset.md` v0.1：含 10 节（前置检查 / TRUNCATE / 重启 / 健康检查 / 留档模板 / 风险与回滚）。**新增留档目录** `ToT/customer-resets/` 含模板 `2026-09-22_abc.feg.cn.md`（待操作人填回实际结果）。**§1 例外审批**：原因 = 首次发布同步；时间 = 2026-09-22；影响范围 = 客户测试服务器 wf_process_* 全表；操作人 = 由客户服务器 SSH 权限持有者执行（本地无网络到 abc.feg.cn）。 | 待确认 |
+| v1.8 | 2026-09-22 | **职责分工重写**（用户口头约定："协同开发的流程服务器，必须你来访问，人工只负责部署更新新的引擎"）：① §11 改为 AI 操作服务器 + 人工部署引擎的协作流程；② 验证 https://abc.feg.cn/jeeflow/ API 可达（HTTP 200, pg:ok），实际执行 reset（60→0 defines） + 手动 deploy fdep.json（processDefineId=1790042023122000） + 完整健康检查；③ `ToT/customer-resets/2026-09-22_abc.feg.cn.md` 已 AI 自动回填实测结果；④ `ToT/sop/customer-data-reset.md` 升 v0.2（新增 §2 职责分工表 + AI 一键命令清单）；⑤ `ToT/sop/engine-deploy.md` 升 v0.2（新增 §0 职责分工 + 5 步流程改为 7 步 AI+人工协作）。**注意**：abc.feg.cn 的 PG 与本地测试 PG 同库（`10.17.1.26:6432/litellm`），reset 同时清掉本地测试残留。 | 待确认 |
+| v1.9 | 2026-09-22 | **客户服务器首次就绪检查**（用户口头指令："be sure the remote server is ready, that's first job"）：AI 跑 8 项就绪检查（healthz / stats / users / roles / processDefine / doingList / startAndExecute / execute），全通过；新增 `ToT/customer-checks/2026-09-22_ready.md` 含完整检查报告 + 复现脚本。SPI 完整确认：14 用户（含 u_fdp_pm）+ 14 角色（8 core + 6 fdep_*）+ 4 字典 + fdep 流程部署成功。 | 待确认 |
+| v2.0 | 2026-09-22 | **冒烟测试必须跑到底**（用户口头指令："the moke test should run to the end after doing the reset job"）：客户服务器 reset #2 后，把冒烟 instance 92203808007179 从 stage_pm 一路推到 DONE（state=20，6 阶段全完成，doingList 清零）。`ToT/sop/customer-data-reset.md` 升 v0.3，§6.4 smoke test 改为"创建 + 循环推进到 DONE"（不再是仅创建实例）。`ToT/customer-resets/20260922100618_abc.feg.cn.md` 补记"冒烟跑到底"实绩。 | 待确认 |
+| v2.1 | 2026-09-22 | **知识手册落地**（用户口头指令："use the jeeflow fdep.json, import the fdep.json, doc the knowledge for other person or ai agent"）：① 从 `https://abc.feg.cn/jeeflow/wf/processDefine/detail` 拉回 fdep.json（id=1790042780958000）作为权威版本，字节级与本地一致（v0.6.1, 10 节点 / 10 边 / 6 openQuestions / 7444 chars），覆盖 `ToT/flows/fdep.json`；② 新增 `ToT/HANDBOOK.md` v0.1 知识手册（12 节：30秒读懂 / 架构图 mermaid / 三环境 / 核心概念 / 快速开始 / 常见任务 / SOP 索引 / 文件索引 / 故障排查 / 维护 / 约定速查 / 变更日志）。 | 待确认 |
+| v2.2 | 2026-09-22 | **新 SOP 落地 + new_trip 实操**（用户口头指令："for a new start, let clear tdd/ hisotry data, lite for the next trip" + "remember the new sop: new_trip"）：① 新增 `ToT/sop/new-trip.md` v0.1（8 节：场景/原则/清单/步骤/实测/关联/关联文档/变更日志）；② 实操：tdd/ 从 29 文件 / 440K 精简到 3 文件 / 40K（INDEX + baseline_v0.6.2.md/.json），备份在 `/tmp/opencode/tdd_backup/`；③ §9 SOP 索引增加 new-trip 条目。 | 待确认 |

@@ -1,8 +1,26 @@
 # SOP: 引擎级更新与人工审核 (engine-deploy)
 
-> **所属**：组织 SOP 集（与 spi-verify / tdd-flow / flow-folder / auto-deploy-fdep 并列）
+> **所属**：组织 SOP 集（与 spi-verify / tdd-flow / flow-folder / auto-deploy-fdep / customer-data-reset 并列）
 > **永久规则**：见 `ToT/README.md#11-引擎部署规范`
 > **适用**：所有 `main.py / main_pg.py / main_common.py / main_meta.py / vendor/jeeflow/` 下的变更
+> **职责分工**（用户口头约定）：**AI 操作服务器 + 人工部署新引擎**
+
+---
+
+## 0. 职责分工（关键）
+
+| 操作 | 执行方 | 工具/凭证 |
+|------|--------|-----------|
+| 修改引擎代码（main.py / main_pg.py / main_common.py / main_meta.py / vendor/jeeflow/） | **人工** | git / IDE |
+| **push 引擎代码到 abc.feg.cn** | **人工** | git push / ssh / CI |
+| **重启 abc.feg.cn 服务**（触发 auto_deploy_fdep） | **人工** | ssh + systemctl / docker / k8s |
+| 客户服务器数据 reset | **AI** | HTTPS API `/api/reset` |
+| fdep.json 部署 / 重部署 | **AI** | HTTPS API `/wf/processDefine/deploy` |
+| 健康检查 + smoke test | **AI** | `curl /healthz` + `/wf/...` |
+| 留档 `ToT/customer-resets/` | **AI** | 文件系统 |
+| Jira / 通知客户 | **人工** | 需外部系统权限 |
+
+**核心**：客户测试服务器本身（`https://abc.feg.cn/jeeflow/`）是协同开发服务器，AI 可直接通过 API 操作；人工仅负责把代码推到该服务器并重启服务。
 
 ---
 
@@ -12,10 +30,10 @@
 |------|-----------|------|------|----------|
 | **本地 dev（memory）** | `127.0.0.1` | **8101** | 开发者本机调试，memory 后端 | `python -m uvicorn main:app --port 8101` |
 | **本地 dev（PG）** | `127.0.0.1` | **8102** | 开发者本机调试，PG 后端 | `python -m uvicorn main_pg:app --port 8102` |
-| **用户测试服务器** | `https://abc.feg.cn/jeeflow/` | 443（反代） | 用户真实需求入口 + 测试 | **人工部署 + 确认**（走 Jira） |
+| **客户测试服务器** | `https://abc.feg.cn/jeeflow/` | 443（反代） | 协同开发服务器 + 用户真实需求入口 | 人工 push 引擎 + AI 通过 API 操作 |
 
-> 🔒 **永久约束**：本地 dev 默认端口 = **8101 (memory) / 8102 (PG)**；不再使用 8101/8102（已弃用）。
-> 用户真实需求入口 = `https://abc.feg.cn/jeeflow/`（即"测试服务器"承载生产前的实际用户需求）。
+> 🔒 本地 dev 默认端口 = **8101 (memory) / 8102 (PG)**。
+> 客户测试服务器 = `https://abc.feg.cn/jeeflow/`（AI 通过 API 操作，人工 push 引擎代码）。
 
 ---
 
