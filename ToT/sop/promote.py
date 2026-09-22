@@ -27,7 +27,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-BASE = Path("/opt/jupyter/src/RD/projects/jeeFlow")
+BASE = Path(__file__).resolve().parent.parent.parent
 FLOWS_DIR = BASE / "ToT" / "flows"
 CONFIG_PATH = BASE / "ToT" / "config" / "servers.json"
 

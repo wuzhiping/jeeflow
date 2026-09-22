@@ -121,7 +121,7 @@ TS=$(date +%Y%m%d%H%M%S)
 KEEP=${1:-3}
 
 set -e
-cd /opt/jupyter/src/RD/projects/jeeFlow
+cd $REPO_ROOT  # 或用 ToT/bin/jf wrapper
 
 # Step 1: 归档
 mkdir -p /tmp/opencode/customer_data_archive_$TS
@@ -130,7 +130,7 @@ cp -r ToT/customer-resets/ /tmp/opencode/customer_data_archive_$TS/customer-rese
 
 # Step 2: 删除
 for DIR in ToT/customer-checks ToT/customer-resets; do
-    cd /opt/jupyter/src/RD/projects/jeeFlow/$DIR
+    cd $REPO_ROOT/$DIR  # 或 ToT/bin/jf
     ls -t *.md 2>/dev/null | tail -n +$((KEEP + 1)) | xargs -r rm -f
 done
 

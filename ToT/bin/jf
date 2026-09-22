@@ -1,0 +1,31 @@
+#!/bin/bash
+# jf —— jeeFlow 命令 wrapper（自动 cd 到 REPO_ROOT + exec 命令）
+#
+# 用法：
+#   ./ToT/bin/jf python3 ToT/sop/ea-compliance.py
+#   ./ToT/bin/jf python3 ToT/sop/flow-completeness.py ToT/flows/fdep.json
+#   ./ToT/bin/jf bash -c 'echo $REPO_ROOT'
+#
+# 设计目的：
+#   - 不要求用户 export 任何环境变量
+#   - 不要求用户 cd 到项目根
+#   - 自动 cd 到项目根 + 执行命令
+#
+# 与 with-jf.sh 的关系：
+#   - with-jf.sh：source 用，会话内 export REPO_ROOT
+#   - jf：单命令用，自动 cd + exec（无需 export）
+
+# 定位 REPO_ROOT（本文件在 ToT/bin/ → 项目根是 ../..）
+_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+REPO_ROOT="$(dirname "$(dirname "$_SCRIPT_DIR")")"
+
+if [ ! -d "$REPO_ROOT/ToT" ]; then
+    echo "ERROR: 找不到 $REPO_ROOT/ToT 目录" >&2
+    echo "       请把本项目放在带 ToT/ 子目录的路径下" >&2
+    exit 1
+fi
+
+# cd 到项目根 + exec
+cd "$REPO_ROOT" || exit 1
+export REPO_ROOT
+exec "$@"

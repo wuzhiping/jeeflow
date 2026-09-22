@@ -13,7 +13,7 @@ import json
 import sys
 from pathlib import Path
 
-BASE = Path("/opt/jupyter/src/RD/projects/jeeFlow")
+BASE = Path(__file__).resolve().parent.parent.parent
 FLOWS_DIR = BASE / "ToT" / "flows"
 
 

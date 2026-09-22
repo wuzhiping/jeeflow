@@ -28,7 +28,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-BASE = Path("/opt/jupyter/src/RD/projects/jeeFlow")
+BASE = Path(__file__).resolve().parent.parent.parent
 TDD_DIR = BASE / "ToT" / "tdd"
 EA_DIR = BASE / "ToT" / "ea"
 CONFIG_PATH = BASE / "ToT" / "config" / "servers.json"

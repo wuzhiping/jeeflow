@@ -28,7 +28,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-BASE = Path("/opt/jupyter/src/RD/projects/jeeFlow")
+BASE = Path(__file__).resolve().parent.parent.parent
 
 sys.path.insert(0, str(BASE / "ToT" / "sop"))
 from server_config import load_config, get_url

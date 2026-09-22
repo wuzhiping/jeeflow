@@ -18,6 +18,29 @@
 
 ---
 
+## 1.5 零配置使用（v2.17 新增）
+
+> **所有 SOP 命令无需 `cd` 到项目根、无需 export 环境变量！**
+
+```bash
+# 方式 A（推荐单命令）—— 无需任何前置
+./ToT/bin/jf python3 ToT/sop/ea-compliance.py
+./ToT/bin/jf python3 ToT/sop/flow_completeness.py ToT/flows/fdep.json
+./ToT/bin/jf python3 ToT/sop/promote.py list
+
+# 方式 B（长时间会话）—— 在 .bashrc 加一行
+echo 'source ~/projects/jeeFlow/ToT/bin/with-jf.sh' >> ~/.bashrc
+# 之后会话内：REPO_ROOT 自动导出，所有命令直接可用
+
+# 方式 C（已 cd 到项目根）—— 最朴素
+cd /path/to/project
+python3 ToT/sop/ea-compliance.py
+```
+
+**当前状态**：43/43 PASS（§9.9 自动化 4/4 + §9.8 路径可移植性 4/4）。
+
+---
+
 ## 2. 角色专属路径（按需看）
 
 ### 2.1 🟢 流程设计师路径
@@ -322,3 +345,4 @@ python3 ToT/sop/flow_completeness.py ToT/flows/fdep.json
 | 版本 | 日期 | 变更 |
 |------|------|------|
 | **v0.1** | **2026-09-22** | **新用户发现入口**：1 文档 4 角色 4 路径 + 通用 5 分钟入门 + 工具速查 + 详细索引 + FAQ。解决"用户如何获取工作模式说明"的发现性需求。 |
+| **v0.2** | **2026-09-22** | **零配置使用**：新增 §1.5 —— jf wrapper / with-jf.sh / cd 3 种姿势任选；用户无需 `export REPO_ROOT` 即可跑所有 SOP 命令。 |

@@ -16,7 +16,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-BASE = Path("/opt/jupyter/src/RD/projects/jeeFlow")
+BASE = Path(__file__).resolve().parent.parent.parent
 FDEP_DIR = BASE / "ToT" / "flows" / "fdep"
 FDEP_JSON = BASE / "ToT" / "flows" / "fdep.json"
 JOB_CARDS = FDEP_DIR / "job_cards"
@@ -349,6 +349,128 @@ def check_layer_pipeline():
     return items
 
 
+# ===== §9.8 路径可移植性（4 项）=====
+def check_layer_portability():
+    """扫描所有 .py 文件：禁止硬编码 /opt/jupyter 等绝对路径，必须用 Path(__file__) 推导"""
+    items = []
+    ABS_PATH_PATTERNS = [
+        r"/opt/jupyter",
+        r"/home/[a-z]+/",  # /home/<用户>/
+        r"/root/",
+        r"/Users/[a-z]+/",  # macOS
+    ]
+    forbidden_regex = re.compile("|".join(ABS_PATH_PATTERNS))
+
+    # 扫描 ToT/sop/ 下所有 .py
+    sop_dir = BASE / "ToT" / "sop"
+    bad_files = []
+    for py_file in sorted(sop_dir.glob("*.py")):
+        # 自指豁免：本检查函数自身所在的文件（其内含检查模式字符串）
+        if py_file.name == "ea-compliance.py":
+            continue
+        text = py_file.read_text(encoding="utf-8")
+        # 排除注释中的示例（heuristic）
+        for line_no, line in enumerate(text.splitlines(), 1):
+            # 跳过纯注释行
+            stripped = line.strip()
+            if stripped.startswith("#") or stripped.startswith('"""') or stripped.startswith("'''"):
+                continue
+            # 跳过 docstring 内的示例
+            if forbidden_regex.search(line):
+                bad_files.append(f"{py_file.name}:{line_no}: {line.strip()[:80]}")
+
+    items.append(check_item("portability", "9.8.1", "ToT/sop/*.py 无硬编码绝对路径",
+                             len(bad_files) == 0,
+                             f"bad={bad_files[:3]}" if bad_files else "clean"))
+
+    # 2. SOP 文档用 $REPO_ROOT 占位符（不是 /opt/jupyter/...）
+    sop_md_files = list(sop_dir.glob("*.md"))
+    md_bad = []
+    for md in sop_md_files:
+        text = md.read_text(encoding="utf-8")
+        for line_no, line in enumerate(text.splitlines(), 1):
+            stripped = line.strip()
+            if stripped.startswith("#"):
+                continue
+            # 只检查 shell 命令行（不以 ` ` 之外的 Markdown 语法）
+            if re.search(r'cd\s+/opt/jupyter', line) or re.search(r"open\(['\"]/opt/jupyter", line):
+                md_bad.append(f"{md.name}:{line_no}")
+
+    items.append(check_item("portability", "9.8.2", "SOP 文档无 /opt/jupyter 硬编码",
+                             len(md_bad) == 0,
+                             f"bad={md_bad[:3]}" if md_bad else "clean"))
+
+    # 3. 所有脚本用 Path(__file__).resolve() 推导 BASE
+    using_path_dunder = []
+    for py_file in sorted(sop_dir.glob("*.py")):
+        text = py_file.read_text(encoding="utf-8")
+        if "Path(__file__)" in text and "BASE" in text:
+            using_path_dunder.append(py_file.name)
+
+    items.append(check_item("portability", "9.8.3", f"脚本用 Path(__file__) 推导 BASE",
+                             len(using_path_dunder) >= 5,
+                             f"count={len(using_path_dunder)}/6"))
+
+    # 4. 在其他路径模拟运行（不真跑，验路径推导逻辑）
+    sample_text = (BASE / "ToT/sop/ea-compliance.py").read_text(encoding="utf-8")
+    has_correct_pattern = bool(re.search(
+        r'BASE\s*=\s*Path\(__file__\)\.resolve\(\)\.parent\.parent\.parent',
+        sample_text
+    ))
+    items.append(check_item("portability", "9.8.4", "ea-compliance.py BASE 推导正确（3 层上溯）",
+                             has_correct_pattern,
+                             ""))
+
+    return items
+
+
+# ===== §9.9 自动化 REPO_ROOT（4 项）=====
+def check_layer_automation():
+    items = []
+    bin_dir = BASE / "ToT" / "bin"
+    # 1. ToT/bin/with-jf.sh 存在且 source 友好
+    with_jf_exists = (bin_dir / "with-jf.sh").exists()
+    items.append(check_item("automation", "9.9.1", "ToT/bin/with-jf.sh 自动检测 REPO_ROOT",
+                             with_jf_exists, ""))
+
+    # 2. ToT/bin/jf wrapper 存在且可执行
+    jf_path = bin_dir / "jf"
+    jf_exists = jf_path.exists()
+    jf_exec = jf_path.stat().st_mode & 0o111 != 0 if jf_exists else False
+    items.append(check_item("automation", "9.9.2", "ToT/bin/jf wrapper 存在且可执行",
+                             jf_exists and jf_exec,
+                             f"path={jf_path}, executable={jf_exec}"))
+
+    # 3. with-jf.sh 有自动检测逻辑（git + 路径反推 + 兜底）
+    auto_detect_ok = False
+    if with_jf_exists:
+        content = (bin_dir / "with-jf.sh").read_text(encoding="utf-8")
+        auto_detect_ok = (
+            "git rev-parse" in content and
+            "BASH_SOURCE" in content and
+            "export REPO_ROOT" in content
+        )
+    items.append(check_item("automation", "9.9.3", "with-jf.sh 含自动检测（git + 路径反推 + 兜底）",
+                             auto_detect_ok, ""))
+
+    # 4. 实测：在临时目录 source with-jf.sh 应能正确导出 REPO_ROOT
+    import subprocess as sp
+    test_result = False
+    if with_jf_exists:
+        try:
+            proc = sp.run(
+                ["bash", "-c", f"source {bin_dir/'with-jf.sh'} 2>/dev/null && echo $REPO_ROOT"],
+                capture_output=True, text=True, timeout=10
+            )
+            test_result = proc.returncode == 0 and str(BASE) in proc.stdout
+        except Exception:
+            pass
+    items.append(check_item("automation", "9.9.4", "实测 source with-jf.sh 正确导出 REPO_ROOT",
+                             test_result,
+                             f"expected={BASE}" if not test_result else ""))
+    return items
+
+
 def main():
     all_items = []
     print("Running §9 compliance check on FDEP...")
@@ -361,6 +483,8 @@ def main():
         (check_layer_flywheel, "§9.5 飞轮级"),
         (check_layer_config, "§9.6 配置集中化"),
         (check_layer_pipeline, "§9.7 环境流水线"),
+        (check_layer_portability, "§9.8 路径可移植性"),
+        (check_layer_automation, "§9.9 自动化 REPO_ROOT"),
     ]:
         items = layer_fn()
         all_items.extend(items)

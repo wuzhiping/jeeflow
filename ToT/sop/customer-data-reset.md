@@ -104,7 +104,7 @@ COMMIT;
 # 用本地 ToT/flows/fdep.json 作为 body
 python3 -c "
 import json
-content = open('/opt/jupyter/src/RD/projects/jeeFlow/ToT/flows/fdep.json').read()
+content = open('ToT/flows/fdep.json').read()
 print(json.dumps({'content': content, 'operator': 'system', 'name': 'fdep'}))
 " > /tmp/opencode/fdep_deploy_body.json
 
@@ -246,7 +246,7 @@ echo ""
 echo "[4/4] /wf/processDefine/deploy (fdep.json)"
 python3 -c "
 import json
-content = open('/opt/jupyter/src/RD/projects/jeeFlow/ToT/flows/fdep.json').read()
+content = open('ToT/flows/fdep.json').read()
 print(json.dumps({'content': content, 'operator': 'system', 'name': 'fdep'}))
 " | curl -s -X POST "$TARGET/wf/processDefine/deploy" \
     -H "Content-Type: application/json" \

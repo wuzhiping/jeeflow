@@ -142,7 +142,7 @@ R5           fdep_kb              u_fdp_pm
 
 ```bash
 # 1. 进入项目
-cd /opt/jupyter/src/RD/projects/jeeFlow
+cd $REPO_ROOT  # 或用 ToT/bin/jf wrapper
 
 # 2. 启动 memory 后端（开发用）
 .venv/bin/python3 -m uvicorn main:app --host 127.0.0.1 --port 8101
@@ -161,7 +161,7 @@ curl -sf http://127.0.0.1:8102/healthz
 ### 5.2 跑 SOP 验证本地
 
 ```bash
-cd /opt/jupyter/src/RD/projects/jeeFlow
+cd $REPO_ROOT  # 或用 ToT/bin/jf wrapper
 
 # 1. SPI 数据完整
 SPI_FOLDER=dev python3 ToT/sop/spi-verify.py
@@ -214,7 +214,7 @@ python3 ToT/sop/tdd-flow.py ToT/flows/fdep.json
 TARGET="https://abc.feg.cn/jeeflow"
 python3 -c "
 import json
-content = open('/opt/jupyter/src/RD/projects/jeeFlow/ToT/flows/fdep.json').read()
+content = open('ToT/flows/fdep.json').read()
 print(json.dumps({'content': content, 'operator': 'system', 'name': 'fdep'}))
 " | curl -s -X POST $TARGET/wf/processDefine/deploy \
     -H "Content-Type: application/json" -d @- --max-time 30
@@ -279,7 +279,7 @@ curl -s -X POST $TARGET/api/reset \
 # 4. 重新部署 fdep.json
 python3 -c "
 import json
-content = open('/opt/jupyter/src/RD/projects/jeeFlow/ToT/flows/fdep.json').read()
+content = open('ToT/flows/fdep.json').read()
 print(json.dumps({'content': content, 'operator': 'system', 'name': 'fdep'}))
 " | curl -s -X POST $TARGET/wf/processDefine/deploy \
     -H "Content-Type: application/json" -d @- --max-time 30
@@ -313,7 +313,7 @@ FDEP_ID=...  # 从 step 2 的 page 中拿
 ## 8. 关键文件索引
 
 ```
-/opt/jupyter/src/RD/projects/jeeFlow/
+
 ├── main.py                 # memory 端入口（端口 8101）
 ├── main_pg.py              # PG 端入口（端口 8102）
 ├── main_common.py          # 共享代码 + auto_deploy_fdep
