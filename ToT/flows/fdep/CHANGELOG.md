@@ -10,6 +10,9 @@
 | v0.6.1 | 2026-09-22 | assignee 从 fdep_* → 直接 `u_fdp_pm`（占位场景） | TDD 实跑 ✅ PASSED | — | SPI 角色自动解析留待 v0.7+ assignmentHandler |
 | **v0.6.2** | **2026-09-22** | 加 default edge 处理 W013 警告 | **TDD 实跑 ✅ PASSED（基线）** | [`test_FDEP_20260922082028`](../../tdd/test_FDEP_20260922082028.md) | happy path 6 阶段全 DONE |
 | v0.6.2 + 文件夹 | 2026-09-22 | 创建 `ToT/flows/fdep/` 文件夹（README/ROLES/NODES/CHANGELOG） | `flow-lint.py` ✅ | — | §10 流程定义组织规范首例 |
+| **v0.6.2 + Job Card** | **2026-09-22** | 新增 Job Card 模板（README §5）+ 首张示范卡 `job_card_stage_pm.md`（8 节：身份/输入/目标/checklist/产出/handoff/关联/变更） | — | — | 与 RESPONSES.md Decision Mem 协议 v1.1 lite+ 配套（含 next_handoff 字段） |
+| **v0.6.2 + Job Cards 子目录** | **2026-09-22** | 采纳用户建议，job_cards 集中到 `fdep/job_cards/` 子目录，便于多卡管理 | — | — | 相对路径更新：fdep/ 内文件用 `../`，跨包文件用 `../../../` |
+| **v0.6.2 + Job Card Generator** | **2026-09-22** | 写 `ToT/sop/gen-job-cards.py`（读 fdep.json + NODES.md + RESPONSES.md §X.2.1 → 批量产出 6 张卡到 `fdep/job_cards/`） | — | — | 默认跳过已存在的卡（保护手工），`--force` 覆盖；自动校验 §5 JSON 合法 + job_card_url 引用一致性 |
 
 ---
 
@@ -42,6 +45,29 @@ v0.6.1 务实方案：直接 `assignee: "u_fdp_pm"`，SPI 角色名保留为语�
 ### v0.6.2 + 文件夹（落地 §10）
 
 按 `ToT/README.md#10` 流程定义组织规范，创建 `ToT/flows/fdep/` 文件夹 + 4 文件。
+
+### v0.6.2 + Job Card（执行者手册化）
+
+**问题**：每个 stage_* 节点由不同 executor（人/AI Agent）执行，但他们都需要"一站式干活指南"。原 NODES.md 是纯文本工作手册，缺：
+- 决策 mems 字段模板（execute body 该传什么）
+- next_handoff 设计（如何把信息传给下个 executor）
+- checklist 化的执行步骤
+
+**方案**：新增 Job Card 模板（README §5）+ 第 1 张示范卡 `job_card_stage_pm.md`。
+
+**卡片结构（8 节）**：
+1. 你的身份（node id / assignee / SPI 角色 / 触发）
+2. 你的输入（前节点 next_handoff + 流程定义 + 必要文件）
+3. 你的目标（produce / storage / exitCriteria）
+4. 你的 checklist（6~10 步）
+5. 你的产出（execute body 完整 JSON 模板，含 next_handoff）
+6. 你的 handoff（下一节点 + 它需要的输入 + 时机）
+7. 关联文档 + SOP
+8. 变更日志
+
+**配套协议**：RESPONSES.md §0 Decision Mem 协议 v1.1 lite+（新增 `next_handoff` 字段，含 next_node/next_executor/job_card_url/input_files/checklist/context_for_next）。
+
+**未来**：`ToT/sop/gen-job-cards.py` 读 fdep.json + NODES.md + RESPONSES.md → 批量产出剩余 5 张卡（stage_intake/design/dev/review/feedback）。
 
 ---
 

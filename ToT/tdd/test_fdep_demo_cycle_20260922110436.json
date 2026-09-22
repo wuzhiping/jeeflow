@@ -1,0 +1,53 @@
+{
+  "timestamp": "20260922110436",
+  "demo_instance": "92207314894866",
+  "state": "DONE (20)",
+  "docs_used": [
+    "README.md",
+    "ROLES.md",
+    "NODES.md",
+    "CHANGELOG.md",
+    "RESPONSES.md"
+  ],
+  "history_nodes": [
+    "stage_intake",
+    "stage_pm",
+    "stage_design",
+    "stage_dev",
+    "stage_review",
+    "stage_feedback",
+    "decision_intake",
+    "end"
+  ],
+  "history_edges": [
+    "e0",
+    "e_intake_decision",
+    "e_decision_default",
+    "e2",
+    "e3",
+    "e4",
+    "e5",
+    "e6"
+  ],
+  "node_progress": {
+    "stage_intake": [
+      "u_fdp_pm"
+    ],
+    "stage_pm": [
+      "u_fdp_pm"
+    ],
+    "stage_design": [
+      "u_fdp_pm"
+    ],
+    "stage_dev": [
+      "u_fdp_pm"
+    ],
+    "stage_review": [
+      "u_fdp_pm"
+    ],
+    "stage_feedback": [
+      "u_fdp_pm"
+    ]
+  },
+  "cycle_summary": "start → stage_intake (submitType=1) → decision_intake (e_decision_approve) → stage_pm → stage_design → stage_dev → stage_review → stage_feedback → end (DONE)"
+}

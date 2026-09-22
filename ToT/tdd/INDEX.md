@@ -26,6 +26,9 @@
 | 流程 | 版本 | 结果 | 文件 |
 |------|------|------|------|
 | fdep | v0.6.2 | ✅ PASSED (happy + reject) | `test_fdep_baseline_v0.6.2.{md,json}` |
+| fdep | v1 (decision mems) | ✅ PASSED (5/6 task 含 decision_reason + memo + context) | `test_fdep_baseline_v1decision_mems.{md,json}` |
+| fdep | v2 (pickup API) | ✅ PASSED (5/5 task 调 `/api/executor/pickup`，4/4 next_handoff.job_card_url 指向真实文件) | `test_fdep_baseline_v2pickup_api.{md,json}` |
+| fdep | **v3 (job_card_url 审计)** | ✅ PASSED (5/5 task 提交带 `job_card_url`，5/5 文件存在，4/4 链路匹配 + 1/1 终态标记) | `test_fdep_baseline_v3audit.{md,json}` |
 
 **重跑生成新基线**：当 `ToT/flows/fdep.json` 升级到 v0.7 时，跑 `tdd-flow.py` 生成新时间戳文件，验证 PASSED 后手工改名为 `test_fdep_baseline_v0.7.{md,json}`。
 
@@ -72,3 +75,6 @@ diff ToT/tdd/test_fdep_baseline_v0.6.2.md <(python3 ToT/sop/tdd-flow.py ToT/flow
 |------|------|------|
 | v0.1 | 2026-09-22 | 初版（29 个文件，含手写+脚本生成） |
 | v0.2 | 2026-09-22 | **精简为基线模式**：26 个重复/历史文件删除，保留最新一份作为 `test_fdep_baseline_v0.6.2.{md,json}`；总大小 440K → 36K；备份在 `/tmp/opencode/tdd_backup/` |
+| v0.3 | 2026-09-22 | **新增 Decision Mems 基线** `test_fdep_baseline_v1decision_mems.{md,json}`（demo cycle v2 实测 instance 92207862268963，5/6 task 含完整 decision_reason/memo/context）；section 2 加 v1 行。 |
+| v0.4 | 2026-09-22 | **新增 Pickup API 基线** `test_fdep_baseline_v2pickup_api.{md,json}`（demo cycle v3 实测 instance 92210601465864，5/5 task 调 `/api/executor/pickup`，4/4 next_handoff.job_card_url 指向真实文件，1/1 终态节点标记 terminal）；section 2 加 v2 行。 |
+| v0.5 | 2026-09-22 | **新增 job_card_url 审计基线** `test_fdep_baseline_v3audit.{md,json}`（demo cycle v4 实测 instance 92210956748829，5/5 task 提交带 `job_card_url` + `next_handoff`，5/5 文件存在，4/4 链路匹配，1/1 终态标记）；section 2 加 v3 行。 |

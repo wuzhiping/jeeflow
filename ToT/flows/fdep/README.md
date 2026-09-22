@@ -70,3 +70,85 @@ start → stage_intake → decision_intake → stage_pm → stage_design
 主要里程碑：
 - **v0.5**：5 阶段线性骨架（双出边触发 W012）
 - **v0.6.2**：插入 decision_intake 节点修 W012 + assignee 改 u_fdp_pm 占位；happy path 实测 PASSED
+
+---
+
+## 5. Job Card 模板（v1.0）
+
+> 每个**任务节点**（stage_*）配一张 `job_card_<node>.md`，给执行者（人或 AI）一站式干活。
+> **目标**：executor 拿到 taskId + 打开本卡片 → 立即知道做什么 / 怎么做 / 产出什么 / 传给谁。
+> **协议**：与 §RESPONSES.md Decision Mem 协议 v1.1 lite+ 配套（含 `next_handoff` 字段）。
+
+### 5.1 卡片结构（8 节）
+
+| § | 名称 | 内容 |
+|---|------|------|
+| 1 | 你的身份 | node id / assignee / SPI 角色 / 触发方式 |
+| 2 | 你的输入 | 前节点的 `variable.decision_memo.next_handoff` + 流程定义 + 必要文件 |
+| 3 | 你的目标 | produce / storage / exitCriteria |
+| 4 | 你的 checklist | 按顺序的执行步骤（6~10 条） |
+| 5 | 你的产出 | execute body 完整 JSON 模板（含 `next_handoff` 字段） |
+| 6 | 你的 handoff | 下一节点 + 它需要的输入 + 时机 |
+| 7 | 关联 + SOP | NODES.md / RESPONSES.md / SOP / mapping 引用 |
+| 8 | 变更日志 | 版本记录 |
+
+### 5.2 命名规则（§10 强制约束）
+
+| 规则 | 说明 |
+|------|------|
+| 文件名 | `job_card_<node_id>.md`，全小写 |
+| 位置 | `ToT/flows/fdep/job_cards/`（fdep/ 子目录，与 fdep.json 同包） |
+| 一一对应 | fdep.json 中每个 `snaker:task` 节点一张卡（决策 / 起止节点不需要） |
+| 节点 ↔ 文件 | `stage_pm` ↔ `job_cards/job_card_stage_pm.md` |
+
+### 5.3 当前已立 Job Cards
+
+| 节点 | 卡 | 状态 |
+|------|----|------|
+| stage_intake | [`job_cards/job_card_stage_intake.md`](./job_cards/job_card_stage_intake.md) | ✅ v0.1 自动生成 |
+| stage_pm | [`job_cards/job_card_stage_pm.md`](./job_cards/job_card_stage_pm.md) | ✅ v0.1 自动生成 |
+| stage_design | [`job_cards/job_card_stage_design.md`](./job_cards/job_card_stage_design.md) | ✅ v0.1 自动生成 |
+| stage_dev | [`job_cards/job_card_stage_dev.md`](./job_cards/job_card_stage_dev.md) | ✅ v0.1 自动生成 |
+| stage_review | [`job_cards/job_card_stage_review.md`](./job_cards/job_card_stage_review.md) | ✅ v0.1 自动生成 |
+| stage_feedback | [`job_cards/job_card_stage_feedback.md`](./job_cards/job_card_stage_feedback.md) | ✅ v0.1 自动生成 |
+
+**决策节点 / 起止节点不需要卡**（`start` / `decision_intake` / `end` / `end_rejected` 都是引擎自动流转）。
+
+### 5.4 生成器
+
+`ToT/sop/gen-job-cards.py` 读 fdep.json + NODES.md + RESPONSES.md → 批量产出 6 张卡到 `job_cards/`。
+
+**用法**：
+
+```bash
+# 默认：跳过已存在的卡（保护手工编辑）
+python3 ToT/sop/gen-job-cards.py
+
+# 强制重新生成（覆盖全部）
+python3 ToT/sop/gen-job-cards.py --force
+```
+
+**何时重跑**：
+- fdep.json 节点定义变化（新增/删除 task 节点）
+- NODES.md 工作步骤 / 注意事项更新
+- RESPONSES.md §X.2.1 模板调整
+
+**自动解析**：
+- `assignee` / `form` / `stage` / `artifact` / `storage` / `exitCriteria` ← fdep.json props
+- 工作步骤 / 注意事项 ← NODES.md 工作步骤段
+- Decision Mem 模板 ← RESPONSES.md §X.2.1
+
+**校验**：生成后 §5 JSON 必为可解析 JSON；所有 `job_card_url` 必指向 `job_cards/` 内真实存在的文件。
+
+---
+
+## 6. 关联文档
+
+| 文档 | 用途 |
+|------|------|
+| [NODES.md](./NODES.md) | 每个节点的纯文本工作手册（无 handoff 字段） |
+| [ROLES.md](./ROLES.md) | 角色清单 + SPI 映射 |
+| [RESPONSES.md](./RESPONSES.md) | AI 起草响应的模板 + Decision Mem 协议 v1.1 lite+ |
+| [CHANGELOG.md](./CHANGELOG.md) | 流程变更记录（含 Job Card 增删） |
+| [../fdep.json](../fdep.json) | 流程定义 JSON（唯一权威） |
+| [../../mapping.md](../../mapping.md) | R 角色 ↔ SPI ↔ 用户三层映射 |
