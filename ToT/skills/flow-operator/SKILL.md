@@ -93,6 +93,7 @@ sequenceDiagram
 |--------|------|-----------|
 | `processDefine/page` | 列可发起流程清单 | 通用 |
 | `processDefine/detail` | 流程定义详情 + Job Card URL | 通用 |
+| `processDefine/getJobCardContent` | **读 job_card markdown 内容（作为工作指导）** | **fdep** / **invoice-approval** |
 | `processDefine/startAndExecute`（或 `startAndExecute`） | 发起实例 + 首 task | **fdep** / **invoice-approval** |
 | `processInstance/page` | 我发起的实例列表 | 通用 |
 | `processInstance/detail` | 实例详情 + 当前节点 + Job Card | 通用 |
@@ -198,7 +199,50 @@ curl -sS -X POST ${ACTIVE_SERVER}/wf/processDefine/startAndExecute \
 | `feedback_summary` | 简短问题说明 | ✅ |
 | `feedback_type` | bug / question / suggestion | ⛔ |
 | `feedback_severity` | low / medium / high | ⛔ |
-| `feedback_instance_id` | 相关实例 id（若有） | ⛔ |
+| `feedback_instance_id` | 相关实例 id | ⛔ |
+
+## Work Guidance · 读 Job Card 作为工作指导
+
+### 为什么需要这个能力
+
+Tools §B 的 `processTask/detail` 返回 `ext.job_card_url`（相对路径如 `ToT/flows/fdep/job_cards/job_card_xxx.md`），但 server-side API **不返回 markdown 内容**。
+
+要把 job_card 作为工作指导（设计模式），需调 `processDefine/getJobCardContent` 拿完整 markdown。
+
+### 工作流
+
+1. **接单**：`processTask/todoList` 拿 task id
+2. **拿 URL**：`processTask/detail` → `ext.job_card_url`
+3. **读工作指导**：
+
+```bash
+curl -sS -X POST ${ACTIVE_SERVER}/wf/processDefine/getJobCardContent \
+    -H "Content-Type: application/json" \
+    -d '{
+        "processDefineName": "<flow-id>",
+        "url": "<ToT/flows/<flow-id>/job_cards/<job_card>.md>"
+    }' | jq -r '.data.content'
+```
+
+4. **基于内容做决策** → `processTask/execute` 提交
+
+### endpoint 规范
+
+| 项 | 值 |
+|----|----|
+| action | `processDefine/getJobCardContent` |
+| 请求 | `{processDefineName: "<flow-id>", url: "<job_card 相对路径>"}` |
+| 返回 | `{url, content, length}` |
+| 安全 | url 必须以 `ToT/flows/<flow-id>/job_cards/` 开头（防越界）|
+| url 后缀 | 自动补 `.md`（不强制要求）|
+
+### 注意事项
+
+- **必须先部署流程**：`processDefineName` 必须在目标 server 已部署（否则 `流程定义不存在`）
+- **客户 server**：URL 路径相对仓库根，customer server 上 `ToT/flows/...` 必须存在（设计者部署时打包 job_cards）
+- **content 大小**：单个 job_card 通常 1-5 KB，可放心读入 context
+- **首个 task 的 ext 不含 `job_card_url`**（fdep 设计）：job_card_url 在 execute body 里提交后透传到 `instance.variable.job_card_url`。agent **应基于 `taskName` 推断** job_card_url：`ToT/flows/<processDefineName>/job_cards/job_card_<taskName>.md`（fdep 的 taskName = `stage_<x>`，invoice-approval 的 taskName = `<stage>`）
+- **agent 推断失败时**：fallback 到 `processDefine/detail` 拿流程定义，再从 `nodes[]` 找当前节点的 metadata 推断 job_card
 
 ## Others
 

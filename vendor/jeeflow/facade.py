@@ -1225,6 +1225,45 @@ class JeeflowFacade:
         return {"id": def_.id, "name": def_.name, "displayName": def_.displayName,
                 "type": def_.type, "state": def_.state, "version": def_.version}
 
+    async def _processDefine_getJobCardContent(self, args: dict) -> dict:
+        """读 job_card markdown 作为工作指导（v0.1）
+
+        请求: {processDefineName: "<flow-id>", url: "<ToT/flows/<flow-id>/job_cards/...>"}
+        返回: {url, content, length}
+        安全: url 必须以 ToT/flows/<flow-id>/job_cards/ 开头（防越界）
+        """
+        name = str(args.get("processDefineName", ""))
+        url = str(args.get("url", ""))
+        if not name:
+            raise ValueError("processDefineName 必填")
+        if not url:
+            raise ValueError("url 必填")
+        # 流程必须存在
+        def_ = await self._repo.find_define_by_name(name)
+        if not def_:
+            raise ValueError(f"流程定义不存在: {name}")
+        # 标准化 url（自动补 .md 后缀）
+        normalized_url = url if url.endswith(".md") else url + ".md"
+        # 安全：必须在 ToT/flows/<name>/job_cards/ 下
+        expected_prefix = f"ToT/flows/{name}/job_cards/"
+        if not normalized_url.startswith(expected_prefix):
+            raise ValueError(
+                f"url 不安全: {url}（应位于 {expected_prefix}）"
+            )
+        # 读文件
+        try:
+            with open(normalized_url, encoding="utf-8") as f:
+                content = f.read()
+        except FileNotFoundError:
+            raise ValueError(f"job_card 文件不存在: {normalized_url}")
+        except Exception as e:
+            raise ValueError(f"读失败: {e}")
+        return {
+            "url": normalized_url,
+            "content": content,
+            "length": len(content),
+        }
+
     async def _processInstance_highLight(self, args: dict) -> dict:
         instance_id = self._to_int(args.get("id"))
         if not instance_id:
