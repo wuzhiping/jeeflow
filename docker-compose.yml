@@ -9,6 +9,12 @@ services:
     #command: ["uv", "run", "main.py"]
     ports:
       - "8101:8101"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8101/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
