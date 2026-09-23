@@ -589,6 +589,36 @@ v4+ (候选：fork-join / 多 executor 接力 / 生产部署)
 - 9.6.7: notification service config
 - 9.6.8: monitoring service config
 
+### 9.7 环境流水线（3 阶段）（4 项）
+
+> **演进**：v1.4 起（Iter#6，servers.json + org-server + promote.py + env-pipeline.md）
+> **原则**：越接近生产，约束越严 —— Local 全自动 / Org 半自动 / Customer 强制人工审批
+
+- [ ] **9.7.1** `servers.json` 含 3 阶段 tier 标识（`stage-1-dev` / `stage-2-staging` / `stage-3-prod`）
+- [ ] **9.7.2** `servers.json` 含 `ai_can_push` / `ai_can_reset` 权限字段（所有 server）
+- [ ] **9.7.3** `ToT/sop/promote.py` 流水线 CLI 工具存在（含 `list` / `status` / `push` / `promote` / `rollback` 等子命令）
+- [ ] **9.7.4** `ToT/sop/env-pipeline.md` SOP 文档存在
+
+### 9.8 路径可移植性（4 项）
+
+> **演进**：v1.5 起（Iter#7，`Path(__file__).resolve().parent.parent.parent` 3 层上溯）
+> **原则**：任何脚本 / SOP 都不应硬编码 `/opt/jupyter/...` 等绝对路径；用 `$REPO_ROOT` 或 `Path(__file__)` 推导
+
+- [ ] **9.8.1** `ToT/sop/*.py` 无硬编码绝对路径（`/opt/jupyter` / `/home/<user>/` / `/root/` / `/Users/<user>/`）
+- [ ] **9.8.2** SOP 文档无 `/opt/jupyter` 硬编码（用 `$REPO_ROOT` 占位符或 `jf` wrapper）
+- [ ] **9.8.3** 脚本用 `Path(__file__).resolve()` 推导 BASE（至少 5/6 个 .py 文件符合）
+- [ ] **9.8.4** `ea-compliance.py` BASE 推导为 3 层上溯（`parent.parent.parent`）
+
+### 9.9 自动化 REPO_ROOT（4 项）
+
+> **演进**：v1.6 起（Iter#8，with-jf.sh + jf wrapper + Path(__file__) 三角链）
+> **原则**：用户不需手动 export `REPO_ROOT`；`jf` wrapper 自动处理
+
+- [ ] **9.9.1** `ToT/bin/with-jf.sh` 自动检测 REPO_ROOT（存在）
+- [ ] **9.9.2** `ToT/bin/jf` wrapper 存在且可执行
+- [ ] **9.9.3** `with-jf.sh` 含自动检测逻辑（`git rev-parse` + `BASH_SOURCE` 路径反推 + `export REPO_ROOT`）
+- [ ] **9.9.4** 实测 `source with-jf.sh` 正确导出 REPO_ROOT（与 BASE 路径匹配）
+
 ---
 
 ## §10 传承与教学路径（Inheritance & Teaching）

@@ -81,7 +81,14 @@ def report_duplicate(code: str, existing: list) -> None:
 
 
 def step3_download(code: str, share_config: dict, tmp_dir: Path) -> tuple:
-    """下载到 tmp，返回 (download_url, size, file_type)"""
+    """下载到 tmp，返回 (download_url, size, file_type)
+
+    失败时返回 (None, 0, "") —— main 据此判定不创建 issue。
+    容错规则见 `ToT/sop/issue-from-share-file-flow.md` §3 Step 3：
+      - HTTP 4xx/5xx → 报告错误
+      - 文件 < 100 bytes → 报告异常（疑似错误页）
+      - 响应为 JSON 错误（`{"code":...}`） → 报告错误
+    """
     template = share_config["download_url_template"]
     download_url = template.format(code=code)
     log(f"☁️  下载: {download_url}")
@@ -90,28 +97,70 @@ def step3_download(code: str, share_config: dict, tmp_dir: Path) -> tuple:
     target = tmp_dir / "file.bin"
 
     try:
+        # curl 加 -w 拿 HTTP code（追加到 stdout 末尾）
         result = subprocess.run(
-            ["curl", "-sS", "-L", "--max-time", "60", download_url, "-o", str(target)],
+            [
+                "curl", "-sS", "-L", "--max-time", "60",
+                "-w", "\n%{http_code}",
+                "-o", str(target),
+                download_url,
+            ],
             capture_output=True, text=True, timeout=70,
         )
         if result.returncode != 0:
             log(f"❌ curl 失败: {result.stderr}")
             return None, 0, ""
+
+        # 解析 HTTP code（最后一行）
+        http_code = "000"
+        if result.stdout:
+            lines = result.stdout.strip().split("\n")
+            if lines and lines[-1].isdigit() and len(lines[-1]) == 3:
+                http_code = lines[-1]
+
+        # 容错 #1: HTTP 4xx/5xx
+        if http_code.startswith("4") or http_code.startswith("5"):
+            log(f"❌ HTTP {http_code}（取件码无效 / 过期 / 服务端异常）")
+            return None, 0, ""
     except Exception as e:
         log(f"❌ 下载异常: {e}")
         return None, 0, ""
 
-    if not target.exists() or target.stat().st_size < 100:
-        log(f"❌ 下载失败：文件太小或不存在")
-        return download_url, target.stat().st_size if target.exists() else 0, ""
+    if not target.exists():
+        log(f"❌ 下载文件不存在")
+        return None, 0, ""
 
-    # 检测类型
+    size = target.stat().st_size
+
+    # 容错 #2: 文件过小（疑似错误页 / JSON 错误响应）
+    if size < 100:
+        log(f"❌ 文件过小（{size} bytes，疑似错误页）")
+        try:
+            head = target.read_text(errors="replace")[:200]
+            log(f"   内容预览: {head}")
+        except Exception:
+            pass
+        return None, 0, ""
+
+    # 容错 #3: JSON 错误响应（file-share 实际返回 200 + JSON body）
+    try:
+        with target.open("rb") as f:
+            head_bytes = f.read(100)
+        if head_bytes.lstrip().startswith(b"{") and b'"code"' in head_bytes:
+            head_text = head_bytes.decode("utf-8", errors="replace")
+            log(f"❌ 服务端返回 JSON 错误响应：")
+            log(f"   {head_text[:200]}")
+            return None, 0, ""
+    except Exception:
+        pass
+
+    # 正常：检测文件类型
     file_result = subprocess.run(["file", "-b", str(target)], capture_output=True, text=True)
     file_type = file_result.stdout.strip()
-    size = target.stat().st_size
 
     log(f"   size: {size} bytes")
     log(f"   type: {file_type}")
+    log(f"   HTTP: {http_code}")
     return download_url, size, file_type
 
 

@@ -6,4 +6,5 @@ node_modules/
 .DS_Store
 *.local
 ToT/issues/
+ToT/skills/flow-operator/config.yaml
 .vite/
