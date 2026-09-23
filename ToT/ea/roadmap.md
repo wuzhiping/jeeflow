@@ -1,4 +1,4 @@
-# EA: 流程全生命周期体系架构 (Flow Lifecycle Enterprise Architecture) · v1.6
+# EA: 流程全生命周期体系架构 (Flow Lifecycle Enterprise Architecture) · v3.8
 
 > **目的**：以 **FDEP** 为蓝本示例，建立一套**可复用、可持续迭代**的"流程开发 — 文档化 — 执行器化 — 测试 — 部署 — 运维 — 反馈 — 迭代"全生命周期方法论与文档体系。
 > **目标读者**：任何想"开发一个像 FDEP 这样完整闭环的业务流程"的人（人或 AI Agent）。
@@ -340,16 +340,17 @@
 | **修正规范** | §9.3.5 baseline 命名放宽为 `<X>[<feature>]?`（实战用 feature 名比 X.Y.Z 更有信息量） |
 | **适用场景** | 任何"想证明方法论有效"的需求（产品 / 工程 / 流程） |
 
-### Pattern 9：环境配置集中化（v1.2+）
+### Pattern 9：环境配置集中化（v1.2+，v3.8+ 双配置域）
 
 | 项 | 内容 |
 |----|------|
-| **问题** | 服务器 URL 散落硬编码在多个文件（脚本 / SOP / 留档），改一处遗漏全漏 |
-| **解决方案** | **3 个配置文件**：`ToT/config/servers.json`（数据）+ `ToT/sop/server_config.py`（加载器）+ `ToT/sop/env-config.md`（管理 SOP） |
-| **FDEP 体现** | Iteration #3：5+ 处硬编码 → 0 处（除历史留档外）；改 URL 现只需 1 处 |
-| **关键设计** | 1) 单一 JSON 真相源；2) 加载器双模式（CLI + import）；3) §9.6 自动检查保证不变硬编码 |
+| **问题** | 服务器 URL 散落硬编码在多个文件（脚本 / SOP / 留档），改一处遗漏全漏；外部服务 endpoint 同样散落 |
+| **解决方案** | **2 套配置域（按职责拆分）**：① **引擎 server 域** `ToT/config/servers.json`（4 servers + active）+ `server_config.py` 加载器 + `env-config.md` SOP；② **外部服务域** `ToT/config/share.json`（upload_url + download_url_template + expire_unit）+ `archive_flow.load_share_config()` 加载器 + `archive-flow.md` §9 配置说明 |
+| **FDEP 体现** | Iteration #3：5+ 处服务器硬编码 → 0 处；**Iteration #30**：archive_flow 2 处 share 硬编码 → 0 处 |
+| **关键设计** | 1) 单一 JSON 真相源（每域一份）；2) 加载器 inline 或独立（share_config 轻量，inline 在 archive_flow.py）；3) §9.6 自动检查保证不变硬编码（每域 +1 项）；4) **域拆分原则**：管"流程引擎"的归 servers.json，管"外部服务"的归各自 <service>.json，不混合 |
 | **历史兼容** | 留档保留当时 URL（不替换），仅新脚本/SOP 用 config |
-| **适用场景** | 任何"多个环境 + 多脚本"的部署场景 |
+| **适用场景** | 任何"多个环境 + 多脚本"或"多个外部服务 + 多工具"的部署场景 |
+| **演进方向** | 未来新增外部服务（email / notification / monitoring）→ 新建 `ToT/config/<service>.json` + §9.6.X 检查 |
 
 ### Pattern 10：用户流程引导 + 完整性检测 + Issue 元闭环（v1.3+）
 
@@ -572,6 +573,22 @@ v4+ (候选：fork-join / 多 executor 接力 / 生产部署)
 - [ ] **新经验写回 Patterns**（§5）
 - [ ] **新原则写回 Principles**（§2）
 
+### 9.6 配置集中化（per-config-domain，5 项）
+
+> **演进**：v1.2 起步（servers.json 4 项，Iter#3），v3.8 扩展（+ share.json 第 5 项，Iter#30）
+> **原则**：每个外部端点/服务都应有 §9.6 子项，自动校验"存在且合法 + 加载器存在 + 不硬编码"
+
+- [ ] **9.6.1** `ToT/config/servers.json` 存在且合法（含 `servers` + `active` 字段）
+- [ ] **9.6.2** `ToT/sop/server_config.py` 加载器存在
+- [ ] **9.6.3** `ea-compliance.py` 自身不硬编码 URL（必须 `get_url()` 读 config）
+- [ ] **9.6.4** `servers.json` 含 `customer-test` 配置（当前主目标）
+- [ ] **9.6.5** `ToT/config/share.json` 存在且合法（archive_flow endpoint 真相源，含 `upload_url` + `download_url_template` 含 `{code}` 占位）
+
+**未来扩展模板**（v3.9+）：
+- 9.6.6: email service config
+- 9.6.7: notification service config
+- 9.6.8: monitoring service config
+
 ---
 
 ## §10 传承与教学路径（Inheritance & Teaching）
@@ -772,3 +789,25 @@ v4+ (候选：fork-join / 多 executor 接力 / 生产部署)
 | **v1.4** | **2026-09-22** | **3 阶段环境流水线（Pattern 11）**（用户口头指令"我们提供和开发同步的快速实验环境 ... 1. 用户可以先本地memory 2. 上传至组织服务器 3. 正式发布流程，具体sop待定"）：① **`ToT/config/servers.json` v1.1**：加 `org-server`（stage-2-staging，tier=risk_level=ai_can_push=ai_can_reset 4 字段完整）；② **新建 `ToT/sop/env-pipeline.md`** v0.1（10 节 SOP：3 阶段模型 / 每阶段操作 / promote 流程 / 自动化范围 / 与其他 SOP 关系）；③ **新建 `ToT/sop/promote.py`** CLI（170 行，6 子命令：list/status/push/request-promote/promote/rollback，--confirm-ai 双保险 + ai_can_push 检查）；④ **`ea-compliance.py` §9.7 +4 项**（35/35 PASS，tier 完整 / ai_can_* 完整 / promote.py 存在 / env-pipeline.md 存在）；⑤ 演示完整流程（含 6 个边界场景全部正确处理：list / status / push / request-promote / 无 --confirm-ai 拒绝 / ai_can_push=false 拒绝）；⑥ **§5 新增 Pattern 11**（3 阶段环境流水线）；⑦ 新增 iterations/2026-09-22_env-pipeline.md（第六轮迭代记录：闭环示意 + ADR + 度量）；⑧ SOP 数 14→14（+env-pipeline）；⑨ v2.13 → v2.14 changelog 同步。 |
 | **v1.5** | **2026-09-22** | **路径可移植性修复（用户口头指令"发现一个非常严重的问题，某些文档或代码出现了绝对路径 /opt/jupyter/**** 指令. 请检查修正，严重影响其他机器环境的sop的落地"）：① **修 5 个脚本 BASE 硬编码**（flow_designer.py / ea-compliance.py / promote.py / flow_completeness.py / issue_link.py）：`Path("/opt/jupyter/...")` → `Path(__file__).resolve().parent.parent.parent`（3 层上溯到项目根）；② **修 3 个 SOP 文档 `/opt/jupyter` 硬编码**（customer-data-reset.md / HANDBOOK.md / clean-customer-data.md）→ `$REPO_ROOT` 环境变量占位符；③ **`ea-compliance.py` §9.8 +4 项**（路径可移植性自动检查，39/39 PASS：脚本无硬编码 / SOP 无硬编码 / 用 Path(__file__) / BASE 推导正确 3 层上溯）；④ **跨机器验证**：`/tmp/myapp` 完整模拟部署（cp -r 后跑 5 项工具全过：ea-compliance / flow-completeness / promote / flow_designer / issue_link）；⑤ §9 检查项 35→39（+4 项）；⑥ 新增 iterations/2026-09-22_portability.md（第七轮迭代：闭环 + ADR + 度量对比）；⑦ v2.15 → v2.16 changelog 同步。 |
 | **v1.6** | **2026-09-22** | **REPO_ROOT 自动化 · 第八轮飞轮转动**（用户口头指令"REPO_ROOT 需要人工设置？ 能否自动"）：① **新建 `ToT/bin/with-jf.sh`**（60 行 bash，4 优先级自动检测：已 export → git rev-parse → 路径反推 → 兜底）；② **新建 `ToT/bin/jf` wrapper**（30 行 bash，`cd $REPO_ROOT + exec "$@"`）；③ **更新 3 个 SOP 文档**用 jf wrapper 替代 `$REPO_ROOT` 注释（user 不需手动 export）；④ **`ea-compliance.py` §9.9 +4 项**（自动化检查，43/43 PASS：with-jf.sh 存在 / jf wrapper 可执行 / with-jf.sh 含自动检测 / 实测 source 正确导出）；⑤ **3 种用法验证**：source（会话）/ jf wrapper（单命令）/ 直接 cd（用户正常用法）—— 5 项工具 + 3 种姿势全过；⑥ 跨机器验证（`/tmp/test_jfhost` 完整模拟部署）；⑦ **§5 新增 Pattern 12**（REPO_ROOT 自动化 —— "with-jf.sh + jf + Path(__file__)" 三角链）；⑧ 新增 iterations/2026-09-22_repo-root-auto.md（第八轮迭代：闭环 + ADR + 度量）；⑨ §9 检查项 39→43（+4 项）；⑩ v2.16 → v2.17 changelog 同步。 |
+| **v1.7** | **2026-09-23** | **端到端验证 · 第九轮飞轮转动**（自然推进，验证方法论对非 FDEP 流程可复用性）：① **新建 invoice-approval 流程**（6 节点 3 角色，含金额分支决策，6 edge）；② **8 步完整跑通**（flow_designer 设计 → deploy → e2e 2 条路径 → completeness 50→100% → 5 文件 + 4 Job Cards → baseline md → promote 演示 → ea-compliance 自验证）；③ **3 个 bug 当场修复**：decision expr 在 edge 而非 node / `#variable.amount` 嵌套变量 / actor 是 role 名需 flow.auto 绕过；④ **完整性评分从 50% → 100%**（6 层全 PASS）；⑤ **沉淀 5 条 SOP 经验**（decision expr 写法 / actor 限制 / Job Card 命名 / 8 节结构 / baseline md 命名）；⑥ **ea-compliance 43/43 PASS 无 regression**；⑦ **§5 新增 Pattern 13**（方法论可复用性验证 —— "跑 1 个新流程就够"）；⑧ 新增 iterations/2026-09-23_invoice-approval-end2end.md（第九轮迭代）；⑨ v2.17 → v2.18 changelog 同步。 |
+| **v1.8** | **2026-09-23** | **tdd-flow 自动化增强 · 第十轮飞轮转动**：① **tdd-flow.py 加 `--variable` 参数**（JSON 字符串透传）；② **加 `--scenarios` 多场景**（`name:json\|name:json`）；③ **加 `--save-baseline` 自动归档**（生成 v0_N baseline md）；④ **修 2 bug**：flow.auto 绕过 actor / KeyError 'taskName'；⑤ **generate_md 支持多 scenario**（每 scenario 一节）；⑥ **fdep 兼容性**测试通过；⑦ **§5 新增 Pattern 14**（tdd-flow scenario 自动化 —— "每个 decision 分支一个 scenario"）；⑧ 新增 iterations/2026-09-23_tdd-flow-variable.md；⑨ v2.18 → v2.19 changelog 同步。 |
+| **v1.9** | **2026-09-23** | **W12 驳回分支 · 第十一轮飞轮转动**：① **invoice-approval 加驳回**（`submitType=5 RE_APPLY` 跳回 submit）；② **删除 e_resurrect 边**（避免孤儿 task）；③ **tdd-flow 加 per-scenario submitType**（`name:json:submitType`）；④ **智能防循环**（submit 永远 1，approve 第一次 5，之后 1）；⑤ **3 scenarios 全过**：small/big/reject；⑥ **驳回闭环**：approve(驳回) → submit(重提) → approve(通过) → pay → DONE；⑦ **§5 新增 Pattern 15**（驳回机制选择 —— "submitType=5 RE_APPLY 是驳回+重提的正解"）；⑧ 新增 iterations/2026-09-23_reject-branch.md；⑨ v2.19 → v2.20 changelog 同步。 |
+| **v2.0** | **2026-09-23** | **W13 actor resolver · 第十二轮飞轮转动**（里程碑：methodology 从"工具"升级为"架构"）：① **核心发现** engine `_resolve_actors` 已支持 3 种 actor resolver 语法（@role:/顶级变量/applicant）；② **invoice-approval v0.5 启用 resolver**；③ **传顶级变量 tf_manager/tf_treasurer**；④ **substring bug 发现**：tf_applicant 被错误解析 → 改用 applicant 占位符；⑤ **e2e 验证**：3 actor 全部解析为真实 user_id，**无需 flow.auto**；⑥ **tdd-flow 加 --top-vars**；⑦ **§5 新增 Pattern 16**（actor resolver 三选一 —— "申请节点用 applicant / 固定角色用 @role / 动态指定用 tf_*"）；⑧ 新增 iterations/2026-09-23_actor-resolver.md；⑨ v2.20 → v2.21 changelog 同步。 |
+| **v2.1** | **2026-09-23** | **W16 fdep baseline 自动化 · 第十三轮飞轮转动**：① **3 scenarios 全过**：happy(DONE) / reject(REJECT) / resurrect(DONE after RE_APPLY)；② **修 3 bug**：scenario.submitType 智能应用 / resurrect_attempted 防循环 / 终态灵活性；③ **自动 baseline 生成**；④ **invoice-approval 无 regression**；⑤ **§5 新增 Pattern 17**（工具化回归 —— "老流程也能用 tdd-flow scenarios 一键覆盖"）；⑥ 新增 iterations/2026-09-23_fdep-baseline-auto.md；⑦ v2.21 → v2.22 changelog 同步。 |
+| **v2.2** | **2026-09-23** | **W20 tdd-flow baseline 对比 · 第十四轮飞轮转动**：① **加 `--compare-baseline <path>` 参数**；② **`compare_with_baseline()` 函数**：提取 signature（忽略瞬态字段）+ 逐字段对比 + 友好 diff 摘要；③ **3 测试全过**：完全一致（exit 0）/ 故意改（exit 1）/ 跨流程（识别差异）；④ **CI 友好**（diff → exit 1）；⑤ **§5 新增 Pattern 18**（regression 自动化 —— "baseline 对比 = CI 看门狗"）；⑥ 新增 iterations/2026-09-23_baseline-compare.md；⑦ v2.22 → v2.23 changelog 同步。 |
+| **v2.3** | **2026-09-23** | **W22 tests.json 集中管理 · 第十五轮飞轮转动**：① **`ToT/tdd/tests.json`** 集中 fdep + invoice-approval 的 scenarios / top_vars / baseline；② **tdd-flow 加 `--tests-file` 参数** + `load_tests_file()`；③ **save-baseline 同时生成 md + json**（compare-baseline 需要 json）+ `_baseline_meta` 标记；④ **baseline glob 智能选择**（自动 baseline 优先）；⑤ **修 2 bug**：save-baseline 缺 json / load_tests_file 调用顺序；⑥ **CI 集成**：`for flow in fdep invoice-approval; do tdd-flow.py <flow> --tests-file tests.json || exit 1; done`；⑦ **§5 新增 Pattern 19**（集中管理 —— "tests.json = 流程回归的 single source of truth"）；⑧ 新增 iterations/2026-09-23_tests-json.md；⑨ v2.23 → v2.24 changelog 同步。 |
+| **v2.4** | **2026-09-23** | **W23 tdd-flow dry-run · 第十六轮飞轮转动**：① **tdd-flow 加 `--dry-run` 参数**；② **5x 提速**（0.85s → 0.16s）；③ **CI 两阶段**：PR 快速 + main 完整；④ **错误检测**：dry-run 仍能 catch 静态校验 errors + verify_flow errors；⑤ **tests-file + dry-run 兼容**；⑥ **§5 新增 Pattern 20**（CI 两阶段 —— "PR dry-run + main full-run"）；⑦ 新增 iterations/2026-09-23_dry-run.md；⑧ v2.24 → v2.25 changelog 同步。 |
+| **v2.5** | **2026-09-23** | **W21 tdd-flow 并发执行 · 第十七轮飞轮转动**：① **tdd-flow 加 `--parallel N` 参数**；② **asyncio.gather + Semaphore 限流**；③ **6 scenarios 串行 vs 并行测试**（功能正常，加速有限 in-memory 场景）；④ **tests-file + parallel + compare-baseline 全集成**；⑤ **§5 新增 Pattern 21**（并发执行 —— "asyncio.gather + Semaphore 安全并发独立 scenarios"）；⑥ 新增 iterations/2026-09-23_parallel.md；⑦ v2.25 → v2.26 changelog 同步。 |
+| **v2.6** | **2026-09-23** | **W17 驳回 audit 链 · 第十八轮飞轮转动**：① **核心发现** engine `_merge_exec_into_instance` 已自动合并 comment/decision_reason/decision_memo；② **tdd-flow parse_scenarios 扩展 `:comment`**；③ **run_path 自动传 3 字段**；④ **tests.json + Job Card 更新**；⑤ **§5 新增 Pattern 22**（audit 链 —— "execute 自动透传 comment → instance.variables"）；⑥ 新增 iterations/2026-09-23_reject-memo.md；⑦ v2.26 → v2.27 changelog 同步。 |
+| **v2.7** | **2026-09-23** | **W18 applicant substring bug 修复 · 第十九轮飞轮转动**：① **加 `_is_applicant_token()` 辅助函数**（word boundary 匹配）；② **改 2 处 substring 替换**（同步 + 异步版本）；③ **占位符命名现在完全自由**（任何 token 名都安全）；④ **regression 全过**（invoice + fdep 100%）；⑤ **§5 新增 Pattern 23**（word boundary 优先 —— "占位符匹配永远用 word boundary，避免 substring 误命中"）；⑥ 新增 iterations/2026-09-23_applicant-bug.md；⑦ v2.27 → v2.28 changelog 同步。 |
+| **v2.8** | **2026-09-23** | **W26 fdep baseline 现代化 · 第二十轮飞轮转动**：① **tdd-flow 加 audit 字段**（decision_reason/decision_memo/job_card_url）；② **生成 3 个自动 baseline**（v0_1/v0_2/v0_3）；③ **恢复 v3audit 历史快照**；④ **fdep baseline 自动率 0/4 → 3/4 (75%)**；⑤ **§5 新增 Pattern 24**（baseline 现代化 —— "自动 baseline 主导 + 手工保留历史快照"）；⑥ 新增 iterations/2026-09-23_fdep-baseline-modern.md；⑦ v2.28 → v2.29 changelog 同步。 |
+| **v2.9** | **2026-09-23** | **W27 report-json dashboard · 第二十一轮飞轮转动**：① **加 `--all-flows`** + **`--report-json`**；② **dashboard JSON schema**（summary + flows[]）；③ **重构 main**：拆 main + run_all_flows + run_single_flow + main_legacy；④ **CI 集成模板**（dashboard.json 上传 artifact）；⑤ **§5 新增 Pattern 25**（dashboard 模式 —— "structured output 让 CI 可消费"）；⑥ 新增 iterations/2026-09-23_report-json.md；⑦ v2.29 → v2.30 changelog 同步。 |
+| **v3.0** | **2026-09-23** | **W24 baseline-only 模式 · 第二十二轮飞轮转动**（里程碑：v3.0 —— EA 体系正式 3.0 版本）：① **加 `--baseline-only` 参数**；② **baseline 完整性 4 条件检查**；③ **4.5x 加速**（0.7s → 0.155s）；④ **CI 三阶段**：PR dry-run + merge baseline-only + release 实跑；⑤ **§5 新增 Pattern 26**（CI 三阶段 —— "PR dry-run / merge baseline-only / release full-run"）；⑥ 新增 iterations/2026-09-23_baseline-only.md；⑦ v2.30 → v2.31 changelog 同步。 |
+| **v3.1** | **2026-09-23** | **W29 dashboard HTML 渲染 · 第二十三轮飞轮转动**：① **加 `--report-html`**；② **`render_html_dashboard()`** 单文件 HTML + 内联 CSS（3858 字节）；③ **summary cards + flow table 结构**；④ **样式**：响应式 + 颜色编码；⑤ **§5 新增 Pattern 27**（dashboard 双格式 —— "JSON 给机器 / HTML 给人类"）；⑥ 新增 iterations/2026-09-23_dashboard-html.md；⑦ v2.31 → v2.32 changelog 同步。 |
+| **v3.2** | **2026-09-23** | **W30 + W31 index + dashboard 交互 · 第二十四轮飞轮转动**：① **iterations/README.md**（23 圈统一索引 + 主题分类 + 飞轮度量表）；② **dashboard.html 加 JS toggle**（点击 row 展开 scenario 详情）；③ **dashboard.html 5503 字节**（含交互）；④ **§5 新增 Pattern 28**（闭环 —— "iterations index + interactive dashboard"）；⑤ 新增 iterations/2026-09-23_index-dashboard.md；⑥ v2.32 → v2.33 changelog 同步。 |
+| **v3.3** | **2026-09-23** | **W28 + W32 only-changed + 时间趋势 · 第二十五轮飞轮转动**：① **W28 --only-changed**（git diff 3 类：工作区/staged/untracked）；② **W32 时间趋势**（history 自动保存 + trend 表）；③ **CI 4 模式**（dry-run + baseline-only + 实跑 + only-changed）；④ **§5 新增 Pattern 29**（CI 智能化 —— "git diff → only-changed → 智能选择 + history → trend"）；⑤ 新增 iterations/2026-09-23_only-changed-trend.md；⑥ v2.33 → v2.34 changelog 同步。 |
+| **v3.4** | **2026-09-23** | **W34 sparkline · 第二十六轮飞轮转动**：① **`render_sparkline()`** SVG inline；② **颜色编码**（🟢/🟡/🔴/⚪）；③ **每 flow 一列 sparkline**（最近 10 次跑）；④ **tooltip** 显示 passed/total；⑤ **修 build_dashboard_entry** 加 `passed_scenarios`；⑥ **§5 新增 Pattern 30**（sparkline 模式 —— "per-flow 时间序列柱状图，单文件 HTML 内嵌"）；⑦ 新增 iterations/2026-09-23_sparkline.md；⑧ v2.34 → v2.35 changelog 同步。 |
+| **v3.5** | **2026-09-23** | **W36 + W35 time filter + DEMO 文档 · 第二十七轮飞轮转动**：① **W36 dashboard 时间 filter**（4 按钮 + JS filterByDays + data-ts）；② **W35 EA DEMO.md**（团队培训实战手册：3 个 demo + FAQ + 速查 + 演练）；③ **dashboard.html ~8 KB**（+ filter 按钮 + JS）；④ **§5 新增 Pattern 31**（培训材料 —— "30 分钟内掌握 EA = 3 个 demo"）；⑤ 新增 iterations/2026-09-23_time-filter-demo.md；⑥ v2.35 → v2.36 changelog 同步。 |
+| **v3.6** | **2026-09-23** | **W38 archive-flow SOP · 第二十八轮飞轮转动**：① **`ToT/sop/archive-flow.md` + `archive_flow.py`**；② **5 步流程**：SPI API 背景 → 报告 → 打包 → file-share → 清理；③ **8 章节报告模板**；④ **file-share 集成**（取件码自动返回）；⑤ **§5 新增 Pattern 32**（归档自动化 —— "测完即归档 + 跨环境分享 + 本地清理"）；⑥ 新增 iterations/2026-09-23_archive-flow.md；⑦ v2.36 → v2.37 changelog 同步。 |
+| **v3.7** | **2026-09-23** | **W39 archive dry-run · 第二十九轮飞轮转动**：① **`--dry-run` 参数**；② **3 维度预览**（tar.gz / report.md / 清理）；③ **跳过实际副作用**；④ **§5 新增 Pattern 33**（预览模式 —— "可逆性优于不可逆性"）；⑤ 新增 iterations/2026-09-23_archive-dry-run.md；⑥ v2.37 → v2.38 changelog 同步。 |
+| **v3.8** | **2026-09-23** | **W39 share config 集中化 · 第三十轮飞轮转动**（用户口头指令："SHARE_URL 在 archive_flow 中写死了，需要转移到 config"）：① **新建 `ToT/config/share.json`** v1.0（upload_url + download_url_template + expire_unit + default_expire_value + max_expire_value）；② **`archive_flow.py` 移除 2 处硬编码 URL**（`SHARE_URL` 常量 + 下载 URL 模板）→ 新增 `load_share_config()` 加载器；③ **CLI `--expire-value` 替代 `--expire-days`**（语义化，单位由 share.json 决定；保留旧参数兼容）；④ **`archive-flow.md` v0.2** + §9 配置说明 + §10 changelog；⑤ **`ea-compliance.py` §9.6.5 新增**（share.json 存在合法检查，§9.6 4→5 项）；⑥ **§9 检查项 43 → 44，44/44 PASS**；⑦ **tdd-flow 回归 2/2 flows 6/6 scenarios**；⑧ **Pattern 9 升级**：单一配置 → **双配置域**（servers.json + share.json，按职责拆分）；⑨ **§9 新增 §9.6 配置集中化节**（5 项，含未来扩展模板 9.6.6-9.6.8）；⑩ 新增 iterations/2026-09-23_share-config.md；⑪ iterations/README.md 刷新至 30 圈。 |

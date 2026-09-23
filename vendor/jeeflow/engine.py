@@ -376,8 +376,10 @@ class EngineImpl(Engine):
             for a in assignee.split(","):
                 token = a.strip()
                 if not token: continue
-                if "applicant" in token:
-                    token = token.replace("applicant", inst.operator)
+                # FIX-W18 (2026-09-23)：word boundary 匹配，避免 `tf_applicant` 被错误替换为 `tf_<operator>`
+                # 之前 `if "applicant" in token` 用 substring 匹配，tf_applicant → tf_u_alice（bug）
+                if _is_applicant_token(token):
+                    token = inst.operator
                 if token in inst.variables:
                     val = inst.variables[token]
                     if isinstance(val, (list, tuple)):
@@ -883,9 +885,10 @@ class EngineImpl(Engine):
             for a in assignee.split(","):
                 token = a.strip()
                 if not token: continue
-                # mldong 契约特殊值：applicant → 流程发起人
-                if "applicant" in token:
-                    token = token.replace("applicant", inst.operator)
+                # FIX-W18 (2026-09-23)：word boundary 匹配，避免 `tf_applicant` 被错误替换
+                # 之前 `if "applicant" in token` 用 substring 匹配，tf_applicant → tf_u_alice（bug）
+                if _is_applicant_token(token):
+                    token = inst.operator
                 # BDD #294 FIX-T57 (2026-09-19)：@role: 角色解析（依赖 org_provider）
                 if token.startswith("@role:"):
                     role_code = token[len("@role:"):]
@@ -1175,6 +1178,28 @@ def _is_truthy(v) -> bool:
     if v is None: return False
     if isinstance(v, (int, float)): return v != 0
     return True
+
+
+def _is_applicant_token(token: str) -> bool:
+    """FIX-W18 (2026-09-23)：word boundary 匹配 `applicant` 占位符
+
+    之前用 `if "applicant" in token` substring 匹配，会误命中：
+    - `tf_applicant` → 错误变成 `tf_u_alice`
+    - `applicant_role` → 错误变成 `u_alice_role`
+    - `my_applicant` → 错误变成 `my_u_alice`
+
+    正确做法：用 word boundary 匹配，只接受：
+    - 精确 `applicant`
+    - `applicant,<other>`（逗号分隔）
+    - `<other>,applicant`（逗号分隔）
+    """
+    if token == "applicant":
+        return True
+    # 处理 "applicant,X" / "X,applicant" / "applicant" 单 token
+    for part in token.split(","):
+        if part.strip() == "applicant":
+            return True
+    return False
 
 
 def _filter_field_by_perm(args: dict, node: Optional[FlowNode]) -> dict:

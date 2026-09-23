@@ -25,6 +25,7 @@ CUSTOMER_RESETS = BASE / "ToT" / "customer-resets"
 CUSTOMER_CHECKS = BASE / "ToT" / "customer-checks"
 EA_DIR = BASE / "ToT" / "ea"
 CONFIG_PATH = BASE / "ToT" / "config" / "servers.json"
+SHARE_CONFIG_PATH = BASE / "ToT" / "config" / "share.json"
 
 # 集中读 config（不再硬编码 URL）
 from server_config import load_config, get_url
@@ -273,7 +274,7 @@ def check_layer_flywheel():
     return items
 
 
-# ===== §9.6 配置集中化（4 项）=====
+# ===== §9.6 配置集中化（5 项）=====
 def check_layer_config():
     items = []
     # 1. servers.json 存在且合法 JSON
@@ -310,6 +311,26 @@ def check_layer_config():
         has_customer = "customer-test" in cfg["servers"] and cfg["servers"]["customer-test"].get("url")
     items.append(check_item("config", "9.6.4", "config 含 customer-test 配置",
                              has_customer, ""))
+
+    # 5. share.json 存在且合法（archive_flow 的 endpoint 真相源）
+    share_exists = SHARE_CONFIG_PATH.exists()
+    share_valid = False
+    share_fields = []
+    if share_exists:
+        try:
+            sc = json.loads(SHARE_CONFIG_PATH.read_text(encoding="utf-8"))
+            s = sc.get("share", {})
+            share_valid = (
+                "upload_url" in s
+                and "download_url_template" in s
+                and "{code}" in s["download_url_template"]
+            )
+            share_fields = list(s.keys())
+        except Exception:
+            pass
+    items.append(check_item("config", "9.6.5", "ToT/config/share.json 存在且合法（archive_flow 真相源）",
+                             share_exists and share_valid,
+                             f"fields={share_fields}" if share_valid else "missing or invalid"))
     return items
 
 

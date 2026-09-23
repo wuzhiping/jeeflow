@@ -1,0 +1,102 @@
+{
+  "version": "1.0",
+  "generated_at": "2026-09-23T08:03:03",
+  "summary": {
+    "total_flows": 2,
+    "passed_flows": 2,
+    "failed_flows": 0,
+    "total_scenarios": 6,
+    "passed_scenarios": 6,
+    "all_passed": true
+  },
+  "total_elapsed_seconds": 0.73,
+  "flows": [
+    {
+      "flow_name": "fdep",
+      "exit_code": 0,
+      "elapsed_seconds": 0.673,
+      "passed": true,
+      "scenario_count": 3,
+      "passed_scenarios": 3,
+      "scenarios": [
+        {
+          "name": "happy",
+          "submit_type": 1,
+          "state": "DONE",
+          "task_count": 6,
+          "actors": [
+            "u_fdp_pm"
+          ]
+        },
+        {
+          "name": "reject",
+          "submit_type": 2,
+          "state": "REJECT",
+          "task_count": 2,
+          "actors": [
+            "u_fdp_pm"
+          ]
+        },
+        {
+          "name": "resurrect",
+          "submit_type": 5,
+          "state": "DONE",
+          "task_count": 8,
+          "actors": [
+            "u_fdp_pm"
+          ]
+        }
+      ],
+      "static_errors": 0,
+      "engine_errors": 0,
+      "static_warnings": 0,
+      "engine_warnings": 2
+    },
+    {
+      "flow_name": "invoice-approval",
+      "exit_code": 0,
+      "elapsed_seconds": 0.056,
+      "passed": true,
+      "scenario_count": 3,
+      "passed_scenarios": 3,
+      "scenarios": [
+        {
+          "name": "small",
+          "submit_type": 1,
+          "state": "DONE",
+          "task_count": 2,
+          "actors": [
+            "u_fdp_pm",
+            "u_carol"
+          ]
+        },
+        {
+          "name": "big",
+          "submit_type": 1,
+          "state": "DONE",
+          "task_count": 3,
+          "actors": [
+            "u_fdp_pm",
+            "u_bob",
+            "u_carol"
+          ]
+        },
+        {
+          "name": "reject",
+          "submit_type": 5,
+          "state": "DONE",
+          "task_count": 5,
+          "actors": [
+            "u_fdp_pm",
+            "u_bob",
+            "u_carol"
+          ]
+        }
+      ],
+      "static_errors": 0,
+      "engine_errors": 0,
+      "static_warnings": 0,
+      "engine_warnings": 2
+    }
+  ]
+}

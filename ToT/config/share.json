@@ -1,0 +1,15 @@
+{
+  "$schema_version": "1.0",
+  "comment": "外部文件分享服务配置 —— archive_flow.py 的 endpoint 真相源",
+  "comment_usage": "修改 upload_url / download_url_template 即可切换分享服务；expire_* 改默认有效期",
+  "comment_relation": "与 ToT/config/servers.json 互补：servers.json 管流程引擎，share.json 管外部文件分享",
+
+  "share": {
+    "upload_url": "http://10.17.1.26:12345/share/file/",
+    "download_url_template": "https://abc.feg.com.tw/share/select/?code={code}",
+    "expire_unit": "day",
+    "supported_expire_units": ["day", "hour", "minute"],
+    "default_expire_value": 7,
+    "max_expire_value": 365
+  }
+}
