@@ -1,0 +1,25 @@
+{
+  "name": "dev-bdd-multi-handler-mix",
+  "displayName": "BDD-DEV-混合 4 handler 链",
+  "type": "approval",
+  "instanceUrl": "/bdd/dev-multi-handler/form",
+  "nodes": [
+    { "id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": { "width": 50, "height": 50 }, "text": { "value": "开始" } },
+    { "id": "apply", "type": "snaker:task", "x": 180, "y": 200, "properties": { "width": 100, "height": 50, "form": "mix-form", "assignee": "applicant", "taskType": 0, "performType": 0 }, "text": { "value": "提交" } },
+    { "id": "task_op", "type": "snaker:task", "x": 340, "y": 100, "properties": { "width": 120, "height": 50, "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OperatorAssignmentHandler", "taskType": 0, "performType": 0 }, "text": { "value": "Operator" } },
+    { "id": "task_ff", "type": "snaker:task", "x": 340, "y": 200, "properties": { "width": 120, "height": 50, "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.FormFieldAssigneeHandler", "taskType": 0, "performType": 0 }, "text": { "value": "FormField" } },
+    { "id": "task_dl", "type": "snaker:task", "x": 340, "y": 300, "properties": { "width": 120, "height": 50, "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$DeptLeaderAssignmentHandler", "taskType": 0, "performType": 0 }, "text": { "value": "DeptLeader" } },
+    { "id": "task_tr", "type": "snaker:task", "x": 500, "y": 200, "properties": { "width": 120, "height": 50, "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler", "roleCode": "qa_engineer", "taskType": 0, "performType": 0 }, "text": { "value": "TaskRole" } },
+    { "id": "end", "type": "snaker:end", "x": 680, "y": 200, "properties": { "width": 50, "height": 50 }, "text": { "value": "结束" } }
+  ],
+  "edges": [
+    { "id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {} },
+    { "id": "e1", "sourceNodeId": "apply", "targetNodeId": "task_op", "properties": {} },
+    { "id": "e2", "sourceNodeId": "apply", "targetNodeId": "task_ff", "properties": {} },
+    { "id": "e3", "sourceNodeId": "apply", "targetNodeId": "task_dl", "properties": {} },
+    { "id": "e4", "sourceNodeId": "task_op", "targetNodeId": "task_tr", "properties": {} },
+    { "id": "e5", "sourceNodeId": "task_ff", "targetNodeId": "task_tr", "properties": {} },
+    { "id": "e6", "sourceNodeId": "task_dl", "targetNodeId": "task_tr", "properties": {} },
+    { "id": "e7", "sourceNodeId": "task_tr", "targetNodeId": "end", "properties": {} }
+  ]
+}

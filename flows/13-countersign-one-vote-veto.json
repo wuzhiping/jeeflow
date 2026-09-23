@@ -42,13 +42,13 @@
         "width": 120,
         "height": 60,
         "form": "veto-form",
-        "assignee": "userA,userB,userC",
+        "assignee": "u_ceo,u_cto,u_arch",
         "taskType": 0,
         "performType": 1,
         "countersignType": "PARALLEL",
         "countersignCompletionCondition": "ONE_VOTE_VETO",
         "field": {
-          "candidateUsers": "userA,userB,userC"
+          "candidateUsers": "u_ceo,u_cto,u_arch"
         }
       },
       "text": {

@@ -1,0 +1,77 @@
+{
+  "name": "dev-asset-sequential",
+  "displayName": "BDD-DEV-资产采购-顺序会签",
+  "type": "approval",
+  "instanceUrl": "/bdd/dev-asset-sequential/form",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "properties": { "width": 50, "height": 50 },
+      "text": { "value": "开始" }
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 150,
+      "y": 200,
+      "properties": {
+        "width": 100, "height": 50,
+        "form": "asset-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0
+      },
+      "text": { "value": "提交采购" }
+    },
+    {
+      "id": "leaders_sign",
+      "type": "snaker:task",
+      "x": 330,
+      "y": 200,
+      "properties": {
+        "width": 140, "height": 50,
+        "form": "asset-form",
+        "assignee": "u_cto,u_arch,u_ceo",
+        "taskType": 0,
+        "performType": 1,
+        "countersignType": "SEQUENTIAL",
+        "field": {
+          "candidateUsers": "u_cto,u_arch,u_ceo",
+          "PERMISSION_f_amount": 1,
+          "PERMISSION_f_item": 1
+        }
+      },
+      "text": { "value": "领导会签(顺序)" }
+    },
+    {
+      "id": "procurement",
+      "type": "snaker:task",
+      "x": 530,
+      "y": 200,
+      "properties": {
+        "width": 120, "height": 50,
+        "assignee": "u_rd_dir",
+        "taskType": 0,
+        "performType": 0
+      },
+      "text": { "value": "采购执行" }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 700,
+      "y": 200,
+      "properties": { "width": 50, "height": 50 },
+      "text": { "value": "结束" }
+    }
+  ],
+  "edges": [
+    { "id": "e1", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {} },
+    { "id": "e2", "sourceNodeId": "apply", "targetNodeId": "leaders_sign", "properties": {} },
+    { "id": "e3", "sourceNodeId": "leaders_sign", "targetNodeId": "procurement", "properties": {} },
+    { "id": "e4", "sourceNodeId": "procurement", "targetNodeId": "end", "properties": {} }
+  ]
+}

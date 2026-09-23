@@ -11,7 +11,7 @@ from jeeflow.spi import OrgUserProvider
 
 from importlib import reload, import_module
 
-_SPI_FOLDER = os.environ.get("SPI_FOLDER", "demo")
+_SPI_FOLDER = os.environ.get("SPI_FOLDER", "dev")
 _data_mod = import_module(f"spi.{_SPI_FOLDER}.data")
 SPI_USERS = _data_mod.SPI_USERS
 SPI_ROLES = _data_mod.SPI_ROLES

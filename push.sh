@@ -2,7 +2,7 @@
 set -e
 
 N=$(sudo git log --format='%s' | awk '
-    /^sla fix batch [0-9]+$/ {
+    /^ToT fix batch [0-9]+$/ {
         match($0, /[0-9]+$/)
         print substr($0, RSTART, RLENGTH)
         exit
@@ -11,8 +11,7 @@ N=$(sudo git log --format='%s' | awk '
 
 N=$(( ${N:-0} + 1 ))
 
-echo "==> sla fix batch $N"
+echo "==> ToT fix batch $N"
 
 sudo git add .
-sudo git commit -m "sla fix batch $N"
-sudo git push
+sudo git commit -m "ToT fix batch $N"

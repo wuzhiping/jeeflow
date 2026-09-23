@@ -3,7 +3,8 @@ type: L2
 name: 中型企业 HR 集成方 (化名)
 contact: hermes_dm
 first_seen: 2026-09-20
-last_touched: 2026-09-20
+last_touched: 2026-11-17 (Phase 9 Month 2 健康检查)
+current_stage: 4 (Post-Deployment · 等待验证)
 
 scenario: |
   中型企业 (500+ 员工) HR 系统集成 jeeflow.
@@ -15,7 +16,7 @@ scenario: |
 
 key_pain_points:
   - 流程审批人硬编码, 维护成本高
-  - 缺少组织架构感知的 assignmentHandler
+  - **缺失组织架构感知的 assignmentHandler (auto-assignee-by-org 待实施)** 🟡
 
 recent_feedback:
   - date: 2026-09-20
@@ -23,6 +24,11 @@ recent_feedback:
     issue: "如何实现按组织架构自动选审批人?"
     status: closed
     fix_ref: docs/flow.md §6 + docs/integration.md
+  - date: 2026-11-12 (Phase 9 Month 2)
+    fb_id: (新, pending flowuser 升级决定)
+    issue: "auto-assignee-by-org 引擎实施"
+    status: in_progress (W44-W47 起草 + W45 Day 2 方案 v0.2)
+    fix_ref: `roadmap/auto-assignee-by-org-v0.2.md` + `flows/auto-assignee-by-org-example.md`
 
 success_metrics:
   - 流程审批人维护成本: 1 次配置 vs N 次硬编码
@@ -33,3 +39,6 @@ notes: |
   - 关注点: SPI 易用性 + 示例完整性
   - 后续建议: 提供 spi/demo/org_assignee_handler.py 示例
   - 需求可能演变为: skills/roadmap/candidates/auto-assignee-by-org.md
+  - Q4 进展: auto-assignee-by-org 方案 v0.2 起草 + 流程模式示例 published ✅
+  - **待实施**: 引擎实现 (需解冻, bro 第 5 次询问 12-08)
+  - 月度 metrics 11 月: 待升级到阶段 5 (验证 auto-assignee 真实效果)

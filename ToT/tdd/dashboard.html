@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>TDD Dashboard · 2026-09-23T08:06:57</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+       margin: 0; padding: 20px; background: #f5f5f5; color: #333; }
+.container { max-width: 1100px; margin: 0 auto; background: white;
+            padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+h1 { margin-top: 0; color: #333; }
+.badge { display: inline-block; padding: 6px 14px; border-radius: 4px;
+         color: white; font-weight: bold; background: #28a745; }
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+          gap: 15px; margin: 20px 0; }
+.summary-card { background: #f8f9fa; padding: 15px; border-radius: 6px;
+                border-left: 4px solid #007bff; }
+.summary-card .label { font-size: 12px; color: #666; text-transform: uppercase; }
+.summary-card .value { font-size: 28px; font-weight: bold; color: #333; margin-top: 5px; }
+.summary-card.passed { border-left-color: #28a745; }
+.summary-card.failed { border-left-color: #dc3545; }
+table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+th { background: #343a40; color: white; padding: 10px; text-align: left;
+    font-size: 13px; }
+td { padding: 10px; border-bottom: 1px solid #e9ecef; font-size: 13px; }
+tr.failed { background: #fff5f5; }
+tr.passed { background: #f5fff5; }
+.state-DONE { color: #28a745; font-weight: bold; }
+.state-REJECT { color: #dc3545; font-weight: bold; }
+.state-DOING { color: #ffc107; }
+.footer { margin-top: 30px; padding-top: 15px; border-top: 1px solid #e9ecef;
+          color: #666; font-size: 12px; }
+.toggle { cursor: pointer; user-select: none; }
+.toggle:hover { background: #f0f0f0; }
+.details { display: none; background: #fafafa; padding: 10px 20px;
+          border-left: 3px solid #007bff; margin: 5px 0; font-size: 12px; }
+.details.open { display: block; }
+.details code { background: #e9ecef; padding: 2px 5px; border-radius: 3px;
+              font-family: monospace; }
+.filter-bar { margin: 15px 0; padding: 12px; background: #e9ecef;
+              border-radius: 6px; display: flex; gap: 10px; align-items: center; }
+.filter-bar button { padding: 6px 14px; border: 1px solid #007bff;
+                   background: white; color: #007bff; border-radius: 4px;
+                   cursor: pointer; font-size: 13px; }
+.filter-bar button:hover { background: #007bff; color: white; }
+.filter-bar button.active { background: #007bff; color: white; }
+.filter-bar .count { color: #666; font-size: 13px; margin-left: auto; }
+tr.hidden { display: none; }
+</style>
+<script>
+function toggleDetails(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
+}
+function filterByDays(days) {
+  const rows = document.querySelectorAll('tr[data-ts]');
+  const now = new Date();
+  let shown = 0;
+  rows.forEach(row => {
+    const ts = new Date(row.dataset.ts);
+    const diffDays = (now - ts) / (1000 * 60 * 60 * 24);
+    if (days === 0 || diffDays <= days) {
+      row.classList.remove('hidden');
+      shown++;
+    } else {
+      row.classList.add('hidden');
+    }
+  });
+  document.querySelectorAll('.filter-bar button').forEach(b => b.classList.remove('active'));
+  document.getElementById('filter-' + (days || 'all')).classList.add('active');
+  document.getElementById('visible-count').textContent = shown + ' / ' + rows.length;
+}
+</script>
+</head>
+<body>
+<div class="container">
+<h1>TDD Regression Dashboard <span class="badge">✅ ALL PASSED</span></h1>
+<p>Generated at 2026-09-23T08:06:57 · Total elapsed: 0.638s</p>
+
+<div class="summary">
+  <div class="summary-card">
+    <div class="label">Total Flows</div>
+    <div class="value">2</div>
+  </div>
+  <div class="summary-card passed">
+    <div class="label">Passed Flows</div>
+    <div class="value">2</div>
+  </div>
+  <div class="summary-card passed">
+    <div class="label">Failed Flows</div>
+    <div class="value">0</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Total Scenarios</div>
+    <div class="value">6</div>
+  </div>
+  <div class="summary-card passed">
+    <div class="label">Passed Scenarios</div>
+    <div class="value">6</div>
+  </div>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Flow</th>
+      <th>Passed</th>
+      <th>Elapsed</th>
+      <th>Scenarios</th>
+      <th>Errors (static/engine)</th>
+      <th>Trend</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="passed toggle" onclick="toggleDetails('details-fdep')">
+      <td><strong>fdep ▼</strong></td>
+      <td>✅</td>
+      <td>0.58s</td>
+      <td><ul style='margin:0;padding-left:18px;'><li class='passed'><span class='state-DONE'>DONE</span> <code>happy</code> (submitType=1, tasks=6)</li><li class='passed'><span class='state-REJECT'>REJECT</span> <code>reject</code> (submitType=2, tasks=2)</li><li class='passed'><span class='state-DONE'>DONE</span> <code>resurrect</code> (submitType=5, tasks=8)</li></ul></td>
+      <td>0 / 0</td>
+      <td><svg width="120" height="24" style="vertical-align: middle;"><rect x="0" y="4" width="19" height="20" fill="#28a745" rx="1"><title>run 1: 3/3</title></rect><rect x="20" y="4" width="19" height="20" fill="#28a745" rx="1"><title>run 2: 3/3</title></rect><rect x="40" y="4" width="19" height="20" fill="#28a745" rx="1"><title>run 3: 3/3</title></rect><rect x="60" y="4" width="19" height="20" fill="#28a745" rx="1"><title>run 4: 3/3</title></rect><rect x="80" y="4" width="19" height="20" fill="#28a745" rx="1"><title>run 5: 3/3</title></rect><rect x="100" y="4" width="19" height="20" fill="#28a745" rx="1"><title>run 6: 3/3</title></rect></svg></td>
+    </tr>
+    <tr><td colspan="6" style="padding:0;"><div class='details' id='details-fdep'><strong>Scenarios 详情：</strong><br><ul><li><code>happy</code>: submitType=1, state=<span class='state-DONE'>DONE</span>, tasks=6, actors=u_fdp_pm</li><li><code>reject</code>: submitType=2, state=<span class='state-REJECT'>REJECT</span>, tasks=2, actors=u_fdp_pm</li><li><code>resurrect</code>: submitType=5, state=<span class='state-DONE'>DONE</span>, tasks=8, actors=u_fdp_pm</li></ul></div></td></tr>
+    <tr class="passed toggle" onclick="toggleDetails('details-invoice_approval')">
+      <td><strong>invoice-approval ▼</strong></td>
+      <td>✅</td>
+      <td>0.058s</td>
+      <td><ul style='margin:0;padding-left:18px;'><li class='passed'><span class='state-DONE'>DONE</span> <code>small</code> (submitType=1, tasks=2)</li><li class='passed'><span class='state-DONE'>DONE</span> <code>big</code> (submitType=1, tasks=3)</li><li class='passed'><span class='state-DONE'>DONE</span> <code>reject</code> (submitType=5, tasks=5)</li></ul></td>
+      <td>0 / 0</td>
+      <td><svg width="120" height="24" style="vertical-align: middle;"><rect x="0" y="4" width="19" height="20" fill="#28a745" rx="1"><title>run 1: 3/3</title></rect><rect x="20" y="4" width="19" height="20" fill="#28a745" rx="1"><title>run 2: 3/3</title></rect><rect x="40" y="4" width="19" height="20" fill="#28a745" rx="1"><title>run 3: 3/3</title></rect><rect x="60" y="4" width="19" height="20" fill="#28a745" rx="1"><title>run 4: 3/3</title></rect><rect x="80" y="4" width="19" height="20" fill="#28a745" rx="1"><title>run 5: 3/3</title></rect><rect x="100" y="4" width="19" height="20" fill="#28a745" rx="1"><title>run 6: 3/3</title></rect></svg></td>
+    </tr>
+    <tr><td colspan="6" style="padding:0;"><div class='details' id='details-invoice_approval'><strong>Scenarios 详情：</strong><br><ul><li><code>small</code>: submitType=1, state=<span class='state-DONE'>DONE</span>, tasks=2, actors=u_carol, u_fdp_pm</li><li><code>big</code>: submitType=1, state=<span class='state-DONE'>DONE</span>, tasks=3, actors=u_bob, u_carol, u_fdp_pm</li><li><code>reject</code>: submitType=5, state=<span class='state-DONE'>DONE</span>, tasks=5, actors=u_bob, u_carol, u_fdp_pm</li></ul></div></td></tr>
+  </tbody>
+</table>
+
+<h2 style="margin-top: 30px;">📈 历史趋势（最近 6 次）</h2>
+<div class="filter-bar">
+  <strong>时间过滤：</strong>
+  <button id="filter-1" onclick="filterByDays(1)">最近 1 天</button>
+  <button id="filter-7" onclick="filterByDays(7)">最近 7 天</button>
+  <button id="filter-30" onclick="filterByDays(30)">最近 30 天</button>
+  <button id="filter-all" class="active" onclick="filterByDays(0)">全部</button>
+  <span class="count">显示 <span id="visible-count">6</span> / 6</span>
+</div>
+<table>
+  <thead>
+    <tr>
+      <th>时间</th>
+      <th>Flows (P/T)</th>
+      <th>Scenarios (P/T)</th>
+      <th>总耗时</th>
+      <th>状态</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="passed" data-ts="2026-09-23T08:03:02">
+      <td><code>2026-09-23T08:03:02</code></td>
+      <td>2/2</td>
+      <td>6/6</td>
+      <td>0.646s</td>
+      <td>✅</td>
+    </tr>
+    <tr class="passed" data-ts="2026-09-23T08:03:03">
+      <td><code>2026-09-23T08:03:03</code></td>
+      <td>2/2</td>
+      <td>6/6</td>
+      <td>0.73s</td>
+      <td>✅</td>
+    </tr>
+    <tr class="passed" data-ts="2026-09-23T08:03:04">
+      <td><code>2026-09-23T08:03:04</code></td>
+      <td>2/2</td>
+      <td>6/6</td>
+      <td>0.657s</td>
+      <td>✅</td>
+    </tr>
+    <tr class="passed" data-ts="2026-09-23T08:03:05">
+      <td><code>2026-09-23T08:03:05</code></td>
+      <td>2/2</td>
+      <td>6/6</td>
+      <td>0.736s</td>
+      <td>✅</td>
+    </tr>
+    <tr class="passed" data-ts="2026-09-23T08:03:19">
+      <td><code>2026-09-23T08:03:19</code></td>
+      <td>2/2</td>
+      <td>6/6</td>
+      <td>0.658s</td>
+      <td>✅</td>
+    </tr>
+    <tr class="passed" data-ts="2026-09-23T08:06:57">
+      <td><code>2026-09-23T08:06:57</code></td>
+      <td>2/2</td>
+      <td>6/6</td>
+      <td>0.638s</td>
+      <td>✅</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="footer">
+  TDD Flow Regression · jeeflow EA · v2.32+ · Generated by ToT/sop/tdd-flow.py
+</div>
+</div>
+</body>
+</html>

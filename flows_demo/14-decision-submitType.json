@@ -1,0 +1,68 @@
+{
+  "name": "14-decision-submitType",
+  "displayName": "决策路由按 submitType 分流（参考 §7a 路由矩阵）",
+  "type": "approval",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 80,
+      "y": 200,
+      "properties": {"width": 50, "height": 50},
+      "text": {"value": "开始"}
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 230,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "",
+        "assignee": "user1",
+        "taskType": 0,
+        "performType": 0
+      },
+      "text": {"value": "发起申请"}
+    },
+    {
+      "id": "task1",
+      "type": "snaker:task",
+      "x": 410,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "",
+        "assignee": "user2",
+        "taskType": 0,
+        "performType": 0
+      },
+      "text": {"value": "审批"}
+    },
+    {
+      "id": "decision1",
+      "type": "snaker:decision",
+      "x": 580,
+      "y": 200,
+      "properties": {"width": 60, "height": 60},
+      "text": {"value": "submitType 决策"}
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 740,
+      "y": 200,
+      "properties": {"width": 50, "height": 50},
+      "text": {"value": "结束"}
+    }
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e_apply_task1", "sourceNodeId": "apply", "targetNodeId": "task1", "properties": {}},
+    {"id": "e_task1_decision1", "sourceNodeId": "task1", "targetNodeId": "decision1", "properties": {}},
+    {"id": "e_decision1_end", "sourceNodeId": "decision1", "targetNodeId": "end", "properties": {"expr": "submitType==0 || submitType==1 || submitType==5 || submitType==20"}},
+    {"id": "e_decision1_apply", "sourceNodeId": "decision1", "targetNodeId": "apply", "properties": {"expr": "submitType==2 || submitType==3 || submitType==6"}}
+  ]
+}

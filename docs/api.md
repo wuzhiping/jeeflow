@@ -51,6 +51,62 @@
 | GET | `/api/stats/roles` | 列出角色 | `./main_pg.py` |
 | GET | `/api/stats/dicts` | 字典项 | `./main_pg.py` |
 
+### 1.5 SPI 数据端点（v26-v29, dispatcher 层, 双端共用）
+
+> **架构**: 路由注册在 `spi/api.py` (dispatcher 层), `main_common.register_spi_routes(app)` 双端调用. 数据源由环境变量 `SPI_FOLDER` 动态决定 (demo/dev/fdep). **默认 SPI_FOLDER = dev** (本地开发/测试推荐, 13 用户 5 部门 + 22 DictProxy + 2 helpers + verify()). 详见 `spi/SPEC.md §8` 和 `skills/RML.md §SPI 能力`.
+
+| 方法 | 路径 | 用途 | SPI_FOLDER |
+| --- | --- | --- | --- |
+| GET | `/api/spi/verify` | 数据完整性验证 (4 类检查) | dev/demo |
+| GET | `/api/spi/status` | SPI 数据概况 | dev/demo |
+| GET | `/api/spi/users` | 列出所有用户 (uid, name, post, level, dept_id, roles) | dev/demo |
+| GET | `/api/spi/users/{uid}` | 用户完整档案 (13 字段集成视图 SPI_USERS_FULL) | dev/demo |
+| GET | `/api/spi/depts` | 列出所有部门 (dept_id, name, size, leader, main_leader) | dev/demo |
+| GET | `/api/spi/depts/{dept_id}` | 部门详情 + 成员 (info + members) | dev/demo |
+
+**请求示例**:
+
+```bash
+# 启动 main.py (8101, MEM backend, 默认 SPI_FOLDER=dev)
+export SPI_FOLDER=dev
+python main.py
+
+# 或 main_pg.py (8102, PG backend)
+export SPI_FOLDER=dev
+python main_pg.py
+
+# 验证数据
+curl http://localhost:8101/api/spi/verify
+# {"ok": true, "errors": [], "warnings": [], "summary": {...}}
+
+# 查周磊完整档案
+curl http://localhost:8101/api/spi/users/u_fe_eng
+# {"userId": "u_fe_eng", "name": "周磊", "dept_name": "前端组", ...}
+
+# 查 D02 部门详情
+curl http://localhost:8101/api/spi/depts/D02
+# {"info": {...}, "members": [...]}
+```
+
+**错误码**:
+
+| 状态码 | 含义 | 触发条件 |
+| --- | --- | --- |
+| 200 | OK | 数据查询成功 (含 verify 失败的情况, 仍可查) |
+| 404 Not Found | uid/dept_id 不存在 | `{"detail": "User not found: xxx"}` |
+| 404 Not Found | SPI_FOLDER=xxx 无 cli/api | `{"detail": "SPI_FOLDER=xxx 不支持 API (缺少 api 模块)"}` |
+
+**对应 CLI 命令** (`python -m spi.cli`):
+
+```bash
+SPI_FOLDER=dev python -m spi.cli verify
+SPI_FOLDER=dev python -m spi.cli list-users
+SPI_FOLDER=dev python -m spi.cli show-user u_fe_eng
+SPI_FOLDER=dev python -m spi.cli list-depts
+SPI_FOLDER=dev python -m spi.cli show-dept D02
+SPI_FOLDER=demo python -m spi.cli list-users  # 同一命令, 切换数据源
+```
+
 ---
 
 ## 2. submitType 取值（processInstance/execute）

@@ -1,0 +1,44 @@
+{
+  "name": "delegate-test",
+  "displayName": "任务委派测试",
+  "type": "approval",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "properties": {},
+      "text": {"value": "开始"}
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "properties": {
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0
+      },
+      "text": {"value": "发起申请"}
+    },
+    {
+      "id": "leader_approve",
+      "type": "snaker:task",
+      "properties": {
+        "assignee": "leader",
+        "taskType": 0,
+        "performType": 0
+      },
+      "text": {"value": "领导审批"}
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "properties": {},
+      "text": {"value": "结束"}
+    }
+  ],
+  "edges": [
+    {"sourceNodeId": "start", "targetNodeId": "apply"},
+    {"sourceNodeId": "apply", "targetNodeId": "leader_approve"},
+    {"sourceNodeId": "leader_approve", "targetNodeId": "end"}
+  ]
+}

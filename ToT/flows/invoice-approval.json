@@ -1,0 +1,100 @@
+{
+  "name": "invoice-approval",
+  "displayName": "发票审批：员工提交 → 财务初审 → 主管复核 → 出纳付款 → 完成",
+  "description": "员工提交发票（含金额、用途、附件），金额 ≥ 5000 走主管复核，主管通过后出纳付款并归档",
+  "type": "collaboration",
+  "schema": "snaker-1.0",
+  "version": "0.5",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 50,
+      "y": 200,
+      "text": {
+        "value": "任意员工发起"
+      }
+    },
+    {
+      "id": "submit",
+      "type": "snaker:task",
+      "x": 250,
+      "y": 200,
+      "properties": {
+        "assignee": "applicant",
+        "form": "invoice-submit-form",
+        "artifact": "发票申请单",
+        "fields": ["金额", "用途", "附件URL", "申请人"],
+        "exitCriteria": "员工点击提交并填写完整"
+      },
+      "text": {
+        "value": "1. 提交发票（员工）"
+      }
+    },
+    {
+      "id": "decision_amount",
+      "type": "snaker:decision",
+      "x": 450,
+      "y": 200,
+      "properties": {
+        "expr": "amount >= 5000"
+      },
+      "text": {
+        "value": "金额分支（≥5000 需复核）"
+      }
+    },
+    {
+      "id": "approve",
+      "type": "snaker:task",
+      "x": 650,
+      "y": 200,
+      "properties": {
+        "assignee": "tf_manager",
+        "form": "approve-form",
+        "artifact": "审批意见",
+        "fields": ["审批人", "审批意见", "审批时间"],
+        "exitCriteria": "主管审批通过"
+      },
+      "text": {
+        "value": "2. 主管复核（≥5000）"
+      }
+    },
+    {
+      "id": "pay",
+      "type": "snaker:task",
+      "x": 850,
+      "y": 200,
+      "properties": {
+        "assignee": "tf_treasurer",
+        "form": "pay-form",
+        "artifact": "付款凭证",
+        "fields": ["收款账户", "付款金额", "付款时间"],
+        "exitCriteria": "出纳完成打款"
+      },
+      "text": {
+        "value": "3. 出纳付款"
+      }
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 1050,
+      "y": 200,
+      "text": {
+        "value": "完成"
+      }
+    }
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "submit", "text": {"value": "发起"}},
+    {"id": "e1", "sourceNodeId": "submit", "targetNodeId": "decision_amount", "text": {"value": "提交后"}},
+    {"id": "e_big", "sourceNodeId": "decision_amount", "targetNodeId": "approve",
+     "properties": {"expr": "#variable.amount >= 5000"},
+     "text": {"value": "≥5000"}},
+    {"id": "e_small", "sourceNodeId": "decision_amount", "targetNodeId": "pay",
+     "properties": {"expr": "#variable.amount < 5000"},
+     "text": {"value": "<5000"}},
+    {"id": "e4", "sourceNodeId": "approve", "targetNodeId": "pay", "text": {"value": "通过后"}},
+    {"id": "e_end", "sourceNodeId": "pay", "targetNodeId": "end", "text": {"value": ""}}
+  ]
+}

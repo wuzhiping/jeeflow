@@ -376,13 +376,130 @@
 
 • 触发讨论:  bro 2026-09-20 19:55 SHA "我们来探讨一下: 工作流的引擎开发者, 引擎测试..."
 • 方法论:    McKinsey 7-step + SCAMPER (S/C/A/M/P/E/R)
-• 数据来源:  AGENTS.md §5 + flow.md §3-§7 + BUGS.md + known-issues.md §1-§112
-             + BDD/bdd-1001-1110 + 今日跑通的 8 个流程 + BUG-1/2 实证
+• 数据来源:  AGENTS.md §5 + flow.md §3-§7 + BUGS.md + known-issues.md §1-§117
+             + BDD/bdd-1001-1110 + BDD/bdd-1601-1905 + Phase 9 月度 metrics (16/17/18/19/20/11 月)
+             + 今日跑通的 8 个流程 + BUG-1/2/3/4 实证 + 13 条 FB 闭环
 • 落地资源:  /opt/data/skills/software-development/jeeflow/SKILL.md (v8, 729 行)
              /opt/data/workspace/jeeflow-flows/insights/ (4 文件心得库)
              /opt/data/workspace/jeeflow-flows/work_logs/ (8 篇日志)
-• 后续动作:  跑 #9-#10 收尾, 复测 BUG-3 (FIX-T111), 继续触发 BUG-2 边缘场景
+             /opt/jupyter/src/RD/projects/jeeFlow/skills/ (181 文件, Q4)
+• 后续动作:  Phase 9 Month 3 (W48-W51) 收官 → Q4 复盘 published → Phase 10 启动
 
 —— 报告完 ——
 
 报告结束时间: 2026-09-20 20:05 SHA
+扩展: 2026-11-17 (W47 Day 5) · Phase 9 Month 2 收官 + Q4 准备 + Phase 10 衔接
+
+═══════════════════════════════════════════════════════════
+附录 B · SPI 能力扩展 (2026-11-17, v22-v29 后置)
+═══════════════════════════════════════════════════════════
+
+> **触发**: v22-v29 spi 路由 dispatcher 架构成型 + SLA v14 100% 健康 · 现固化为 RML 角色 +C (集成开发者) 的核心能力.
+> **关联**: `SKILL-TREE.md §16` + `spi/SPEC.md §8` + 8 份 v22-v29 retrospective.
+
+### B.1 三层分离架构 (v26 dispatcher)
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  Layer 1: Dispatcher (spi/cli.py + spi/api.py + spi/__main__.py)    │
+│  · 入口层, 跟随 SPI_FOLDER 环境变量                                    │
+│  · 解析命令行参数 (cli) 或 HTTP 路由 (api)                              │
+│  · 加载 spi/<SPI_FOLDER>/cli.py 或 spi/<SPI_FOLDER>/api.py            │
+└─────────────────────────────────────────────────────────────────────┘
+              ↓
+┌─────────────────────────────────────────────────────────────────────┐
+│  Layer 2: Implementation (spi/{demo,dev,fdep}/cli.py + api.py)      │
+│  · 暴露 6 个 _data_* 函数 (CLI/API 共享契约)                            │
+└─────────────────────────────────────────────────────────────────────┘
+              ↓
+┌─────────────────────────────────────────────────────────────────────┐
+│  Layer 3: Data (spi/{demo,dev}/data.py + *.json)                      │
+│  · spi/dev/data.py: 22 DictProxy (v8-v29) + 2 helpers + verify()       │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### B.2 6 个 _data_* 函数 (CLI/API 共享契约, 不允许改签名)
+
+| 函数 | 返回 | 说明 |
+| --- | --- | --- |
+| `_data_verify()` | `dict` | 4 类完整性检查 |
+| `_data_status()` | `dict` | SPI 概况 (22 DictProxy 摘要) |
+| `_data_list_users()` | `list[dict]` | 所有用户精简视图 |
+| `_data_show_user(uid)` | `dict \| None` | 单用户完整档案 (13 字段 SPI_USERS_FULL) |
+| `_data_list_depts()` | `list[dict]` | 所有部门精简视图 |
+| `_data_show_dept(dept_id)` | `dict \| None` | 单部门详情 + 成员 |
+
+### B.3 6 个 API 端点 + 7 个 CLI 命令
+
+**API** (双端共用, `main_common.register_spi_routes(app)`):
+
+```
+GET /api/spi/verify | GET /api/spi/status
+GET /api/spi/users  | GET /api/spi/users/{uid}
+GET /api/spi/depts  | GET /api/spi/depts/{dept_id}
+```
+
+**CLI** (`python -m spi.cli <cmd>`, 跟随 SPI_FOLDER):
+
+```bash
+verify | status | list-users | show-user <uid>
+list-depts | show-dept <dept_id> | help
+```
+
+### B.4 SPI_FOLDER 路由 + main_common 双端集成
+
+| SPI_FOLDER | cli/api | 行为 |
+| --- | --- | --- |
+| `dev` (推荐默认) | ✅ | 完整实现 (22 DictProxy + 2 helpers + 9 SPI 函数 + verify()) |
+| `demo` (代码默认) | ✅ | 基础实现 (99 errors 是已知问题) |
+| `fdep` | ❌ | 404 (`{"detail": "SPI_FOLDER=fdep 不支持 API"}`) |
+
+```python
+# main_common.py
+def register_spi_routes(app: FastAPI):
+    from spi.api import router as spi_router
+    app.include_router(spi_router)
+
+# main.py + main_pg.py 同步调用
+from main_common import register_spi_routes
+register_spi_routes(app)
+```
+
+### B.5 22 DictProxy 总览 (v8-v29 累加)
+
+| 版本 | DictProxy | 用途 |
+| --- | --- | --- |
+| v8 | SPI_DEPTS_LEV (后被 v9 替换) | 部门层级编码 |
+| v9 | SPI_DEPTS_TREE | 部门嵌套树 |
+| v10 | verify() + 3 helpers | 数据完整性校验 |
+| v11 | SPI_USERS_BY_DEPT, SPI_DEPT_LEADER_BY_USER | 部门导航 |
+| v12 | SPI_DEPT_ANCESTORS, SPI_DEPT_DESCENDANTS | 树遍历 |
+| v13 | SPI_DEPT_MAIN_LEADER_BY_USER, SPI_USER_DEPT_CHAIN | 用户视角路径 |
+| v14 | SPI_USER_LEADER_CHAIN | 用户完整领导链 |
+| v15 | SPI_USERS_BY_LEVEL | 按职级聚合 |
+| v16 | SPI_USERS_FULL | 用户集成视图 (13 字段) |
+| v17 | SPI_DEPT_FULL_INFO | 部门集成视图 (10 字段) |
+| v18 | verify() 扩展 (C4 ROLE_TO_USERS 一致性) | 发现真实 bug |
+| v19 | SPI_DEPT_MEMBERS_FULL | 部门成员完整视图 |
+| v20 | search_users() | 首个 helper 函数 |
+| v21 | search_depts() | 搜索函数 (对称 v20) |
+| v22 | CLI 入口 (3 命令) | python -m spi.dev |
+| v23 | SPI_USERS_WITH_ROLES | 用户角色反向 |
+| v24 | CLI 扩展 (4 命令) | list-users/show-user/list-depts/show-dept |
+| v25 | FastAPI 路由 (6 端点) | API 暴露 |
+| v26 | dispatcher 三层分离 | CLI/API 统一 |
+| v27 | SPI_USERS_BY_DEPT_ROLE | (dept, role) 二维聚合 |
+| v28 | main_common 双端集成 | register_spi_routes |
+| v29 | SPI_USER_DEPT_ROLE | 用户部门角色反向 (v27 互逆) |
+
+### B.6 角色 +C (集成开发者) 能力升级
+
+集成开发者现在必须掌握:
+1. **SPI dispatcher 架构**: 三层分离原理 + SPI_FOLDER 路由
+2. **6 个 _data_* 函数契约**: CLI/API 共享, 不允许改签名
+3. **6 个 API 端点 + 7 个 CLI 命令**: 调用模式 + 错误处理 (404)
+4. **main_common 双端集成**: `register_spi_routes(app)` 调用模式
+5. **22 DictProxy 数据视图**: 派生 + helpers + verify() 完整性校验
+
+详见 `SKILL-TREE.md §16` + 8 份 v22-v29 retrospective.
+扩展: 2026-11-17 (W47 Day 5) · Phase 9 Month 2 收官 + Q4 准备 + Phase 10 衔接

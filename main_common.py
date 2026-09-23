@@ -21,6 +21,7 @@ import json
 import os
 import sys
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Callable, Optional
 
 from fastapi import FastAPI, Request
@@ -443,9 +444,9 @@ def install_resolve_actors_wrapper(engine):
                 raise ValueError(f"节点[{node.id}] handler FQCN='{handler_name}' 未注册")
         actors = await _orig_resolve_actors(node, inst, operator, vars_)
         if handler_name and not actors:
-            _fix_log(f"[FIX-T2 WARN] handler '{handler_name}' returned empty actors for node_id='{node.id}' (process={inst.defineId}); check SPI role_code")
-            # FIX-T17：handler 已注册但 SPI 无匹配 → raise 让 facade 报错
-            raise ValueError(f"节点[{node.id}] handler '{handler_name}' SPI 角色匹配为空（检查 role_code）")
+            _fix_log(f"[FIX-T2 WARN] handler '{handler_name}' returned empty actors for node_id='{node.id}' (process={inst.defineId}); check handler inputs")
+            # FIX-T117 (2026-09-22 FB-0016)：由 engine 内部 _resolve_meta 按 handler 类型给具体错误
+            # 此处不再 raise, 让 engine._create_task 通过 _last_resolve_meta 给清晰指引
         return actors
 
     engine._resolve_actors = _logged_resolve_actors
@@ -561,6 +562,228 @@ def run_seed_business(facade):
 async def _seed_business_async(facade):
     from seed_business import seed_business
     await seed_business(facade)
+
+
+# ─── 临时任务：启动后自动检查并部署 fdep.json ────────────────────────────
+async def auto_deploy_fdep(facade):
+    """启动后自动检查并部署 ToT/flows/fdep.json
+
+    触发条件（AND）：
+      1. ToT/flows/fdep.json 文件存在
+      2. 引擎内尚未定义名为 "fdep" 的流程
+    满足两条 → 自动通过 facade.flow('processDefine/deploy', ...) 部署
+
+    退出条件（任一不满足）：
+      - 文件不存在 → 跳过
+      - 已部署 → 跳过
+      - 部署失败 → 打印错误，不抛异常（避免阻塞启动）
+    """
+    fdep_path = Path(__file__).resolve().parent / "ToT" / "flows" / "fdep.json"
+
+    # 条件 1: 文件存在
+    if not fdep_path.exists():
+        print(f"[auto-deploy-fdep] 跳过: {fdep_path} 不存在")
+        return
+
+    # 条件 2: 尚未定义
+    try:
+        existing = await facade.flow("processDefine/getLastByName", {"processDefineName": "fdep"})
+        if existing.get("code") == 0 and existing.get("data"):
+            print(f"[auto-deploy-fdep] 跳过: fdep 已部署 (id={existing['data'].get('id')})")
+            return
+    except Exception as e:
+        # 查询异常不阻塞启动，仅记录
+        print(f"[auto-deploy-fdep] 查询失败（忽略，继续部署）: {e}")
+
+    # 部署
+    try:
+        content = fdep_path.read_text(encoding="utf-8")
+        deploy_resp = await facade.flow("processDefine/deploy", {
+            "content": content,
+            "operator": "system",
+            "name": "fdep",
+        })
+        if deploy_resp.get("code") == 0:
+            print(f"[auto-deploy-fdep] ✅ 已部署: {deploy_resp.get('data')}")
+        else:
+            print(f"[auto-deploy-fdep] ❌ 部署失败: {deploy_resp}")
+    except Exception as e:
+        print(f"[auto-deploy-fdep] ❌ 部署异常: {e}")
+
+
+def run_auto_deploy_fdep(facade):
+    """同步包装：兼容 uvicorn reload（worker 事件循环）"""
+    import asyncio
+    try:
+        asyncio.get_running_loop()
+        asyncio.get_event_loop().create_task(auto_deploy_fdep(facade))
+    except RuntimeError:
+        asyncio.run(auto_deploy_fdep(facade))
+
+
+# ─── Executor Pickup API：单端点返回 task + 前 handoff + job card + execute 模板 ──
+async def executor_pickup(facade, task_id: int, operator: str):
+    # task_id 已在 route 层转 int，函数内可直接用
+    """ToT/sop/executor-api.md v0.1 定义：POST /api/executor/pickup 的核心逻辑
+
+    返回 data dict（4 部分）：
+      - task: 当前 task 摘要
+      - previousHandoff: 上一节点的 decision mems + next_handoff
+      - jobCard: 本节点的 Job Card 文件全文（ToT/flows/fdep/job_cards/job_card_<node>.md）
+      - executeTemplate: execute body 模板（含 processTaskId/operator/submitType/decision_*）
+
+    错误处理：
+      - task 不存在 → 抛 ValueError
+      - operator 不匹配 → 抛 PermissionError
+      - task 状态非 DOING → 抛 ValueError
+      - Job Card 文件不存在 → 返回 exists=False, content=None（不阻断）
+    """
+    # repo 在 facade._engine.repo（facade 自身没有 .repo 属性）
+    engine = getattr(facade, "_engine", None)
+    repo = getattr(engine, "repo", None) if engine else None
+    if repo is None:
+        raise RuntimeError("facade._engine.repo not accessible")
+
+    # 1. 找 task
+    task = await repo.find_task_by_id(task_id)
+    if task is None:
+        raise ValueError(f"task not found: {task_id}")
+
+    # 2. 校验 operator
+    actors = list(task.actorIds) if task.actorIds else []
+    if task.actorId != operator and operator not in actors:
+        raise PermissionError(
+            f"operator '{operator}' not authorized for task '{task.taskName}' "
+            f"(assignee={task.actorId}, actors={actors})"
+        )
+
+    # 3. 校验状态
+    from jeeflow.model import TaskState as _TS
+    if task.taskState != _TS.DOING:
+        raise ValueError(
+            f"task '{task.taskName}' is in state {task.taskState}, not actionable"
+        )
+
+    # 4. 找前一个 DONE task
+    instance = await repo.find_instance_by_id(task.processInstanceId)
+    if instance is None:
+        raise ValueError(f"instance not found: {task.processInstanceId}")
+
+    previous_task = None
+    for t in sorted(instance.tasks or [], key=lambda x: x.finishTime or x.createTime, reverse=True):
+        if t.taskState == _TS.DONE and t.id != task.id:
+            previous_task = t
+            break
+
+    # 5. 解析前 task 的 variable（task.variables 是 dict，无需 JSON.loads）
+    prev_handoff = {
+        "fromTask": None,
+        "decisionReason": None,
+        "decisionMemo": {},
+        "context": {},
+        "nextHandoff": None,
+    }
+    if previous_task:
+        prev_handoff["fromTask"] = previous_task.taskName
+        v = previous_task.variables if isinstance(previous_task.variables, dict) else {}
+        prev_handoff["decisionReason"] = v.get("decision_reason")
+        prev_handoff["decisionMemo"] = v.get("decision_memo", {})
+        prev_handoff["context"] = v.get("context", {})
+        if isinstance(prev_handoff["decisionMemo"], dict):
+            prev_handoff["nextHandoff"] = prev_handoff["decisionMemo"].get("next_handoff")
+
+    # 6. 加载本节点的 Job Card
+    flows_root = Path(__file__).resolve().parent / "ToT" / "flows"
+    # 从 fdep.json 推断 flow 目录名（当前仅支持 fdep）
+    card_rel_path = f"fdep/job_cards/job_card_{task.taskName}.md"
+    card_abs_path = flows_root.parent / card_rel_path
+    # 实际上 fdep/ 在 flows/ 下面，job_card 路径 = flows/fdep/job_cards/job_card_<node>.md
+    card_abs_path = Path(__file__).resolve().parent / "ToT" / "flows" / "fdep" / "job_cards" / f"job_card_{task.taskName}.md"
+
+    job_card = {
+        "url": f"ToT/flows/fdep/job_cards/job_card_{task.taskName}.md",
+        "absolutePath": str(card_abs_path),
+        "exists": card_abs_path.exists(),
+        "content": None,
+    }
+    if job_card["exists"]:
+        job_card["content"] = card_abs_path.read_text(encoding="utf-8")
+
+    # 7. 构造 executeTemplate（从 Job Card 提取 §5 JSON，或用空白模板）
+    execute_template = {
+        "processTaskId": task.id,
+        "operator": operator,
+        "submitType": 1,
+        "decision_reason": "<待填>",
+        "decision_memo": None,  # 占位；填入本节点的 key_requirements / artifact_path 等
+        "context": {"node": task.taskName, "executor": operator},
+        "next_handoff": _build_next_handoff_from_flow(flows_root / "fdep.json", task.taskName),
+    }
+
+    # 8. 找流程定义拿 displayName（用 task 自身的 displayName，process 的作为后备）
+    def_ = await repo.find_define_by_id(instance.defineId) if instance.defineId else None
+    process_display_name = def_.displayName if def_ else None
+    task_display_name = task.displayName or process_display_name
+
+    return {
+        "task": {
+            "id": task.id,
+            "taskName": task.taskName,
+            "processInstanceId": task.processInstanceId,
+            "operator": task.actorId or (actors[0] if actors else ""),
+            "taskState": task.taskState,
+            "displayName": task_display_name,
+            "createTime": _fmt_time(task.createTime),
+        },
+        "previousHandoff": prev_handoff,
+        "jobCard": job_card,
+        "executeTemplate": execute_template,
+    }
+
+
+def _build_next_handoff_from_flow(flow_path: Path, current_node: str):
+    """从 fdep.json 找 current_node 的下一节点 + 对应的 job_card_url
+
+    返回 {"next_node": ..., "job_card_url": ..., "input_files": [...]}
+    终态节点（end/end_rejected）返回 {"next_node": ..., "is_terminal": True}
+    非 task 节点（decision）返回 None
+    """
+    if not flow_path.exists():
+        return None
+    try:
+        flow = json.loads(flow_path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+    NON_TASK_NODES = {"start", "end", "end_rejected", "decision_intake"}
+    nodes_by_id = {n["id"]: n for n in flow.get("nodes", [])}
+
+    # 找出边
+    next_nodes = []
+    for e in flow.get("edges", []):
+        if e.get("sourceNodeId") == current_node:
+            t = e.get("targetNodeId")
+            if t and t not in NON_TASK_NODES:
+                next_nodes.append(t)
+
+    if not next_nodes:
+        # 终态
+        for e in flow.get("edges", []):
+            if e.get("sourceNodeId") == current_node:
+                t = e.get("targetNodeId")
+                if t in NON_TASK_NODES:
+                    return {"next_node": t, "is_terminal": True}
+        return None
+
+    next_node = next_nodes[0]
+    next_node_def = nodes_by_id.get(next_node, {})
+    storage = next_node_def.get("properties", {}).get("storage", "")
+
+    return {
+        "next_node": next_node,
+        "job_card_url": f"ToT/flows/fdep/job_cards/job_card_{next_node}.md",
+        "input_files": [f"{storage}<date>/<taskId>/<本节点产出>"] if storage else [],
+    }
 
 
 # ─── Routes Registration ───────────────────────────────────────────────────────
@@ -779,6 +1002,62 @@ def register_routes(app: FastAPI, *, get_facade: Callable, get_repo: Callable,
         from spi import SPI_DICTS
         rows = [{"code": code, "items": list(items)} for code, items in SPI_DICTS.items()]
         return _ok(rows)
+
+    @app.post("/api/executor/pickup")
+    @access_guard
+    async def api_executor_pickup(request: Request):
+        """ToT/sop/executor-api.md v0.1：执行者一站式启动包
+
+        POST body: {"taskId": <int>, "operator": "<str>"}
+
+        一次性返回：
+        - task: 当前 task 摘要
+        - previousHandoff: 前一 task 的 decision mems + next_handoff
+        - jobCard: 本节点的 Job Card 全文
+        - executeTemplate: 可直接复用 + 填值的 execute body 模板
+
+        错误码（与 boot2 协议一致）：
+        - 200 + code=0: 成功
+        - 200 + code=404: task 不存在
+        - 200 + code=403: operator 不匹配
+        - 200 + code=400: task 状态非 DOING
+        """
+        body = await request.json() if await request.body() else {}
+        task_id_raw = body.get("taskId")
+        operator = body.get("operator")
+        if task_id_raw is None or not operator:
+            return _err("taskId and operator are required", code=400)
+
+        # repo 用 int 作 key，taskId 在 JSON 里通常为字符串，统一转 int
+        try:
+            task_id = int(task_id_raw)
+        except (TypeError, ValueError):
+            return _err(f"taskId must be int, got: {task_id_raw!r}", code=400)
+
+        try:
+            data = await executor_pickup(get_facade(), task_id, operator)
+        except ValueError as e:
+            msg = str(e)
+            if "not found" in msg:
+                return _err(msg, code=404)
+            return _err(msg, code=400)
+        except PermissionError as e:
+            return _err(str(e), code=403)
+        except Exception as e:
+            return _err(f"executor_pickup failed: {e}", code=500)
+
+        # 若 Job Card 文件缺失，加 warning 到 msg（但不阻断）
+        warning = None
+        if not data["jobCard"]["exists"]:
+            warning = (
+                f"Job Card 文件不存在: {data['jobCard']['url']} "
+                f"（task={task_id}，建议运行 ToT/sop/gen-job-cards.py）"
+            )
+
+        resp = _ok(data)
+        if warning:
+            resp["warning"] = warning
+        return resp
 
     @app.post("/api/admin/expire/scan")
     @access_guard
@@ -1166,3 +1445,22 @@ def install_trace_endpoint(app):
         spans = [s for s in _spans_log if s["trace_id"] == trace_id]
         spans.sort(key=lambda x: x.get("start_time", 0))
         return {"trace_id": trace_id, "spans": spans}
+
+
+# ─── SPI Routes (v28 新增, 双端共用) ──────────────────────────────────────────────
+def register_spi_routes(app) -> None:
+    """注册 SPI 路由到 FastAPI app (双端共用, v28)
+
+    通过 SPI_FOLDER 自动切换数据源 (demo / dev / fdep):
+    - SPI_FOLDER=dev  → /api/spi/* 返回 dev 数据
+    - SPI_FOLDER=demo → /api/spi/* 返回 demo 数据
+    - SPI_FOLDER=xxx (无 cli/api) → 路由返回 HTTP 404 + 错误信息
+
+    用法 (main.py / main_pg.py):
+        from main_common import register_spi_routes
+        register_spi_routes(app)
+
+    与 install_metrics_endpoint / install_trace_endpoint 调用模式一致.
+    """
+    from spi.api import register_routes
+    register_routes(app)

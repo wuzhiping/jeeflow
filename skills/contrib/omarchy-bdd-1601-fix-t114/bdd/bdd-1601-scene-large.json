@@ -1,0 +1,10 @@
+{
+  "title": "BDD-1601 报销审批-金额阈值+会签 (large branch)",
+  "steps": [
+    {"operator": "leader", "submitType": 1},
+    {"operator": "userA", "submitType": 1},
+    {"operator": "userB", "submitType": 1},
+    {"operator": "userC", "submitType": 1}
+  ],
+  "out": "/home/shwoo/Work/jeeflow/bdd/bdd-1601-large_20260921_155448.out.json"
+}

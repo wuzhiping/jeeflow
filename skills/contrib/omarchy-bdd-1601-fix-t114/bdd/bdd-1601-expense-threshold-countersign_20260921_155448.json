@@ -1,0 +1,129 @@
+{
+  "name": "bdd1601_expense_threshold_countersign",
+  "displayName": "BDD-1601 报销审批(金额阈值+会签并行)",
+  "type": "approval",
+  "instanceUrl": "/form/expense",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 80,
+      "y": 200,
+      "properties": {"width": 50, "height": 50},
+      "text": {"value": "开始"}
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 230,
+      "y": 200,
+      "properties": {
+        "width": 100, "height": 50, "form": "expense-form",
+        "assignee": "${f_applicant}",
+        "taskType": 0, "performType": 0,
+        "field": {
+          "PERMISSION_f_amount": 2,
+          "PERMISSION_f_purpose": 2,
+          "PERMISSION_f_days": 2
+        }
+      },
+      "text": {"value": "发起申请"}
+    },
+    {
+      "id": "leader_review",
+      "type": "snaker:task",
+      "x": 380,
+      "y": 200,
+      "properties": {
+        "width": 110, "height": 50, "form": "expense-form",
+        "assignee": "leader",
+        "taskType": 0, "performType": 0,
+        "field": {
+          "PERMISSION_f_amount": 1,
+          "PERMISSION_f_purpose": 1,
+          "PERMISSION_f_days": 1
+        }
+      },
+      "text": {"value": "直属上级初审"}
+    },
+    {
+      "id": "decision_amount",
+      "type": "snaker:decision",
+      "x": 540,
+      "y": 200,
+      "properties": {"width": 80, "height": 60},
+      "text": {"value": "金额阈值"}
+    },
+    {
+      "id": "manager_signoff",
+      "type": "snaker:task",
+      "x": 700,
+      "y": 80,
+      "properties": {
+        "width": 120, "height": 50, "form": "expense-form",
+        "assignee": "manager",
+        "taskType": 0, "performType": 0,
+        "field": {
+          "PERMISSION_f_amount": 1,
+          "PERMISSION_f_purpose": 1,
+          "PERMISSION_f_days": 1
+        }
+      },
+      "text": {"value": "经理签批(≤5k)"}
+    },
+    {
+      "id": "countersign_finance",
+      "type": "snaker:task",
+      "x": 700,
+      "y": 320,
+      "properties": {
+        "width": 130, "height": 50, "form": "expense-form",
+        "assignee": "userA,userB,userC",
+        "taskType": 0, "performType": 1, "countersignType": "PARALLEL",
+        "field": {
+          "PERMISSION_f_amount": 1,
+          "PERMISSION_f_purpose": 1,
+          "PERMISSION_f_days": 1
+        }
+      },
+      "text": {"value": "财务会签(>5k)"}
+    },
+    {
+      "id": "end_small",
+      "type": "snaker:end",
+      "x": 880,
+      "y": 80,
+      "properties": {"width": 50, "height": 50},
+      "text": {"value": "结束-小额"}
+    },
+    {
+      "id": "end_large",
+      "type": "snaker:end",
+      "x": 880,
+      "y": 320,
+      "properties": {"width": 50, "height": 50},
+      "text": {"value": "结束-大额"}
+    }
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "leader_review", "properties": {}},
+    {"id": "e2", "sourceNodeId": "leader_review", "targetNodeId": "decision_amount", "properties": {}},
+    {
+      "id": "e3",
+      "sourceNodeId": "decision_amount",
+      "targetNodeId": "manager_signoff",
+      "properties": {"expr": "f_amount <= 5000"},
+      "text": {"value": "≤5k → 经理签批"}
+    },
+    {
+      "id": "e4",
+      "sourceNodeId": "decision_amount",
+      "targetNodeId": "countersign_finance",
+      "properties": {"expr": "f_amount > 5000"},
+      "text": {"value": ">5k → 财务会签"}
+    },
+    {"id": "e5", "sourceNodeId": "manager_signoff", "targetNodeId": "end_small", "properties": {}},
+    {"id": "e6", "sourceNodeId": "countersign_finance", "targetNodeId": "end_large", "properties": {}}
+  ]
+}

@@ -125,11 +125,14 @@ def pocketflow(payload, token={}) -> <return_type>:
 2. 准备数据 JSON：`<YOUR_NAME>_USERS.json` / `ROLES.json` / `DICTS.json` / `ROLE_TO_USERS.json` / `DEPT_LEADERS.json` / `DEPT_MAIN_LEADERS.json` / `FIND_USER_BY_ROLE_DEPT.json`
 3. 写 `data.py` 加载 JSON 并暴露常量
 4. 逐函数实现 `<func>.py`（参照 §3.3 函数清单）
-5. 测试：
+5. 实现 `cli.py` + `api.py`（参照 §8）
+6. 测试：
    ```bash
    SPI_FOLDER=<your_name> python -c "from spi import SPI; print(SPI(func='roles', payload={}))"
+   SPI_FOLDER=<your_name> python -m spi.cli verify
+   SPI_FOLDER=<your_name> python -m spi.cli list-users
    ```
-6. 业务层启动时设置 `SPI_FOLDER=<your_name>`
+7. 业务层启动时设置 `SPI_FOLDER=<your_name>`
 
 ---
 
@@ -158,3 +161,92 @@ def pocketflow(payload, token={}) -> <return_type>:
 ## 7. 零父依赖
 
 每个实现包**禁止 import 父包或父包同级模块**（除 `spi.<self>.data`）。本包可独立 import、单独 reload，与项目主入口（`main.py`/`main_pg.py`）解耦。
+
+---
+
+## 8. CLI / API 规范（v26 新增）
+
+### 8.1 概述
+
+dispatcher 层（`spi/cli.py` + `spi/api.py`）通过 `SPI_FOLDER` 动态路由到实现包的 `cli.py` + `api.py`。
+
+**核心原则**：CLI / API 跟随 SPI_FOLDER 自动切换，**不跳过 SPI**。
+
+### 8.2 dispatcher 层入口
+
+#### `spi/cli.py` — CLI 统一入口
+
+- `python -m spi.cli verify`
+- `python -m spi.cli status`
+- `python -m spi.cli list-users`
+- `python -m spi.cli show-user <uid>`
+- `python -m spi.cli list-depts`
+- `python -m spi.cli show-dept <dept_id>`
+- `python -m spi.cli help`
+- `python -m spi`（通过 `spi/__main__.py`）
+
+#### `spi/api.py` — FastAPI 路由
+
+| 路由 | 方法 | 说明 |
+|------|------|------|
+| `/api/spi/verify` | GET | 数据完整性验证 |
+| `/api/spi/status` | GET | 数据概况 |
+| `/api/spi/users` | GET | 列出所有用户 |
+| `/api/spi/users/{uid}` | GET | 用户详情 |
+| `/api/spi/depts` | GET | 列出所有部门 |
+| `/api/spi/depts/{dept_id}` | GET | 部门详情 + 成员 |
+
+集成方式：
+```python
+from spi.api import register_routes
+register_routes(app)  # main.py / main_pg.py 调用
+```
+
+### 8.3 实现包接口约定（强制）
+
+每个实现包（如 `spi/demo/`、`spi/dev/`）**必须提供**：
+
+- `cli.py`：暴露 6 个 `_data_*` 数据获取函数（返回纯 dict / list，不做打印）
+- `api.py`：从 cli.py re-export 同样的 6 个函数（FastAPI 用）
+
+#### 6 个 `_data_*` 函数签名
+
+```python
+def _data_verify() -> dict:
+    """数据完整性验证结果"""
+
+def _data_status() -> dict:
+    """SPI 数据概况 (通常复用 verify 结果)"""
+
+def _data_list_users() -> list[dict]:
+    """用户列表, 每用户 6 字段: uid, name, post, level, dept_id, roles"""
+
+def _data_show_user(uid: str) -> dict | None:
+    """用户详情 (None 表示 uid 不存在)"""
+
+def _data_list_depts() -> list[dict]:
+    """部门列表, 每部门 5 字段: dept_id, name, size, leader, main_leader"""
+
+def _data_show_dept(dept_id: str) -> dict | None:
+    """部门详情 + 成员, 返回 {info, members} 或 None"""
+```
+
+### 8.4 行为约定
+
+- dispatcher 检测 `SPI_FOLDER`，调用对应实现包
+- 实现包提供 `cli.py` + `api.py`：路由到该实现包
+- 实现包**未提供** `cli.py` 或 `api.py`：
+  - CLI：`NotImplementedError` → 退出码 1 + stderr 错误信息
+  - API：HTTP 404 + `detail: "SPI_FOLDER=<folder> 不支持 API (缺少 api 模块)"`
+- **禁止**在 dispatcher 层硬编码具体实现包（如 `from spi.dev.cli`）
+
+### 8.5 扩展新实现包（CLI/API）
+
+1. 创建 `spi/<name>/cli.py`，实现 6 个 `_data_*` 函数
+2. 创建 `spi/<name>/api.py`，从 cli.py re-export 6 个函数
+3. 测试：
+   ```bash
+   SPI_FOLDER=<name> python -m spi.cli verify
+   SPI_FOLDER=<name> python -m spi.cli list-users
+   ```
+4. 启动 `main.py` 时设置 `SPI_FOLDER=<name>`，API 自动跟随

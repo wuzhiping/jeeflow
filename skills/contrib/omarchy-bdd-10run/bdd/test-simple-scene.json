@@ -1,0 +1,7 @@
+{
+  "title": "BDD Simple Approval Test",
+  "steps": [
+    {"operator": "leader", "submitType": 1}
+  ],
+  "out": "/home/shwoo/Work/jeeflow/bdd/test-simple-output.json"
+}

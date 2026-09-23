@@ -23,7 +23,7 @@
       "id": "leader_approve",
       "type": "snaker:task",
       "properties": {
-        "assignee": "leader",
+        "assignee": "u_fe_lead",
         "taskType": 0,
         "performType": 0
       },

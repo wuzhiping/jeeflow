@@ -1,0 +1,632 @@
+[
+  {
+    "run": 1,
+    "timestamp": "2026-09-21T14:44:45.483225",
+    "stdout": "{\"verify\": {\"errors\": \"\", \"warnings\": \"  - [W009/warning] 字段 f_leaveType 在节点 ['task1'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\"}}\n{\"reset\": {\"code\": 0, \"msg\": \"成功\", \"data\": null}, \"save\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"id\": \"1\"}}, \"deploy\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"processDefineId\": \"20\"}}, \"processDefineId\": \"20\"}\n{\"start\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"processInstanceId\": \"92132439483409\"}}}\n{\"step\": 0, \"task\": \"92132439485459\", \"operator\": \"leader\", \"submitType\": 1, \"result\": {\"code\": 0, \"msg\": \"成功\", \"data\": null}}\n{\"final\": {\"state\": 20, \"output\": \"/home/shwoo/Work/jeeflow/bdd/test-simple-output.json\"}}\n",
+    "stderr": "",
+    "returncode": 0,
+    "verify": {
+      "verify": {
+        "errors": "",
+        "warnings": "  - [W009/warning] 字段 f_leaveType 在节点 ['task1'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']"
+      }
+    },
+    "deploy": {
+      "reset": {
+        "code": 0,
+        "msg": "成功",
+        "data": null
+      },
+      "save": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "id": "1"
+        }
+      },
+      "deploy": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "processDefineId": "20"
+        }
+      },
+      "processDefineId": "20"
+    },
+    "start": {
+      "start": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "processInstanceId": "92132439483409"
+        }
+      }
+    },
+    "steps": [
+      {
+        "step": 0,
+        "task": "92132439485459",
+        "operator": "leader",
+        "submitType": 1,
+        "result": {
+          "code": 0,
+          "msg": "成功",
+          "data": null
+        }
+      }
+    ],
+    "final": {
+      "final": {
+        "state": 20,
+        "output": "/home/shwoo/Work/jeeflow/bdd/test-simple-output.json"
+      }
+    }
+  },
+  {
+    "run": 2,
+    "timestamp": "2026-09-21T14:44:46.188834",
+    "stdout": "{\"verify\": {\"errors\": \"\", \"warnings\": \"  - [W009/warning] 字段 f_leaveType 在节点 ['task1'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\"}}\n{\"reset\": {\"code\": 0, \"msg\": \"成功\", \"data\": null}, \"save\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"id\": \"1\"}}, \"deploy\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"processDefineId\": \"20\"}}, \"processDefineId\": \"20\"}\n{\"start\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"processInstanceId\": \"92132440207380\"}}}\n{\"step\": 0, \"task\": \"92132440208406\", \"operator\": \"leader\", \"submitType\": 1, \"result\": {\"code\": 0, \"msg\": \"成功\", \"data\": null}}\n{\"final\": {\"state\": 20, \"output\": \"/home/shwoo/Work/jeeflow/bdd/test-simple-output.json\"}}\n",
+    "stderr": "",
+    "returncode": 0,
+    "verify": {
+      "verify": {
+        "errors": "",
+        "warnings": "  - [W009/warning] 字段 f_leaveType 在节点 ['task1'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']"
+      }
+    },
+    "deploy": {
+      "reset": {
+        "code": 0,
+        "msg": "成功",
+        "data": null
+      },
+      "save": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "id": "1"
+        }
+      },
+      "deploy": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "processDefineId": "20"
+        }
+      },
+      "processDefineId": "20"
+    },
+    "start": {
+      "start": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "processInstanceId": "92132440207380"
+        }
+      }
+    },
+    "steps": [
+      {
+        "step": 0,
+        "task": "92132440208406",
+        "operator": "leader",
+        "submitType": 1,
+        "result": {
+          "code": 0,
+          "msg": "成功",
+          "data": null
+        }
+      }
+    ],
+    "final": {
+      "final": {
+        "state": 20,
+        "output": "/home/shwoo/Work/jeeflow/bdd/test-simple-output.json"
+      }
+    }
+  },
+  {
+    "run": 3,
+    "timestamp": "2026-09-21T14:44:46.880198",
+    "stdout": "{\"verify\": {\"errors\": \"\", \"warnings\": \"  - [W009/warning] 字段 f_leaveType 在节点 ['task1'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\"}}\n{\"reset\": {\"code\": 0, \"msg\": \"成功\", \"data\": null}, \"save\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"id\": \"1\"}}, \"deploy\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"processDefineId\": \"20\"}}, \"processDefineId\": \"20\"}\n{\"start\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"processInstanceId\": \"92132440917015\"}}}\n{\"step\": 0, \"task\": \"92132440918041\", \"operator\": \"leader\", \"submitType\": 1, \"result\": {\"code\": 0, \"msg\": \"成功\", \"data\": null}}\n{\"final\": {\"state\": 20, \"output\": \"/home/shwoo/Work/jeeflow/bdd/test-simple-output.json\"}}\n",
+    "stderr": "",
+    "returncode": 0,
+    "verify": {
+      "verify": {
+        "errors": "",
+        "warnings": "  - [W009/warning] 字段 f_leaveType 在节点 ['task1'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']"
+      }
+    },
+    "deploy": {
+      "reset": {
+        "code": 0,
+        "msg": "成功",
+        "data": null
+      },
+      "save": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "id": "1"
+        }
+      },
+      "deploy": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "processDefineId": "20"
+        }
+      },
+      "processDefineId": "20"
+    },
+    "start": {
+      "start": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "processInstanceId": "92132440917015"
+        }
+      }
+    },
+    "steps": [
+      {
+        "step": 0,
+        "task": "92132440918041",
+        "operator": "leader",
+        "submitType": 1,
+        "result": {
+          "code": 0,
+          "msg": "成功",
+          "data": null
+        }
+      }
+    ],
+    "final": {
+      "final": {
+        "state": 20,
+        "output": "/home/shwoo/Work/jeeflow/bdd/test-simple-output.json"
+      }
+    }
+  },
+  {
+    "run": 4,
+    "timestamp": "2026-09-21T14:44:47.573271",
+    "stdout": "{\"verify\": {\"errors\": \"\", \"warnings\": \"  - [W009/warning] 字段 f_leaveType 在节点 ['task1'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\"}}\n{\"reset\": {\"code\": 0, \"msg\": \"成功\", \"data\": null}, \"save\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"id\": \"1\"}}, \"deploy\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"processDefineId\": \"20\"}}, \"processDefineId\": \"20\"}\n{\"start\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"processInstanceId\": \"92132441627674\"}}}\n{\"step\": 0, \"task\": \"92132441629724\", \"operator\": \"leader\", \"submitType\": 1, \"result\": {\"code\": 0, \"msg\": \"成功\", \"data\": null}}\n{\"final\": {\"state\": 20, \"output\": \"/home/shwoo/Work/jeeflow/bdd/test-simple-output.json\"}}\n",
+    "stderr": "",
+    "returncode": 0,
+    "verify": {
+      "verify": {
+        "errors": "",
+        "warnings": "  - [W009/warning] 字段 f_leaveType 在节点 ['task1'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']"
+      }
+    },
+    "deploy": {
+      "reset": {
+        "code": 0,
+        "msg": "成功",
+        "data": null
+      },
+      "save": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "id": "1"
+        }
+      },
+      "deploy": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "processDefineId": "20"
+        }
+      },
+      "processDefineId": "20"
+    },
+    "start": {
+      "start": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "processInstanceId": "92132441627674"
+        }
+      }
+    },
+    "steps": [
+      {
+        "step": 0,
+        "task": "92132441629724",
+        "operator": "leader",
+        "submitType": 1,
+        "result": {
+          "code": 0,
+          "msg": "成功",
+          "data": null
+        }
+      }
+    ],
+    "final": {
+      "final": {
+        "state": 20,
+        "output": "/home/shwoo/Work/jeeflow/bdd/test-simple-output.json"
+      }
+    }
+  },
+  {
+    "run": 5,
+    "timestamp": "2026-09-21T14:44:48.285936",
+    "stdout": "{\"verify\": {\"errors\": \"\", \"warnings\": \"  - [W009/warning] 字段 f_leaveType 在节点 ['task1'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\"}}\n{\"reset\": {\"code\": 0, \"msg\": \"成功\", \"data\": null}, \"save\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"id\": \"1\"}}, \"deploy\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"processDefineId\": \"20\"}}, \"processDefineId\": \"20\"}\n{\"start\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"processInstanceId\": \"92132442353693\"}}}\n{\"step\": 0, \"task\": \"92132442354719\", \"operator\": \"leader\", \"submitType\": 1, \"result\": {\"code\": 0, \"msg\": \"成功\", \"data\": null}}\n{\"final\": {\"state\": 20, \"output\": \"/home/shwoo/Work/jeeflow/bdd/test-simple-output.json\"}}\n",
+    "stderr": "",
+    "returncode": 0,
+    "verify": {
+      "verify": {
+        "errors": "",
+        "warnings": "  - [W009/warning] 字段 f_leaveType 在节点 ['task1'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']"
+      }
+    },
+    "deploy": {
+      "reset": {
+        "code": 0,
+        "msg": "成功",
+        "data": null
+      },
+      "save": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "id": "1"
+        }
+      },
+      "deploy": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "processDefineId": "20"
+        }
+      },
+      "processDefineId": "20"
+    },
+    "start": {
+      "start": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "processInstanceId": "92132442353693"
+        }
+      }
+    },
+    "steps": [
+      {
+        "step": 0,
+        "task": "92132442354719",
+        "operator": "leader",
+        "submitType": 1,
+        "result": {
+          "code": 0,
+          "msg": "成功",
+          "data": null
+        }
+      }
+    ],
+    "final": {
+      "final": {
+        "state": 20,
+        "output": "/home/shwoo/Work/jeeflow/bdd/test-simple-output.json"
+      }
+    }
+  },
+  {
+    "run": 6,
+    "timestamp": "2026-09-21T14:44:48.996663",
+    "stdout": "{\"verify\": {\"errors\": \"\", \"warnings\": \"  - [W009/warning] 字段 f_leaveType 在节点 ['task1'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\"}}\n{\"reset\": {\"code\": 0, \"msg\": \"成功\", \"data\": null}, \"save\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"id\": \"1\"}}, \"deploy\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"processDefineId\": \"20\"}}, \"processDefineId\": \"20\"}\n{\"start\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"processInstanceId\": \"92132443086880\"}}}\n{\"step\": 0, \"task\": \"92132443087906\", \"operator\": \"leader\", \"submitType\": 1, \"result\": {\"code\": 0, \"msg\": \"成功\", \"data\": null}}\n{\"final\": {\"state\": 20, \"output\": \"/home/shwoo/Work/jeeflow/bdd/test-simple-output.json\"}}\n",
+    "stderr": "",
+    "returncode": 0,
+    "verify": {
+      "verify": {
+        "errors": "",
+        "warnings": "  - [W009/warning] 字段 f_leaveType 在节点 ['task1'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']"
+      }
+    },
+    "deploy": {
+      "reset": {
+        "code": 0,
+        "msg": "成功",
+        "data": null
+      },
+      "save": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "id": "1"
+        }
+      },
+      "deploy": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "processDefineId": "20"
+        }
+      },
+      "processDefineId": "20"
+    },
+    "start": {
+      "start": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "processInstanceId": "92132443086880"
+        }
+      }
+    },
+    "steps": [
+      {
+        "step": 0,
+        "task": "92132443087906",
+        "operator": "leader",
+        "submitType": 1,
+        "result": {
+          "code": 0,
+          "msg": "成功",
+          "data": null
+        }
+      }
+    ],
+    "final": {
+      "final": {
+        "state": 20,
+        "output": "/home/shwoo/Work/jeeflow/bdd/test-simple-output.json"
+      }
+    }
+  },
+  {
+    "run": 7,
+    "timestamp": "2026-09-21T14:44:49.705572",
+    "stdout": "{\"verify\": {\"errors\": \"\", \"warnings\": \"  - [W009/warning] 字段 f_leaveType 在节点 ['task1'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\"}}\n{\"reset\": {\"code\": 0, \"msg\": \"成功\", \"data\": null}, \"save\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"id\": \"1\"}}, \"deploy\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"processDefineId\": \"20\"}}, \"processDefineId\": \"20\"}\n{\"start\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"processInstanceId\": \"92132443800611\"}}}\n{\"step\": 0, \"task\": \"92132443801637\", \"operator\": \"leader\", \"submitType\": 1, \"result\": {\"code\": 0, \"msg\": \"成功\", \"data\": null}}\n{\"final\": {\"state\": 20, \"output\": \"/home/shwoo/Work/jeeflow/bdd/test-simple-output.json\"}}\n",
+    "stderr": "",
+    "returncode": 0,
+    "verify": {
+      "verify": {
+        "errors": "",
+        "warnings": "  - [W009/warning] 字段 f_leaveType 在节点 ['task1'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']"
+      }
+    },
+    "deploy": {
+      "reset": {
+        "code": 0,
+        "msg": "成功",
+        "data": null
+      },
+      "save": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "id": "1"
+        }
+      },
+      "deploy": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "processDefineId": "20"
+        }
+      },
+      "processDefineId": "20"
+    },
+    "start": {
+      "start": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "processInstanceId": "92132443800611"
+        }
+      }
+    },
+    "steps": [
+      {
+        "step": 0,
+        "task": "92132443801637",
+        "operator": "leader",
+        "submitType": 1,
+        "result": {
+          "code": 0,
+          "msg": "成功",
+          "data": null
+        }
+      }
+    ],
+    "final": {
+      "final": {
+        "state": 20,
+        "output": "/home/shwoo/Work/jeeflow/bdd/test-simple-output.json"
+      }
+    }
+  },
+  {
+    "run": 8,
+    "timestamp": "2026-09-21T14:44:50.404798",
+    "stdout": "{\"verify\": {\"errors\": \"\", \"warnings\": \"  - [W009/warning] 字段 f_leaveType 在节点 ['task1'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\"}}\n{\"reset\": {\"code\": 0, \"msg\": \"成功\", \"data\": null}, \"save\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"id\": \"1\"}}, \"deploy\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"processDefineId\": \"20\"}}, \"processDefineId\": \"20\"}\n{\"start\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"processInstanceId\": \"92132444522534\"}}}\n{\"step\": 0, \"task\": \"92132444524584\", \"operator\": \"leader\", \"submitType\": 1, \"result\": {\"code\": 0, \"msg\": \"成功\", \"data\": null}}\n{\"final\": {\"state\": 20, \"output\": \"/home/shwoo/Work/jeeflow/bdd/test-simple-output.json\"}}\n",
+    "stderr": "",
+    "returncode": 0,
+    "verify": {
+      "verify": {
+        "errors": "",
+        "warnings": "  - [W009/warning] 字段 f_leaveType 在节点 ['task1'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']"
+      }
+    },
+    "deploy": {
+      "reset": {
+        "code": 0,
+        "msg": "成功",
+        "data": null
+      },
+      "save": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "id": "1"
+        }
+      },
+      "deploy": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "processDefineId": "20"
+        }
+      },
+      "processDefineId": "20"
+    },
+    "start": {
+      "start": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "processInstanceId": "92132444522534"
+        }
+      }
+    },
+    "steps": [
+      {
+        "step": 0,
+        "task": "92132444524584",
+        "operator": "leader",
+        "submitType": 1,
+        "result": {
+          "code": 0,
+          "msg": "成功",
+          "data": null
+        }
+      }
+    ],
+    "final": {
+      "final": {
+        "state": 20,
+        "output": "/home/shwoo/Work/jeeflow/bdd/test-simple-output.json"
+      }
+    }
+  },
+  {
+    "run": 9,
+    "timestamp": "2026-09-21T14:44:51.109438",
+    "stdout": "{\"verify\": {\"errors\": \"\", \"warnings\": \"  - [W009/warning] 字段 f_leaveType 在节点 ['task1'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\"}}\n{\"reset\": {\"code\": 0, \"msg\": \"成功\", \"data\": null}, \"save\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"id\": \"1\"}}, \"deploy\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"processDefineId\": \"20\"}}, \"processDefineId\": \"20\"}\n{\"start\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"processInstanceId\": \"92132445248553\"}}}\n{\"step\": 0, \"task\": \"92132445249579\", \"operator\": \"leader\", \"submitType\": 1, \"result\": {\"code\": 0, \"msg\": \"成功\", \"data\": null}}\n{\"final\": {\"state\": 20, \"output\": \"/home/shwoo/Work/jeeflow/bdd/test-simple-output.json\"}}\n",
+    "stderr": "",
+    "returncode": 0,
+    "verify": {
+      "verify": {
+        "errors": "",
+        "warnings": "  - [W009/warning] 字段 f_leaveType 在节点 ['task1'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']"
+      }
+    },
+    "deploy": {
+      "reset": {
+        "code": 0,
+        "msg": "成功",
+        "data": null
+      },
+      "save": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "id": "1"
+        }
+      },
+      "deploy": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "processDefineId": "20"
+        }
+      },
+      "processDefineId": "20"
+    },
+    "start": {
+      "start": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "processInstanceId": "92132445248553"
+        }
+      }
+    },
+    "steps": [
+      {
+        "step": 0,
+        "task": "92132445249579",
+        "operator": "leader",
+        "submitType": 1,
+        "result": {
+          "code": 0,
+          "msg": "成功",
+          "data": null
+        }
+      }
+    ],
+    "final": {
+      "final": {
+        "state": 20,
+        "output": "/home/shwoo/Work/jeeflow/bdd/test-simple-output.json"
+      }
+    }
+  },
+  {
+    "run": 10,
+    "timestamp": "2026-09-21T14:44:51.816817",
+    "stdout": "{\"verify\": {\"errors\": \"\", \"warnings\": \"  - [W009/warning] 字段 f_leaveType 在节点 ['task1'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\"}}\n{\"reset\": {\"code\": 0, \"msg\": \"成功\", \"data\": null}, \"save\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"id\": \"1\"}}, \"deploy\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"processDefineId\": \"20\"}}, \"processDefineId\": \"20\"}\n{\"start\": {\"code\": 0, \"msg\": \"成功\", \"data\": {\"processInstanceId\": \"92132445970476\"}}}\n{\"step\": 0, \"task\": \"92132445972526\", \"operator\": \"leader\", \"submitType\": 1, \"result\": {\"code\": 0, \"msg\": \"成功\", \"data\": null}}\n{\"final\": {\"state\": 20, \"output\": \"/home/shwoo/Work/jeeflow/bdd/test-simple-output.json\"}}\n",
+    "stderr": "",
+    "returncode": 0,
+    "verify": {
+      "verify": {
+        "errors": "",
+        "warnings": "  - [W009/warning] 字段 f_leaveType 在节点 ['task1'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']"
+      }
+    },
+    "deploy": {
+      "reset": {
+        "code": 0,
+        "msg": "成功",
+        "data": null
+      },
+      "save": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "id": "1"
+        }
+      },
+      "deploy": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "processDefineId": "20"
+        }
+      },
+      "processDefineId": "20"
+    },
+    "start": {
+      "start": {
+        "code": 0,
+        "msg": "成功",
+        "data": {
+          "processInstanceId": "92132445970476"
+        }
+      }
+    },
+    "steps": [
+      {
+        "step": 0,
+        "task": "92132445972526",
+        "operator": "leader",
+        "submitType": 1,
+        "result": {
+          "code": 0,
+          "msg": "成功",
+          "data": null
+        }
+      }
+    ],
+    "final": {
+      "final": {
+        "state": 20,
+        "output": "/home/shwoo/Work/jeeflow/bdd/test-simple-output.json"
+      }
+    }
+  }
+]

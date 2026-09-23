@@ -1,0 +1,44 @@
+{
+  "customer_id": "C-omarchy",
+  "type": "L3+ 主动贡献 + 真 BUG 修复 (file-share 持续渠道)",
+  "channel": "file-share (异步, 唯一)",
+  "first_seen": "2026-10-22",
+  "last_seen": "2026-10-22",
+  "extraction_codes": ["77045", "97841"],
+  "fb_archived": ["FB-0013", "FB-0014"],
+  "monitoring_frequency": "daily",
+  "scenario": "本地 jeeflow (/home/shwoo/Work/jeeflow/) 跑 BDD 验证 + 找 BUG + 修复 + 文档化",
+  "relationship_to_hermes": "持续贡献型异步用户, file-share 是唯一反馈渠道",
+  "contributions": [
+    {
+      "extraction_code": "77045",
+      "fb": "FB-0013",
+      "type": "improve / P3",
+      "content": "9 个 BDD 工件 (BDD 10-run 验证 simple 流程, 10/10 PASS)",
+      "value": "run_10_times.py 脚本 (4155 B) + AGENTS.md compliance 10 项验证"
+    },
+    {
+      "extraction_code": "97841",
+      "fb": "FB-0014",
+      "type": "bug / P0",
+      "content": "BUG-3 真引擎 BUG + FIX-T113 + W014 verify 规则 + 5/5 PASS 验证",
+      "value": "vendor/jeeflow/verify.py W014 实现 + run_5_times_1517.py 脚本 + 文档化样本"
+    }
+  ],
+  "engagement_level": "L3+ (含 BUG 修复, 最高)",
+  "engagement_history": [
+    "2026-10-22: 第 1 次 file-share (77045) → FB-0013 (BDD 验证)",
+    "2026-10-22: 第 2 次 file-share (97841) → FB-0014 (BUG-3 修复 + W014)"
+  ],
+  "monitoring_action": [
+    "W45 Day 2: 评估 W014 verify 规则纳入 hermes SLA 工具集 (已完成)",
+    "W45 Day 4: 评估 run_5_times_1517.py 复用",
+    "Month 2 内: 持续监控 omarchy 取件码 (每天 1 次)"
+  ],
+  "notes": [
+    "持续 file-share 渠道用户, 价值密度高",
+    "从 L3 (验证报告) 升级到 L3+ (含 BUG 修复)",
+    "文件路径暗示 /home/shwoo/, 但主人明确 = omarchy (路径不可靠, 必须用户告知)",
+    "异步, 无法 DM 通知, 仅内部归档 + 后续采纳"
+  ]
+}

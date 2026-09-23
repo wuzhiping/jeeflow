@@ -52,6 +52,7 @@ W_DECISION_NO_EXPR = "W010"   # decision 节点所有出边 expr 都为空
 W_CUSTOM_UNUSED_VAL = "W011"   # custom 节点 val 字段空（FIX-T38 §16）
 W_TASK_MULTI_OUT_TO_END = "W012"   # task 节点多条出边且 target 含 end（BUG-1: 隐式 fork 致实例提前 finish）
 W_DECISION_MULTI_BRANCH_RISK = "W013"   # decision 节点多分支, 任一分支 expr 缺失或全 false 风险（BUG-2 / FIX-T112 2026-09-22）
+W_DECISION_ORPHAN_CLEANUP_RISK = "W014"   # decision 节点存在时, 提醒 _cleanup_orphan_decision_tasks 函数签名一致性 (FIX-T113 §117 2026-09-21 BDD-DEV)
 
 P_CS_SINGLE_ACTOR = "P001"
 P_JUMP_NO_TARGET = "P002"
@@ -87,6 +88,7 @@ ALL_CODES = {
     W_DECISION_NO_EXPR: "decision 节点所有出边 expr 都为空且无 decisionHandler (BDD #32 §46)",
     W_CUSTOM_UNUSED_VAL: "custom 节点 val 字段空 (handler 结果丢弃, FIX-T38 §16)",
     W_TASK_MULTI_OUT_TO_END: "task 节点多条出边且 target 含 end（隐式 fork 致 end 被提前遍历,实例 state=20 但下游 task 仍在 DOING, BUG-1 §110）",
+    W_DECISION_ORPHAN_CLEANUP_RISK: "decision 节点存在, 提醒部署后回归决策路由 (FIX-T113 §117, 防止 _cleanup_orphan_decision_tasks 函数签名不一致再次阻断启动)",
     P_CS_SINGLE_ACTOR: "会签只有 1 个 actor (退化为普通 task, 建议去掉 performType=1)",
     P_JUMP_NO_TARGET: "submitType=4 (JUMP) 但 targetTaskName/taskName 字段缺失",
     P_NO_TASK: "流程无 task 节点 (仅计算, 注意 'type=business' 才能纯计算)",
@@ -629,6 +631,18 @@ def verify_flow(flow: dict, variables: dict = None) -> Tuple[List[VerifyIssue], 
                 f"handler 决定路由. 如 handler 抛错, 引擎会抛 ValueError 而非兜底.",
                 node_ids=[nid]
             ))
+
+    # W014 - decision 节点存在时, 提醒决策路由回归 (FIX-T113 §117 2026-09-21 BDD-DEV)
+    #   _cleanup_orphan_decision_tasks 函数签名与调用点参数不匹配曾导致所有含 decision 的流程启动失败
+    #   此处仅提醒"含 decision 的流程应在 deploy 后立即回归决策路由", 不做静态 AST 扫描 (超出 verify.py 重构范围)
+    has_decision = any(n.get("type") == TYPE_DECISION for n in nodes)
+    if has_decision:
+        warnings.append(VerifyIssue(
+            W_DECISION_ORPHAN_CLEANUP_RISK, "warning",
+            f"流程含 snaker:decision 节点. 部署后请立即回归决策路由 (e.g. 跑 1 个决策分支样例, "
+            f"验证 _cleanup_orphan_decision_tasks 不抛 TypeError). 历史 BUG: FIX-T113 §117.",
+            node_ids=[nid for nid, n in node_by_id.items() if n.get("type") == TYPE_DECISION]
+        ))
 
     # P005 - 流程链路过深 (start 到 end 超过 10 个 task 节点)
     if start_ids:

@@ -58,7 +58,7 @@
         "width": 100,
         "height": 50,
         "form": "check-form",
-        "assignee": "checker",
+        "assignee": "u_qa_lead",
         "taskType": 0,
         "performType": 0
       },
@@ -75,7 +75,7 @@
         "width": 100,
         "height": 50,
         "form": "review-form",
-        "assignee": "reviewer",
+        "assignee": "u_arch",
         "taskType": 1,
         "performType": 0
       },
@@ -120,7 +120,7 @@
         "width": 100,
         "height": 50,
         "form": "boss-form",
-        "assignee": "boss",
+        "assignee": "u_ceo",
         "taskType": 0,
         "performType": 0
       },

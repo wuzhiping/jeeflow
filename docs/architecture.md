@@ -229,6 +229,53 @@ apply_extensions(engine, _registry, build_ic_registry(),
 - `DEMO_ROLE_TO_USERS.json` - 角色→用户映射
 - `SPI(func=..., payload=...)` - 调用方
 
+### 4.4 SPI dispatcher 架构 (v26, 三层分离)
+
+> **演进**: v8-v21 数据层重构 (22 DictProxy + 9 SPI 函数 + 2 helpers + verify()) · v22-v24 CLI 入口 · v25 FastAPI 路由 · **v26 dispatcher 统一** · v28 main_common 双端 · v29 互逆不变.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  Layer 1: Dispatcher (spi/cli.py + spi/api.py + spi/__main__.py)    │
+│  · 入口层, 跟随 SPI_FOLDER 环境变量                                    │
+│  · 解析命令行参数 (cli) 或 HTTP 路由 (api)                              │
+│  · 加载 spi/<SPI_FOLDER>/cli.py 或 spi/<SPI_FOLDER>/api.py            │
+│  · 调用下层 _data_* 函数, 不含业务逻辑                                   │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  Layer 2: Implementation (spi/{demo,dev,fdep}/cli.py + api.py)      │
+│  · 实现层, 每个 SPI_FOLDER 一个子包                                    │
+│  · 暴露 6 个 _data_* 函数 (CLI/API 共享):                               │
+│    _data_verify() / _data_status() / _data_list_users()               │
+│    _data_show_user(uid) / _data_list_depts() / _data_show_dept(dept_id)│
+│  · demo 实现简单 dev 实现丰富 (22 DictProxy + 2 helpers + 9 SPI 函数)   │
+│  · cli.py + api.py 是薄包装, 几乎全部 re-export                         │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  Layer 3: Data (spi/{demo,dev}/data.py + *.json)                      │
+│  · 数据层, DictProxy + helpers + verify()                              │
+│  · spi/dev/data.py: 22 DictProxy (v8-v29) + 2 helpers + verify()       │
+│  · spi/demo/data.py: 基础 + verify() (99 errors 是已知问题)             │
+│  · spi/fdep/: 数据层, 无 cli/api → 走 dispatcher 返回 404               │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**调用流程**:
+
+```
+HTTP: client → main_common.register_spi_routes(app) → spi/api.py → SPI_FOLDER 加载 → spi/<folder>/api.py → _data_* → spi/<folder>/data.py
+CLI:  user   → python -m spi.cli → spi/cli.py → SPI_FOLDER 加载 → spi/<folder>/cli.py → _data_* → spi/<folder>/data.py
+```
+
+**SPI_FOLDER 路由**:
+- `os.environ["SPI_FOLDER"] = "dev" | "demo" | "fdep" | ...`
+- **默认 SPI_FOLDER = dev** (本地开发/测试推荐, 22 DictProxy + helpers + verify() 完整)
+- **代码层默认 `"demo"`** (spi/__init__.py:14, FREEZE.md 冻结, 本地请显式设置)
+- 缺失 cli/api 时 dispatcher 返回 404 (`{"detail": "SPI_FOLDER=xxx 不支持 API/CLI"}`)
+
 ## 5. HTTP 路由分层
 
 | 路由前缀 | 数量 | 用途 |

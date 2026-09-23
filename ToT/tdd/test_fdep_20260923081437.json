@@ -1,0 +1,1785 @@
+{
+  "timestamp": "20260923081437",
+  "spi_folder": "dev",
+  "operator": "u_fdp_pm",
+  "global_variable": {},
+  "global_top_vars": {},
+  "scenarios": [
+    {
+      "name": "happy",
+      "variable": {},
+      "submit_type": 1,
+      "comment": null
+    },
+    {
+      "name": "reject",
+      "variable": {},
+      "submit_type": 2,
+      "comment": null
+    },
+    {
+      "name": "resurrect",
+      "variable": {},
+      "submit_type": 5,
+      "comment": null
+    }
+  ],
+  "flow_json": "/opt/jupyter/src/RD/projects/jeeFlow/ToT/flows/fdep.json",
+  "results": {
+    "happy": {
+      "instance_id": "92285417575425",
+      "steps": [
+        {
+          "step": 0,
+          "snapshot": {
+            "state": "DOING",
+            "state_code": 10,
+            "tasks": [
+              {
+                "name": "stage_intake",
+                "displayName": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "u_fdp_pm",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417576450",
+                "finishTime": "2026-09-23 08:14:38.103470"
+              },
+              {
+                "name": "stage_pm",
+                "displayName": "1. RML 立项 (u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DOING",
+                "operator": null,
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417578499",
+                "finishTime": null
+              }
+            ],
+            "active_names": [
+              "stage_pm"
+            ],
+            "variables": {
+              "u_userId": "u_fdp_pm",
+              "u_realName": "占位·待分配",
+              "u_deptId": "DFDEP",
+              "u_deptName": "默认部",
+              "u_postId": "P5",
+              "u_postName": "FDEP 流程占位",
+              "autoGenTitle": "占位·待分配的jeeFlow 协作主流程 (Foundational Development & Engagement Process)-2026-09-23 08:14",
+              "submitType": 0
+            }
+          }
+        },
+        {
+          "step": 0,
+          "execute": {
+            "task_name": "stage_pm",
+            "submit_type": 1,
+            "resp_code": 0,
+            "resp_msg": "成功"
+          }
+        },
+        {
+          "step": 1,
+          "snapshot": {
+            "state": "DOING",
+            "state_code": 10,
+            "tasks": [
+              {
+                "name": "stage_intake",
+                "displayName": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "u_fdp_pm",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417576450",
+                "finishTime": "2026-09-23 08:14:38.103470"
+              },
+              {
+                "name": "stage_pm",
+                "displayName": "1. RML 立项 (u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417578499",
+                "finishTime": "2026-09-23 08:14:38.107272"
+              },
+              {
+                "name": "stage_design",
+                "displayName": "2. 架构/接口设计 (u_fdp_pm 直接, SPI 角色 R7 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DOING",
+                "operator": null,
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417581572",
+                "finishTime": null
+              }
+            ],
+            "active_names": [
+              "stage_design"
+            ],
+            "variables": {
+              "u_userId": "u_fdp_pm",
+              "u_realName": "占位·待分配",
+              "u_deptId": "DFDEP",
+              "u_deptName": "默认部",
+              "u_postId": "P5",
+              "u_postName": "FDEP 流程占位",
+              "autoGenTitle": "占位·待分配的jeeFlow 协作主流程 (Foundational Development & Engagement Process)-2026-09-23 08:14",
+              "submitType": 1,
+              "decision_reason": "stage_pm 通过",
+              "decision_memo": "stage_pm 在 happy scenario 执行",
+              "stage_pm_job_card_url": "ToT/flows/<flow>/job_cards/stage_pm.md"
+            }
+          }
+        },
+        {
+          "step": 1,
+          "execute": {
+            "task_name": "stage_design",
+            "submit_type": 1,
+            "resp_code": 0,
+            "resp_msg": "成功"
+          }
+        },
+        {
+          "step": 2,
+          "snapshot": {
+            "state": "DOING",
+            "state_code": 10,
+            "tasks": [
+              {
+                "name": "stage_intake",
+                "displayName": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "u_fdp_pm",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417576450",
+                "finishTime": "2026-09-23 08:14:38.103470"
+              },
+              {
+                "name": "stage_pm",
+                "displayName": "1. RML 立项 (u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417578499",
+                "finishTime": "2026-09-23 08:14:38.107272"
+              },
+              {
+                "name": "stage_design",
+                "displayName": "2. 架构/接口设计 (u_fdp_pm 直接, SPI 角色 R7 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417581572",
+                "finishTime": "2026-09-23 08:14:38.110970"
+              },
+              {
+                "name": "stage_dev",
+                "displayName": "3. 开发实现 (u_fdp_pm 直接, SPI 角色 R2 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DOING",
+                "operator": null,
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417585669",
+                "finishTime": null
+              }
+            ],
+            "active_names": [
+              "stage_dev"
+            ],
+            "variables": {
+              "u_userId": "u_fdp_pm",
+              "u_realName": "占位·待分配",
+              "u_deptId": "DFDEP",
+              "u_deptName": "默认部",
+              "u_postId": "P5",
+              "u_postName": "FDEP 流程占位",
+              "autoGenTitle": "占位·待分配的jeeFlow 协作主流程 (Foundational Development & Engagement Process)-2026-09-23 08:14",
+              "submitType": 1,
+              "decision_reason": "stage_design 通过",
+              "decision_memo": "stage_design 在 happy scenario 执行",
+              "stage_pm_job_card_url": "ToT/flows/<flow>/job_cards/stage_pm.md",
+              "stage_design_job_card_url": "ToT/flows/<flow>/job_cards/stage_design.md"
+            }
+          }
+        },
+        {
+          "step": 2,
+          "execute": {
+            "task_name": "stage_dev",
+            "submit_type": 1,
+            "resp_code": 0,
+            "resp_msg": "成功"
+          }
+        },
+        {
+          "step": 3,
+          "snapshot": {
+            "state": "DOING",
+            "state_code": 10,
+            "tasks": [
+              {
+                "name": "stage_intake",
+                "displayName": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "u_fdp_pm",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417576450",
+                "finishTime": "2026-09-23 08:14:38.103470"
+              },
+              {
+                "name": "stage_pm",
+                "displayName": "1. RML 立项 (u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417578499",
+                "finishTime": "2026-09-23 08:14:38.107272"
+              },
+              {
+                "name": "stage_design",
+                "displayName": "2. 架构/接口设计 (u_fdp_pm 直接, SPI 角色 R7 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417581572",
+                "finishTime": "2026-09-23 08:14:38.110970"
+              },
+              {
+                "name": "stage_dev",
+                "displayName": "3. 开发实现 (u_fdp_pm 直接, SPI 角色 R2 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417585669",
+                "finishTime": "2026-09-23 08:14:38.115150"
+              },
+              {
+                "name": "stage_review",
+                "displayName": "4. 评审/验收/发布 (u_fdp_pm 直接, SPI 角色 R6 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DOING",
+                "operator": null,
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417589766",
+                "finishTime": null
+              }
+            ],
+            "active_names": [
+              "stage_review"
+            ],
+            "variables": {
+              "u_userId": "u_fdp_pm",
+              "u_realName": "占位·待分配",
+              "u_deptId": "DFDEP",
+              "u_deptName": "默认部",
+              "u_postId": "P5",
+              "u_postName": "FDEP 流程占位",
+              "autoGenTitle": "占位·待分配的jeeFlow 协作主流程 (Foundational Development & Engagement Process)-2026-09-23 08:14",
+              "submitType": 1,
+              "decision_reason": "stage_dev 通过",
+              "decision_memo": "stage_dev 在 happy scenario 执行",
+              "stage_pm_job_card_url": "ToT/flows/<flow>/job_cards/stage_pm.md",
+              "stage_design_job_card_url": "ToT/flows/<flow>/job_cards/stage_design.md",
+              "stage_dev_job_card_url": "ToT/flows/<flow>/job_cards/stage_dev.md"
+            }
+          }
+        },
+        {
+          "step": 3,
+          "execute": {
+            "task_name": "stage_review",
+            "submit_type": 1,
+            "resp_code": 0,
+            "resp_msg": "成功"
+          }
+        },
+        {
+          "step": 4,
+          "snapshot": {
+            "state": "DOING",
+            "state_code": 10,
+            "tasks": [
+              {
+                "name": "stage_intake",
+                "displayName": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "u_fdp_pm",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417576450",
+                "finishTime": "2026-09-23 08:14:38.103470"
+              },
+              {
+                "name": "stage_pm",
+                "displayName": "1. RML 立项 (u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417578499",
+                "finishTime": "2026-09-23 08:14:38.107272"
+              },
+              {
+                "name": "stage_design",
+                "displayName": "2. 架构/接口设计 (u_fdp_pm 直接, SPI 角色 R7 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417581572",
+                "finishTime": "2026-09-23 08:14:38.110970"
+              },
+              {
+                "name": "stage_dev",
+                "displayName": "3. 开发实现 (u_fdp_pm 直接, SPI 角色 R2 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417585669",
+                "finishTime": "2026-09-23 08:14:38.115150"
+              },
+              {
+                "name": "stage_review",
+                "displayName": "4. 评审/验收/发布 (u_fdp_pm 直接, SPI 角色 R6 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417589766",
+                "finishTime": "2026-09-23 08:14:38.120735"
+              },
+              {
+                "name": "stage_feedback",
+                "displayName": "5. 反馈/知识沉淀 (u_fdp_pm 直接, SPI 角色 R5 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DOING",
+                "operator": null,
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417595911",
+                "finishTime": null
+              }
+            ],
+            "active_names": [
+              "stage_feedback"
+            ],
+            "variables": {
+              "u_userId": "u_fdp_pm",
+              "u_realName": "占位·待分配",
+              "u_deptId": "DFDEP",
+              "u_deptName": "默认部",
+              "u_postId": "P5",
+              "u_postName": "FDEP 流程占位",
+              "autoGenTitle": "占位·待分配的jeeFlow 协作主流程 (Foundational Development & Engagement Process)-2026-09-23 08:14",
+              "submitType": 1,
+              "decision_reason": "stage_review 通过",
+              "decision_memo": "stage_review 在 happy scenario 执行",
+              "stage_pm_job_card_url": "ToT/flows/<flow>/job_cards/stage_pm.md",
+              "stage_design_job_card_url": "ToT/flows/<flow>/job_cards/stage_design.md",
+              "stage_dev_job_card_url": "ToT/flows/<flow>/job_cards/stage_dev.md",
+              "stage_review_job_card_url": "ToT/flows/<flow>/job_cards/stage_review.md"
+            }
+          }
+        },
+        {
+          "step": 4,
+          "execute": {
+            "task_name": "stage_feedback",
+            "submit_type": 1,
+            "resp_code": 0,
+            "resp_msg": "成功"
+          }
+        },
+        {
+          "step": 5,
+          "snapshot": {
+            "state": "DONE",
+            "state_code": 20,
+            "tasks": [
+              {
+                "name": "stage_intake",
+                "displayName": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "u_fdp_pm",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417576450",
+                "finishTime": "2026-09-23 08:14:38.103470"
+              },
+              {
+                "name": "stage_pm",
+                "displayName": "1. RML 立项 (u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417578499",
+                "finishTime": "2026-09-23 08:14:38.107272"
+              },
+              {
+                "name": "stage_design",
+                "displayName": "2. 架构/接口设计 (u_fdp_pm 直接, SPI 角色 R7 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417581572",
+                "finishTime": "2026-09-23 08:14:38.110970"
+              },
+              {
+                "name": "stage_dev",
+                "displayName": "3. 开发实现 (u_fdp_pm 直接, SPI 角色 R2 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417585669",
+                "finishTime": "2026-09-23 08:14:38.115150"
+              },
+              {
+                "name": "stage_review",
+                "displayName": "4. 评审/验收/发布 (u_fdp_pm 直接, SPI 角色 R6 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417589766",
+                "finishTime": "2026-09-23 08:14:38.120735"
+              },
+              {
+                "name": "stage_feedback",
+                "displayName": "5. 反馈/知识沉淀 (u_fdp_pm 直接, SPI 角色 R5 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417595911",
+                "finishTime": "2026-09-23 08:14:38.126677"
+              }
+            ],
+            "active_names": [],
+            "variables": {
+              "u_userId": "u_fdp_pm",
+              "u_realName": "占位·待分配",
+              "u_deptId": "DFDEP",
+              "u_deptName": "默认部",
+              "u_postId": "P5",
+              "u_postName": "FDEP 流程占位",
+              "autoGenTitle": "占位·待分配的jeeFlow 协作主流程 (Foundational Development & Engagement Process)-2026-09-23 08:14",
+              "submitType": 1,
+              "decision_reason": "stage_feedback 通过",
+              "decision_memo": "stage_feedback 在 happy scenario 执行",
+              "stage_pm_job_card_url": "ToT/flows/<flow>/job_cards/stage_pm.md",
+              "stage_design_job_card_url": "ToT/flows/<flow>/job_cards/stage_design.md",
+              "stage_dev_job_card_url": "ToT/flows/<flow>/job_cards/stage_dev.md",
+              "stage_review_job_card_url": "ToT/flows/<flow>/job_cards/stage_review.md",
+              "stage_feedback_job_card_url": "ToT/flows/<flow>/job_cards/stage_feedback.md"
+            }
+          }
+        }
+      ],
+      "final": {
+        "state": "DONE",
+        "state_code": 20,
+        "tasks": [
+          {
+            "name": "stage_intake",
+            "displayName": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)",
+            "state": "DONE",
+            "operator": "u_fdp_pm",
+            "actors": [
+              "u_fdp_pm"
+            ],
+            "id": "92285417576450",
+            "finishTime": "2026-09-23 08:14:38.103470"
+          },
+          {
+            "name": "stage_pm",
+            "displayName": "1. RML 立项 (u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ 用 assignmentHandler)",
+            "state": "DONE",
+            "operator": "flow.auto",
+            "actors": [
+              "u_fdp_pm"
+            ],
+            "id": "92285417578499",
+            "finishTime": "2026-09-23 08:14:38.107272"
+          },
+          {
+            "name": "stage_design",
+            "displayName": "2. 架构/接口设计 (u_fdp_pm 直接, SPI 角色 R7 映射待 v0.7+ 用 assignmentHandler)",
+            "state": "DONE",
+            "operator": "flow.auto",
+            "actors": [
+              "u_fdp_pm"
+            ],
+            "id": "92285417581572",
+            "finishTime": "2026-09-23 08:14:38.110970"
+          },
+          {
+            "name": "stage_dev",
+            "displayName": "3. 开发实现 (u_fdp_pm 直接, SPI 角色 R2 映射待 v0.7+ 用 assignmentHandler)",
+            "state": "DONE",
+            "operator": "flow.auto",
+            "actors": [
+              "u_fdp_pm"
+            ],
+            "id": "92285417585669",
+            "finishTime": "2026-09-23 08:14:38.115150"
+          },
+          {
+            "name": "stage_review",
+            "displayName": "4. 评审/验收/发布 (u_fdp_pm 直接, SPI 角色 R6 映射待 v0.7+ 用 assignmentHandler)",
+            "state": "DONE",
+            "operator": "flow.auto",
+            "actors": [
+              "u_fdp_pm"
+            ],
+            "id": "92285417589766",
+            "finishTime": "2026-09-23 08:14:38.120735"
+          },
+          {
+            "name": "stage_feedback",
+            "displayName": "5. 反馈/知识沉淀 (u_fdp_pm 直接, SPI 角色 R5 映射待 v0.7+ 用 assignmentHandler)",
+            "state": "DONE",
+            "operator": "flow.auto",
+            "actors": [
+              "u_fdp_pm"
+            ],
+            "id": "92285417595911",
+            "finishTime": "2026-09-23 08:14:38.126677"
+          }
+        ],
+        "active_names": [],
+        "variables": {
+          "u_userId": "u_fdp_pm",
+          "u_realName": "占位·待分配",
+          "u_deptId": "DFDEP",
+          "u_deptName": "默认部",
+          "u_postId": "P5",
+          "u_postName": "FDEP 流程占位",
+          "autoGenTitle": "占位·待分配的jeeFlow 协作主流程 (Foundational Development & Engagement Process)-2026-09-23 08:14",
+          "submitType": 1,
+          "decision_reason": "stage_feedback 通过",
+          "decision_memo": "stage_feedback 在 happy scenario 执行",
+          "stage_pm_job_card_url": "ToT/flows/<flow>/job_cards/stage_pm.md",
+          "stage_design_job_card_url": "ToT/flows/<flow>/job_cards/stage_design.md",
+          "stage_dev_job_card_url": "ToT/flows/<flow>/job_cards/stage_dev.md",
+          "stage_review_job_card_url": "ToT/flows/<flow>/job_cards/stage_review.md",
+          "stage_feedback_job_card_url": "ToT/flows/<flow>/job_cards/stage_feedback.md"
+        }
+      },
+      "variable": {},
+      "top_vars": {},
+      "comment": null,
+      "audit": [
+        {
+          "task": "stage_intake",
+          "state": "DONE",
+          "actors": [
+            "u_fdp_pm"
+          ],
+          "job_card_url": ""
+        },
+        {
+          "task": "stage_pm",
+          "state": "DONE",
+          "actors": [
+            "u_fdp_pm"
+          ],
+          "job_card_url": "ToT/flows/<flow>/job_cards/stage_pm.md"
+        },
+        {
+          "task": "stage_design",
+          "state": "DONE",
+          "actors": [
+            "u_fdp_pm"
+          ],
+          "job_card_url": "ToT/flows/<flow>/job_cards/stage_design.md"
+        },
+        {
+          "task": "stage_dev",
+          "state": "DONE",
+          "actors": [
+            "u_fdp_pm"
+          ],
+          "job_card_url": "ToT/flows/<flow>/job_cards/stage_dev.md"
+        },
+        {
+          "task": "stage_review",
+          "state": "DONE",
+          "actors": [
+            "u_fdp_pm"
+          ],
+          "job_card_url": "ToT/flows/<flow>/job_cards/stage_review.md"
+        },
+        {
+          "task": "stage_feedback",
+          "state": "DONE",
+          "actors": [
+            "u_fdp_pm"
+          ],
+          "job_card_url": "ToT/flows/<flow>/job_cards/stage_feedback.md"
+        }
+      ]
+    },
+    "reject": {
+      "instance_id": "92285417608200",
+      "steps": [
+        {
+          "step": 0,
+          "snapshot": {
+            "state": "DOING",
+            "state_code": 10,
+            "tasks": [
+              {
+                "name": "stage_intake",
+                "displayName": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "u_fdp_pm",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417608201",
+                "finishTime": "2026-09-23 08:14:38.135113"
+              },
+              {
+                "name": "stage_pm",
+                "displayName": "1. RML 立项 (u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DOING",
+                "operator": null,
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417610250",
+                "finishTime": null
+              }
+            ],
+            "active_names": [
+              "stage_pm"
+            ],
+            "variables": {
+              "u_userId": "u_fdp_pm",
+              "u_realName": "占位·待分配",
+              "u_deptId": "DFDEP",
+              "u_deptName": "默认部",
+              "u_postId": "P5",
+              "u_postName": "FDEP 流程占位",
+              "autoGenTitle": "占位·待分配的jeeFlow 协作主流程 (Foundational Development & Engagement Process)-2026-09-23 08:14",
+              "submitType": 0
+            }
+          }
+        },
+        {
+          "step": 0,
+          "execute": {
+            "task_name": "stage_pm",
+            "submit_type": 2,
+            "resp_code": 0,
+            "resp_msg": "成功"
+          }
+        },
+        {
+          "step": 1,
+          "snapshot": {
+            "state": "REJECT",
+            "state_code": 45,
+            "tasks": [
+              {
+                "name": "stage_intake",
+                "displayName": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "u_fdp_pm",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417608201",
+                "finishTime": "2026-09-23 08:14:38.135113"
+              },
+              {
+                "name": "stage_pm",
+                "displayName": "1. RML 立项 (u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417610250",
+                "finishTime": "2026-09-23 08:14:38.138255"
+              }
+            ],
+            "active_names": [],
+            "variables": {
+              "u_userId": "u_fdp_pm",
+              "u_realName": "占位·待分配",
+              "u_deptId": "DFDEP",
+              "u_deptName": "默认部",
+              "u_postId": "P5",
+              "u_postName": "FDEP 流程占位",
+              "autoGenTitle": "占位·待分配的jeeFlow 协作主流程 (Foundational Development & Engagement Process)-2026-09-23 08:14",
+              "submitType": 2,
+              "decision_reason": "stage_pm 通过",
+              "decision_memo": "stage_pm 在 reject scenario 执行",
+              "stage_pm_job_card_url": "ToT/flows/<flow>/job_cards/stage_pm.md"
+            }
+          }
+        }
+      ],
+      "final": {
+        "state": "REJECT",
+        "state_code": 45,
+        "tasks": [
+          {
+            "name": "stage_intake",
+            "displayName": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)",
+            "state": "DONE",
+            "operator": "u_fdp_pm",
+            "actors": [
+              "u_fdp_pm"
+            ],
+            "id": "92285417608201",
+            "finishTime": "2026-09-23 08:14:38.135113"
+          },
+          {
+            "name": "stage_pm",
+            "displayName": "1. RML 立项 (u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ 用 assignmentHandler)",
+            "state": "DONE",
+            "operator": "flow.auto",
+            "actors": [
+              "u_fdp_pm"
+            ],
+            "id": "92285417610250",
+            "finishTime": "2026-09-23 08:14:38.138255"
+          }
+        ],
+        "active_names": [],
+        "variables": {
+          "u_userId": "u_fdp_pm",
+          "u_realName": "占位·待分配",
+          "u_deptId": "DFDEP",
+          "u_deptName": "默认部",
+          "u_postId": "P5",
+          "u_postName": "FDEP 流程占位",
+          "autoGenTitle": "占位·待分配的jeeFlow 协作主流程 (Foundational Development & Engagement Process)-2026-09-23 08:14",
+          "submitType": 2,
+          "decision_reason": "stage_pm 通过",
+          "decision_memo": "stage_pm 在 reject scenario 执行",
+          "stage_pm_job_card_url": "ToT/flows/<flow>/job_cards/stage_pm.md"
+        }
+      },
+      "variable": {},
+      "top_vars": {},
+      "comment": null,
+      "audit": [
+        {
+          "task": "stage_intake",
+          "state": "DONE",
+          "actors": [
+            "u_fdp_pm"
+          ],
+          "job_card_url": ""
+        },
+        {
+          "task": "stage_pm",
+          "state": "DONE",
+          "actors": [
+            "u_fdp_pm"
+          ],
+          "job_card_url": "ToT/flows/<flow>/job_cards/stage_pm.md"
+        }
+      ]
+    },
+    "resurrect": {
+      "instance_id": "92285417617419",
+      "steps": [
+        {
+          "step": 0,
+          "snapshot": {
+            "state": "DOING",
+            "state_code": 10,
+            "tasks": [
+              {
+                "name": "stage_intake",
+                "displayName": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "u_fdp_pm",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417617420",
+                "finishTime": "2026-09-23 08:14:38.145773"
+              },
+              {
+                "name": "stage_pm",
+                "displayName": "1. RML 立项 (u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DOING",
+                "operator": null,
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417621517",
+                "finishTime": null
+              }
+            ],
+            "active_names": [
+              "stage_pm"
+            ],
+            "variables": {
+              "u_userId": "u_fdp_pm",
+              "u_realName": "占位·待分配",
+              "u_deptId": "DFDEP",
+              "u_deptName": "默认部",
+              "u_postId": "P5",
+              "u_postName": "FDEP 流程占位",
+              "autoGenTitle": "占位·待分配的jeeFlow 协作主流程 (Foundational Development & Engagement Process)-2026-09-23 08:14",
+              "submitType": 0
+            }
+          }
+        },
+        {
+          "step": 0,
+          "execute": {
+            "task_name": "stage_pm",
+            "submit_type": 5,
+            "resp_code": 0,
+            "resp_msg": "成功"
+          }
+        },
+        {
+          "step": 1,
+          "snapshot": {
+            "state": "DOING",
+            "state_code": 10,
+            "tasks": [
+              {
+                "name": "stage_intake",
+                "displayName": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "u_fdp_pm",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417617420",
+                "finishTime": "2026-09-23 08:14:38.145773"
+              },
+              {
+                "name": "stage_pm",
+                "displayName": "1. RML 立项 (u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417621517",
+                "finishTime": "2026-09-23 08:14:38.148994"
+              },
+              {
+                "name": "stage_intake",
+                "displayName": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DOING",
+                "operator": null,
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417624590",
+                "finishTime": null
+              }
+            ],
+            "active_names": [
+              "stage_intake"
+            ],
+            "variables": {
+              "u_userId": "u_fdp_pm",
+              "u_realName": "占位·待分配",
+              "u_deptId": "DFDEP",
+              "u_deptName": "默认部",
+              "u_postId": "P5",
+              "u_postName": "FDEP 流程占位",
+              "autoGenTitle": "占位·待分配的jeeFlow 协作主流程 (Foundational Development & Engagement Process)-2026-09-23 08:14",
+              "submitType": 5,
+              "decision_reason": "stage_pm 通过",
+              "decision_memo": "stage_pm 在 resurrect scenario 执行",
+              "stage_pm_job_card_url": "ToT/flows/<flow>/job_cards/stage_pm.md"
+            }
+          }
+        },
+        {
+          "step": 1,
+          "execute": {
+            "task_name": "stage_intake",
+            "submit_type": 5,
+            "resp_code": 0,
+            "resp_msg": "成功"
+          }
+        },
+        {
+          "step": 2,
+          "snapshot": {
+            "state": "DOING",
+            "state_code": 10,
+            "tasks": [
+              {
+                "name": "stage_intake",
+                "displayName": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "u_fdp_pm",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417617420",
+                "finishTime": "2026-09-23 08:14:38.145773"
+              },
+              {
+                "name": "stage_pm",
+                "displayName": "1. RML 立项 (u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417621517",
+                "finishTime": "2026-09-23 08:14:38.148994"
+              },
+              {
+                "name": "stage_intake",
+                "displayName": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417624590",
+                "finishTime": "2026-09-23 08:14:38.152980"
+              },
+              {
+                "name": "stage_pm",
+                "displayName": "1. RML 立项 (u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DOING",
+                "operator": null,
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417628687",
+                "finishTime": null
+              }
+            ],
+            "active_names": [
+              "stage_pm"
+            ],
+            "variables": {
+              "u_userId": "u_fdp_pm",
+              "u_realName": "占位·待分配",
+              "u_deptId": "DFDEP",
+              "u_deptName": "默认部",
+              "u_postId": "P5",
+              "u_postName": "FDEP 流程占位",
+              "autoGenTitle": "占位·待分配的jeeFlow 协作主流程 (Foundational Development & Engagement Process)-2026-09-23 08:14",
+              "submitType": 1,
+              "decision_reason": "stage_intake 通过",
+              "decision_memo": "stage_intake 在 resurrect scenario 执行",
+              "stage_pm_job_card_url": "ToT/flows/<flow>/job_cards/stage_pm.md",
+              "stage_intake_job_card_url": "ToT/flows/<flow>/job_cards/stage_intake.md"
+            }
+          }
+        },
+        {
+          "step": 2,
+          "execute": {
+            "task_name": "stage_pm",
+            "submit_type": 5,
+            "resp_code": 0,
+            "resp_msg": "成功"
+          }
+        },
+        {
+          "step": 3,
+          "snapshot": {
+            "state": "DOING",
+            "state_code": 10,
+            "tasks": [
+              {
+                "name": "stage_intake",
+                "displayName": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "u_fdp_pm",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417617420",
+                "finishTime": "2026-09-23 08:14:38.145773"
+              },
+              {
+                "name": "stage_pm",
+                "displayName": "1. RML 立项 (u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417621517",
+                "finishTime": "2026-09-23 08:14:38.148994"
+              },
+              {
+                "name": "stage_intake",
+                "displayName": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417624590",
+                "finishTime": "2026-09-23 08:14:38.152980"
+              },
+              {
+                "name": "stage_pm",
+                "displayName": "1. RML 立项 (u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417628687",
+                "finishTime": "2026-09-23 08:14:38.157428"
+              },
+              {
+                "name": "stage_design",
+                "displayName": "2. 架构/接口设计 (u_fdp_pm 直接, SPI 角色 R7 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DOING",
+                "operator": null,
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417632784",
+                "finishTime": null
+              }
+            ],
+            "active_names": [
+              "stage_design"
+            ],
+            "variables": {
+              "u_userId": "u_fdp_pm",
+              "u_realName": "占位·待分配",
+              "u_deptId": "DFDEP",
+              "u_deptName": "默认部",
+              "u_postId": "P5",
+              "u_postName": "FDEP 流程占位",
+              "autoGenTitle": "占位·待分配的jeeFlow 协作主流程 (Foundational Development & Engagement Process)-2026-09-23 08:14",
+              "submitType": 1,
+              "decision_reason": "stage_pm 通过",
+              "decision_memo": "stage_pm 在 resurrect scenario 执行",
+              "stage_pm_job_card_url": "ToT/flows/<flow>/job_cards/stage_pm.md",
+              "stage_intake_job_card_url": "ToT/flows/<flow>/job_cards/stage_intake.md"
+            }
+          }
+        },
+        {
+          "step": 3,
+          "execute": {
+            "task_name": "stage_design",
+            "submit_type": 5,
+            "resp_code": 0,
+            "resp_msg": "成功"
+          }
+        },
+        {
+          "step": 4,
+          "snapshot": {
+            "state": "DOING",
+            "state_code": 10,
+            "tasks": [
+              {
+                "name": "stage_intake",
+                "displayName": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "u_fdp_pm",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417617420",
+                "finishTime": "2026-09-23 08:14:38.145773"
+              },
+              {
+                "name": "stage_pm",
+                "displayName": "1. RML 立项 (u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417621517",
+                "finishTime": "2026-09-23 08:14:38.148994"
+              },
+              {
+                "name": "stage_intake",
+                "displayName": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417624590",
+                "finishTime": "2026-09-23 08:14:38.152980"
+              },
+              {
+                "name": "stage_pm",
+                "displayName": "1. RML 立项 (u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417628687",
+                "finishTime": "2026-09-23 08:14:38.157428"
+              },
+              {
+                "name": "stage_design",
+                "displayName": "2. 架构/接口设计 (u_fdp_pm 直接, SPI 角色 R7 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417632784",
+                "finishTime": "2026-09-23 08:14:38.188970"
+              },
+              {
+                "name": "stage_dev",
+                "displayName": "3. 开发实现 (u_fdp_pm 直接, SPI 角色 R2 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DOING",
+                "operator": null,
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417665553",
+                "finishTime": null
+              }
+            ],
+            "active_names": [
+              "stage_dev"
+            ],
+            "variables": {
+              "u_userId": "u_fdp_pm",
+              "u_realName": "占位·待分配",
+              "u_deptId": "DFDEP",
+              "u_deptName": "默认部",
+              "u_postId": "P5",
+              "u_postName": "FDEP 流程占位",
+              "autoGenTitle": "占位·待分配的jeeFlow 协作主流程 (Foundational Development & Engagement Process)-2026-09-23 08:14",
+              "submitType": 1,
+              "decision_reason": "stage_design 通过",
+              "decision_memo": "stage_design 在 resurrect scenario 执行",
+              "stage_pm_job_card_url": "ToT/flows/<flow>/job_cards/stage_pm.md",
+              "stage_intake_job_card_url": "ToT/flows/<flow>/job_cards/stage_intake.md",
+              "stage_design_job_card_url": "ToT/flows/<flow>/job_cards/stage_design.md"
+            }
+          }
+        },
+        {
+          "step": 4,
+          "execute": {
+            "task_name": "stage_dev",
+            "submit_type": 5,
+            "resp_code": 0,
+            "resp_msg": "成功"
+          }
+        },
+        {
+          "step": 5,
+          "snapshot": {
+            "state": "DOING",
+            "state_code": 10,
+            "tasks": [
+              {
+                "name": "stage_intake",
+                "displayName": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "u_fdp_pm",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417617420",
+                "finishTime": "2026-09-23 08:14:38.145773"
+              },
+              {
+                "name": "stage_pm",
+                "displayName": "1. RML 立项 (u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417621517",
+                "finishTime": "2026-09-23 08:14:38.148994"
+              },
+              {
+                "name": "stage_intake",
+                "displayName": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417624590",
+                "finishTime": "2026-09-23 08:14:38.152980"
+              },
+              {
+                "name": "stage_pm",
+                "displayName": "1. RML 立项 (u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417628687",
+                "finishTime": "2026-09-23 08:14:38.157428"
+              },
+              {
+                "name": "stage_design",
+                "displayName": "2. 架构/接口设计 (u_fdp_pm 直接, SPI 角色 R7 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417632784",
+                "finishTime": "2026-09-23 08:14:38.188970"
+              },
+              {
+                "name": "stage_dev",
+                "displayName": "3. 开发实现 (u_fdp_pm 直接, SPI 角色 R2 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417665553",
+                "finishTime": "2026-09-23 08:14:38.194630"
+              },
+              {
+                "name": "stage_review",
+                "displayName": "4. 评审/验收/发布 (u_fdp_pm 直接, SPI 角色 R6 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DOING",
+                "operator": null,
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417671698",
+                "finishTime": null
+              }
+            ],
+            "active_names": [
+              "stage_review"
+            ],
+            "variables": {
+              "u_userId": "u_fdp_pm",
+              "u_realName": "占位·待分配",
+              "u_deptId": "DFDEP",
+              "u_deptName": "默认部",
+              "u_postId": "P5",
+              "u_postName": "FDEP 流程占位",
+              "autoGenTitle": "占位·待分配的jeeFlow 协作主流程 (Foundational Development & Engagement Process)-2026-09-23 08:14",
+              "submitType": 1,
+              "decision_reason": "stage_dev 通过",
+              "decision_memo": "stage_dev 在 resurrect scenario 执行",
+              "stage_pm_job_card_url": "ToT/flows/<flow>/job_cards/stage_pm.md",
+              "stage_intake_job_card_url": "ToT/flows/<flow>/job_cards/stage_intake.md",
+              "stage_design_job_card_url": "ToT/flows/<flow>/job_cards/stage_design.md",
+              "stage_dev_job_card_url": "ToT/flows/<flow>/job_cards/stage_dev.md"
+            }
+          }
+        },
+        {
+          "step": 5,
+          "execute": {
+            "task_name": "stage_review",
+            "submit_type": 5,
+            "resp_code": 0,
+            "resp_msg": "成功"
+          }
+        },
+        {
+          "step": 6,
+          "snapshot": {
+            "state": "DOING",
+            "state_code": 10,
+            "tasks": [
+              {
+                "name": "stage_intake",
+                "displayName": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "u_fdp_pm",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417617420",
+                "finishTime": "2026-09-23 08:14:38.145773"
+              },
+              {
+                "name": "stage_pm",
+                "displayName": "1. RML 立项 (u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417621517",
+                "finishTime": "2026-09-23 08:14:38.148994"
+              },
+              {
+                "name": "stage_intake",
+                "displayName": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417624590",
+                "finishTime": "2026-09-23 08:14:38.152980"
+              },
+              {
+                "name": "stage_pm",
+                "displayName": "1. RML 立项 (u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417628687",
+                "finishTime": "2026-09-23 08:14:38.157428"
+              },
+              {
+                "name": "stage_design",
+                "displayName": "2. 架构/接口设计 (u_fdp_pm 直接, SPI 角色 R7 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417632784",
+                "finishTime": "2026-09-23 08:14:38.188970"
+              },
+              {
+                "name": "stage_dev",
+                "displayName": "3. 开发实现 (u_fdp_pm 直接, SPI 角色 R2 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417665553",
+                "finishTime": "2026-09-23 08:14:38.194630"
+              },
+              {
+                "name": "stage_review",
+                "displayName": "4. 评审/验收/发布 (u_fdp_pm 直接, SPI 角色 R6 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417671698",
+                "finishTime": "2026-09-23 08:14:38.201318"
+              },
+              {
+                "name": "stage_feedback",
+                "displayName": "5. 反馈/知识沉淀 (u_fdp_pm 直接, SPI 角色 R5 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DOING",
+                "operator": null,
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417678867",
+                "finishTime": null
+              }
+            ],
+            "active_names": [
+              "stage_feedback"
+            ],
+            "variables": {
+              "u_userId": "u_fdp_pm",
+              "u_realName": "占位·待分配",
+              "u_deptId": "DFDEP",
+              "u_deptName": "默认部",
+              "u_postId": "P5",
+              "u_postName": "FDEP 流程占位",
+              "autoGenTitle": "占位·待分配的jeeFlow 协作主流程 (Foundational Development & Engagement Process)-2026-09-23 08:14",
+              "submitType": 1,
+              "decision_reason": "stage_review 通过",
+              "decision_memo": "stage_review 在 resurrect scenario 执行",
+              "stage_pm_job_card_url": "ToT/flows/<flow>/job_cards/stage_pm.md",
+              "stage_intake_job_card_url": "ToT/flows/<flow>/job_cards/stage_intake.md",
+              "stage_design_job_card_url": "ToT/flows/<flow>/job_cards/stage_design.md",
+              "stage_dev_job_card_url": "ToT/flows/<flow>/job_cards/stage_dev.md",
+              "stage_review_job_card_url": "ToT/flows/<flow>/job_cards/stage_review.md"
+            }
+          }
+        },
+        {
+          "step": 6,
+          "execute": {
+            "task_name": "stage_feedback",
+            "submit_type": 5,
+            "resp_code": 0,
+            "resp_msg": "成功"
+          }
+        },
+        {
+          "step": 7,
+          "snapshot": {
+            "state": "DONE",
+            "state_code": 20,
+            "tasks": [
+              {
+                "name": "stage_intake",
+                "displayName": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "u_fdp_pm",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417617420",
+                "finishTime": "2026-09-23 08:14:38.145773"
+              },
+              {
+                "name": "stage_pm",
+                "displayName": "1. RML 立项 (u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417621517",
+                "finishTime": "2026-09-23 08:14:38.148994"
+              },
+              {
+                "name": "stage_intake",
+                "displayName": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417624590",
+                "finishTime": "2026-09-23 08:14:38.152980"
+              },
+              {
+                "name": "stage_pm",
+                "displayName": "1. RML 立项 (u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417628687",
+                "finishTime": "2026-09-23 08:14:38.157428"
+              },
+              {
+                "name": "stage_design",
+                "displayName": "2. 架构/接口设计 (u_fdp_pm 直接, SPI 角色 R7 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417632784",
+                "finishTime": "2026-09-23 08:14:38.188970"
+              },
+              {
+                "name": "stage_dev",
+                "displayName": "3. 开发实现 (u_fdp_pm 直接, SPI 角色 R2 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417665553",
+                "finishTime": "2026-09-23 08:14:38.194630"
+              },
+              {
+                "name": "stage_review",
+                "displayName": "4. 评审/验收/发布 (u_fdp_pm 直接, SPI 角色 R6 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417671698",
+                "finishTime": "2026-09-23 08:14:38.201318"
+              },
+              {
+                "name": "stage_feedback",
+                "displayName": "5. 反馈/知识沉淀 (u_fdp_pm 直接, SPI 角色 R5 映射待 v0.7+ 用 assignmentHandler)",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92285417678867",
+                "finishTime": "2026-09-23 08:14:38.209108"
+              }
+            ],
+            "active_names": [],
+            "variables": {
+              "u_userId": "u_fdp_pm",
+              "u_realName": "占位·待分配",
+              "u_deptId": "DFDEP",
+              "u_deptName": "默认部",
+              "u_postId": "P5",
+              "u_postName": "FDEP 流程占位",
+              "autoGenTitle": "占位·待分配的jeeFlow 协作主流程 (Foundational Development & Engagement Process)-2026-09-23 08:14",
+              "submitType": 1,
+              "decision_reason": "stage_feedback 通过",
+              "decision_memo": "stage_feedback 在 resurrect scenario 执行",
+              "stage_pm_job_card_url": "ToT/flows/<flow>/job_cards/stage_pm.md",
+              "stage_intake_job_card_url": "ToT/flows/<flow>/job_cards/stage_intake.md",
+              "stage_design_job_card_url": "ToT/flows/<flow>/job_cards/stage_design.md",
+              "stage_dev_job_card_url": "ToT/flows/<flow>/job_cards/stage_dev.md",
+              "stage_review_job_card_url": "ToT/flows/<flow>/job_cards/stage_review.md",
+              "stage_feedback_job_card_url": "ToT/flows/<flow>/job_cards/stage_feedback.md"
+            }
+          }
+        }
+      ],
+      "final": {
+        "state": "DONE",
+        "state_code": 20,
+        "tasks": [
+          {
+            "name": "stage_intake",
+            "displayName": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)",
+            "state": "DONE",
+            "operator": "u_fdp_pm",
+            "actors": [
+              "u_fdp_pm"
+            ],
+            "id": "92285417617420",
+            "finishTime": "2026-09-23 08:14:38.145773"
+          },
+          {
+            "name": "stage_pm",
+            "displayName": "1. RML 立项 (u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ 用 assignmentHandler)",
+            "state": "DONE",
+            "operator": "flow.auto",
+            "actors": [
+              "u_fdp_pm"
+            ],
+            "id": "92285417621517",
+            "finishTime": "2026-09-23 08:14:38.148994"
+          },
+          {
+            "name": "stage_intake",
+            "displayName": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)",
+            "state": "DONE",
+            "operator": "flow.auto",
+            "actors": [
+              "u_fdp_pm"
+            ],
+            "id": "92285417624590",
+            "finishTime": "2026-09-23 08:14:38.152980"
+          },
+          {
+            "name": "stage_pm",
+            "displayName": "1. RML 立项 (u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ 用 assignmentHandler)",
+            "state": "DONE",
+            "operator": "flow.auto",
+            "actors": [
+              "u_fdp_pm"
+            ],
+            "id": "92285417628687",
+            "finishTime": "2026-09-23 08:14:38.157428"
+          },
+          {
+            "name": "stage_design",
+            "displayName": "2. 架构/接口设计 (u_fdp_pm 直接, SPI 角色 R7 映射待 v0.7+ 用 assignmentHandler)",
+            "state": "DONE",
+            "operator": "flow.auto",
+            "actors": [
+              "u_fdp_pm"
+            ],
+            "id": "92285417632784",
+            "finishTime": "2026-09-23 08:14:38.188970"
+          },
+          {
+            "name": "stage_dev",
+            "displayName": "3. 开发实现 (u_fdp_pm 直接, SPI 角色 R2 映射待 v0.7+ 用 assignmentHandler)",
+            "state": "DONE",
+            "operator": "flow.auto",
+            "actors": [
+              "u_fdp_pm"
+            ],
+            "id": "92285417665553",
+            "finishTime": "2026-09-23 08:14:38.194630"
+          },
+          {
+            "name": "stage_review",
+            "displayName": "4. 评审/验收/发布 (u_fdp_pm 直接, SPI 角色 R6 映射待 v0.7+ 用 assignmentHandler)",
+            "state": "DONE",
+            "operator": "flow.auto",
+            "actors": [
+              "u_fdp_pm"
+            ],
+            "id": "92285417671698",
+            "finishTime": "2026-09-23 08:14:38.201318"
+          },
+          {
+            "name": "stage_feedback",
+            "displayName": "5. 反馈/知识沉淀 (u_fdp_pm 直接, SPI 角色 R5 映射待 v0.7+ 用 assignmentHandler)",
+            "state": "DONE",
+            "operator": "flow.auto",
+            "actors": [
+              "u_fdp_pm"
+            ],
+            "id": "92285417678867",
+            "finishTime": "2026-09-23 08:14:38.209108"
+          }
+        ],
+        "active_names": [],
+        "variables": {
+          "u_userId": "u_fdp_pm",
+          "u_realName": "占位·待分配",
+          "u_deptId": "DFDEP",
+          "u_deptName": "默认部",
+          "u_postId": "P5",
+          "u_postName": "FDEP 流程占位",
+          "autoGenTitle": "占位·待分配的jeeFlow 协作主流程 (Foundational Development & Engagement Process)-2026-09-23 08:14",
+          "submitType": 1,
+          "decision_reason": "stage_feedback 通过",
+          "decision_memo": "stage_feedback 在 resurrect scenario 执行",
+          "stage_pm_job_card_url": "ToT/flows/<flow>/job_cards/stage_pm.md",
+          "stage_intake_job_card_url": "ToT/flows/<flow>/job_cards/stage_intake.md",
+          "stage_design_job_card_url": "ToT/flows/<flow>/job_cards/stage_design.md",
+          "stage_dev_job_card_url": "ToT/flows/<flow>/job_cards/stage_dev.md",
+          "stage_review_job_card_url": "ToT/flows/<flow>/job_cards/stage_review.md",
+          "stage_feedback_job_card_url": "ToT/flows/<flow>/job_cards/stage_feedback.md"
+        }
+      },
+      "variable": {},
+      "top_vars": {},
+      "comment": null,
+      "audit": [
+        {
+          "task": "stage_intake",
+          "state": "DONE",
+          "actors": [
+            "u_fdp_pm"
+          ],
+          "job_card_url": "ToT/flows/<flow>/job_cards/stage_intake.md"
+        },
+        {
+          "task": "stage_pm",
+          "state": "DONE",
+          "actors": [
+            "u_fdp_pm"
+          ],
+          "job_card_url": "ToT/flows/<flow>/job_cards/stage_pm.md"
+        },
+        {
+          "task": "stage_intake",
+          "state": "DONE",
+          "actors": [
+            "u_fdp_pm"
+          ],
+          "job_card_url": "ToT/flows/<flow>/job_cards/stage_intake.md"
+        },
+        {
+          "task": "stage_pm",
+          "state": "DONE",
+          "actors": [
+            "u_fdp_pm"
+          ],
+          "job_card_url": "ToT/flows/<flow>/job_cards/stage_pm.md"
+        },
+        {
+          "task": "stage_design",
+          "state": "DONE",
+          "actors": [
+            "u_fdp_pm"
+          ],
+          "job_card_url": "ToT/flows/<flow>/job_cards/stage_design.md"
+        },
+        {
+          "task": "stage_dev",
+          "state": "DONE",
+          "actors": [
+            "u_fdp_pm"
+          ],
+          "job_card_url": "ToT/flows/<flow>/job_cards/stage_dev.md"
+        },
+        {
+          "task": "stage_review",
+          "state": "DONE",
+          "actors": [
+            "u_fdp_pm"
+          ],
+          "job_card_url": "ToT/flows/<flow>/job_cards/stage_review.md"
+        },
+        {
+          "task": "stage_feedback",
+          "state": "DONE",
+          "actors": [
+            "u_fdp_pm"
+          ],
+          "job_card_url": "ToT/flows/<flow>/job_cards/stage_feedback.md"
+        }
+      ]
+    }
+  },
+  "static_validation": {
+    "node_count": 10,
+    "edge_count": 10,
+    "errors": [],
+    "warnings": []
+  },
+  "engine_validation": {
+    "errors": [],
+    "warnings": [
+      {
+        "code": "W008",
+        "msg": "节点 [decision_intake]→[stage_pm] 有 2 条边 (冗余)"
+      },
+      {
+        "code": "W014",
+        "msg": "流程含 snaker:decision 节点. 部署后请立即回归决策路由 (e.g. 跑 1 个决策分支样例, 验证 _cleanup_orphan_decision_tasks 不抛 TypeError). 历史 BUG: FIX-T113 §117."
+      }
+    ],
+    "patterns": []
+  },
+  "define_id": "1"
+}

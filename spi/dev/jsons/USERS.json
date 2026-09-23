@@ -1,0 +1,104 @@
+{
+  "version": "1.1.0",
+  "description": "FlowMatrix 科技研发组织 · 14 虚构人员（含 1 FDEP 占位） · 2026-09-22 新增 FDEP 占位用户",
+  "users": {
+    "u_ceo": {
+      "name": "张伟",
+      "post": "首席执行官",
+      "deptId": "D99",
+      "level": "P10",
+      "email": "zhangwei@flowmatrix.io"
+    },
+    "u_cto": {
+      "name": "李娜",
+      "post": "首席技术官",
+      "deptId": "D99",
+      "level": "P9",
+      "email": "lina@flowmatrix.io"
+    },
+    "u_rd_dir": {
+      "name": "王强",
+      "post": "研发总监",
+      "deptId": "D01",
+      "level": "P8",
+      "email": "wangqiang@flowmatrix.io"
+    },
+    "u_arch": {
+      "name": "陈静",
+      "post": "架构师",
+      "deptId": "D04",
+      "level": "P8",
+      "email": "chenjing@flowmatrix.io"
+    },
+    "u_fe_lead": {
+      "name": "刘洋",
+      "post": "前端组长",
+      "deptId": "D02",
+      "level": "P7",
+      "email": "liuyang@flowmatrix.io"
+    },
+    "u_fe_senior": {
+      "name": "赵敏",
+      "post": "前端高级工程师",
+      "deptId": "D02",
+      "level": "P6",
+      "email": "zhaomin@flowmatrix.io"
+    },
+    "u_fe_eng": {
+      "name": "周磊",
+      "post": "前端工程师",
+      "deptId": "D02",
+      "level": "P5",
+      "email": "zhoulei@flowmatrix.io"
+    },
+    "u_be_lead": {
+      "name": "孙婷",
+      "post": "后端组长",
+      "deptId": "D03",
+      "level": "P7",
+      "email": "sunting@flowmatrix.io"
+    },
+    "u_be_senior1": {
+      "name": "吴杰",
+      "post": "后端高级工程师",
+      "deptId": "D03",
+      "level": "P6",
+      "email": "wujie@flowmatrix.io"
+    },
+    "u_be_senior2": {
+      "name": "郑浩",
+      "post": "后端高级工程师",
+      "deptId": "D03",
+      "level": "P6",
+      "email": "zhenghao@flowmatrix.io"
+    },
+    "u_be_eng": {
+      "name": "钱琳",
+      "post": "后端工程师",
+      "deptId": "D03",
+      "level": "P5",
+      "email": "qianlin@flowmatrix.io"
+    },
+    "u_qa_lead": {
+      "name": "冯雪",
+      "post": "QA 组长",
+      "deptId": "D01",
+      "level": "P7",
+      "email": "fengxue@flowmatrix.io"
+    },
+    "u_qa_eng": {
+      "name": "蒋雷",
+      "post": "QA 工程师",
+      "deptId": "D01",
+      "level": "P5",
+      "email": "jianglei@flowmatrix.io"
+    },
+    "u_fdp_pm": {
+      "name": "占位·待分配",
+      "post": "FDEP 流程占位",
+      "deptId": "DFDEP",
+      "level": "P5",
+      "email": "fdp-pm@flowmatrix.io"
+    }
+  }
+}

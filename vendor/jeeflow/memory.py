@@ -81,6 +81,7 @@ class MemoryRepository(ProcessRepository):
         task.id = task.id or self._seq; self._seq += 1
         self._tasks[task.id] = deepcopy(task)
         if task.actorIds: self._actors[task.id] = list(task.actorIds)
+
     async def update_task(self, task: ProcessTask):
         self._tasks[task.id] = deepcopy(task)
         if task.actorIds: self._actors[task.id] = list(task.actorIds)
@@ -192,6 +193,7 @@ class MemoryRepository(ProcessRepository):
     async def page_todo_tasks(self, page_num: int = 1, page_size: int = 10, actor_id: Optional[str] = None,
                               conditions=None):
         rows = []
+        doing_tasks = [(t.id, t.taskName, self._actors.get(t.id, [])) for t in self._tasks.values() if t.taskState == 10]
         for t in self._tasks.values():
             if t.taskState != TaskState.DOING:
                 continue
@@ -202,6 +204,8 @@ class MemoryRepository(ProcessRepository):
             fields["pta.actor_id"] = self._actors.get(t.id, [])
             if _match_conditions(conditions, fields):
                 rows.append(row)
+        import logging
+        logging.warning(f"DEBUG page_todo_tasks: actor_id={actor_id}, DOING={doing_tasks}, returned={[(r.id, r.taskName) for r in rows]}")
         return self._slice(rows, page_num, page_size)
 
     async def page_done_tasks(self, page_num: int = 1, page_size: int = 10, operator: Optional[str] = None,
@@ -810,6 +814,7 @@ class MemoryExtRepository(ProcessExtRepository):
     async def page_todo_tasks(self, page_num: int = 1, page_size: int = 10, actor_id: Optional[str] = None,
                               conditions=None):
         rows = []
+        doing_tasks = [(t.id, t.taskName, self._actors.get(t.id, [])) for t in self._tasks.values() if t.taskState == 10]
         for t in self._tasks.values():
             if t.taskState != TaskState.DOING:
                 continue
@@ -820,6 +825,8 @@ class MemoryExtRepository(ProcessExtRepository):
             fields["pta.actor_id"] = self._actors.get(t.id, [])
             if _match_conditions(conditions, fields):
                 rows.append(row)
+        import logging
+        logging.warning(f"DEBUG page_todo_tasks: actor_id={actor_id}, DOING={doing_tasks}, returned={[(r.id, r.taskName) for r in rows]}")
         return self._slice(rows, page_num, page_size)
 
     async def page_done_tasks(self, page_num: int = 1, page_size: int = 10, operator: Optional[str] = None,

@@ -1,0 +1,20 @@
+{
+  "version": "1.1.0",
+  "description": "FlowMatrix 研发组织 · 角色字典 · 8 个核心岗位角色 + 6 个 FDEP 节点角色 = 14 个",
+  "roles": {
+    "ceo": "首席执行官",
+    "cto": "首席技术官",
+    "rd_director": "研发总监",
+    "tech_lead": "技术负责人",
+    "architect": "架构师",
+    "senior_engineer": "高级工程师",
+    "engineer": "工程师",
+    "qa_engineer": "QA 工程师",
+    "fdep_intake": "FDEP 接收/登记",
+    "fdep_rml": "FDEP RML 立项",
+    "fdep_arch": "FDEP 架构/接口设计",
+    "fdep_dev": "FDEP 开发实现",
+    "fdep_review": "FDEP 评审/验收",
+    "fdep_kb": "FDEP 知识沉淀"
+  }
+}

@@ -42,12 +42,12 @@
         "width": 120,
         "height": 60,
         "form": "countersign-form",
-        "assignee": "userA,userB,userC",
+        "assignee": "u_fe_eng,u_be_eng,u_qa_eng",
         "taskType": 0,
         "performType": "1",
         "countersignType": "PARALLEL",
         "field": {
-          "candidateUsers": "userA,userB,userC"
+          "candidateUsers": "u_fe_eng,u_be_eng,u_qa_eng"
         }
       },
       "text": {

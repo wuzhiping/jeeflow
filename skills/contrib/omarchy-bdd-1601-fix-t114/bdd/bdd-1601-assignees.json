@@ -1,0 +1,7 @@
+{
+  "apply": "user1",
+  "leader_review": "leader",
+  "decision_amount": null,
+  "manager_signoff": "manager",
+  "countersign_finance": "userA,userB,userC"
+}

@@ -1,0 +1,92 @@
+{
+  "$schema_version": "1.1",
+  "comment": "流程服务器配置 —— 系统所有脚本/SOP/留档的'单一真相源'",
+  "comment_usage": "修改 active 字段即可切换默认目标；新增/移除 server 编辑 servers map",
+  "comment_pipeline": "v1.1 加 org-server：3 阶段环境流水线（local → org → customer）",
+  "servers": {
+    "local-memory": {
+      "name": "本地 dev (memory)",
+      "url": "http://127.0.0.1:8101",
+      "backend": "memory",
+      "purpose": "快速闭环测试（启动即空数据，最快迭代）",
+      "tier": "stage-1-dev",
+      "spi_folder": "dev",
+      "share_pg_with": null,
+      "ssh": null,
+      "risk_level": "low",
+      "ai_can_push": true,
+      "ai_can_reset": true,
+      "notes": "启动命令: python -m uvicorn main:app --port 8101；适合探索性开发"
+    },
+    "local-pg": {
+      "name": "本地 dev (PG)",
+      "url": "http://127.0.0.1:8102",
+      "backend": "pg",
+      "purpose": "集成测试（共享 PG 与 customer-test）",
+      "tier": "stage-1-dev",
+      "spi_folder": "dev",
+      "share_pg_with": ["customer-test"],
+      "ssh": null,
+      "risk_level": "low",
+      "ai_can_push": true,
+      "ai_can_reset": true,
+      "notes": "启动命令: python -m uvicorn main_pg:app --port 8102"
+    },
+    "org-server": {
+      "name": "组织服务器 (org)",
+      "url": null,
+      "backend": "pg",
+      "purpose": "团队共享 dev/staging，跨开发者协作验证",
+      "tier": "stage-2-staging",
+      "spi_folder": "dev",
+      "share_pg_with": null,
+      "ssh": null,
+      "risk_level": "medium",
+      "ai_can_push": true,
+      "ai_can_reset": false,
+      "notes": "占位 —— 用户有内部组织服务器时填 URL；ai 可推但不可 reset（保护其他人数据）"
+    },
+    "customer-test": {
+      "name": "客户测试服务器",
+      "url": "https://abc.feg.cn/jeeflow",
+      "backend": "pg",
+      "purpose": "客户验证 + 业务试用",
+      "tier": "stage-3-prod",
+      "spi_folder": "dev",
+      "share_pg_with": ["local-pg"],
+      "ssh": "ssh <user>@abc.feg.cn (无 AI 权限，仅人工可访问)",
+      "risk_level": "high",
+      "ai_can_push": false,
+      "ai_can_reset": false,
+      "notes": "AI 通过 HTTPS API 操作；引擎代码 push 由人工负责；reset 需 SOP 例外审批"
+    },
+    "production-future": {
+      "name": "生产环境 (未来)",
+      "url": null,
+      "backend": "pg",
+      "purpose": "未来生产部署",
+      "status": "not_enabled",
+      "tier": "stage-3-prod",
+      "spi_folder": "prod",
+      "share_pg_with": null,
+      "ssh": null,
+      "risk_level": "critical",
+      "ai_can_push": false,
+      "ai_can_reset": false,
+      "notes": "占位，等正式生产部署后启用"
+    }
+  },
+  "promotion_pipeline": {
+    "flow_definition_promotion": [
+      "local-memory → org-server",
+      "org-server → customer-test (人工审批)"
+    ],
+    "engine_code_promotion": [
+      "developer → git push → main → CI/CD → 任意 server (重启)"
+    ],
+    "decision_mems": "随 instance 走，不随环境走（per-instance 数据）"
+  },
+  "active": "local-memory",
+  "default_target": "local-memory",
+  "default_spi_folder": "dev"
+}

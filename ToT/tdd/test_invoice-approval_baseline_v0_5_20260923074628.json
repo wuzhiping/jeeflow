@@ -1,0 +1,1097 @@
+{
+  "timestamp": "20260923074628",
+  "spi_folder": "dev",
+  "operator": "u_fdp_pm",
+  "global_variable": {},
+  "global_top_vars": {
+    "tf_manager": "u_bob",
+    "tf_treasurer": "u_carol"
+  },
+  "scenarios": [
+    {
+      "name": "small",
+      "variable": {
+        "amount": 500,
+        "purpose": "办公"
+      },
+      "submit_type": 1,
+      "comment": null
+    },
+    {
+      "name": "big",
+      "variable": {
+        "amount": 8000,
+        "purpose": "服务器"
+      },
+      "submit_type": 1,
+      "comment": null
+    },
+    {
+      "name": "reject",
+      "variable": {
+        "amount": 8000,
+        "purpose": "服务器"
+      },
+      "submit_type": 5,
+      "comment": "金额异常，需补充材料"
+    }
+  ],
+  "flow_json": "/opt/jupyter/src/RD/projects/jeeFlow/ToT/flows/invoice-approval.json",
+  "results": {
+    "small": {
+      "instance_id": "92283687934977",
+      "steps": [
+        {
+          "step": 0,
+          "snapshot": {
+            "state": "DOING",
+            "state_code": 10,
+            "tasks": [
+              {
+                "name": "submit",
+                "displayName": "1. 提交发票（员工）",
+                "state": "DONE",
+                "operator": "u_fdp_pm",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92283687934978",
+                "finishTime": "2026-09-23 07:46:29.001423"
+              },
+              {
+                "name": "pay",
+                "displayName": "3. 出纳付款",
+                "state": "DOING",
+                "operator": null,
+                "actors": [
+                  "u_carol"
+                ],
+                "id": "92283687938051",
+                "finishTime": null
+              }
+            ],
+            "active_names": [
+              "pay"
+            ],
+            "variables": {
+              "variable": {
+                "amount": 500,
+                "purpose": "办公"
+              },
+              "tf_manager": "u_bob",
+              "tf_treasurer": "u_carol",
+              "u_userId": "u_fdp_pm",
+              "u_realName": "占位·待分配",
+              "u_deptId": "DFDEP",
+              "u_deptName": "默认部",
+              "u_postId": "P5",
+              "u_postName": "FDEP 流程占位",
+              "autoGenTitle": "占位·待分配的发票审批：员工提交 → 财务初审 → 主管复核 → 出纳付款 → 完成-2026-09-23 07:46",
+              "submitType": 0
+            }
+          }
+        },
+        {
+          "step": 0,
+          "execute": {
+            "task_name": "pay",
+            "submit_type": 1,
+            "resp_code": 0,
+            "resp_msg": "成功"
+          }
+        },
+        {
+          "step": 1,
+          "snapshot": {
+            "state": "DONE",
+            "state_code": 20,
+            "tasks": [
+              {
+                "name": "submit",
+                "displayName": "1. 提交发票（员工）",
+                "state": "DONE",
+                "operator": "u_fdp_pm",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92283687934978",
+                "finishTime": "2026-09-23 07:46:29.001423"
+              },
+              {
+                "name": "pay",
+                "displayName": "3. 出纳付款",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_carol"
+                ],
+                "id": "92283687938051",
+                "finishTime": "2026-09-23 07:46:29.005567"
+              }
+            ],
+            "active_names": [],
+            "variables": {
+              "variable": {
+                "amount": 500,
+                "purpose": "办公"
+              },
+              "tf_manager": "u_bob",
+              "tf_treasurer": "u_carol",
+              "u_userId": "u_fdp_pm",
+              "u_realName": "占位·待分配",
+              "u_deptId": "DFDEP",
+              "u_deptName": "默认部",
+              "u_postId": "P5",
+              "u_postName": "FDEP 流程占位",
+              "autoGenTitle": "占位·待分配的发票审批：员工提交 → 财务初审 → 主管复核 → 出纳付款 → 完成-2026-09-23 07:46",
+              "submitType": 1,
+              "decision_reason": "pay 通过",
+              "decision_memo": "pay 在 small scenario 执行",
+              "pay_job_card_url": "ToT/flows/<flow>/job_cards/pay.md"
+            }
+          }
+        }
+      ],
+      "final": {
+        "state": "DONE",
+        "state_code": 20,
+        "tasks": [
+          {
+            "name": "submit",
+            "displayName": "1. 提交发票（员工）",
+            "state": "DONE",
+            "operator": "u_fdp_pm",
+            "actors": [
+              "u_fdp_pm"
+            ],
+            "id": "92283687934978",
+            "finishTime": "2026-09-23 07:46:29.001423"
+          },
+          {
+            "name": "pay",
+            "displayName": "3. 出纳付款",
+            "state": "DONE",
+            "operator": "flow.auto",
+            "actors": [
+              "u_carol"
+            ],
+            "id": "92283687938051",
+            "finishTime": "2026-09-23 07:46:29.005567"
+          }
+        ],
+        "active_names": [],
+        "variables": {
+          "variable": {
+            "amount": 500,
+            "purpose": "办公"
+          },
+          "tf_manager": "u_bob",
+          "tf_treasurer": "u_carol",
+          "u_userId": "u_fdp_pm",
+          "u_realName": "占位·待分配",
+          "u_deptId": "DFDEP",
+          "u_deptName": "默认部",
+          "u_postId": "P5",
+          "u_postName": "FDEP 流程占位",
+          "autoGenTitle": "占位·待分配的发票审批：员工提交 → 财务初审 → 主管复核 → 出纳付款 → 完成-2026-09-23 07:46",
+          "submitType": 1,
+          "decision_reason": "pay 通过",
+          "decision_memo": "pay 在 small scenario 执行",
+          "pay_job_card_url": "ToT/flows/<flow>/job_cards/pay.md"
+        }
+      },
+      "variable": {
+        "amount": 500,
+        "purpose": "办公"
+      },
+      "top_vars": {
+        "tf_manager": "u_bob",
+        "tf_treasurer": "u_carol"
+      },
+      "comment": null,
+      "audit": [
+        {
+          "task": "submit",
+          "state": "DONE",
+          "actors": [
+            "u_fdp_pm"
+          ],
+          "job_card_url": ""
+        },
+        {
+          "task": "pay",
+          "state": "DONE",
+          "actors": [
+            "u_carol"
+          ],
+          "job_card_url": "ToT/flows/<flow>/job_cards/pay.md"
+        }
+      ]
+    },
+    "big": {
+      "instance_id": "92283687946244",
+      "steps": [
+        {
+          "step": 0,
+          "snapshot": {
+            "state": "DOING",
+            "state_code": 10,
+            "tasks": [
+              {
+                "name": "submit",
+                "displayName": "1. 提交发票（员工）",
+                "state": "DONE",
+                "operator": "u_fdp_pm",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92283687946245",
+                "finishTime": "2026-09-23 07:46:29.012069"
+              },
+              {
+                "name": "approve",
+                "displayName": "2. 主管复核（≥5000）",
+                "state": "DOING",
+                "operator": null,
+                "actors": [
+                  "u_bob"
+                ],
+                "id": "92283687948294",
+                "finishTime": null
+              }
+            ],
+            "active_names": [
+              "approve"
+            ],
+            "variables": {
+              "variable": {
+                "amount": 8000,
+                "purpose": "服务器"
+              },
+              "tf_manager": "u_bob",
+              "tf_treasurer": "u_carol",
+              "u_userId": "u_fdp_pm",
+              "u_realName": "占位·待分配",
+              "u_deptId": "DFDEP",
+              "u_deptName": "默认部",
+              "u_postId": "P5",
+              "u_postName": "FDEP 流程占位",
+              "autoGenTitle": "占位·待分配的发票审批：员工提交 → 财务初审 → 主管复核 → 出纳付款 → 完成-2026-09-23 07:46",
+              "submitType": 0
+            }
+          }
+        },
+        {
+          "step": 0,
+          "execute": {
+            "task_name": "approve",
+            "submit_type": 1,
+            "resp_code": 0,
+            "resp_msg": "成功"
+          }
+        },
+        {
+          "step": 1,
+          "snapshot": {
+            "state": "DOING",
+            "state_code": 10,
+            "tasks": [
+              {
+                "name": "submit",
+                "displayName": "1. 提交发票（员工）",
+                "state": "DONE",
+                "operator": "u_fdp_pm",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92283687946245",
+                "finishTime": "2026-09-23 07:46:29.012069"
+              },
+              {
+                "name": "approve",
+                "displayName": "2. 主管复核（≥5000）",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_bob"
+                ],
+                "id": "92283687948294",
+                "finishTime": "2026-09-23 07:46:29.015413"
+              },
+              {
+                "name": "pay",
+                "displayName": "3. 出纳付款",
+                "state": "DOING",
+                "operator": null,
+                "actors": [
+                  "u_carol"
+                ],
+                "id": "92283687951367",
+                "finishTime": null
+              }
+            ],
+            "active_names": [
+              "pay"
+            ],
+            "variables": {
+              "variable": {
+                "amount": 8000,
+                "purpose": "服务器"
+              },
+              "tf_manager": "u_bob",
+              "tf_treasurer": "u_carol",
+              "u_userId": "u_fdp_pm",
+              "u_realName": "占位·待分配",
+              "u_deptId": "DFDEP",
+              "u_deptName": "默认部",
+              "u_postId": "P5",
+              "u_postName": "FDEP 流程占位",
+              "autoGenTitle": "占位·待分配的发票审批：员工提交 → 财务初审 → 主管复核 → 出纳付款 → 完成-2026-09-23 07:46",
+              "submitType": 1,
+              "decision_reason": "approve 通过",
+              "decision_memo": "approve 在 big scenario 执行",
+              "approve_job_card_url": "ToT/flows/<flow>/job_cards/approve.md"
+            }
+          }
+        },
+        {
+          "step": 1,
+          "execute": {
+            "task_name": "pay",
+            "submit_type": 1,
+            "resp_code": 0,
+            "resp_msg": "成功"
+          }
+        },
+        {
+          "step": 2,
+          "snapshot": {
+            "state": "DONE",
+            "state_code": 20,
+            "tasks": [
+              {
+                "name": "submit",
+                "displayName": "1. 提交发票（员工）",
+                "state": "DONE",
+                "operator": "u_fdp_pm",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92283687946245",
+                "finishTime": "2026-09-23 07:46:29.012069"
+              },
+              {
+                "name": "approve",
+                "displayName": "2. 主管复核（≥5000）",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_bob"
+                ],
+                "id": "92283687948294",
+                "finishTime": "2026-09-23 07:46:29.015413"
+              },
+              {
+                "name": "pay",
+                "displayName": "3. 出纳付款",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_carol"
+                ],
+                "id": "92283687951367",
+                "finishTime": "2026-09-23 07:46:29.019602"
+              }
+            ],
+            "active_names": [],
+            "variables": {
+              "variable": {
+                "amount": 8000,
+                "purpose": "服务器"
+              },
+              "tf_manager": "u_bob",
+              "tf_treasurer": "u_carol",
+              "u_userId": "u_fdp_pm",
+              "u_realName": "占位·待分配",
+              "u_deptId": "DFDEP",
+              "u_deptName": "默认部",
+              "u_postId": "P5",
+              "u_postName": "FDEP 流程占位",
+              "autoGenTitle": "占位·待分配的发票审批：员工提交 → 财务初审 → 主管复核 → 出纳付款 → 完成-2026-09-23 07:46",
+              "submitType": 1,
+              "decision_reason": "pay 通过",
+              "decision_memo": "pay 在 big scenario 执行",
+              "approve_job_card_url": "ToT/flows/<flow>/job_cards/approve.md",
+              "pay_job_card_url": "ToT/flows/<flow>/job_cards/pay.md"
+            }
+          }
+        }
+      ],
+      "final": {
+        "state": "DONE",
+        "state_code": 20,
+        "tasks": [
+          {
+            "name": "submit",
+            "displayName": "1. 提交发票（员工）",
+            "state": "DONE",
+            "operator": "u_fdp_pm",
+            "actors": [
+              "u_fdp_pm"
+            ],
+            "id": "92283687946245",
+            "finishTime": "2026-09-23 07:46:29.012069"
+          },
+          {
+            "name": "approve",
+            "displayName": "2. 主管复核（≥5000）",
+            "state": "DONE",
+            "operator": "flow.auto",
+            "actors": [
+              "u_bob"
+            ],
+            "id": "92283687948294",
+            "finishTime": "2026-09-23 07:46:29.015413"
+          },
+          {
+            "name": "pay",
+            "displayName": "3. 出纳付款",
+            "state": "DONE",
+            "operator": "flow.auto",
+            "actors": [
+              "u_carol"
+            ],
+            "id": "92283687951367",
+            "finishTime": "2026-09-23 07:46:29.019602"
+          }
+        ],
+        "active_names": [],
+        "variables": {
+          "variable": {
+            "amount": 8000,
+            "purpose": "服务器"
+          },
+          "tf_manager": "u_bob",
+          "tf_treasurer": "u_carol",
+          "u_userId": "u_fdp_pm",
+          "u_realName": "占位·待分配",
+          "u_deptId": "DFDEP",
+          "u_deptName": "默认部",
+          "u_postId": "P5",
+          "u_postName": "FDEP 流程占位",
+          "autoGenTitle": "占位·待分配的发票审批：员工提交 → 财务初审 → 主管复核 → 出纳付款 → 完成-2026-09-23 07:46",
+          "submitType": 1,
+          "decision_reason": "pay 通过",
+          "decision_memo": "pay 在 big scenario 执行",
+          "approve_job_card_url": "ToT/flows/<flow>/job_cards/approve.md",
+          "pay_job_card_url": "ToT/flows/<flow>/job_cards/pay.md"
+        }
+      },
+      "variable": {
+        "amount": 8000,
+        "purpose": "服务器"
+      },
+      "top_vars": {
+        "tf_manager": "u_bob",
+        "tf_treasurer": "u_carol"
+      },
+      "comment": null,
+      "audit": [
+        {
+          "task": "submit",
+          "state": "DONE",
+          "actors": [
+            "u_fdp_pm"
+          ],
+          "job_card_url": ""
+        },
+        {
+          "task": "approve",
+          "state": "DONE",
+          "actors": [
+            "u_bob"
+          ],
+          "job_card_url": "ToT/flows/<flow>/job_cards/approve.md"
+        },
+        {
+          "task": "pay",
+          "state": "DONE",
+          "actors": [
+            "u_carol"
+          ],
+          "job_card_url": "ToT/flows/<flow>/job_cards/pay.md"
+        }
+      ]
+    },
+    "reject": {
+      "instance_id": "92283687960584",
+      "steps": [
+        {
+          "step": 0,
+          "snapshot": {
+            "state": "DOING",
+            "state_code": 10,
+            "tasks": [
+              {
+                "name": "submit",
+                "displayName": "1. 提交发票（员工）",
+                "state": "DONE",
+                "operator": "u_fdp_pm",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92283687961609",
+                "finishTime": "2026-09-23 07:46:29.026618"
+              },
+              {
+                "name": "approve",
+                "displayName": "2. 主管复核（≥5000）",
+                "state": "DOING",
+                "operator": null,
+                "actors": [
+                  "u_bob"
+                ],
+                "id": "92283687963658",
+                "finishTime": null
+              }
+            ],
+            "active_names": [
+              "approve"
+            ],
+            "variables": {
+              "variable": {
+                "amount": 8000,
+                "purpose": "服务器"
+              },
+              "tf_manager": "u_bob",
+              "tf_treasurer": "u_carol",
+              "u_userId": "u_fdp_pm",
+              "u_realName": "占位·待分配",
+              "u_deptId": "DFDEP",
+              "u_deptName": "默认部",
+              "u_postId": "P5",
+              "u_postName": "FDEP 流程占位",
+              "autoGenTitle": "占位·待分配的发票审批：员工提交 → 财务初审 → 主管复核 → 出纳付款 → 完成-2026-09-23 07:46",
+              "submitType": 0
+            }
+          }
+        },
+        {
+          "step": 0,
+          "execute": {
+            "task_name": "approve",
+            "submit_type": 5,
+            "resp_code": 0,
+            "resp_msg": "成功"
+          }
+        },
+        {
+          "step": 1,
+          "snapshot": {
+            "state": "DOING",
+            "state_code": 10,
+            "tasks": [
+              {
+                "name": "submit",
+                "displayName": "1. 提交发票（员工）",
+                "state": "DONE",
+                "operator": "u_fdp_pm",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92283687961609",
+                "finishTime": "2026-09-23 07:46:29.026618"
+              },
+              {
+                "name": "approve",
+                "displayName": "2. 主管复核（≥5000）",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_bob"
+                ],
+                "id": "92283687963658",
+                "finishTime": "2026-09-23 07:46:29.029879"
+              },
+              {
+                "name": "submit",
+                "displayName": "1. 提交发票（员工）",
+                "state": "DOING",
+                "operator": null,
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92283687966731",
+                "finishTime": null
+              }
+            ],
+            "active_names": [
+              "submit"
+            ],
+            "variables": {
+              "variable": {
+                "amount": 8000,
+                "purpose": "服务器"
+              },
+              "tf_manager": "u_bob",
+              "tf_treasurer": "u_carol",
+              "u_userId": "u_fdp_pm",
+              "u_realName": "占位·待分配",
+              "u_deptId": "DFDEP",
+              "u_deptName": "默认部",
+              "u_postId": "P5",
+              "u_postName": "FDEP 流程占位",
+              "autoGenTitle": "占位·待分配的发票审批：员工提交 → 财务初审 → 主管复核 → 出纳付款 → 完成-2026-09-23 07:46",
+              "submitType": 5,
+              "decision_reason": "approve 通过",
+              "decision_memo": "approve 在 reject scenario 执行",
+              "approve_job_card_url": "ToT/flows/<flow>/job_cards/approve.md",
+              "comment": "金额异常，需补充材料"
+            }
+          }
+        },
+        {
+          "step": 1,
+          "execute": {
+            "task_name": "submit",
+            "submit_type": 5,
+            "resp_code": 0,
+            "resp_msg": "成功"
+          }
+        },
+        {
+          "step": 2,
+          "snapshot": {
+            "state": "DOING",
+            "state_code": 10,
+            "tasks": [
+              {
+                "name": "submit",
+                "displayName": "1. 提交发票（员工）",
+                "state": "DONE",
+                "operator": "u_fdp_pm",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92283687961609",
+                "finishTime": "2026-09-23 07:46:29.026618"
+              },
+              {
+                "name": "approve",
+                "displayName": "2. 主管复核（≥5000）",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_bob"
+                ],
+                "id": "92283687963658",
+                "finishTime": "2026-09-23 07:46:29.029879"
+              },
+              {
+                "name": "submit",
+                "displayName": "1. 提交发票（员工）",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92283687966731",
+                "finishTime": "2026-09-23 07:46:29.033556"
+              },
+              {
+                "name": "approve",
+                "displayName": "2. 主管复核（≥5000）",
+                "state": "DOING",
+                "operator": null,
+                "actors": [
+                  "u_bob"
+                ],
+                "id": "92283687970828",
+                "finishTime": null
+              }
+            ],
+            "active_names": [
+              "approve"
+            ],
+            "variables": {
+              "variable": {
+                "amount": 8000,
+                "purpose": "服务器"
+              },
+              "tf_manager": "u_bob",
+              "tf_treasurer": "u_carol",
+              "u_userId": "u_fdp_pm",
+              "u_realName": "占位·待分配",
+              "u_deptId": "DFDEP",
+              "u_deptName": "默认部",
+              "u_postId": "P5",
+              "u_postName": "FDEP 流程占位",
+              "autoGenTitle": "占位·待分配的发票审批：员工提交 → 财务初审 → 主管复核 → 出纳付款 → 完成-2026-09-23 07:46",
+              "submitType": 1,
+              "decision_reason": "submit 通过",
+              "decision_memo": "submit 在 reject scenario 执行",
+              "approve_job_card_url": "ToT/flows/<flow>/job_cards/approve.md",
+              "comment": "金额异常，需补充材料",
+              "submit_job_card_url": "ToT/flows/<flow>/job_cards/submit.md"
+            }
+          }
+        },
+        {
+          "step": 2,
+          "execute": {
+            "task_name": "approve",
+            "submit_type": 5,
+            "resp_code": 0,
+            "resp_msg": "成功"
+          }
+        },
+        {
+          "step": 3,
+          "snapshot": {
+            "state": "DOING",
+            "state_code": 10,
+            "tasks": [
+              {
+                "name": "submit",
+                "displayName": "1. 提交发票（员工）",
+                "state": "DONE",
+                "operator": "u_fdp_pm",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92283687961609",
+                "finishTime": "2026-09-23 07:46:29.026618"
+              },
+              {
+                "name": "approve",
+                "displayName": "2. 主管复核（≥5000）",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_bob"
+                ],
+                "id": "92283687963658",
+                "finishTime": "2026-09-23 07:46:29.029879"
+              },
+              {
+                "name": "submit",
+                "displayName": "1. 提交发票（员工）",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92283687966731",
+                "finishTime": "2026-09-23 07:46:29.033556"
+              },
+              {
+                "name": "approve",
+                "displayName": "2. 主管复核（≥5000）",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_bob"
+                ],
+                "id": "92283687970828",
+                "finishTime": "2026-09-23 07:46:29.038220"
+              },
+              {
+                "name": "pay",
+                "displayName": "3. 出纳付款",
+                "state": "DOING",
+                "operator": null,
+                "actors": [
+                  "u_carol"
+                ],
+                "id": "92283687974925",
+                "finishTime": null
+              }
+            ],
+            "active_names": [
+              "pay"
+            ],
+            "variables": {
+              "variable": {
+                "amount": 8000,
+                "purpose": "服务器"
+              },
+              "tf_manager": "u_bob",
+              "tf_treasurer": "u_carol",
+              "u_userId": "u_fdp_pm",
+              "u_realName": "占位·待分配",
+              "u_deptId": "DFDEP",
+              "u_deptName": "默认部",
+              "u_postId": "P5",
+              "u_postName": "FDEP 流程占位",
+              "autoGenTitle": "占位·待分配的发票审批：员工提交 → 财务初审 → 主管复核 → 出纳付款 → 完成-2026-09-23 07:46",
+              "submitType": 1,
+              "decision_reason": "approve 通过",
+              "decision_memo": "approve 在 reject scenario 执行",
+              "approve_job_card_url": "ToT/flows/<flow>/job_cards/approve.md",
+              "comment": "金额异常，需补充材料",
+              "submit_job_card_url": "ToT/flows/<flow>/job_cards/submit.md"
+            }
+          }
+        },
+        {
+          "step": 3,
+          "execute": {
+            "task_name": "pay",
+            "submit_type": 5,
+            "resp_code": 0,
+            "resp_msg": "成功"
+          }
+        },
+        {
+          "step": 4,
+          "snapshot": {
+            "state": "DONE",
+            "state_code": 20,
+            "tasks": [
+              {
+                "name": "submit",
+                "displayName": "1. 提交发票（员工）",
+                "state": "DONE",
+                "operator": "u_fdp_pm",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92283687961609",
+                "finishTime": "2026-09-23 07:46:29.026618"
+              },
+              {
+                "name": "approve",
+                "displayName": "2. 主管复核（≥5000）",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_bob"
+                ],
+                "id": "92283687963658",
+                "finishTime": "2026-09-23 07:46:29.029879"
+              },
+              {
+                "name": "submit",
+                "displayName": "1. 提交发票（员工）",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_fdp_pm"
+                ],
+                "id": "92283687966731",
+                "finishTime": "2026-09-23 07:46:29.033556"
+              },
+              {
+                "name": "approve",
+                "displayName": "2. 主管复核（≥5000）",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_bob"
+                ],
+                "id": "92283687970828",
+                "finishTime": "2026-09-23 07:46:29.038220"
+              },
+              {
+                "name": "pay",
+                "displayName": "3. 出纳付款",
+                "state": "DONE",
+                "operator": "flow.auto",
+                "actors": [
+                  "u_carol"
+                ],
+                "id": "92283687974925",
+                "finishTime": "2026-09-23 07:46:29.043579"
+              }
+            ],
+            "active_names": [],
+            "variables": {
+              "variable": {
+                "amount": 8000,
+                "purpose": "服务器"
+              },
+              "tf_manager": "u_bob",
+              "tf_treasurer": "u_carol",
+              "u_userId": "u_fdp_pm",
+              "u_realName": "占位·待分配",
+              "u_deptId": "DFDEP",
+              "u_deptName": "默认部",
+              "u_postId": "P5",
+              "u_postName": "FDEP 流程占位",
+              "autoGenTitle": "占位·待分配的发票审批：员工提交 → 财务初审 → 主管复核 → 出纳付款 → 完成-2026-09-23 07:46",
+              "submitType": 1,
+              "decision_reason": "pay 通过",
+              "decision_memo": "pay 在 reject scenario 执行",
+              "approve_job_card_url": "ToT/flows/<flow>/job_cards/approve.md",
+              "comment": "金额异常，需补充材料",
+              "submit_job_card_url": "ToT/flows/<flow>/job_cards/submit.md",
+              "pay_job_card_url": "ToT/flows/<flow>/job_cards/pay.md"
+            }
+          }
+        }
+      ],
+      "final": {
+        "state": "DONE",
+        "state_code": 20,
+        "tasks": [
+          {
+            "name": "submit",
+            "displayName": "1. 提交发票（员工）",
+            "state": "DONE",
+            "operator": "u_fdp_pm",
+            "actors": [
+              "u_fdp_pm"
+            ],
+            "id": "92283687961609",
+            "finishTime": "2026-09-23 07:46:29.026618"
+          },
+          {
+            "name": "approve",
+            "displayName": "2. 主管复核（≥5000）",
+            "state": "DONE",
+            "operator": "flow.auto",
+            "actors": [
+              "u_bob"
+            ],
+            "id": "92283687963658",
+            "finishTime": "2026-09-23 07:46:29.029879"
+          },
+          {
+            "name": "submit",
+            "displayName": "1. 提交发票（员工）",
+            "state": "DONE",
+            "operator": "flow.auto",
+            "actors": [
+              "u_fdp_pm"
+            ],
+            "id": "92283687966731",
+            "finishTime": "2026-09-23 07:46:29.033556"
+          },
+          {
+            "name": "approve",
+            "displayName": "2. 主管复核（≥5000）",
+            "state": "DONE",
+            "operator": "flow.auto",
+            "actors": [
+              "u_bob"
+            ],
+            "id": "92283687970828",
+            "finishTime": "2026-09-23 07:46:29.038220"
+          },
+          {
+            "name": "pay",
+            "displayName": "3. 出纳付款",
+            "state": "DONE",
+            "operator": "flow.auto",
+            "actors": [
+              "u_carol"
+            ],
+            "id": "92283687974925",
+            "finishTime": "2026-09-23 07:46:29.043579"
+          }
+        ],
+        "active_names": [],
+        "variables": {
+          "variable": {
+            "amount": 8000,
+            "purpose": "服务器"
+          },
+          "tf_manager": "u_bob",
+          "tf_treasurer": "u_carol",
+          "u_userId": "u_fdp_pm",
+          "u_realName": "占位·待分配",
+          "u_deptId": "DFDEP",
+          "u_deptName": "默认部",
+          "u_postId": "P5",
+          "u_postName": "FDEP 流程占位",
+          "autoGenTitle": "占位·待分配的发票审批：员工提交 → 财务初审 → 主管复核 → 出纳付款 → 完成-2026-09-23 07:46",
+          "submitType": 1,
+          "decision_reason": "pay 通过",
+          "decision_memo": "pay 在 reject scenario 执行",
+          "approve_job_card_url": "ToT/flows/<flow>/job_cards/approve.md",
+          "comment": "金额异常，需补充材料",
+          "submit_job_card_url": "ToT/flows/<flow>/job_cards/submit.md",
+          "pay_job_card_url": "ToT/flows/<flow>/job_cards/pay.md"
+        }
+      },
+      "variable": {
+        "amount": 8000,
+        "purpose": "服务器"
+      },
+      "top_vars": {
+        "tf_manager": "u_bob",
+        "tf_treasurer": "u_carol"
+      },
+      "comment": "金额异常，需补充材料",
+      "audit": [
+        {
+          "task": "submit",
+          "state": "DONE",
+          "actors": [
+            "u_fdp_pm"
+          ],
+          "job_card_url": "ToT/flows/<flow>/job_cards/submit.md"
+        },
+        {
+          "task": "approve",
+          "state": "DONE",
+          "actors": [
+            "u_bob"
+          ],
+          "job_card_url": "ToT/flows/<flow>/job_cards/approve.md"
+        },
+        {
+          "task": "submit",
+          "state": "DONE",
+          "actors": [
+            "u_fdp_pm"
+          ],
+          "job_card_url": "ToT/flows/<flow>/job_cards/submit.md"
+        },
+        {
+          "task": "approve",
+          "state": "DONE",
+          "actors": [
+            "u_bob"
+          ],
+          "job_card_url": "ToT/flows/<flow>/job_cards/approve.md"
+        },
+        {
+          "task": "pay",
+          "state": "DONE",
+          "actors": [
+            "u_carol"
+          ],
+          "job_card_url": "ToT/flows/<flow>/job_cards/pay.md"
+        }
+      ]
+    }
+  },
+  "static_validation": {
+    "node_count": 6,
+    "edge_count": 6,
+    "errors": [],
+    "warnings": []
+  },
+  "engine_validation": {
+    "errors": [],
+    "warnings": [
+      {
+        "code": "W013",
+        "msg": "decision 节点[decision_amount] 有 2 条出边, 全部带 expr (无默认边)。如数据不满足任一 expr, 引擎会兜底走第一条边 (可能导致孤儿 task)。建议: 加一条 expr=\"\" 的默认边作为兜底。"
+      },
+      {
+        "code": "W014",
+        "msg": "流程含 snaker:decision 节点. 部署后请立即回归决策路由 (e.g. 跑 1 个决策分支样例, 验证 _cleanup_orphan_decision_tasks 不抛 TypeError). 历史 BUG: FIX-T113 §117."
+      }
+    ],
+    "patterns": []
+  },
+  "define_id": "1",
+  "_baseline_meta": {
+    "flow_name": "invoice-approval",
+    "version": "v0.5",
+    "created_at": "20260923074628",
+    "source_tool": "tdd-flow.py --save-baseline"
+  }
+}

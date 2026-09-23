@@ -1,0 +1,21 @@
+{
+  "name": "dev-bdd-business-interceptors",
+  "displayName": "BDD-DEV-业务流-拦截器",
+  "type": "business",
+  "instanceUrl": "/bdd/dev-biz-ic/form",
+  "preInterceptors": "PRE_ONE",
+  "postInterceptors": "POST_ONE",
+  "nodes": [
+    { "id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": { "width": 50, "height": 50 }, "text": { "value": "开始" } },
+    { "id": "apply", "type": "snaker:task", "x": 180, "y": 200, "properties": { "width": 100, "height": 50, "form": "biz-form", "assignee": "applicant", "taskType": 0, "performType": 0 }, "text": { "value": "业务发起" } },
+    { "id": "biz_review", "type": "snaker:task", "x": 340, "y": 200, "properties": { "width": 120, "height": 50, "assignee": "u_rd_dir", "taskType": 0, "performType": 0 }, "text": { "value": "业务审批" } },
+    { "id": "biz_record", "type": "snaker:task", "x": 500, "y": 200, "properties": { "width": 120, "height": 50, "assignee": "u_arch", "taskType": 0, "performType": 0 }, "text": { "value": "业务归档" } },
+    { "id": "end", "type": "snaker:end", "x": 660, "y": 200, "properties": { "width": 50, "height": 50 }, "text": { "value": "结束" } }
+  ],
+  "edges": [
+    { "id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {} },
+    { "id": "e1", "sourceNodeId": "apply", "targetNodeId": "biz_review", "properties": {} },
+    { "id": "e2", "sourceNodeId": "biz_review", "targetNodeId": "biz_record", "properties": {} },
+    { "id": "e3", "sourceNodeId": "biz_record", "targetNodeId": "end", "properties": {} }
+  ]
+}

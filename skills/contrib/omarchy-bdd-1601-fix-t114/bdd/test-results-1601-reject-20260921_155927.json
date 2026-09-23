@@ -1,0 +1,1790 @@
+{
+ "timestamp": "20260921_155927",
+ "flow": "bdd/bdd-1601-expense-threshold-countersign_20260921_155448.json",
+ "scenario": "BUG-4 PARALLEL REJECT orphan",
+ "total_runs": 5,
+ "bug_repro": 5,
+ "clean": 0,
+ "results": [
+  {
+   "run": 1,
+   "rejecter": "userA",
+   "inst": "92137028795620",
+   "instance_state": 45,
+   "rejecter_task_state": null,
+   "orphan_DOING_count": 2,
+   "orphan_tasks": {
+    "userB": {
+     "task_id": "92137028800744",
+     "state": 10,
+     "operator": ""
+    },
+    "userC": {
+     "task_id": "92137028800745",
+     "state": 10,
+     "operator": ""
+    }
+   },
+   "approval_record": [
+    {
+     "taskName": "apply",
+     "operator": "user1",
+     "taskState": 20
+    },
+    {
+     "taskName": "leader_review",
+     "operator": "leader",
+     "taskState": 20
+    },
+    {
+     "taskName": "countersign_finance",
+     "operator": "userA",
+     "taskState": 20
+    },
+    {
+     "taskName": "countersign_finance",
+     "operator": null,
+     "taskState": 10
+    },
+    {
+     "taskName": "countersign_finance",
+     "operator": null,
+     "taskState": 10
+    }
+   ],
+   "history_nodes": [
+    "apply",
+    "leader_review",
+    "decision_amount"
+   ],
+   "audit_count": 5,
+   "audit_entries": [
+    {
+     "id": 92137028795621,
+     "processInstanceId": 92137028795620,
+     "taskName": "apply",
+     "displayName": "发起申请",
+     "taskType": 0,
+     "performType": 0,
+     "taskState": 20,
+     "operator": "user1",
+     "finishTime": "2026-09-21 15:59:27",
+     "expireTime": null,
+     "formKey": "expense-form",
+     "taskParentId": null,
+     "variable": {
+      "title": "BUG-4 R1 reject=userA",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "user1",
+      "u_realName": "张三",
+      "u_deptId": "D01",
+      "u_deptName": "研发部",
+      "u_postId": "P01",
+      "u_postName": "工程师",
+      "autoGenTitle": "BUG-4 R1 reject=userA",
+      "submitType": 0
+     },
+     "createTime": "2026-09-21 15:59:27",
+     "createUser": "user1",
+     "updateTime": "2026-09-21 15:59:27",
+     "updateUser": "user1",
+     "processDefineName": "bdd1601_expense_threshold_countersign",
+     "processDefineDisplayName": "BDD-1601 报销审批(金额阈值+会签并行)",
+     "instanceVariable": "",
+     "instanceCreateTime": "2026-09-21 15:59:27",
+     "ext": {
+      "title": "BUG-4 R1 reject=userA",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "user1",
+      "u_realName": "张三",
+      "u_deptId": "D01",
+      "u_deptName": "研发部",
+      "u_postId": "P01",
+      "u_postName": "工程师",
+      "autoGenTitle": "BUG-4 R1 reject=userA",
+      "submitType": 0
+     },
+     "instanceExt": {},
+     "version": 0,
+     "taskFormData": {},
+     "taskActorIdList": [
+      "${f_user1}",
+      "user1"
+     ]
+    },
+    {
+     "id": 92137028796646,
+     "processInstanceId": 92137028795620,
+     "taskName": "leader_review",
+     "displayName": "直属上级初审",
+     "taskType": 0,
+     "performType": 0,
+     "taskState": 20,
+     "operator": "leader",
+     "finishTime": "2026-09-21 15:59:27",
+     "expireTime": null,
+     "formKey": "expense-form",
+     "taskParentId": null,
+     "variable": {
+      "title": "BUG-4 R1 reject=userA",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "leader",
+      "u_realName": "李四",
+      "u_deptId": "D01",
+      "u_deptName": "研发部",
+      "u_postId": "P01",
+      "u_postName": "组长",
+      "autoGenTitle": "BUG-4 R1 reject=userA",
+      "submitType": 1
+     },
+     "createTime": "2026-09-21 15:59:27",
+     "createUser": "user1",
+     "updateTime": "2026-09-21 15:59:27",
+     "updateUser": "leader",
+     "processDefineName": "bdd1601_expense_threshold_countersign",
+     "processDefineDisplayName": "BDD-1601 报销审批(金额阈值+会签并行)",
+     "instanceVariable": "",
+     "instanceCreateTime": "2026-09-21 15:59:27",
+     "ext": {
+      "title": "BUG-4 R1 reject=userA",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "leader",
+      "u_realName": "李四",
+      "u_deptId": "D01",
+      "u_deptName": "研发部",
+      "u_postId": "P01",
+      "u_postName": "组长",
+      "autoGenTitle": "BUG-4 R1 reject=userA",
+      "submitType": 1
+     },
+     "instanceExt": {},
+     "version": 0,
+     "taskFormData": {},
+     "taskActorIdList": [
+      "leader"
+     ]
+    },
+    {
+     "id": 92137028800743,
+     "processInstanceId": 92137028795620,
+     "taskName": "countersign_finance",
+     "displayName": "财务会签(>5k)",
+     "taskType": 0,
+     "performType": 1,
+     "taskState": 20,
+     "operator": "userA",
+     "finishTime": "2026-09-21 15:59:27",
+     "expireTime": null,
+     "formKey": "expense-form",
+     "taskParentId": null,
+     "variable": {
+      "title": "BUG-4 R1 reject=userA",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "userA",
+      "u_realName": "孙倩",
+      "u_deptId": "D01",
+      "u_deptName": "研发部",
+      "u_postId": "P01",
+      "u_postName": "工程师",
+      "autoGenTitle": "BUG-4 R1 reject=userA",
+      "submitType": 2
+     },
+     "createTime": "2026-09-21 15:59:27",
+     "createUser": "leader",
+     "updateTime": "2026-09-21 15:59:27",
+     "updateUser": "userA",
+     "processDefineName": "bdd1601_expense_threshold_countersign",
+     "processDefineDisplayName": "BDD-1601 报销审批(金额阈值+会签并行)",
+     "instanceVariable": "",
+     "instanceCreateTime": "2026-09-21 15:59:27",
+     "ext": {
+      "title": "BUG-4 R1 reject=userA",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "userA",
+      "u_realName": "孙倩",
+      "u_deptId": "D01",
+      "u_deptName": "研发部",
+      "u_postId": "P01",
+      "u_postName": "工程师",
+      "autoGenTitle": "BUG-4 R1 reject=userA",
+      "submitType": 2
+     },
+     "instanceExt": {},
+     "version": 0,
+     "taskFormData": {},
+     "taskActorIdList": [
+      "userA"
+     ]
+    },
+    {
+     "id": 92137028800744,
+     "processInstanceId": 92137028795620,
+     "taskName": "countersign_finance",
+     "displayName": "财务会签(>5k)",
+     "taskType": 0,
+     "performType": 1,
+     "taskState": 10,
+     "operator": "",
+     "finishTime": null,
+     "expireTime": null,
+     "formKey": "expense-form",
+     "taskParentId": null,
+     "variable": {},
+     "createTime": "2026-09-21 15:59:27",
+     "createUser": "leader",
+     "updateTime": "2026-09-21 15:59:27",
+     "updateUser": "leader",
+     "processDefineName": "bdd1601_expense_threshold_countersign",
+     "processDefineDisplayName": "BDD-1601 报销审批(金额阈值+会签并行)",
+     "instanceVariable": "",
+     "instanceCreateTime": "2026-09-21 15:59:27",
+     "ext": {},
+     "instanceExt": {},
+     "version": 0,
+     "taskFormData": {},
+     "taskActorIdList": [
+      "userB"
+     ]
+    },
+    {
+     "id": 92137028800745,
+     "processInstanceId": 92137028795620,
+     "taskName": "countersign_finance",
+     "displayName": "财务会签(>5k)",
+     "taskType": 0,
+     "performType": 1,
+     "taskState": 10,
+     "operator": "",
+     "finishTime": null,
+     "expireTime": null,
+     "formKey": "expense-form",
+     "taskParentId": null,
+     "variable": {},
+     "createTime": "2026-09-21 15:59:27",
+     "createUser": "leader",
+     "updateTime": "2026-09-21 15:59:27",
+     "updateUser": "leader",
+     "processDefineName": "bdd1601_expense_threshold_countersign",
+     "processDefineDisplayName": "BDD-1601 报销审批(金额阈值+会签并行)",
+     "instanceVariable": "",
+     "instanceCreateTime": "2026-09-21 15:59:27",
+     "ext": {},
+     "instanceExt": {},
+     "version": 0,
+     "taskFormData": {},
+     "taskActorIdList": [
+      "userC"
+     ]
+    }
+   ]
+  },
+  {
+   "run": 2,
+   "rejecter": "userB",
+   "inst": "92137028834538",
+   "instance_state": 45,
+   "rejecter_task_state": null,
+   "orphan_DOING_count": 2,
+   "orphan_tasks": {
+    "userA": {
+     "task_id": "92137028839661",
+     "state": 10,
+     "operator": ""
+    },
+    "userC": {
+     "task_id": "92137028839663",
+     "state": 10,
+     "operator": ""
+    }
+   },
+   "approval_record": [
+    {
+     "taskName": "apply",
+     "operator": "user1",
+     "taskState": 20
+    },
+    {
+     "taskName": "leader_review",
+     "operator": "leader",
+     "taskState": 20
+    },
+    {
+     "taskName": "countersign_finance",
+     "operator": null,
+     "taskState": 10
+    },
+    {
+     "taskName": "countersign_finance",
+     "operator": "userB",
+     "taskState": 20
+    },
+    {
+     "taskName": "countersign_finance",
+     "operator": null,
+     "taskState": 10
+    }
+   ],
+   "history_nodes": [
+    "apply",
+    "leader_review",
+    "decision_amount"
+   ],
+   "audit_count": 5,
+   "audit_entries": [
+    {
+     "id": 92137028834539,
+     "processInstanceId": 92137028834538,
+     "taskName": "apply",
+     "displayName": "发起申请",
+     "taskType": 0,
+     "performType": 0,
+     "taskState": 20,
+     "operator": "user1",
+     "finishTime": "2026-09-21 15:59:27",
+     "expireTime": null,
+     "formKey": "expense-form",
+     "taskParentId": null,
+     "variable": {
+      "title": "BUG-4 R2 reject=userB",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "user1",
+      "u_realName": "张三",
+      "u_deptId": "D01",
+      "u_deptName": "研发部",
+      "u_postId": "P01",
+      "u_postName": "工程师",
+      "autoGenTitle": "BUG-4 R2 reject=userB",
+      "submitType": 0
+     },
+     "createTime": "2026-09-21 15:59:27",
+     "createUser": "user1",
+     "updateTime": "2026-09-21 15:59:27",
+     "updateUser": "user1",
+     "processDefineName": "bdd1601_expense_threshold_countersign",
+     "processDefineDisplayName": "BDD-1601 报销审批(金额阈值+会签并行)",
+     "instanceVariable": "",
+     "instanceCreateTime": "2026-09-21 15:59:27",
+     "ext": {
+      "title": "BUG-4 R2 reject=userB",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "user1",
+      "u_realName": "张三",
+      "u_deptId": "D01",
+      "u_deptName": "研发部",
+      "u_postId": "P01",
+      "u_postName": "工程师",
+      "autoGenTitle": "BUG-4 R2 reject=userB",
+      "submitType": 0
+     },
+     "instanceExt": {},
+     "version": 0,
+     "taskFormData": {},
+     "taskActorIdList": [
+      "${f_user1}",
+      "user1"
+     ]
+    },
+    {
+     "id": 92137028834540,
+     "processInstanceId": 92137028834538,
+     "taskName": "leader_review",
+     "displayName": "直属上级初审",
+     "taskType": 0,
+     "performType": 0,
+     "taskState": 20,
+     "operator": "leader",
+     "finishTime": "2026-09-21 15:59:27",
+     "expireTime": null,
+     "formKey": "expense-form",
+     "taskParentId": null,
+     "variable": {
+      "title": "BUG-4 R2 reject=userB",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "leader",
+      "u_realName": "李四",
+      "u_deptId": "D01",
+      "u_deptName": "研发部",
+      "u_postId": "P01",
+      "u_postName": "组长",
+      "autoGenTitle": "BUG-4 R2 reject=userB",
+      "submitType": 1
+     },
+     "createTime": "2026-09-21 15:59:27",
+     "createUser": "user1",
+     "updateTime": "2026-09-21 15:59:27",
+     "updateUser": "leader",
+     "processDefineName": "bdd1601_expense_threshold_countersign",
+     "processDefineDisplayName": "BDD-1601 报销审批(金额阈值+会签并行)",
+     "instanceVariable": "",
+     "instanceCreateTime": "2026-09-21 15:59:27",
+     "ext": {
+      "title": "BUG-4 R2 reject=userB",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "leader",
+      "u_realName": "李四",
+      "u_deptId": "D01",
+      "u_deptName": "研发部",
+      "u_postId": "P01",
+      "u_postName": "组长",
+      "autoGenTitle": "BUG-4 R2 reject=userB",
+      "submitType": 1
+     },
+     "instanceExt": {},
+     "version": 0,
+     "taskFormData": {},
+     "taskActorIdList": [
+      "leader"
+     ]
+    },
+    {
+     "id": 92137028839661,
+     "processInstanceId": 92137028834538,
+     "taskName": "countersign_finance",
+     "displayName": "财务会签(>5k)",
+     "taskType": 0,
+     "performType": 1,
+     "taskState": 10,
+     "operator": "",
+     "finishTime": null,
+     "expireTime": null,
+     "formKey": "expense-form",
+     "taskParentId": null,
+     "variable": {},
+     "createTime": "2026-09-21 15:59:27",
+     "createUser": "leader",
+     "updateTime": "2026-09-21 15:59:27",
+     "updateUser": "leader",
+     "processDefineName": "bdd1601_expense_threshold_countersign",
+     "processDefineDisplayName": "BDD-1601 报销审批(金额阈值+会签并行)",
+     "instanceVariable": "",
+     "instanceCreateTime": "2026-09-21 15:59:27",
+     "ext": {},
+     "instanceExt": {},
+     "version": 0,
+     "taskFormData": {},
+     "taskActorIdList": [
+      "userA"
+     ]
+    },
+    {
+     "id": 92137028839662,
+     "processInstanceId": 92137028834538,
+     "taskName": "countersign_finance",
+     "displayName": "财务会签(>5k)",
+     "taskType": 0,
+     "performType": 1,
+     "taskState": 20,
+     "operator": "userB",
+     "finishTime": "2026-09-21 15:59:27",
+     "expireTime": null,
+     "formKey": "expense-form",
+     "taskParentId": null,
+     "variable": {
+      "title": "BUG-4 R2 reject=userB",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "userB",
+      "u_realName": "周明",
+      "u_deptId": "D02",
+      "u_deptName": "市场部",
+      "u_postId": "P01",
+      "u_postName": "工程师",
+      "autoGenTitle": "BUG-4 R2 reject=userB",
+      "submitType": 2
+     },
+     "createTime": "2026-09-21 15:59:27",
+     "createUser": "leader",
+     "updateTime": "2026-09-21 15:59:27",
+     "updateUser": "userB",
+     "processDefineName": "bdd1601_expense_threshold_countersign",
+     "processDefineDisplayName": "BDD-1601 报销审批(金额阈值+会签并行)",
+     "instanceVariable": "",
+     "instanceCreateTime": "2026-09-21 15:59:27",
+     "ext": {
+      "title": "BUG-4 R2 reject=userB",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "userB",
+      "u_realName": "周明",
+      "u_deptId": "D02",
+      "u_deptName": "市场部",
+      "u_postId": "P01",
+      "u_postName": "工程师",
+      "autoGenTitle": "BUG-4 R2 reject=userB",
+      "submitType": 2
+     },
+     "instanceExt": {},
+     "version": 0,
+     "taskFormData": {},
+     "taskActorIdList": [
+      "userB"
+     ]
+    },
+    {
+     "id": 92137028839663,
+     "processInstanceId": 92137028834538,
+     "taskName": "countersign_finance",
+     "displayName": "财务会签(>5k)",
+     "taskType": 0,
+     "performType": 1,
+     "taskState": 10,
+     "operator": "",
+     "finishTime": null,
+     "expireTime": null,
+     "formKey": "expense-form",
+     "taskParentId": null,
+     "variable": {},
+     "createTime": "2026-09-21 15:59:27",
+     "createUser": "leader",
+     "updateTime": "2026-09-21 15:59:27",
+     "updateUser": "leader",
+     "processDefineName": "bdd1601_expense_threshold_countersign",
+     "processDefineDisplayName": "BDD-1601 报销审批(金额阈值+会签并行)",
+     "instanceVariable": "",
+     "instanceCreateTime": "2026-09-21 15:59:27",
+     "ext": {},
+     "instanceExt": {},
+     "version": 0,
+     "taskFormData": {},
+     "taskActorIdList": [
+      "userC"
+     ]
+    }
+   ]
+  },
+  {
+   "run": 3,
+   "rejecter": "userC",
+   "inst": "92137028874480",
+   "instance_state": 45,
+   "rejecter_task_state": null,
+   "orphan_DOING_count": 2,
+   "orphan_tasks": {
+    "userA": {
+     "task_id": "92137028880627",
+     "state": 10,
+     "operator": ""
+    },
+    "userB": {
+     "task_id": "92137028880628",
+     "state": 10,
+     "operator": ""
+    }
+   },
+   "approval_record": [
+    {
+     "taskName": "apply",
+     "operator": "user1",
+     "taskState": 20
+    },
+    {
+     "taskName": "leader_review",
+     "operator": "leader",
+     "taskState": 20
+    },
+    {
+     "taskName": "countersign_finance",
+     "operator": null,
+     "taskState": 10
+    },
+    {
+     "taskName": "countersign_finance",
+     "operator": null,
+     "taskState": 10
+    },
+    {
+     "taskName": "countersign_finance",
+     "operator": "userC",
+     "taskState": 20
+    }
+   ],
+   "history_nodes": [
+    "apply",
+    "leader_review",
+    "decision_amount"
+   ],
+   "audit_count": 5,
+   "audit_entries": [
+    {
+     "id": 92137028875505,
+     "processInstanceId": 92137028874480,
+     "taskName": "apply",
+     "displayName": "发起申请",
+     "taskType": 0,
+     "performType": 0,
+     "taskState": 20,
+     "operator": "user1",
+     "finishTime": "2026-09-21 15:59:27",
+     "expireTime": null,
+     "formKey": "expense-form",
+     "taskParentId": null,
+     "variable": {
+      "title": "BUG-4 R3 reject=userC",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "user1",
+      "u_realName": "张三",
+      "u_deptId": "D01",
+      "u_deptName": "研发部",
+      "u_postId": "P01",
+      "u_postName": "工程师",
+      "autoGenTitle": "BUG-4 R3 reject=userC",
+      "submitType": 0
+     },
+     "createTime": "2026-09-21 15:59:27",
+     "createUser": "user1",
+     "updateTime": "2026-09-21 15:59:27",
+     "updateUser": "user1",
+     "processDefineName": "bdd1601_expense_threshold_countersign",
+     "processDefineDisplayName": "BDD-1601 报销审批(金额阈值+会签并行)",
+     "instanceVariable": "",
+     "instanceCreateTime": "2026-09-21 15:59:27",
+     "ext": {
+      "title": "BUG-4 R3 reject=userC",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "user1",
+      "u_realName": "张三",
+      "u_deptId": "D01",
+      "u_deptName": "研发部",
+      "u_postId": "P01",
+      "u_postName": "工程师",
+      "autoGenTitle": "BUG-4 R3 reject=userC",
+      "submitType": 0
+     },
+     "instanceExt": {},
+     "version": 0,
+     "taskFormData": {},
+     "taskActorIdList": [
+      "${f_user1}",
+      "user1"
+     ]
+    },
+    {
+     "id": 92137028876530,
+     "processInstanceId": 92137028874480,
+     "taskName": "leader_review",
+     "displayName": "直属上级初审",
+     "taskType": 0,
+     "performType": 0,
+     "taskState": 20,
+     "operator": "leader",
+     "finishTime": "2026-09-21 15:59:27",
+     "expireTime": null,
+     "formKey": "expense-form",
+     "taskParentId": null,
+     "variable": {
+      "title": "BUG-4 R3 reject=userC",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "leader",
+      "u_realName": "李四",
+      "u_deptId": "D01",
+      "u_deptName": "研发部",
+      "u_postId": "P01",
+      "u_postName": "组长",
+      "autoGenTitle": "BUG-4 R3 reject=userC",
+      "submitType": 1
+     },
+     "createTime": "2026-09-21 15:59:27",
+     "createUser": "user1",
+     "updateTime": "2026-09-21 15:59:27",
+     "updateUser": "leader",
+     "processDefineName": "bdd1601_expense_threshold_countersign",
+     "processDefineDisplayName": "BDD-1601 报销审批(金额阈值+会签并行)",
+     "instanceVariable": "",
+     "instanceCreateTime": "2026-09-21 15:59:27",
+     "ext": {
+      "title": "BUG-4 R3 reject=userC",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "leader",
+      "u_realName": "李四",
+      "u_deptId": "D01",
+      "u_deptName": "研发部",
+      "u_postId": "P01",
+      "u_postName": "组长",
+      "autoGenTitle": "BUG-4 R3 reject=userC",
+      "submitType": 1
+     },
+     "instanceExt": {},
+     "version": 0,
+     "taskFormData": {},
+     "taskActorIdList": [
+      "leader"
+     ]
+    },
+    {
+     "id": 92137028880627,
+     "processInstanceId": 92137028874480,
+     "taskName": "countersign_finance",
+     "displayName": "财务会签(>5k)",
+     "taskType": 0,
+     "performType": 1,
+     "taskState": 10,
+     "operator": "",
+     "finishTime": null,
+     "expireTime": null,
+     "formKey": "expense-form",
+     "taskParentId": null,
+     "variable": {},
+     "createTime": "2026-09-21 15:59:27",
+     "createUser": "leader",
+     "updateTime": "2026-09-21 15:59:27",
+     "updateUser": "leader",
+     "processDefineName": "bdd1601_expense_threshold_countersign",
+     "processDefineDisplayName": "BDD-1601 报销审批(金额阈值+会签并行)",
+     "instanceVariable": "",
+     "instanceCreateTime": "2026-09-21 15:59:27",
+     "ext": {},
+     "instanceExt": {},
+     "version": 0,
+     "taskFormData": {},
+     "taskActorIdList": [
+      "userA"
+     ]
+    },
+    {
+     "id": 92137028880628,
+     "processInstanceId": 92137028874480,
+     "taskName": "countersign_finance",
+     "displayName": "财务会签(>5k)",
+     "taskType": 0,
+     "performType": 1,
+     "taskState": 10,
+     "operator": "",
+     "finishTime": null,
+     "expireTime": null,
+     "formKey": "expense-form",
+     "taskParentId": null,
+     "variable": {},
+     "createTime": "2026-09-21 15:59:27",
+     "createUser": "leader",
+     "updateTime": "2026-09-21 15:59:27",
+     "updateUser": "leader",
+     "processDefineName": "bdd1601_expense_threshold_countersign",
+     "processDefineDisplayName": "BDD-1601 报销审批(金额阈值+会签并行)",
+     "instanceVariable": "",
+     "instanceCreateTime": "2026-09-21 15:59:27",
+     "ext": {},
+     "instanceExt": {},
+     "version": 0,
+     "taskFormData": {},
+     "taskActorIdList": [
+      "userB"
+     ]
+    },
+    {
+     "id": 92137028880629,
+     "processInstanceId": 92137028874480,
+     "taskName": "countersign_finance",
+     "displayName": "财务会签(>5k)",
+     "taskType": 0,
+     "performType": 1,
+     "taskState": 20,
+     "operator": "userC",
+     "finishTime": "2026-09-21 15:59:27",
+     "expireTime": null,
+     "formKey": "expense-form",
+     "taskParentId": null,
+     "variable": {
+      "title": "BUG-4 R3 reject=userC",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "userC",
+      "u_realName": "吴婷",
+      "u_deptId": "D03",
+      "u_deptName": "财务部",
+      "u_postId": "P01",
+      "u_postName": "工程师",
+      "autoGenTitle": "BUG-4 R3 reject=userC",
+      "submitType": 2
+     },
+     "createTime": "2026-09-21 15:59:27",
+     "createUser": "leader",
+     "updateTime": "2026-09-21 15:59:27",
+     "updateUser": "userC",
+     "processDefineName": "bdd1601_expense_threshold_countersign",
+     "processDefineDisplayName": "BDD-1601 报销审批(金额阈值+会签并行)",
+     "instanceVariable": "",
+     "instanceCreateTime": "2026-09-21 15:59:27",
+     "ext": {
+      "title": "BUG-4 R3 reject=userC",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "userC",
+      "u_realName": "吴婷",
+      "u_deptId": "D03",
+      "u_deptName": "财务部",
+      "u_postId": "P01",
+      "u_postName": "工程师",
+      "autoGenTitle": "BUG-4 R3 reject=userC",
+      "submitType": 2
+     },
+     "instanceExt": {},
+     "version": 0,
+     "taskFormData": {},
+     "taskActorIdList": [
+      "userC"
+     ]
+    }
+   ]
+  },
+  {
+   "run": 4,
+   "rejecter": "userA",
+   "inst": "92137028914422",
+   "instance_state": 45,
+   "rejecter_task_state": null,
+   "orphan_DOING_count": 2,
+   "orphan_tasks": {
+    "userB": {
+     "task_id": "92137028919546",
+     "state": 10,
+     "operator": ""
+    },
+    "userC": {
+     "task_id": "92137028919547",
+     "state": 10,
+     "operator": ""
+    }
+   },
+   "approval_record": [
+    {
+     "taskName": "apply",
+     "operator": "user1",
+     "taskState": 20
+    },
+    {
+     "taskName": "leader_review",
+     "operator": "leader",
+     "taskState": 20
+    },
+    {
+     "taskName": "countersign_finance",
+     "operator": "userA",
+     "taskState": 20
+    },
+    {
+     "taskName": "countersign_finance",
+     "operator": null,
+     "taskState": 10
+    },
+    {
+     "taskName": "countersign_finance",
+     "operator": null,
+     "taskState": 10
+    }
+   ],
+   "history_nodes": [
+    "apply",
+    "leader_review",
+    "decision_amount"
+   ],
+   "audit_count": 5,
+   "audit_entries": [
+    {
+     "id": 92137028914423,
+     "processInstanceId": 92137028914422,
+     "taskName": "apply",
+     "displayName": "发起申请",
+     "taskType": 0,
+     "performType": 0,
+     "taskState": 20,
+     "operator": "user1",
+     "finishTime": "2026-09-21 15:59:27",
+     "expireTime": null,
+     "formKey": "expense-form",
+     "taskParentId": null,
+     "variable": {
+      "title": "BUG-4 R4 reject=userA",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "user1",
+      "u_realName": "张三",
+      "u_deptId": "D01",
+      "u_deptName": "研发部",
+      "u_postId": "P01",
+      "u_postName": "工程师",
+      "autoGenTitle": "BUG-4 R4 reject=userA",
+      "submitType": 0
+     },
+     "createTime": "2026-09-21 15:59:27",
+     "createUser": "user1",
+     "updateTime": "2026-09-21 15:59:27",
+     "updateUser": "user1",
+     "processDefineName": "bdd1601_expense_threshold_countersign",
+     "processDefineDisplayName": "BDD-1601 报销审批(金额阈值+会签并行)",
+     "instanceVariable": "",
+     "instanceCreateTime": "2026-09-21 15:59:27",
+     "ext": {
+      "title": "BUG-4 R4 reject=userA",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "user1",
+      "u_realName": "张三",
+      "u_deptId": "D01",
+      "u_deptName": "研发部",
+      "u_postId": "P01",
+      "u_postName": "工程师",
+      "autoGenTitle": "BUG-4 R4 reject=userA",
+      "submitType": 0
+     },
+     "instanceExt": {},
+     "version": 0,
+     "taskFormData": {},
+     "taskActorIdList": [
+      "${f_user1}",
+      "user1"
+     ]
+    },
+    {
+     "id": 92137028915448,
+     "processInstanceId": 92137028914422,
+     "taskName": "leader_review",
+     "displayName": "直属上级初审",
+     "taskType": 0,
+     "performType": 0,
+     "taskState": 20,
+     "operator": "leader",
+     "finishTime": "2026-09-21 15:59:27",
+     "expireTime": null,
+     "formKey": "expense-form",
+     "taskParentId": null,
+     "variable": {
+      "title": "BUG-4 R4 reject=userA",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "leader",
+      "u_realName": "李四",
+      "u_deptId": "D01",
+      "u_deptName": "研发部",
+      "u_postId": "P01",
+      "u_postName": "组长",
+      "autoGenTitle": "BUG-4 R4 reject=userA",
+      "submitType": 1
+     },
+     "createTime": "2026-09-21 15:59:27",
+     "createUser": "user1",
+     "updateTime": "2026-09-21 15:59:27",
+     "updateUser": "leader",
+     "processDefineName": "bdd1601_expense_threshold_countersign",
+     "processDefineDisplayName": "BDD-1601 报销审批(金额阈值+会签并行)",
+     "instanceVariable": "",
+     "instanceCreateTime": "2026-09-21 15:59:27",
+     "ext": {
+      "title": "BUG-4 R4 reject=userA",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "leader",
+      "u_realName": "李四",
+      "u_deptId": "D01",
+      "u_deptName": "研发部",
+      "u_postId": "P01",
+      "u_postName": "组长",
+      "autoGenTitle": "BUG-4 R4 reject=userA",
+      "submitType": 1
+     },
+     "instanceExt": {},
+     "version": 0,
+     "taskFormData": {},
+     "taskActorIdList": [
+      "leader"
+     ]
+    },
+    {
+     "id": 92137028919545,
+     "processInstanceId": 92137028914422,
+     "taskName": "countersign_finance",
+     "displayName": "财务会签(>5k)",
+     "taskType": 0,
+     "performType": 1,
+     "taskState": 20,
+     "operator": "userA",
+     "finishTime": "2026-09-21 15:59:27",
+     "expireTime": null,
+     "formKey": "expense-form",
+     "taskParentId": null,
+     "variable": {
+      "title": "BUG-4 R4 reject=userA",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "userA",
+      "u_realName": "孙倩",
+      "u_deptId": "D01",
+      "u_deptName": "研发部",
+      "u_postId": "P01",
+      "u_postName": "工程师",
+      "autoGenTitle": "BUG-4 R4 reject=userA",
+      "submitType": 2
+     },
+     "createTime": "2026-09-21 15:59:27",
+     "createUser": "leader",
+     "updateTime": "2026-09-21 15:59:27",
+     "updateUser": "userA",
+     "processDefineName": "bdd1601_expense_threshold_countersign",
+     "processDefineDisplayName": "BDD-1601 报销审批(金额阈值+会签并行)",
+     "instanceVariable": "",
+     "instanceCreateTime": "2026-09-21 15:59:27",
+     "ext": {
+      "title": "BUG-4 R4 reject=userA",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "userA",
+      "u_realName": "孙倩",
+      "u_deptId": "D01",
+      "u_deptName": "研发部",
+      "u_postId": "P01",
+      "u_postName": "工程师",
+      "autoGenTitle": "BUG-4 R4 reject=userA",
+      "submitType": 2
+     },
+     "instanceExt": {},
+     "version": 0,
+     "taskFormData": {},
+     "taskActorIdList": [
+      "userA"
+     ]
+    },
+    {
+     "id": 92137028919546,
+     "processInstanceId": 92137028914422,
+     "taskName": "countersign_finance",
+     "displayName": "财务会签(>5k)",
+     "taskType": 0,
+     "performType": 1,
+     "taskState": 10,
+     "operator": "",
+     "finishTime": null,
+     "expireTime": null,
+     "formKey": "expense-form",
+     "taskParentId": null,
+     "variable": {},
+     "createTime": "2026-09-21 15:59:27",
+     "createUser": "leader",
+     "updateTime": "2026-09-21 15:59:27",
+     "updateUser": "leader",
+     "processDefineName": "bdd1601_expense_threshold_countersign",
+     "processDefineDisplayName": "BDD-1601 报销审批(金额阈值+会签并行)",
+     "instanceVariable": "",
+     "instanceCreateTime": "2026-09-21 15:59:27",
+     "ext": {},
+     "instanceExt": {},
+     "version": 0,
+     "taskFormData": {},
+     "taskActorIdList": [
+      "userB"
+     ]
+    },
+    {
+     "id": 92137028919547,
+     "processInstanceId": 92137028914422,
+     "taskName": "countersign_finance",
+     "displayName": "财务会签(>5k)",
+     "taskType": 0,
+     "performType": 1,
+     "taskState": 10,
+     "operator": "",
+     "finishTime": null,
+     "expireTime": null,
+     "formKey": "expense-form",
+     "taskParentId": null,
+     "variable": {},
+     "createTime": "2026-09-21 15:59:27",
+     "createUser": "leader",
+     "updateTime": "2026-09-21 15:59:27",
+     "updateUser": "leader",
+     "processDefineName": "bdd1601_expense_threshold_countersign",
+     "processDefineDisplayName": "BDD-1601 报销审批(金额阈值+会签并行)",
+     "instanceVariable": "",
+     "instanceCreateTime": "2026-09-21 15:59:27",
+     "ext": {},
+     "instanceExt": {},
+     "version": 0,
+     "taskFormData": {},
+     "taskActorIdList": [
+      "userC"
+     ]
+    }
+   ]
+  },
+  {
+   "run": 5,
+   "rejecter": "userB",
+   "inst": "92137028952316",
+   "instance_state": 45,
+   "rejecter_task_state": null,
+   "orphan_DOING_count": 2,
+   "orphan_tasks": {
+    "userA": {
+     "task_id": "92137028959487",
+     "state": 10,
+     "operator": ""
+    },
+    "userC": {
+     "task_id": "92137028959489",
+     "state": 10,
+     "operator": ""
+    }
+   },
+   "approval_record": [
+    {
+     "taskName": "apply",
+     "operator": "user1",
+     "taskState": 20
+    },
+    {
+     "taskName": "leader_review",
+     "operator": "leader",
+     "taskState": 20
+    },
+    {
+     "taskName": "countersign_finance",
+     "operator": null,
+     "taskState": 10
+    },
+    {
+     "taskName": "countersign_finance",
+     "operator": "userB",
+     "taskState": 20
+    },
+    {
+     "taskName": "countersign_finance",
+     "operator": null,
+     "taskState": 10
+    }
+   ],
+   "history_nodes": [
+    "apply",
+    "leader_review",
+    "decision_amount"
+   ],
+   "audit_count": 5,
+   "audit_entries": [
+    {
+     "id": 92137028952317,
+     "processInstanceId": 92137028952316,
+     "taskName": "apply",
+     "displayName": "发起申请",
+     "taskType": 0,
+     "performType": 0,
+     "taskState": 20,
+     "operator": "user1",
+     "finishTime": "2026-09-21 15:59:27",
+     "expireTime": null,
+     "formKey": "expense-form",
+     "taskParentId": null,
+     "variable": {
+      "title": "BUG-4 R5 reject=userB",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "user1",
+      "u_realName": "张三",
+      "u_deptId": "D01",
+      "u_deptName": "研发部",
+      "u_postId": "P01",
+      "u_postName": "工程师",
+      "autoGenTitle": "BUG-4 R5 reject=userB",
+      "submitType": 0
+     },
+     "createTime": "2026-09-21 15:59:27",
+     "createUser": "user1",
+     "updateTime": "2026-09-21 15:59:27",
+     "updateUser": "user1",
+     "processDefineName": "bdd1601_expense_threshold_countersign",
+     "processDefineDisplayName": "BDD-1601 报销审批(金额阈值+会签并行)",
+     "instanceVariable": "",
+     "instanceCreateTime": "2026-09-21 15:59:27",
+     "ext": {
+      "title": "BUG-4 R5 reject=userB",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "user1",
+      "u_realName": "张三",
+      "u_deptId": "D01",
+      "u_deptName": "研发部",
+      "u_postId": "P01",
+      "u_postName": "工程师",
+      "autoGenTitle": "BUG-4 R5 reject=userB",
+      "submitType": 0
+     },
+     "instanceExt": {},
+     "version": 0,
+     "taskFormData": {},
+     "taskActorIdList": [
+      "${f_user1}",
+      "user1"
+     ]
+    },
+    {
+     "id": 92137028953342,
+     "processInstanceId": 92137028952316,
+     "taskName": "leader_review",
+     "displayName": "直属上级初审",
+     "taskType": 0,
+     "performType": 0,
+     "taskState": 20,
+     "operator": "leader",
+     "finishTime": "2026-09-21 15:59:27",
+     "expireTime": null,
+     "formKey": "expense-form",
+     "taskParentId": null,
+     "variable": {
+      "title": "BUG-4 R5 reject=userB",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "leader",
+      "u_realName": "李四",
+      "u_deptId": "D01",
+      "u_deptName": "研发部",
+      "u_postId": "P01",
+      "u_postName": "组长",
+      "autoGenTitle": "BUG-4 R5 reject=userB",
+      "submitType": 1
+     },
+     "createTime": "2026-09-21 15:59:27",
+     "createUser": "user1",
+     "updateTime": "2026-09-21 15:59:27",
+     "updateUser": "leader",
+     "processDefineName": "bdd1601_expense_threshold_countersign",
+     "processDefineDisplayName": "BDD-1601 报销审批(金额阈值+会签并行)",
+     "instanceVariable": "",
+     "instanceCreateTime": "2026-09-21 15:59:27",
+     "ext": {
+      "title": "BUG-4 R5 reject=userB",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "leader",
+      "u_realName": "李四",
+      "u_deptId": "D01",
+      "u_deptName": "研发部",
+      "u_postId": "P01",
+      "u_postName": "组长",
+      "autoGenTitle": "BUG-4 R5 reject=userB",
+      "submitType": 1
+     },
+     "instanceExt": {},
+     "version": 0,
+     "taskFormData": {},
+     "taskActorIdList": [
+      "leader"
+     ]
+    },
+    {
+     "id": 92137028959487,
+     "processInstanceId": 92137028952316,
+     "taskName": "countersign_finance",
+     "displayName": "财务会签(>5k)",
+     "taskType": 0,
+     "performType": 1,
+     "taskState": 10,
+     "operator": "",
+     "finishTime": null,
+     "expireTime": null,
+     "formKey": "expense-form",
+     "taskParentId": null,
+     "variable": {},
+     "createTime": "2026-09-21 15:59:27",
+     "createUser": "leader",
+     "updateTime": "2026-09-21 15:59:27",
+     "updateUser": "leader",
+     "processDefineName": "bdd1601_expense_threshold_countersign",
+     "processDefineDisplayName": "BDD-1601 报销审批(金额阈值+会签并行)",
+     "instanceVariable": "",
+     "instanceCreateTime": "2026-09-21 15:59:27",
+     "ext": {},
+     "instanceExt": {},
+     "version": 0,
+     "taskFormData": {},
+     "taskActorIdList": [
+      "userA"
+     ]
+    },
+    {
+     "id": 92137028959488,
+     "processInstanceId": 92137028952316,
+     "taskName": "countersign_finance",
+     "displayName": "财务会签(>5k)",
+     "taskType": 0,
+     "performType": 1,
+     "taskState": 20,
+     "operator": "userB",
+     "finishTime": "2026-09-21 15:59:27",
+     "expireTime": null,
+     "formKey": "expense-form",
+     "taskParentId": null,
+     "variable": {
+      "title": "BUG-4 R5 reject=userB",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "userB",
+      "u_realName": "周明",
+      "u_deptId": "D02",
+      "u_deptName": "市场部",
+      "u_postId": "P01",
+      "u_postName": "工程师",
+      "autoGenTitle": "BUG-4 R5 reject=userB",
+      "submitType": 2
+     },
+     "createTime": "2026-09-21 15:59:27",
+     "createUser": "leader",
+     "updateTime": "2026-09-21 15:59:27",
+     "updateUser": "userB",
+     "processDefineName": "bdd1601_expense_threshold_countersign",
+     "processDefineDisplayName": "BDD-1601 报销审批(金额阈值+会签并行)",
+     "instanceVariable": "",
+     "instanceCreateTime": "2026-09-21 15:59:27",
+     "ext": {
+      "title": "BUG-4 R5 reject=userB",
+      "assignees": {
+       "apply": "user1",
+       "leader_review": "leader",
+       "decision_amount": null,
+       "manager_signoff": "manager",
+       "countersign_finance": "userA,userB,userC"
+      },
+      "variables": {
+       "f_amount": 8000,
+       "f_applicant": "user1",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "f_amount": 8000,
+      "f_applicant": "user1",
+      "u_userId": "userB",
+      "u_realName": "周明",
+      "u_deptId": "D02",
+      "u_deptName": "市场部",
+      "u_postId": "P01",
+      "u_postName": "工程师",
+      "autoGenTitle": "BUG-4 R5 reject=userB",
+      "submitType": 2
+     },
+     "instanceExt": {},
+     "version": 0,
+     "taskFormData": {},
+     "taskActorIdList": [
+      "userB"
+     ]
+    },
+    {
+     "id": 92137028959489,
+     "processInstanceId": 92137028952316,
+     "taskName": "countersign_finance",
+     "displayName": "财务会签(>5k)",
+     "taskType": 0,
+     "performType": 1,
+     "taskState": 10,
+     "operator": "",
+     "finishTime": null,
+     "expireTime": null,
+     "formKey": "expense-form",
+     "taskParentId": null,
+     "variable": {},
+     "createTime": "2026-09-21 15:59:27",
+     "createUser": "leader",
+     "updateTime": "2026-09-21 15:59:27",
+     "updateUser": "leader",
+     "processDefineName": "bdd1601_expense_threshold_countersign",
+     "processDefineDisplayName": "BDD-1601 报销审批(金额阈值+会签并行)",
+     "instanceVariable": "",
+     "instanceCreateTime": "2026-09-21 15:59:27",
+     "ext": {},
+     "instanceExt": {},
+     "version": 0,
+     "taskFormData": {},
+     "taskActorIdList": [
+      "userC"
+     ]
+    }
+   ]
+  }
+ ]
+}

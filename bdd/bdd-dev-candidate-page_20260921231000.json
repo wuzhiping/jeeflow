@@ -1,0 +1,19 @@
+{
+  "name": "dev-candidate-page",
+  "displayName": "BDD-DEV-任务委派-候选人分页",
+  "type": "approval",
+  "instanceUrl": "/bdd/dev-candidate-page/form",
+  "nodes": [
+    { "id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": { "width": 50, "height": 50 }, "text": { "value": "开始" } },
+    { "id": "apply", "type": "snaker:task", "x": 150, "y": 200, "properties": { "width": 100, "height": 50, "form": "task-form", "assignee": "applicant", "taskType": 0, "performType": 0 }, "text": { "value": "提交任务" } },
+    { "id": "delegate_pick", "type": "snaker:task", "x": 320, "y": 200, "properties": { "width": 140, "height": 50, "assignee": "u_rd_dir", "taskType": 0, "performType": 0, "candidateUsers": "u_fe_lead,u_be_lead,u_qa_lead,u_arch", "candidateGroups": "tech_lead,senior_engineer", "field": { "candidateUsers": "u_fe_lead,u_be_lead,u_qa_lead,u_arch", "candidateGroups": "tech_lead,senior_engineer" } }, "text": { "value": "委派选人" } },
+    { "id": "executor", "type": "snaker:task", "x": 520, "y": 200, "properties": { "width": 120, "height": 50, "assignee": "u_be_eng", "taskType": 0, "performType": 0, "candidateUsers": "u_be_eng,u_fe_eng,u_qa_eng,u_be_senior1,u_fe_senior", "candidateGroups": "engineer,senior_engineer" }, "text": { "value": "被委派人执行" } },
+    { "id": "end", "type": "snaker:end", "x": 700, "y": 200, "properties": { "width": 50, "height": 50 }, "text": { "value": "结束" } }
+  ],
+  "edges": [
+    { "id": "e1", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {} },
+    { "id": "e2", "sourceNodeId": "apply", "targetNodeId": "delegate_pick", "properties": {} },
+    { "id": "e3", "sourceNodeId": "delegate_pick", "targetNodeId": "executor", "properties": {} },
+    { "id": "e4", "sourceNodeId": "executor", "targetNodeId": "end", "properties": {} }
+  ]
+}

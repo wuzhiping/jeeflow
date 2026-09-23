@@ -19,7 +19,7 @@
 | 列 | `content TEXT`（见 `docs/pg_schema.sql:12`） |
 | 写入 | `POST /wf/processDesign/deploy`（设计器面板）→ `facade._deploy`（`facade.py:204`）`json.loads(content)` 取 `name/displayName/type`，落表 `wf_process_define` |
 | 读取 | `POST /wf/processInstance/start` / `complete_task` 等流程动作触发，`engine.py:202` `parse_flow_model(json.loads(def_.content))` 还原 `FlowModel` |
-| 范例 | `flows/01-simple.json` ~ `flows/13-countersign-one-vote-veto.json`（15 个真实样例） |
+| 范例 | `flows/01-simple.json` ~ `flows/17-suspend-resume-test.json`（17 个真实样例，spi.dev 适配版；原 Java 源 demo SPI 版见 `flows_demo/`） |
 
 ---
 
@@ -210,6 +210,28 @@
 
 注意：`submitType=2` REJECT **不走 decision**，facade 拦截后直接调 `execute_and_jump_to_end`（state=45）；decision 节点只看 submitType 1/5/20（其他 fallback 到首边）。
 
+> ⚠️ **ROLLBACK 设计陷阱 (FIX-T36 §52 + FIX-T114 2026-09-21)**:
+> - **不传 taskName (默认 ROLLBACK)**: 引擎找上一个任务节点, **覆写 `node.properties.assignee = 前任务完成人 or operator`**. 原 assignee 失去 re-process 能力. 这是 Java rejectTask 设计意图 (rejecter 期望重做前一步).
+> - **场景**: HR (u_rd_dir) 撤回上一节点 leader_approve (assignee=u_fe_lead) → 引擎覆写为 u_rd_dir → u_fe_lead 看不到 task.
+> - **设计师期望原 assignee 重新处理**: 必须显式传 `taskName="leader_approve"`.
+> - **taskName 位置兼容** (FIX-T114): 4 个位置都有效 — `顶层 taskName` / `顶层 targetTaskName` / `variables.taskName` / `variables.targetTaskName`. 详见 `docs/known-issues.md §118`.
+
+**submitType 拓扑约束表（FB-0012 2026-11-17 修订, flowuser 反馈）**：
+
+| submitType | 拓扑 (task 后继) | 生效路径 | 失效场景 |
+|---|---|---|---|
+| `20` (COUNTERSIGN_DISAGREE) | `task → end` (直连) | ✅ 走 cs_veto 路径 → state=45 REJECT | — |
+| `20` (COUNTERSIGN_DISAGREE) | `task → decision → 任意` | ❌ **不生效** · 走 decision expr 评估 (而非 cs_veto) | 一票否决失效, 实例按决策流转 (设计沉默陷阱) |
+| `2` (REJECT) | 任意 | ✅ facade 拦截, 跳到 end (state=45) | 不受拓扑影响 (顶层 facade 行为) |
+| `1/5` (AGREE/RE_APPLY) | 任意 | ✅ 正常流转 | — |
+| `3` (ROLLBACK) | 任意 | ✅ execute_and_jump_task | 需 args.taskName |
+| `6` (ROLLBACK_TO_OPERATOR) | 任意 | ✅ 跳到流程图第一个 task 节点 | 不受拓扑影响 |
+
+> ⚠️ **关键陷阱（FB-0012）**:
+> - 设计师以为"会签节点用 submitType=20 + 后接 decision 节点判 reject/agree 分支" → 实际上一票否决**不生效**, 因 decision 节点拦住了 cs_veto 路径
+> - 正确做法: 要么 `task → end` 直连 (单纯一票否决), 要么会签节点**只用** submitType=1/20 (走 cs_veto), **后接 decision 不要基于 submitType 判断** (因为 decision 已看不到 cs_veto)
+> - 详情见 `docs/known-issues.md §116` + `docs/AGENTS.md §5.8`
+
 **比例会签（N/M 通过）扩展（实测 2026-09-17 BDD Task 16）**：
 - `countersignType=PARALLEL` + `countersignCompletionCondition="#nrOfCompletedInstances>=K"`
 - 每次 task 完成时 evaluate 表达式；true → **abandon 剩余 DOING**（taskState=99 ABANDON）+ 推进下游
@@ -267,6 +289,11 @@
 >   {"amount": 500, "variables": {"submitType": 0, "u_userId": "applicant", "u_realName": "申请人"}}
 >   ```
 > - **回退顺序**：所有 expr False → 取第一条无 expr 的边（默认边）→ 取第一条边
+
+> ⚠️ **FIX-T113 (2026-09-21 BDD-DEV-002)**：`_cleanup_orphan_decision_tasks` 函数签名与调用点参数不匹配
+> - 决策节点求值时会调用该函数清理其他出边对应的下游孤儿 task
+> - 修复前任何含 `snaker:decision` 节点的流程启动都会抛 `[TypeError] takes 6 positional arguments but 7 were given`
+> - 详见 `docs/known-issues.md §117`
 
 ### 3.5 custom 节点 properties
 
@@ -542,6 +569,25 @@ POST /wf/processTask/execute
 ```
 
 **经验教训** (FB-0007 BUG-2 实证): flowuser 在 v1/v2 失败因只传 tf_*, 决策 expr 读不到 → fallback 兜底 → 幽灵 task. v3 PASS 因启动 + execute 都传 f_*. 详见 `docs/known-issues.md §115`.
+
+---
+
+> ⚠️ **`taskType` 设计陷阱 (2026-09-21 BDD-DEV 实证)**：
+> | taskType | 行为 | 适用场景 |
+> |---|---|---|
+> | `0` (主审, 默认) | 创建 DOING task, 必须由 actor 手动 execute 才会流转 | 一般审批节点 |
+> | `1` (副审) | 同 taskType=0, 但 `taskType` 字段落库为 1 (FIX-T30 §3.3) | 主审 + 副审并行场景 |
+> | `2` (RECORD 记录) | **创建后立即自动完成** (operator="" + taskState=20 + finishTime=now), 无需 execute | 纯记录/登记节点, 流程自动通过 |
+>
+> **踩坑示例 (BDD-DEV-002/004)**：
+> - 设计 "汇合点 → 财务登记" 时, 误用 `taskType:2` 表示"自动登记"语义
+> - 实际效果：财务登记 task 创建后**立即自动完成**, 不等待人工办理; 同时触发下游 end → instance.state=20
+> - 表面看"流程跑通", 但 `approvalRecord` 中财务登记 task 的 `operator=""` 暴露问题
+> - **修正**: 期望"汇合后由人办理"用 `taskType:0`; 期望"自动通过"才用 `taskType:2`
+>
+> **检测建议**: 跑完流程后, 检查 `approvalRecord` 最后一节点的 `operator` 字段
+> - 空字符串 → 该节点是 RECORD (自动完成), 确认是否符合预期
+> - 有 user id → 该节点是手动审批
 
 ---
 

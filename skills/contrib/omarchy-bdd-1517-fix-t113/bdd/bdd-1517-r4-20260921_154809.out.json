@@ -1,0 +1,648 @@
+{
+ "instanceId": "92136336710822",
+ "detail": {
+  "code": 0,
+  "msg": "成功",
+  "data": {
+   "id": "92136336710822",
+   "parentId": null,
+   "processDefineId": "20",
+   "state": 20,
+   "parentNodeName": "",
+   "businessNo": "",
+   "operator": "user1",
+   "ownerId": "user1",
+   "parentStatus": null,
+   "variables": {
+    "title": "BDD-1517 R4 bug-hunt",
+    "assignees": {
+     "apply": "user1",
+     "leader": "leader",
+     "manager": "manager"
+    },
+    "variables": {
+     "submitType": 0,
+     "f_leaveType": "annual",
+     "f_days": 5,
+     "f_reason": "回家探亲",
+     "u_userId": "user1",
+     "u_realName": "张三"
+    },
+    "submitType": 1,
+    "f_leaveType": "annual",
+    "f_days": 5,
+    "f_reason": "回家探亲",
+    "u_userId": "user1",
+    "u_realName": "张三",
+    "u_deptId": "D01",
+    "u_deptName": "研发部",
+    "u_postId": "P01",
+    "u_postName": "工程师",
+    "autoGenTitle": "BDD-1517 R4 bug-hunt"
+   },
+   "formData": {
+    "f_leaveType": "annual",
+    "leaveType": "annual",
+    "f_days": 5,
+    "days": 5,
+    "f_reason": "回家探亲",
+    "reason": "回家探亲"
+   },
+   "createTime": "2026-09-21T15:48:11.319643",
+   "createUser": "user1",
+   "jsonObject": {
+    "name": "bdd1517_leave_reapply",
+    "displayName": "BDD-1517 请假审批(超3天上级复核+退回重提)",
+    "type": "approval",
+    "instanceUrl": "/form/leave",
+    "nodes": [
+     {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 100,
+      "y": 200,
+      "properties": {
+       "width": 50,
+       "height": 50
+      },
+      "text": {
+       "value": "开始"
+      }
+     },
+     {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 200,
+      "y": 200,
+      "properties": {
+       "width": 100,
+       "height": 50,
+       "form": "leave-form",
+       "assignee": "applicant",
+       "taskType": 0,
+       "performType": 0,
+       "field": {
+        "PERMISSION_f_leaveType": 2,
+        "PERMISSION_f_days": 2,
+        "PERMISSION_f_reason": 2
+       }
+      },
+      "text": {
+       "value": "发起申请"
+      }
+     },
+     {
+      "id": "leader",
+      "type": "snaker:task",
+      "x": 380,
+      "y": 200,
+      "properties": {
+       "width": 100,
+       "height": 50,
+       "form": "leave-form",
+       "assignee": "leader",
+       "taskType": 0,
+       "performType": 0,
+       "field": {
+        "PERMISSION_f_leaveType": 1,
+        "PERMISSION_f_days": 1,
+        "PERMISSION_f_reason": 1
+       }
+      },
+      "text": {
+       "value": "直属上级审批"
+      }
+     },
+     {
+      "id": "decision1",
+      "type": "snaker:decision",
+      "x": 520,
+      "y": 200,
+      "properties": {
+       "width": 80,
+       "height": 50,
+       "expr": "",
+       "handleClass": ""
+      },
+      "text": {
+       "value": "天数>3?"
+      }
+     },
+     {
+      "id": "manager",
+      "type": "snaker:task",
+      "x": 660,
+      "y": 100,
+      "properties": {
+       "width": 100,
+       "height": 50,
+       "form": "leave-form",
+       "assignee": "manager",
+       "taskType": 0,
+       "performType": 0,
+       "field": {
+        "PERMISSION_f_leaveType": 1,
+        "PERMISSION_f_days": 1,
+        "PERMISSION_f_reason": 1
+       }
+      },
+      "text": {
+       "value": "经理复核(>3天)"
+      }
+     },
+     {
+      "id": "end1",
+      "type": "snaker:end",
+      "x": 660,
+      "y": 300,
+      "properties": {
+       "width": 50,
+       "height": 50
+      },
+      "text": {
+       "value": "结束(≤3天)"
+      }
+     },
+     {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 820,
+      "y": 100,
+      "properties": {
+       "width": 50,
+       "height": 50
+      },
+      "text": {
+       "value": "结束"
+      }
+     }
+    ],
+    "edges": [
+     {
+      "id": "e0",
+      "sourceNodeId": "start",
+      "targetNodeId": "apply",
+      "properties": {}
+     },
+     {
+      "id": "e1",
+      "sourceNodeId": "apply",
+      "targetNodeId": "leader",
+      "properties": {}
+     },
+     {
+      "id": "e2",
+      "sourceNodeId": "leader",
+      "targetNodeId": "decision1",
+      "properties": {}
+     },
+     {
+      "id": "e3",
+      "sourceNodeId": "decision1",
+      "targetNodeId": "manager",
+      "properties": {
+       "expr": "f_days > 3"
+      },
+      "text": {
+       "value": ">3天"
+      }
+     },
+     {
+      "id": "e4",
+      "sourceNodeId": "decision1",
+      "targetNodeId": "end1",
+      "properties": {
+       "expr": ""
+      },
+      "text": {
+       "value": "≤3天(默认)"
+      }
+     },
+     {
+      "id": "e5",
+      "sourceNodeId": "manager",
+      "targetNodeId": "end",
+      "properties": {}
+     }
+    ]
+   },
+   "tasks": [
+    {
+     "id": "92136336710823",
+     "processInstanceId": "92136336710822",
+     "taskName": "apply",
+     "displayName": "发起申请",
+     "taskType": 0,
+     "performType": 0,
+     "taskState": 20,
+     "operator": "user1",
+     "finishTime": "2026-09-21T15:48:11.320827",
+     "expireTime": null,
+     "formKey": "leave-form",
+     "taskParentId": null,
+     "variable": "{\"title\": \"BDD-1517 R4 bug-hunt\", \"assignees\": {\"apply\": \"user1\", \"leader\": \"leader\", \"manager\": \"manager\"}, \"variables\": {\"submitType\": 0, \"f_leaveType\": \"annual\", \"f_days\": 5, \"f_reason\": \"回家探亲\", \"u_userId\": \"user1\", \"u_realName\": \"张三\"}, \"submitType\": 0, \"f_leaveType\": \"annual\", \"f_days\": 5, \"f_reason\": \"回家探亲\", \"u_userId\": \"user1\", \"u_realName\": \"张三\", \"u_deptId\": \"D01\", \"u_deptName\": \"研发部\", \"u_postId\": \"P01\", \"u_postName\": \"工程师\", \"autoGenTitle\": \"BDD-1517 R4 bug-hunt\"}",
+     "createTime": "2026-09-21T15:48:11.319759",
+     "createUser": "user1",
+     "updateTime": "2026-09-21T15:48:11.320827",
+     "updateUser": "user1",
+     "taskActorIdList": [
+      "user1"
+     ],
+     "taskFormData": {},
+     "ext": {
+      "title": "BDD-1517 R4 bug-hunt",
+      "assignees": {
+       "apply": "user1",
+       "leader": "leader",
+       "manager": "manager"
+      },
+      "variables": {
+       "submitType": 0,
+       "f_leaveType": "annual",
+       "f_days": 5,
+       "f_reason": "回家探亲",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "submitType": 0,
+      "f_leaveType": "annual",
+      "f_days": 5,
+      "f_reason": "回家探亲",
+      "u_userId": "user1",
+      "u_realName": "张三",
+      "u_deptId": "D01",
+      "u_deptName": "研发部",
+      "u_postId": "P01",
+      "u_postName": "工程师",
+      "autoGenTitle": "BDD-1517 R4 bug-hunt",
+      "isFirstTaskNode": false
+     }
+    },
+    {
+     "id": "92136336712872",
+     "processInstanceId": "92136336710822",
+     "taskName": "leader",
+     "displayName": "直属上级审批",
+     "taskType": 0,
+     "performType": 0,
+     "taskState": 20,
+     "operator": "leader",
+     "finishTime": "2026-09-21T15:48:11.325224",
+     "expireTime": null,
+     "formKey": "leave-form",
+     "taskParentId": null,
+     "variable": "{\"title\": \"BDD-1517 R4 bug-hunt\", \"assignees\": {\"apply\": \"user1\", \"leader\": \"leader\", \"manager\": \"manager\"}, \"variables\": {\"submitType\": 0, \"f_leaveType\": \"annual\", \"f_days\": 5, \"f_reason\": \"回家探亲\", \"u_userId\": \"user1\", \"u_realName\": \"张三\"}, \"submitType\": 1, \"f_leaveType\": \"annual\", \"f_days\": 5, \"f_reason\": \"回家探亲\", \"u_userId\": \"leader\", \"u_realName\": \"李四\", \"u_deptId\": \"D01\", \"u_deptName\": \"研发部\", \"u_postId\": \"P01\", \"u_postName\": \"组长\", \"autoGenTitle\": \"BDD-1517 R4 bug-hunt\"}",
+     "createTime": "2026-09-21T15:48:11.321043",
+     "createUser": "user1",
+     "updateTime": "2026-09-21T15:48:11.325224",
+     "updateUser": "leader",
+     "taskActorIdList": [
+      "leader"
+     ],
+     "taskFormData": {},
+     "ext": {
+      "title": "BDD-1517 R4 bug-hunt",
+      "assignees": {
+       "apply": "user1",
+       "leader": "leader",
+       "manager": "manager"
+      },
+      "variables": {
+       "submitType": 0,
+       "f_leaveType": "annual",
+       "f_days": 5,
+       "f_reason": "回家探亲",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "submitType": 1,
+      "f_leaveType": "annual",
+      "f_days": 5,
+      "f_reason": "回家探亲",
+      "u_userId": "leader",
+      "u_realName": "李四",
+      "u_deptId": "D01",
+      "u_deptName": "研发部",
+      "u_postId": "P01",
+      "u_postName": "组长",
+      "autoGenTitle": "BDD-1517 R4 bug-hunt",
+      "isFirstTaskNode": false
+     }
+    },
+    {
+     "id": "92136336716969",
+     "processInstanceId": "92136336710822",
+     "taskName": "manager",
+     "displayName": "经理复核(>3天)",
+     "taskType": 0,
+     "performType": 0,
+     "taskState": 20,
+     "operator": "manager",
+     "finishTime": "2026-09-21T15:48:11.328964",
+     "expireTime": null,
+     "formKey": "leave-form",
+     "taskParentId": null,
+     "variable": "{\"title\": \"BDD-1517 R4 bug-hunt\", \"assignees\": {\"apply\": \"user1\", \"leader\": \"leader\", \"manager\": \"manager\"}, \"variables\": {\"submitType\": 0, \"f_leaveType\": \"annual\", \"f_days\": 5, \"f_reason\": \"回家探亲\", \"u_userId\": \"user1\", \"u_realName\": \"张三\"}, \"submitType\": 1, \"f_leaveType\": \"annual\", \"f_days\": 5, \"f_reason\": \"回家探亲\", \"u_userId\": \"manager\", \"u_realName\": \"王五\", \"u_deptId\": \"D02\", \"u_deptName\": \"市场部\", \"u_postId\": \"P01\", \"u_postName\": \"经理\", \"autoGenTitle\": \"BDD-1517 R4 bug-hunt\"}",
+     "createTime": "2026-09-21T15:48:11.325519",
+     "createUser": "leader",
+     "updateTime": "2026-09-21T15:48:11.328964",
+     "updateUser": "manager",
+     "taskActorIdList": [
+      "manager"
+     ],
+     "taskFormData": {},
+     "ext": {
+      "title": "BDD-1517 R4 bug-hunt",
+      "assignees": {
+       "apply": "user1",
+       "leader": "leader",
+       "manager": "manager"
+      },
+      "variables": {
+       "submitType": 0,
+       "f_leaveType": "annual",
+       "f_days": 5,
+       "f_reason": "回家探亲",
+       "u_userId": "user1",
+       "u_realName": "张三"
+      },
+      "submitType": 1,
+      "f_leaveType": "annual",
+      "f_days": 5,
+      "f_reason": "回家探亲",
+      "u_userId": "manager",
+      "u_realName": "王五",
+      "u_deptId": "D02",
+      "u_deptName": "市场部",
+      "u_postId": "P01",
+      "u_postName": "经理",
+      "autoGenTitle": "BDD-1517 R4 bug-hunt",
+      "isFirstTaskNode": false
+     }
+    }
+   ],
+   "activeTaskList": [],
+   "displayName": "BDD-1517 请假审批(超3天上级复核+退回重提)",
+   "name": "bdd1517_leave_reapply",
+   "version": 0
+  }
+ },
+ "highLight": {
+  "code": 0,
+  "msg": "成功",
+  "data": {
+   "activeNodeNames": [],
+   "historyNodeNames": [
+    "apply",
+    "leader",
+    "manager",
+    "decision1",
+    "end",
+    "end1"
+   ],
+   "historyEdgeNames": [
+    "e0",
+    "e1",
+    "e2",
+    "e3",
+    "e5",
+    "e4"
+   ],
+   "nodeProgress": {
+    "apply": {
+     "members": [
+      {
+       "id": "user1",
+       "name": "张三",
+       "done": true
+      }
+     ]
+    },
+    "leader": {
+     "members": [
+      {
+       "id": "leader",
+       "name": "李四",
+       "done": true
+      }
+     ]
+    },
+    "manager": {
+     "members": [
+      {
+       "id": "manager",
+       "name": "王五",
+       "done": true
+      }
+     ]
+    }
+   }
+  }
+ },
+ "approvalRecord": {
+  "code": 0,
+  "msg": "成功",
+  "data": [
+   {
+    "taskName": "apply",
+    "displayName": "发起申请",
+    "taskType": 0,
+    "performType": 0,
+    "taskState": 20,
+    "operator": "user1",
+    "finishTime": "2026-09-21 15:48:11",
+    "variable": {
+     "title": "BDD-1517 R4 bug-hunt",
+     "assignees": {
+      "apply": "user1",
+      "leader": "leader",
+      "manager": "manager"
+     },
+     "variables": {
+      "submitType": 0,
+      "f_leaveType": "annual",
+      "f_days": 5,
+      "f_reason": "回家探亲",
+      "u_userId": "user1",
+      "u_realName": "张三"
+     },
+     "submitType": 0,
+     "f_leaveType": "annual",
+     "f_days": 5,
+     "f_reason": "回家探亲",
+     "u_userId": "user1",
+     "u_realName": "张三",
+     "u_deptId": "D01",
+     "u_deptName": "研发部",
+     "u_postId": "P01",
+     "u_postName": "工程师",
+     "autoGenTitle": "BDD-1517 R4 bug-hunt"
+    },
+    "ext": {
+     "title": "BDD-1517 R4 bug-hunt",
+     "assignees": {
+      "apply": "user1",
+      "leader": "leader",
+      "manager": "manager"
+     },
+     "variables": {
+      "submitType": 0,
+      "f_leaveType": "annual",
+      "f_days": 5,
+      "f_reason": "回家探亲",
+      "u_userId": "user1",
+      "u_realName": "张三"
+     },
+     "submitType": 0,
+     "f_leaveType": "annual",
+     "f_days": 5,
+     "f_reason": "回家探亲",
+     "u_userId": "user1",
+     "u_realName": "张三",
+     "u_deptId": "D01",
+     "u_deptName": "研发部",
+     "u_postId": "P01",
+     "u_postName": "工程师",
+     "autoGenTitle": "BDD-1517 R4 bug-hunt"
+    }
+   },
+   {
+    "taskName": "leader",
+    "displayName": "直属上级审批",
+    "taskType": 0,
+    "performType": 0,
+    "taskState": 20,
+    "operator": "leader",
+    "finishTime": "2026-09-21 15:48:11",
+    "variable": {
+     "title": "BDD-1517 R4 bug-hunt",
+     "assignees": {
+      "apply": "user1",
+      "leader": "leader",
+      "manager": "manager"
+     },
+     "variables": {
+      "submitType": 0,
+      "f_leaveType": "annual",
+      "f_days": 5,
+      "f_reason": "回家探亲",
+      "u_userId": "user1",
+      "u_realName": "张三"
+     },
+     "submitType": 1,
+     "f_leaveType": "annual",
+     "f_days": 5,
+     "f_reason": "回家探亲",
+     "u_userId": "leader",
+     "u_realName": "李四",
+     "u_deptId": "D01",
+     "u_deptName": "研发部",
+     "u_postId": "P01",
+     "u_postName": "组长",
+     "autoGenTitle": "BDD-1517 R4 bug-hunt"
+    },
+    "ext": {
+     "title": "BDD-1517 R4 bug-hunt",
+     "assignees": {
+      "apply": "user1",
+      "leader": "leader",
+      "manager": "manager"
+     },
+     "variables": {
+      "submitType": 0,
+      "f_leaveType": "annual",
+      "f_days": 5,
+      "f_reason": "回家探亲",
+      "u_userId": "user1",
+      "u_realName": "张三"
+     },
+     "submitType": 1,
+     "f_leaveType": "annual",
+     "f_days": 5,
+     "f_reason": "回家探亲",
+     "u_userId": "leader",
+     "u_realName": "李四",
+     "u_deptId": "D01",
+     "u_deptName": "研发部",
+     "u_postId": "P01",
+     "u_postName": "组长",
+     "autoGenTitle": "BDD-1517 R4 bug-hunt"
+    }
+   },
+   {
+    "taskName": "manager",
+    "displayName": "经理复核(>3天)",
+    "taskType": 0,
+    "performType": 0,
+    "taskState": 20,
+    "operator": "manager",
+    "finishTime": "2026-09-21 15:48:11",
+    "variable": {
+     "title": "BDD-1517 R4 bug-hunt",
+     "assignees": {
+      "apply": "user1",
+      "leader": "leader",
+      "manager": "manager"
+     },
+     "variables": {
+      "submitType": 0,
+      "f_leaveType": "annual",
+      "f_days": 5,
+      "f_reason": "回家探亲",
+      "u_userId": "user1",
+      "u_realName": "张三"
+     },
+     "submitType": 1,
+     "f_leaveType": "annual",
+     "f_days": 5,
+     "f_reason": "回家探亲",
+     "u_userId": "manager",
+     "u_realName": "王五",
+     "u_deptId": "D02",
+     "u_deptName": "市场部",
+     "u_postId": "P01",
+     "u_postName": "经理",
+     "autoGenTitle": "BDD-1517 R4 bug-hunt"
+    },
+    "ext": {
+     "title": "BDD-1517 R4 bug-hunt",
+     "assignees": {
+      "apply": "user1",
+      "leader": "leader",
+      "manager": "manager"
+     },
+     "variables": {
+      "submitType": 0,
+      "f_leaveType": "annual",
+      "f_days": 5,
+      "f_reason": "回家探亲",
+      "u_userId": "user1",
+      "u_realName": "张三"
+     },
+     "submitType": 1,
+     "f_leaveType": "annual",
+     "f_days": 5,
+     "f_reason": "回家探亲",
+     "u_userId": "manager",
+     "u_realName": "王五",
+     "u_deptId": "D02",
+     "u_deptName": "市场部",
+     "u_postId": "P01",
+     "u_postName": "经理",
+     "autoGenTitle": "BDD-1517 R4 bug-hunt"
+    }
+   }
+  ]
+ },
+ "bizData": {
+  "code": 0,
+  "msg": "成功",
+  "data": {
+   "f_leaveType": "annual",
+   "f_days": 5,
+   "f_reason": "回家探亲"
+  }
+ },
+ "verify_errors": "",
+ "verify_warnings": "  - [W009/warning] 字段 f_reason 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\n  - [W009/warning] 字段 f_leaveType 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']\n  - [W009/warning] 字段 f_days 在节点 ['leader', 'manager'] 声明为 read/hidden, 但节点 ['apply'] 未声明 (下游可覆盖, 建议显式声明) nodes=['apply']"
+}

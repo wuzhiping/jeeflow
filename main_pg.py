@@ -41,6 +41,8 @@ from main_common import (
     apply_extensions, install_resolve_actors_wrapper, register_routes,
     install_metrics_endpoint, install_trace_endpoint,
     install_trace_persistence, install_trace_purge,  # §6.4.1 FIX-T99 (2026-09-20)
+    register_spi_routes,  # v28: 双端共用 spi 路由
+    auto_deploy_fdep,  # 临时任务：启动后自动部署 ToT/flows/fdep.json
 )
 
 setup_vendor_path()
@@ -155,6 +157,11 @@ async def lifespan(app: FastAPI):
     if SEEDS:
         await seed_business_pg(facade)
 
+    # ─── 临时任务：启动后自动部署 ToT/flows/fdep.json ──────────────────────────
+    # 条件：fdep.json 存在 + 引擎内尚未定义 → 部署
+    # 与 main.py (memory 端) 同逻辑，PG 端首次启动部署、重启跳过
+    await auto_deploy_fdep(facade)
+
     app.state.pool = pool
     app.state.adapter = adapter
     app.state.repo = repo
@@ -235,10 +242,13 @@ register_routes(
 install_metrics_endpoint(app)
 install_trace_endpoint(app)
 
+# v28: 注册 SPI 路由 (双端共用, 跟随 SPI_FOLDER)
+register_spi_routes(app)
+
 
 if __name__ == "__main__":
     import uvicorn
-    # main_pg.py 用 8102 端口（与 main.py 内存后端 8101 区分）
+    # main_pg.py 用 8102 端口（与 main.py 内存后端 8101 区分）；参见 ToT/sop/engine-deploy.md
     uvicorn.run("main_pg:app", host="0.0.0.0",
                 port=int(os.environ.get("PORT", "8102")),
                 reload=False, log_level="info")

@@ -1,0 +1,24 @@
+{
+  "version": "1.0",
+  "description": "所有流程的 tdd-flow scenarios 集中管理文件",
+  "updated_at": "2026-09-23",
+  "flows": {
+    "fdep": {
+      "scenarios": "happy:{}|reject:{}:2|resurrect:{}:5",
+      "operator": "u_fdp_pm",
+      "variable": {},
+      "top_vars": {},
+      "baseline": "test_fdep_baseline_*.json"
+    },
+    "invoice-approval": {
+      "scenarios": "small:{\"amount\":500,\"purpose\":\"办公\"}|big:{\"amount\":8000,\"purpose\":\"服务器\"}|reject:{\"amount\":8000,\"purpose\":\"服务器\"}:5:金额异常，需补充材料",
+      "operator": "u_fdp_pm",
+      "variable": {},
+      "top_vars": {
+        "tf_manager": "u_bob",
+        "tf_treasurer": "u_carol"
+      },
+      "baseline": "test_invoice-approval_baseline_*.json"
+    }
+  }
+}

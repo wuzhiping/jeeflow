@@ -1,0 +1,19 @@
+{
+  "name": "dev-handler-dept-leader",
+  "displayName": "BDD-DEV-通用审批-部门领导处理器",
+  "type": "approval",
+  "instanceUrl": "/bdd/dev-handler-dept-leader/form",
+  "nodes": [
+    { "id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": { "width": 50, "height": 50 }, "text": { "value": "开始" } },
+    { "id": "apply", "type": "snaker:task", "x": 150, "y": 200, "properties": { "width": 100, "height": 50, "form": "generic-form", "assignee": "applicant", "taskType": 0, "performType": 0 }, "text": { "value": "提交申请" } },
+    { "id": "dept_leader_review", "type": "snaker:task", "x": 320, "y": 200, "properties": { "width": 140, "height": 50, "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$DeptLeaderAssignmentHandler", "taskType": 0, "performType": 0 }, "text": { "value": "部门领导审批" } },
+    { "id": "dept_main_leader_review", "type": "snaker:task", "x": 500, "y": 200, "properties": { "width": 140, "height": 50, "assignmentHandler": "com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$DeptMainLeaderAssignmentHandler", "taskType": 0, "performType": 0 }, "text": { "value": "分管领导审批" } },
+    { "id": "end", "type": "snaker:end", "x": 700, "y": 200, "properties": { "width": 50, "height": 50 }, "text": { "value": "结束" } }
+  ],
+  "edges": [
+    { "id": "e1", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {} },
+    { "id": "e2", "sourceNodeId": "apply", "targetNodeId": "dept_leader_review", "properties": {} },
+    { "id": "e3", "sourceNodeId": "dept_leader_review", "targetNodeId": "dept_main_leader_review", "properties": {} },
+    { "id": "e4", "sourceNodeId": "dept_main_leader_review", "targetNodeId": "end", "properties": {} }
+  ]
+}

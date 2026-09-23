@@ -1,0 +1,118 @@
+{
+  "name": "bdd1517_leave_reapply",
+  "displayName": "BDD-1517 请假审批(超3天上级复核+退回重提)",
+  "type": "approval",
+  "instanceUrl": "/form/leave",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "snaker:start",
+      "x": 100,
+      "y": 200,
+      "properties": {"width": 50, "height": 50},
+      "text": {"value": "开始"}
+    },
+    {
+      "id": "apply",
+      "type": "snaker:task",
+      "x": 200,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "leave-form",
+        "assignee": "applicant",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "PERMISSION_f_leaveType": 2,
+          "PERMISSION_f_days": 2,
+          "PERMISSION_f_reason": 2
+        }
+      },
+      "text": {"value": "发起申请"}
+    },
+    {
+      "id": "leader",
+      "type": "snaker:task",
+      "x": 380,
+      "y": 200,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "leave-form",
+        "assignee": "leader",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "PERMISSION_f_leaveType": 1,
+          "PERMISSION_f_days": 1,
+          "PERMISSION_f_reason": 1
+        }
+      },
+      "text": {"value": "直属上级审批"}
+    },
+    {
+      "id": "decision1",
+      "type": "snaker:decision",
+      "x": 520,
+      "y": 200,
+      "properties": {"width": 80, "height": 50, "expr": "", "handleClass": ""},
+      "text": {"value": "天数>3?"}
+    },
+    {
+      "id": "manager",
+      "type": "snaker:task",
+      "x": 660,
+      "y": 100,
+      "properties": {
+        "width": 100,
+        "height": 50,
+        "form": "leave-form",
+        "assignee": "manager",
+        "taskType": 0,
+        "performType": 0,
+        "field": {
+          "PERMISSION_f_leaveType": 1,
+          "PERMISSION_f_days": 1,
+          "PERMISSION_f_reason": 1
+        }
+      },
+      "text": {"value": "经理复核(>3天)"}
+    },
+    {
+      "id": "end1",
+      "type": "snaker:end",
+      "x": 660,
+      "y": 300,
+      "properties": {"width": 50, "height": 50},
+      "text": {"value": "结束(≤3天)"}
+    },
+    {
+      "id": "end",
+      "type": "snaker:end",
+      "x": 820,
+      "y": 100,
+      "properties": {"width": 50, "height": 50},
+      "text": {"value": "结束"}
+    }
+  ],
+  "edges": [
+    {"id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {}},
+    {"id": "e1", "sourceNodeId": "apply", "targetNodeId": "leader", "properties": {}},
+    {"id": "e2", "sourceNodeId": "leader", "targetNodeId": "decision1", "properties": {}},
+    {
+      "id": "e3", "sourceNodeId": "decision1", "targetNodeId": "manager",
+      "properties": {"expr": "f_days > 3"},
+      "text": {"value": ">3天"}
+    },
+    {
+      "id": "e4", "sourceNodeId": "decision1", "targetNodeId": "end1",
+      "properties": {"expr": ""},
+      "text": {"value": "≤3天(默认)"}
+    },
+    {
+      "id": "e5", "sourceNodeId": "manager", "targetNodeId": "end", "properties": {}
+    }
+  ]
+}

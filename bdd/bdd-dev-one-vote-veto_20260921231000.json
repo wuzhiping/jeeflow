@@ -1,0 +1,17 @@
+{
+  "name": "dev-one-vote-veto",
+  "displayName": "BDD-DEV-合规审查-一票否决会签",
+  "type": "approval",
+  "instanceUrl": "/bdd/dev-one-vote-veto/form",
+  "nodes": [
+    { "id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": { "width": 50, "height": 50 }, "text": { "value": "开始" } },
+    { "id": "apply", "type": "snaker:task", "x": 150, "y": 200, "properties": { "width": 100, "height": 50, "form": "compliance-form", "assignee": "applicant", "taskType": 0, "performType": 0 }, "text": { "value": "提交合规审查" } },
+    { "id": "review_panel", "type": "snaker:task", "x": 330, "y": 200, "properties": { "width": 140, "height": 50, "assignee": "u_ceo,u_cto,u_arch", "taskType": 0, "performType": 1, "countersignType": "PARALLEL", "countersignCompletionCondition": "ONE_VOTE_VETO" }, "text": { "value": "审查会签(任一否决即驳回)" } },
+    { "id": "end", "type": "snaker:end", "x": 530, "y": 200, "properties": { "width": 50, "height": 50 }, "text": { "value": "结束" } }
+  ],
+  "edges": [
+    { "id": "e1", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {} },
+    { "id": "e2", "sourceNodeId": "apply", "targetNodeId": "review_panel", "properties": {} },
+    { "id": "e3", "sourceNodeId": "review_panel", "targetNodeId": "end", "properties": {} }
+  ]
+}

@@ -42,13 +42,13 @@
         "width": 120,
         "height": 60,
         "form": "ratio-form",
-        "assignee": "userA,userB,userC,userD",
+        "assignee": "u_fe_eng,u_be_eng,u_qa_eng,u_fe_senior",
         "taskType": 0,
         "performType": 1,
         "countersignType": "PARALLEL",
+        "countersignCompletionCondition": "#nrOfCompletedInstances==2",
         "field": {
-          "candidateUsers": "userA,userB,userC,userD",
-          "countersignCompletionCondition": "#nrOfCompletedInstances==2"
+          "candidateUsers": "u_fe_eng,u_be_eng,u_qa_eng,u_fe_senior"
         }
       },
       "text": {

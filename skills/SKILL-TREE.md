@@ -510,8 +510,268 @@ D91-180  L6+ 视情况
 - [ ] 输出第一份"角色 × 层" 自评表
 - [ ] 把本文件加入新人 onboarding 资料包
 
+### 9.1 持续渠道 + 月度节奏行动项 (Month 3 起)
+
+- [ ] 角色 +D (客户接口人) 每天检查 omarchy 取件码 (L3 持续贡献)
+- [ ] 角色 +D 每周联系 flowuser (L2 主动沟通)
+- [ ] 角色 1 + 6 每月询问 bro (L6 解冻协调)
+- [ ] 角色 1 + 5 每月起草 retrospective (L5 决策级)
+- [ ] 角色 4 每季度发布 SLA 评分 (L4 系统级)
+
 ---
 
 ## 10. 版本
 
 - v1.0 · 2026-09-21 · 角色实用技能体系 (RML §2 扩展 + 新增客户接口人角色)
+- v1.1 · 2026-11-17 · **扩展持续渠道 + Q4 准备 + Phase 10 衔接**
+  - §11 新增持续反馈渠道 (L3 升级 L3+)
+  - §12 新增 hermes-peer-dm + file-share 双向通道 (L5 决策级)
+  - §13 新增 bro 月度询问节奏 (L6 协调级)
+  - §14 月度 metrics + 季度复盘 + 文档沉淀 (L2 优化级)
+  - §15 Phase 9 → Phase 10 衔接 (L4 系统级)
+
+---
+
+## 11. 持续反馈渠道 (L3 升级 L3+)
+
+### 11.1 持续贡献定义
+
+**贡献方** 多次 (>2 次) 主动上传工件 (BDD 工件 / fix 方案 / verify 规则), 价值密度递增.
+
+**L3 升级 L3+ 条件**:
+1. ≥ 2 次持续贡献
+2. 至少 1 次贡献是 真 BUG 修复
+3. 至少 1 次贡献是 工具化贡献 (脚本 / verify 规则)
+
+### 11.2 omarchy 案例 (Q4 已达成)
+
+| 维度 | 第 1 次 | 第 2 次 | 第 3 次 |
+|------|--------|---------|---------|
+| **取件码** | 77045 | 97841 | 39376 |
+| **类型** | BDD 验证 | **真 BUG + verify** | **真 BUG + runner** |
+| **等级** | L3 | L3+ | **L3+** |
+
+**实战**:
+- `customers/C-omarchy.yaml` · 客户档案
+- `contrib/_index.json` · 用户索引
+- `feedback/retrospectives/2026-10-22-extraction-code-final-retro.md` · 持续渠道 SOP
+
+---
+
+## 12. hermes-peer-dm + file-share 双向通道 (L5 决策级)
+
+### 12.1 通道对比
+
+| 通道 | 工具 | 适用 | 决策点 |
+|------|------|------|--------|
+| **DM 通道** | hermes-peer-dm | flowuser 等可双向 | 同步 DM, 客户响应 ≤ 24h |
+| **file-share 通道** | skills:file-share | omarchy 等无法 DM | 异步, 取件码唯一 |
+
+### 12.2 决策树 (L5 关键)
+
+```
+看到 chat 贴文件 + 取件码
+  ├─ chat 是 hermes 自己文件? → incomplete-info / P3 (不假装分析)
+  ├─ chat 是用户真实数据? → 下载取件码 + 解读 + 登记 FB
+  └─ chat 是混合? → 仅处理用户数据部分
+```
+
+### 12.3 hermes SOP 10 步
+
+- Step 1 · 先问主人 (关键)
+- Step 2-3 · 下载 + 解压
+- Step 4 · 列文件清单
+- Step 5 · 判断文件性质 (关键)
+- Step 6 · 解读 issue
+- Step 7 · 登记 FB
+- Step 8 · 归档 + 索引
+- Step 9 · 教训 + 自反思
+- Step 10 · 通知 / 归档
+
+**实战**: `users.md §核心原则 + §取件码机制 SOP`
+
+---
+
+## 13. bro 月度询问节奏 (L6 协调级)
+
+### 13.1 询问节奏
+
+| 节奏 | 周期 | 时间 |
+|------|------|------|
+| **密集** | 1 周 | W42-W45 |
+| **月度** | 4 周 | W47, W51, W3, ... |
+
+### 13.2 协调原则
+
+- 不催 bro
+- 月度询问 + 状态报告
+- 等 bro 自然决定
+- 不影响 Phase 9 推进 (Phase 9 不依赖解冻)
+
+**实战**: `proposals/UNFREEZE-TRACKING-2026-11-10.md`
+
+---
+
+## 14. 月度 metrics + 季度复盘 + 文档沉淀 (L2 优化级)
+
+### 14.1 月度节奏
+
+| 输出 | 频率 | 路径 |
+|------|------|------|
+| **周报** | 每周 Day 5 | `skills/weekly/2026-WNN.md` |
+| **月度 metrics** | 每月初 | `skills/feedback/metrics/monthly-YYYY-MM.json` |
+| **季度复盘** | 季度末 | `skills/feedback/retrospectives/YYYY-QN-quarterly.md` |
+| **月报收官** | 月末 | `skills/feedback/retrospectives/YYYY-NN-monthN-final.md` |
+
+### 14.2 沉淀机制
+
+- FAQ v1.0 published (22 题) → v1.1 (24 题)
+- 模板 4 份 (bug2-recheck, work_log, FAQ, BDD)
+- roadmap 4 份 (auto-assignee, top-N, month2-launch, phase9-90day)
+- retrospective 5 份 (取件码机制 4 + DM 会话 1)
+
+---
+
+## 15. Phase 9 → Phase 10 衔接 (L4 系统级)
+
+### 15.1 Phase 9 收官 (W51 Day 5)
+
+- Q4 季度复盘 published v1.0
+- Phase 9 收官报告
+- Phase 10 启动准备
+
+### 15.2 Phase 10 启动 (W52 Day 1)
+
+- 持续推进 + L1 客户获取
+- 新流程模式 + 新 verify 规则
+- Phase 10 计划 (Q1 2027)
+
+### 15.3 系统级指标 (L4)
+
+| 指标 | Phase 9 | Phase 10 (Q1 2027) |
+|------|---------|---------------------|
+| **SLA 评分** | 100/100 | 100/100 维持 |
+| **客户档案** | 4 | 5+ (含 1 L1) |
+| **固化脚本** | 32/32 | 33-35/33-35 |
+| **闭环率** | 100% | ≥ 95% |
+| **FAQ** | 24 题 | 30+ |
+| **retrospective** | 5 份 | 8+ |
+
+---
+
+## 16. 关联文档
+
+- `RML.md` · 角色矩阵基础
+- `users.md` · 取件码机制 SOP
+- `CUSTOMER.md` · 客户视角
+- `FEEDBACK.md` · 反馈闭环
+- `RACI.md` · 跨角色协作
+- `customers/C-omarchy.yaml` · 持续贡献用户档案
+- `proposals/UNFREEZE-TRACKING-2026-11-10.md` · bro 月度询问
+- `feedback/retrospectives/2026-11-month2-final.md` · Month 2 收官
+- `feedback/retrospectives/2026-q4-quarterly-prep.md` · Q4 季度复盘准备
+- `feedback/retrospectives/2026-11-17-flowuser-dm-no-feedback.md` · DM 通道 0 新反馈诚实交代 (W47 Day 5)
+
+---
+
+## 16. SPI 路由 dispatcher 架构 (v22-v29)
+
+> 新增章节 (v1.51 同步) · 详见 `RML.md §SPI 能力` + `spi/SPEC.md §8` + `feedback/retrospectives/2026-11-17-spi-*.md` (10 份)
+
+### 16.1 三层分离 (v26 起)
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  Layer 1: Dispatcher (spi/cli.py + spi/api.py + spi/__main__.py)    │
+│  · 入口层, 跟随 SPI_FOLDER 环境变量                                    │
+│  · 解析命令行参数 (cli) 或 HTTP 路由 (api)                              │
+│  · 加载 spi/<SPI_FOLDER>/cli.py 或 spi/<SPI_FOLDER>/api.py            │
+│  · 调用下层 _data_* 函数, 不含业务逻辑                                   │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  Layer 2: Implementation (spi/{demo,dev,fdep}/cli.py + api.py)      │
+│  · 暴露 6 个 _data_* 函数 (CLI/API 共享契约)                            │
+│  · cli.py + api.py 是薄包装, 几乎全部 re-export                         │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  Layer 3: Data (spi/{demo,dev}/data.py + *.json)                      │
+│  · spi/dev/data.py: 22 DictProxy (v8-v29) + 2 helpers + verify()       │
+│  · spi/demo/data.py: 基础 + verify() (99 errors 是已知问题)             │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 16.2 6 个 _data_* 函数 (CLI/API 共享契约)
+
+| 函数 | 返回 | 说明 |
+| --- | --- | --- |
+| `_data_verify()` | `dict` | 4 类完整性检查 (跨表引用 + tree + 完整性 + ROLE_TO_USERS 一致性) |
+| `_data_status()` | `dict` | SPI 概况 (数据源 + 22 DictProxy 摘要) |
+| `_data_list_users()` | `list[dict]` | 所有用户精简视图 |
+| `_data_show_user(uid)` | `dict \| None` | 单用户完整档案 (13 字段集成视图 SPI_USERS_FULL) |
+| `_data_list_depts()` | `list[dict]` | 所有部门精简视图 |
+| `_data_show_dept(dept_id)` | `dict \| None` | 单部门详情 + 成员 |
+
+### 16.3 6 个 API 端点 + 7 个 CLI 命令
+
+**API 端点** (双端共用, `main_common.register_spi_routes(app)`):
+
+| 方法 | 路径 |
+| --- | --- |
+| GET | `/api/spi/verify` |
+| GET | `/api/spi/status` |
+| GET | `/api/spi/users` |
+| GET | `/api/spi/users/{uid}` |
+| GET | `/api/spi/depts` |
+| GET | `/api/spi/depts/{dept_id}` |
+
+**CLI 命令** (`python -m spi.cli <cmd>`, 跟随 SPI_FOLDER):
+
+```bash
+SPI_FOLDER=dev python -m spi.cli verify
+SPI_FOLDER=dev python -m spi.cli status
+SPI_FOLDER=dev python -m spi.cli list-users
+SPI_FOLDER=dev python -m spi.cli show-user u_fe_eng
+SPI_FOLDER=dev python -m spi.cli list-depts
+SPI_FOLDER=dev python -m spi.cli show-dept D02
+SPI_FOLDER=dev python -m spi.cli help  # 帮助
+```
+
+### 16.4 SPI_FOLDER 路由规则
+
+**默认 SPI_FOLDER = dev** (本地开发/测试推荐, 22 DictProxy + 2 helpers + verify() 完整).
+代码层默认仍是 `"demo"` (spi/__init__.py:14, FREEZE.md 冻结, 本地请显式设置).
+
+| SPI_FOLDER | cli/api | 行为 |
+| --- | --- | --- |
+| `dev` (推荐默认) | ✅ | 完整实现 (22 DictProxy + 2 helpers + 9 SPI 函数 + verify()) |
+| `demo` (代码默认) | ✅ | 基础实现 (99 errors 是已知问题, v26 引入) |
+| `fdep` | ❌ | 走 dispatcher 返回 404 (`{"detail": "SPI_FOLDER=fdep 不支持 API"}`) |
+| 其它 | ❌ | 404 错误 |
+
+### 16.5 main_common 双端集成 (v28)
+
+```python
+# main_common.py (1175 行)
+def register_spi_routes(app: FastAPI):
+    from spi.api import router as spi_router
+    app.include_router(spi_router)
+
+# main.py + main_pg.py 同步调用
+from main_common import register_spi_routes
+register_spi_routes(app)
+```
+
+### 16.6 8 份 v22-v29 retrospective 索引
+
+- `feedback/retrospectives/2026-11-17-spi-dev-refactor-v22-cli.md` · CLI 入口
+- `feedback/retrospectives/2026-11-17-spi-dev-refactor-v23-users-with-roles.md` · 用户角色反向
+- `feedback/retrospectives/2026-11-17-spi-dev-refactor-v24-cli-extended.md` · CLI 子命令扩展
+- `feedback/retrospectives/2026-11-17-spi-dev-refactor-v25-fastapi-routes.md` · FastAPI 路由
+- `feedback/retrospectives/2026-11-17-spi-v26-dispatcher-cli-api.md` · dispatcher 三层分离
+- `feedback/retrospectives/2026-11-17-spi-dev-refactor-v27-dept-role-2d.md` · (dept,role) 二维聚合
+- `feedback/retrospectives/2026-11-17-spi-v28-main-common-routes.md` · main_common 双端集成
+- `feedback/retrospectives/2026-11-17-spi-dev-refactor-v29-user-dept-role.md` · 用户部门角色反向 (v27 互逆)

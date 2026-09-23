@@ -55,7 +55,7 @@
         "width": 100,
         "height": 50,
         "form": "form-a",
-        "assignee": "userA",
+        "assignee": "u_fe_eng",
         "taskType": 0,
         "performType": 0
       },
@@ -72,7 +72,7 @@
         "width": 100,
         "height": 50,
         "form": "form-b",
-        "assignee": "userB",
+        "assignee": "u_be_eng",
         "taskType": 1,
         "performType": 0
       },

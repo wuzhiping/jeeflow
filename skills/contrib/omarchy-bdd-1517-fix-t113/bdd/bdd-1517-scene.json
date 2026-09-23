@@ -1,0 +1,8 @@
+{
+  "title": "BDD-1517 请假审批-超3天走经理",
+  "steps": [
+    {"operator": "leader", "submitType": 1},
+    {"operator": "manager", "submitType": 1}
+  ],
+  "out": "/home/shwoo/Work/jeeflow/bdd/bdd-1517-leave-reapply_20260921_220000.out.json"
+}

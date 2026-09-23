@@ -53,6 +53,7 @@ class EngineImpl(Engine):
         self.ext: Optional[EngineExtensions] = None
         self._ic_cache: dict = {}   # 定义级拦截器解析缓存（issue 34，按 defineId）
         self._last_created_tasks: list = []  # FIX-T61：临时存储当前 _create_task 创建的 task
+        self._last_resolve_meta: dict = {}  # FIX-T117：记录 _resolve_actors 失败上下文, 给具体错误提示
         # BDD #1107 FIX-T78 (2026-09-20) §3.3.2：流程定义缓存 (LRU, max=100)
         # 避免每次 startAndExecute 都从 repo 读完整 flow JSON + parse
         # 部署 (processDefine/deploy / processDefine/redeploy) 时 facade._deploy_invalidate_cache 失效
@@ -375,8 +376,10 @@ class EngineImpl(Engine):
             for a in assignee.split(","):
                 token = a.strip()
                 if not token: continue
-                if "applicant" in token:
-                    token = token.replace("applicant", inst.operator)
+                # FIX-W18 (2026-09-23)：word boundary 匹配，避免 `tf_applicant` 被错误替换为 `tf_<operator>`
+                # 之前 `if "applicant" in token` 用 substring 匹配，tf_applicant → tf_u_alice（bug）
+                if _is_applicant_token(token):
+                    token = inst.operator
                 if token in inst.variables:
                     val = inst.variables[token]
                     if isinstance(val, (list, tuple)):
@@ -457,6 +460,8 @@ class EngineImpl(Engine):
         # 现在: 所有节点 (含 task) 进入时都触发 _fire_pre, post_handle 在 execute_process_task 完成时触发
         if node.type == TYPE_TASK:
             self._last_created_record_done = False
+            # FIX-T117: 每次 task 节点创建前重置 _last_resolve_meta, 避免上一次残留
+            self._last_resolve_meta = {}
             if not await self._fire_pre(node, inst): return
             await self._create_task(node, inst, operator, vars_)
             # BDD #260 FIX-T55 (2026-09-19)：taskType=2 RECORD 自动完成
@@ -677,8 +682,10 @@ class EngineImpl(Engine):
                     if target:
                         # FIX-T112: 清理其他出边的下游 task (孤儿清理)
                         # 防止 expr 评估为真后, 之前遍历创建的 task 残留为 DOING
+                        # FIX-BUG-3 (2026-09-21 BDD-DEV): 函数签名是 (flow, inst, selected_edge, operator, vars_)
+                        # 函数内部已遍历 flow.edges, 不需要再传 edges 参数
                         await self._cleanup_orphan_decision_tasks(
-                            flow, inst, edges, edge, operator, vars_
+                            flow, inst, edge, operator, vars_
                         )
                         return await self._execute_node(flow, inst, target, operator, vars_)
         # 回退：取第一条没有 expr 的边作为默认路径
@@ -688,7 +695,7 @@ class EngineImpl(Engine):
                 target = _find_node(flow, edge.targetNodeId)
                 if target:
                     await self._cleanup_orphan_decision_tasks(
-                        flow, inst, edges, edge, operator, vars_
+                        flow, inst, edge, operator, vars_
                     )
                     return await self._execute_node(flow, inst, target, operator, vars_)
         # 最后的回退：取第一条边
@@ -703,7 +710,7 @@ class EngineImpl(Engine):
             target = _find_node(flow, edges[0].targetNodeId)
             if target:
                 await self._cleanup_orphan_decision_tasks(
-                    flow, inst, edges, edges[0], operator, vars_
+                    flow, inst, edges[0], operator, vars_
                 )
                 return await self._execute_node(flow, inst, target, operator, vars_)
 
@@ -754,9 +761,43 @@ class EngineImpl(Engine):
         actors = await self._resolve_actors(node, inst, operator, vars_)
         # FIX-T17 (2026-09-17)：actors=[] 不再静默 return（流程卡住无错误）
         # 原代码 return → 流程在此节点终止不报错；raise ValueError 让 facade 报清晰错误
+        # FIX-T117 (2026-09-22 FB-0016)：按处理器类型给具体提示
+        # 原统一提示 "assignee/handler/SPI 角色均未匹配" 误导用户把 FormField 缺 f_<node>
+        # 错误归咎到 "SPI 角色匹配为空"。现按 _resolve_actors 返回 _resolve_meta 给清晰指引
         if not actors:
-            raise ValueError(f"节点[{node.id}]无法解析任何处理人：assignee/handler/SPI 角色均未匹配，"
-                             f"请检查 properties.assignee、assignmentHandler FQCN、SPI role_code")
+            meta = self._last_resolve_meta or {}
+            src = meta.get("source", "unknown")
+            if src == "form_field":
+                # FormField handler 返回空 → 缺 variables.f_<node.id> 或 f_<node.id>=空
+                raise ValueError(
+                    f"节点[{node.id}] FormFieldAssigneeHandler 返回空：未找到 variables['f_{node.id}']"
+                    f" 或 variables['{node.id}']。请在 startAndExecute.variables 中传入"
+                    f" f_{node.id}=<userId[,userId,...]>（如 f_{node.id}='u_qa_lead,u_be_lead'）"
+                )
+            elif src == "task_role":
+                # TaskRole handler 返回空 → properties.roleCode 角色 SPI 未配置
+                rc = meta.get("roleCode", "")
+                raise ValueError(
+                    f"节点[{node.id}] TaskRoleAssigneeHandler 返回空：roleCode='{rc}' 在 SPI 角色表中无用户。"
+                    f" 请检查 (1) properties.roleCode='{rc}' 是否正确；"
+                    f"(2) SPI 角色表 role_to_users['{rc}'] 是否已配置用户"
+                )
+            elif src == "dept_leader":
+                raise ValueError(
+                    f"节点[{node.id}] DeptLeaderAssignmentHandler 返回空：发起人(u_userId)无部门主管。"
+                    f" 请检查 (1) variables.u_userId 在 SPI 用户表中存在；"
+                    f"(2) 该用户所在部门的 dept_leaders 已配置主管"
+                )
+            elif src == "operator":
+                raise ValueError(
+                    f"节点[{node.id}] OperatorAssignmentHandler 返回空：操作人为空。"
+                    f" 请检查 POST /wf/processTask/execute 的 operator 参数"
+                )
+            else:
+                raise ValueError(
+                    f"节点[{node.id}]无法解析任何处理人：assignee/handler/SPI 角色均未匹配，"
+                    f"请检查 properties.assignee、assignmentHandler FQCN、SPI role_code"
+                )
         # performType 容错解析（对齐 java codeOf，issue 42）：int 优先；
         # 字符串 'ALL'/'COUNTERSIGN'（设计器面板格式，大小写不敏感）映射为会签；未知回落 0
         _pt = node.properties.get("performType", 0)
@@ -844,9 +885,10 @@ class EngineImpl(Engine):
             for a in assignee.split(","):
                 token = a.strip()
                 if not token: continue
-                # mldong 契约特殊值：applicant → 流程发起人
-                if "applicant" in token:
-                    token = token.replace("applicant", inst.operator)
+                # FIX-W18 (2026-09-23)：word boundary 匹配，避免 `tf_applicant` 被错误替换
+                # 之前 `if "applicant" in token` 用 substring 匹配，tf_applicant → tf_u_alice（bug）
+                if _is_applicant_token(token):
+                    token = inst.operator
                 # BDD #294 FIX-T57 (2026-09-19)：@role: 角色解析（依赖 org_provider）
                 if token.startswith("@role:"):
                     role_code = token[len("@role:"):]
@@ -864,12 +906,32 @@ class EngineImpl(Engine):
                     else:
                         actors.append(str(val))
                 else:
-                    actors.append(token)
+                    # FIX-T115 (2026-09-22 FB-0015)：assignees 字段死字段修复
+                    # 上游 facade 把 args.assignees 整体塞进 vars_['assignees']，
+                    # 旧版引擎零处读取，调用方误以为 assignees.<nodeId> 已生效
+                    # 修复：token 解析失败时回退到 vars_.assignees.<nodeId>，单值/列表均支持
+                    assignees_map = vars_.get("assignees") if isinstance(vars_.get("assignees"), dict) else {}
+                    a_val = assignees_map.get(node.id) or assignees_map.get(token)
+                    if a_val is not None:
+                        if isinstance(a_val, (list, tuple)):
+                            actors.extend(str(x) for x in a_val)
+                        else:
+                            actors.append(str(a_val))
+                    else:
+                        actors.append(token)
             return actors
         handler_name = node.properties.get("assignmentHandler", "")
         if handler_name and self.ext and self.ext.registry:
             h = self.ext.registry.resolve_assignment(handler_name)
-            if h: return await h.assign(node, inst, operator)
+            if h:
+                # FIX-T117 (2026-09-22 FB-0016)：记录 handler 来源 + 元数据, 失败时给具体提示
+                self._last_resolve_meta = {"source": self._handler_source_key(handler_name),
+                                            "handlerName": handler_name,
+                                            "roleCode": node.properties.get("roleCode", "")}
+                actors = await h.assign(node, inst, operator)
+                if not actors:
+                    return actors  # _create_task 通过 _last_resolve_meta 给具体错误提示
+                return actors
         if self.ext and self.ext.assignment_handler:
             result = self.ext.assignment_handler(handler_name, node, inst)
             if hasattr(result, '__await__'): return await result
@@ -879,6 +941,17 @@ class EngineImpl(Engine):
         if node.type == TYPE_CUSTOM:
             return [operator]
         return []
+
+    @staticmethod
+    def _handler_source_key(handler_name: str) -> str:
+        """FIX-T117: 把 FQCN 映射到 _resolve_meta.source 短键 (form_field/task_role/dept_leader/operator)"""
+        h = handler_name.lower()
+        if "formfield" in h: return "form_field"
+        if "taskrole" in h: return "task_role"
+        if "deptleader" in h: return "dept_leader"
+        if "deptmainleader" in h: return "dept_main_leader"
+        if "operator" in h: return "operator"
+        return "unknown"
 
     def _is_allowed(self, task: ProcessTask, operator: str) -> bool:
         # v1.0.1：系统代执行（flow.auto）/超级管理员（flow.admin）放行（对齐 boot3 isAllowed）
@@ -1105,6 +1178,28 @@ def _is_truthy(v) -> bool:
     if v is None: return False
     if isinstance(v, (int, float)): return v != 0
     return True
+
+
+def _is_applicant_token(token: str) -> bool:
+    """FIX-W18 (2026-09-23)：word boundary 匹配 `applicant` 占位符
+
+    之前用 `if "applicant" in token` substring 匹配，会误命中：
+    - `tf_applicant` → 错误变成 `tf_u_alice`
+    - `applicant_role` → 错误变成 `u_alice_role`
+    - `my_applicant` → 错误变成 `my_u_alice`
+
+    正确做法：用 word boundary 匹配，只接受：
+    - 精确 `applicant`
+    - `applicant,<other>`（逗号分隔）
+    - `<other>,applicant`（逗号分隔）
+    """
+    if token == "applicant":
+        return True
+    # 处理 "applicant,X" / "X,applicant" / "applicant" 单 token
+    for part in token.split(","):
+        if part.strip() == "applicant":
+            return True
+    return False
 
 
 def _filter_field_by_perm(args: dict, node: Optional[FlowNode]) -> dict:

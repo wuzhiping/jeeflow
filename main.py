@@ -32,7 +32,7 @@ _setup_vendor_path()
 from main_common import (
     setup_vendor_path, SnowflakeIDGen, SimpleExprEvaluator, RatioCapableEngine,
     build_ic_registry, build_custom_handlers, apply_extensions, install_resolve_actors_wrapper,
-    _ok, register_routes, build_seed_defines, run_seed_business,
+    _ok, register_routes, build_seed_defines, run_seed_business, run_auto_deploy_fdep,
     install_metrics_endpoint, install_trace_endpoint, metrics_counter, metrics_histogram,
 )
 
@@ -103,6 +103,12 @@ except Exception as e:
     print(f"[§7.3.3 startup] DOING 扫描失败: {e}")
 
 
+# ─── 临时任务：启动后自动部署 ToT/flows/fdep.json ──────────────────────────
+# 条件：fdep.json 存在 + 引擎内尚未定义 → 部署
+# 已在 main_common.auto_deploy_fdep / run_auto_deploy_fdep
+run_auto_deploy_fdep(facade)
+
+
 # ─── run_seed_business (兼容 reload) ──────────────────────────────────────────
 # T003：业务数据种子（引擎真实启动 16 进行中 + 9 已完成 + 8 委托），/api/reset 复跑。
 if SEEDS:
@@ -146,6 +152,12 @@ register_routes(
     reset_fn=_reset_memory,
 )
 
+# v25: 注册 spi/dev API 路由 (CLI 能力远程 API 暴露)
+# v26: 改为 dispatcher 层 spi.api (跟随 SPI_FOLDER 自动切换 demo/dev)
+# v28: 移到 main_common.register_spi_routes (双端共用)
+from main_common import register_spi_routes
+register_spi_routes(app)
+
 # BDD #1205 FIX-T83 §4.1.3：安装 Prometheus metrics 端点
 app.state.facade = facade
 app.state.repo = repo
@@ -155,6 +167,7 @@ install_trace_endpoint(app)
 
 if __name__ == "__main__":
     import uvicorn
+    # 默认端口 8101（memory 端，与 PG 端 8102 区分）；参见 ToT/sop/engine-deploy.md
     uvicorn.run("main:app", host="0.0.0.0",
                 port=int(os.environ.get("PORT", "8101")),
                 reload=False, log_level="info")

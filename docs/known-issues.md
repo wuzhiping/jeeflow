@@ -4800,3 +4800,476 @@ flowuser W40 Day 2 跑通 expense_report_v3 (defineId=123):
 - `docs/AGENTS.md §9.5 判 BUG 自检 3 步` (方法论)
 - `skills/feedback/retrospectives/2026-09-21-users-md-task.md` (FB-0007 起源)
 
+
+## §116 submitType=20 (COUNTERSIGN_DISAGREE) 拓扑约束 (2026-11-17, FB-0012 FIX-DOC-5)
+
+> **首次报告**: 2026-09-23 / flowuser 反馈 (FB-0012, W40 Day 2)
+> **修复编号**: FIX-DOC-5
+> **优先级**: P1 (文档沉默陷阱, 设计阶段误导)
+> **状态**: 🟡 notified · W47 Day 5 起草 docs/3 处修订 + known-issues.md §116 + actions.md §3 引用
+> **关联**: FB-0008 (countersignCompletionCondition 互斥, §113) + FB-0007 (BUG-2 同源: 文档 vs 行为错位)
+
+### 现象
+
+设计师设计会签流程时, 想用 submitType=20 (COUNTERSIGN_DISAGREE, 会签软否决) + 后接 decision 节点判 reject/agree 分支:
+
+```
+[start] → [task 会签 + countersignType=PARALLEL] → [decision] → [end_agree] / [end_reject]
+                                                                    ↑
+                                                          (假设 decision 判 submitType=20)
+```
+
+**期望**: 任一会签人 reject (submitType=20) → decision 命中 reject 边 → end_reject (state=45)
+**实际**: decision 节点**看不到 cs_veto 路径**, 走 decision expr 评估 (而非 cs_veto) → 实例按决策流转, 一票否决能力消失
+
+### 根因
+
+引擎 `execute_process_task` 对 submitType=20 的处理路径有**拓扑依赖**:
+
+| 拓扑 | submitType=20 处理路径 |
+|------|----------------------|
+| `task → end` (直连) | ✅ cs_veto 路径生效: state=45 + 余者 ABANDON (FIX-T46) |
+| `task → decision → 任意` | ❌ **cs_veto 路径被截断**: 引擎按 decision expr 评估, submitType=20 退化为"普通 execute" |
+| `task → task` (其他 task) | ⚠️ 取决于下个 task 的 assignmentHandler, 通常无效 |
+
+submitType=20 的"会签软否决"语义**只在 task → end 直连时由 cs_veto 路径接管**. 中间任何节点 (尤其 decision) 都会让决策回到 decision expr 评估, submitType=20 失去效果.
+
+### 实证 (flowuser W40 Day 2)
+
+| 版本 | 拓扑 | 期望 | 实际 | 结论 |
+|------|------|------|------|------|
+| v1 | `countersign_task → decision(reject边) → end_reject / decision(agree边) → end_agree` | 任一 reject → end_reject | decision expr 永远 false → 走首边 (兜底) | ❌ 一票否决失效 |
+| v2 | `countersign_task → end` (直连) | 任一 reject → state=45 | state=45 + 余者 ABANDON | ✅ **PASS** |
+
+### 修复
+
+**已修订** (W47 Day 5 hermes 起草):
+- ✅ `docs/flow.md §3.3` (新增: submitType 拓扑约束表, 6 行覆盖 6 个 submitType 值)
+- ✅ `docs/AGENTS.md §5.8` (新增: submitType=20 拓扑约束说明, 含设计陷阱 + 正确做法 + 测试时必查拓扑)
+- ✅ `docs/actions.md §3` (新增: submitType 路由引用 + 拓扑约束 cross-ref)
+- ✅ `docs/known-issues.md §116` (本节)
+
+**修复内容**:
+1. **docs/flow.md §3.3 submitType 路由表**: 新增"submitType 拓扑约束表", 6 行覆盖:
+   - submitType=20 + `task → end` ✅ (生效)
+   - submitType=20 + `task → decision → 任意` ❌ (失效, 设计沉默陷阱)
+   - submitType=2/1/5/3/6 (任意拓扑, 全部生效)
+
+2. **docs/AGENTS.md §5.8**: 新增"submitType=20 拓扑约束"提示框, 含:
+   - 生效场景 (task → end 直连)
+   - 失效场景 (task → decision 后接)
+   - 设计陷阱 (decision 截断 cs_veto)
+   - 正确做法 (3 项)
+   - 测试时必查拓扑 (processDesign/detail 确认会签节点只连 end)
+
+3. **docs/actions.md §3**: 新增引用块, 指向 docs/flow.md §3.3 + docs/known-issues.md §116
+
+4. **docs/known-issues.md §116**: 本节全文 (现象 + 根因 + 实证 + 修复)
+
+### 经验教训
+
+1. **submitType 与拓扑耦合**: 引擎隐式假设 submitType=20 的语义只覆盖 task → end 直连. 用户从样例无法推断
+2. **文档沉默陷阱**: 设计师常用"会签 + decision"组合, 但 cs_veto 在中间节点被截断. 不是引擎 BUG, 是文档沉默
+3. **判 BUG 自检 3 步** (per FB-0007):
+   - 复现 ✅ (v1 拓扑确认失效)
+   - 精读 ⚠️ (docs/flow.md §3.3 没说拓扑依赖)
+   - 对比样例 ❌ (无 submitType=20 + decision 拓扑的样例)
+4. **设计阶段必查**: 跑会签测试前, 检查 processDesign/detail 确认会签节点只连 end
+5. **跨文档一致性**: 4 处修订形成闭环 (设计 + 测试 + API 参考 + 已知问题索引)
+
+### 关联文档
+
+- `docs/flow.md §3.3` (submitType 路由 + 拓扑约束表)
+- `docs/AGENTS.md §5.8` (会签测试 + submitType=20 拓扑说明)
+- `docs/actions.md §3` (submitType 路由引用)
+- `docs/AGENTS.md §6` (约束待补 #34 - submitType=20 拓扑约束)
+- `skills/feedback/inbox/FB-0012.json` (原始 issue, 待移 archive)
+- `skills/feedback/retrospectives/2026-11-17-fb-0012-patches.md` (W47 Day 5 patches 复盘)
+
+---
+
+## §117 FIX-T113 `_cleanup_orphan_decision_tasks` 函数签名与调用点参数不匹配 (2026-09-21 BDD-DEV)
+
+**状态**: ✅ 已修复 (2026-09-21, BDD-DEV-002 实证)
+
+### 现象
+
+`processInstance/startAndExecute` 调用决策路由时返回：
+```
+[TypeError] EngineImpl._cleanup_orphan_decision_tasks() takes 6 positional arguments but 7 were given
+```
+
+### 根因
+
+`vendor/jeeflow/engine.py` 内 `_cleanup_orphan_decision_tasks` 函数签名：
+```python
+async def _cleanup_orphan_decision_tasks(self, flow, inst, selected_edge, operator, vars_):
+```
+(5 个位置参数, 不含 self)
+
+3 处调用点 `engine.py:680 / 690 / 705`:
+```python
+await self._cleanup_orphan_decision_tasks(
+    flow, inst, edges, edge, operator, vars_   # 6 个位置参数
+)
+```
+
+调用方多传了 `edges` 参数 (函数体内部已经迭代 `flow.edges`, 不需要再传)。
+
+引入时间: FIX-T112 (2026-09-22) 引入 `decision 孤儿清理` 时新增调用点, 函数签名未同步更新。
+
+### 修复
+
+`vendor/jeeflow/engine.py:680 / 690 / 705` 3 处调用点删除多余的 `edges,` 参数:
+```python
+await self._cleanup_orphan_decision_tasks(
+    flow, inst, edge, operator, vars_   # ✅
+)
+```
+
+### 复测
+
+- BDD-DEV-002 (20260921230000) 重启 main.py 后: ✅ decision 节点正常求值, 金额分支按 expr 正确分流
+- 修复前: 所有含 `snaker:decision` 节点的流程都会启动失败
+- 修复后: 5 个流程 (dev-leave-simple / dev-expense-decision / dev-release-fork / dev-asset-sequential / dev-recruit-ratio) 全部 PASS
+
+### 经验教训
+
+1. **重构 verify**: 类似 FIX-T112 改动应该跑完整流程回归, 而不仅是单元测试
+2. **函数签名 vs 调用点一致性**: 每次新增函数或新增调用点, 应立即在 verify 规则加 `E_FUNCTION_SIGNATURE` 检查 (类型不匹配可在 deploy 时检测)
+3. **建议改进 `vendor/jeeflow/verify.py`**: 新增 W014 警告 - 调用点参数超过函数签名 (静态 AST 扫描), 但该改进超出本次 BDD 范围, 列为待办
+4. **跨文档一致性**: 已同步更新 docs/flow.md §3.4 决策节点 (FIX-T113 备注) + docs/AGENTS.md §6 约束 #35 (新增)
+
+### 关联文档
+
+- `bdd/bdd-dev-expense-decision_20260921230000.md` (BUG-3 发现 + 修复记录)
+- `vendor/jeeflow/engine.py:680/690/705` (调用点, 已修复)
+- `vendor/jeeflow/engine.py:710` (函数定义)
+- `docs/flow.md §3.4` (decision 节点, 同步更新)
+
+---
+
+## §118 FIX-T114 ROLLBACK/JUMP taskName 参数位置兼容 (2026-09-21 BDD-DEV-013)
+
+**状态**: ✅ 已修复 (2026-09-21)
+
+### 现象
+
+HR (u_rd_dir) 提交 `submitType=3` (ROLLBACK) + `taskName="leader_approve"` 回滚到组长审批后：
+- u_fe_lead (原 leader_approve assignee) 待办 = 0 (期望 1)
+- u_rd_dir (ROLLBACK 操作人) 待办 = 1 (期望 0)
+
+### 根因 (双重混淆)
+
+**第一层 (用户调用姿势)**: docs/AGENTS.md §5.5 curl 范例把 `taskName` 放在 `variables` 内部:
+```jsonc
+// ❌ 习惯姿势 (但实际引擎层看不到)
+{
+  "submitType": 3,
+  "operator": "u_rd_dir",
+  "variables": {"u_userId": "u_rd_dir", "taskName": "leader_approve"}
+}
+```
+
+**第二层 (Facade 解析)**: `vendor/jeeflow/facade.py:737/741` 只读**顶层**字段:
+```python
+target = str(args.get("taskName") or args.get("targetTaskName") or "")
+```
+
+由于 `args.get("taskName")` 返回 None (taskName 在 variables 内), `target = ""`, 走了"无 target"分支。
+
+**第三层 (引擎行为)**: `vendor/jeeflow/engine.py:240-259` 在 `if not target_task_name:` 分支:
+- 找上一个任务节点 (`_previous_task_name`)
+- **覆写 `prev.properties["assignee"] = task.actorId or operator`** (FIX-T36 §52 设计)
+- 这里 `task.actorId = u_rd_dir` (前任务 hr_approve 完成人), `operator = u_rd_dir`
+- 新 task actorIds 变成 `[u_rd_dir]`, 原 u_fe_lead 失去 re-process 能力
+
+### 修复
+
+`vendor/jeeflow/facade.py:737/741` (SUBMIT_ROLLBACK + SUBMIT_JUMP 分支):
+
+```python
+target = str(
+    args.get("taskName")
+    or args.get("targetTaskName")
+    or (args.get("variables") or {}).get("taskName")
+    or (args.get("variables") or {}).get("targetTaskName")
+    or ""
+)
+```
+
+兼容 4 个位置: 顶层 taskName / 顶层 targetTaskName / variables.taskName / variables.targetTaskName。
+
+### 复测
+
+| 姿势 | taskName 位置 | 期望 | 实际 | 结果 |
+|---|---|---|---|---|
+| 1 | 顶层 | u_fe_lead 待办=1 | ✅ | ✅ |
+| 2 | variables 内 (旧姿势) | u_fe_lead 待办=1 | ✅ | ✅ |
+
+### 引擎设计陷阱 (FIX-T36 §52)
+
+修复后, 若用户**故意不传 taskName** (走默认 ROLLBACK), 引擎仍按 Java rejectTask 语义:
+- 覆写 assignee = 前任务完成人 (or 操作人)
+- 适用场景: Java rejectTask (rejecter 期望重做前一步)
+- **陷阱场景**: 设计师期望"原 assignee 重新处理"时, 必须显式传 taskName, 否则 assignee 被覆写
+
+### 文档同步
+
+- `docs/flow.md` §3.3 submitType 路由: 新增 ROLLBACK 默认行为警告
+- `docs/AGENTS.md §5.5`: curl 范例明确两种 taskName 位置
+- `bdd/bdd-dev-rollback_20260921231000.md` (完整复盘)
+
+### 关联文档
+
+- `bdd/bdd-dev-rollback_20260921231000.md` (BUG-5 发现 + 修复记录)
+- `vendor/jeeflow/facade.py:737/741` (修复点)
+- `vendor/jeeflow/engine.py:240-269` (引擎行为, 已知 §52 FIX-T36)
+- `docs/flow.md §3.3` (submitType 路由)
+- `docs/AGENTS.md §5.5` (curl 范例)
+
+---
+
+## §119 FIX-T115 `args.assignees` 字段死字段 — 引擎零读取 (2026-09-22 BDD-DEV · 用户反馈 FB-0015)
+
+### 现象
+
+调用方在 `startAndExecute` 传 `"assignees": {"apply": "u_qa_lead"}` 期望覆盖 apply 节点默认 `applicant` 解析。
+实际上 **`vendor/jeeflow/` 整个代码库零处读取 `assignees` 字段**：
+- `facade.py:_startAndExecute` 把 `args.assignees` 整体塞进 `vars_`（line 279 flow_args 透传）
+- `engine.py:_resolve_actors` line 843-870 仅读 `properties.assignee` literal，零回退到 `vars_["assignees"]`
+- 结果：`assignees.apply=u_qa_lead` 被静默存入 `inst.variables.assignees`，**引擎永不消费**
+
+### 复现
+
+```bash
+# 流程 01-simple.json 中 apply.properties.assignee = "applicant"
+curl -X POST /wf/processInstance/startAndExecute -d '{
+  "processDefineId": "20", "operator": "u_be_eng",
+  "assignees": {"apply": "u_qa_lead"},
+  "variables": {"submitType": 0, "u_userId": "u_be_eng"}
+}'
+# 实测: apply 节点 actor = [u_be_eng]（仅 applicant 替换结果），u_qa_lead 静默忽略
+# 期望: apply 节点 actor = [u_qa_lead, u_be_eng] 或 [u_qa_lead]（设计者意图）
+```
+
+### 根因
+
+历史接口约定（mldong `startProcessInstanceById`）:
+- `properties.assignee = "applicant"` → 引擎替换为 `inst.operator`
+- `properties.assignee = "<变量 key>"` → 引擎读 `vars_[key]`
+- `args.assignees` 在 Java Spring 体系是另一套 endpoint 协议（`startProcessInstanceByName`），本仓未实现
+
+### 修复 (FIX-T115)
+
+`vendor/jeeflow/engine.py:_resolve_actors` 在 token 解析失败时回退到 `vars_["assignees"]`：
+
+```python
+# FIX-T115 (2026-09-22 FB-0015)：assignees 字段死字段修复
+assignees_map = vars_.get("assignees") if isinstance(vars_.get("assignees"), dict) else {}
+a_val = assignees_map.get(node.id) or assignees_map.get(token)
+if a_val is not None:
+    if isinstance(a_val, (list, tuple)):
+        actors.extend(str(x) for x in a_val)
+    else:
+        actors.append(str(a_val))
+else:
+    actors.append(token)
+```
+
+**优先级** (OR 累加语义):
+1. `properties.assignee` literal + 特殊 token（`applicant` / `@role:xxx`）
+2. `vars_[token]` 直接命中
+3. `vars_["assignees"][node.id]` 新增回退（FIX-T115）
+4. `vars_["assignees"][token]` token 名作为 assignees key 的回退（FIX-T115）
+
+### 复测
+
+| 姿势 | properties.assignee | assignees | 期望 actor | 实测 actor | 结果 |
+|---|---|---|---|---|---|
+| 1 | "applicant" | {"apply": "u_qa_lead"} | u_qa_lead + u_be_eng | u_qa_lead + u_be_eng | ✅ |
+| 2 | "applicant" | {} | u_be_eng | u_be_eng | ✅ (向后兼容) |
+| 3 | "u_fe_eng" | {"apply": "u_qa_lead"} | u_fe_eng + u_qa_lead | u_fe_eng + u_qa_lead | ✅ |
+
+19 流程全量回归 19/19 state=20 ✅，零回归。
+
+### 文档同步
+
+- `docs/flow.md §3.3`: 新增 `assignees` 字段语义段
+- `docs/AGENTS.md §5.5`: curl 范例补充 `assignees` 用法
+
+### 关联文档
+
+- `vendor/jeeflow/engine.py:867-880` (FIX-T115 修复点)
+- `bdd/bdd-dev-five-flows_20260922000000.md` (BDD-DEV 第五轮触发)
+
+---
+
+## §120 07-countersign-ratio `field.countersignCompletionCondition` 字段位置错 (2026-09-22 BDD-DEV · 用户反馈 FB-0014)
+
+### 现象
+
+`flows/07-countersign-ratio.json` 的 `task1.properties` 把比例条件放在 `field.countersignCompletionCondition`：
+
+```json
+"properties": {
+  "assignee": "u_fe_eng,u_be_eng,u_qa_eng,u_fe_senior",
+  "countersignType": "PARALLEL",
+  "field": {
+    "candidateUsers": "u_fe_eng,...",
+    "countersignCompletionCondition": "#nrOfCompletedInstances==2"  ← 应放顶层
+  }
+}
+```
+
+### 引擎实际读取位置
+
+`vendor/jeeflow/engine.py:148`:
+```python
+cs_cond = str(cur_node.properties.get("countersignCompletionCondition", "") or "").strip()
+```
+
+**仅读顶层**。`field.countersignCompletionCondition` 不被 raw EngineImpl 读取。
+
+### 为何流程仍能跑通？
+
+`main.py:69` 用的是 `RatioCapableEngine` 包装器（`main_common.py:225-228`），它有兜底回退到 `field.` 位置：
+
+```python
+if not cs_cond:
+    field = p.get("field", {}) or {}
+    cs_cond = str(field.get("countersignCompletionCondition", "") or "").strip()
+```
+
+→ 包装器救了场，但**这是设计不一致**：raw EngineImpl + 用户文档期望的位置是顶层，包装器却读 field。
+
+### 修复 (FIX-T116 数据修正)
+
+把 `flows/07-countersign-ratio.json` 和 `flows_demo/07-countersign-ratio.json` 的 `countersignCompletionCondition` 移到顶层 `properties`，保留 `field` 仅用于 `PERMISSION_f_*` 字段权限声明：
+
+```json
+"properties": {
+  "countersignType": "PARALLEL",
+  "countersignCompletionCondition": "#nrOfCompletedInstances==2",
+  "field": {
+    "candidateUsers": "u_fe_eng,u_be_eng,u_qa_eng,u_fe_senior"
+  }
+}
+```
+
+修复后**去掉对 RatioCapableEngine 包装器兜底的依赖**，engine.py 单点真相。
+
+### 复测
+
+| 场景 | 期望 | 实测 | 结果 |
+|---|---|---|---|
+| 1/4 完成 | task1 仍 active (nrOfCompletedInstances=1 < 2) | activeNodeNames=[task1] | ✅ |
+| 2/4 完成 | task1 done + 余者 ABANDON | activeNodeNames=[] + state=20 | ✅ |
+
+### 关联文档
+
+- `flows/07-countersign-ratio.json` (FIX-T116 数据修正点)
+- `flows_demo/07-countersign-ratio.json` (镜像同步)
+- `vendor/jeeflow/engine.py:148` (canonical 读法)
+- `main_common.py:225-228` (包装器兜底, 保留向后兼容)
+- `docs/flow.md §4.2` (countersignCompletionCondition 字段位置规范)
+
+---
+
+## §121 11-assignment-handler 缺 SPI 数据 (2026-09-22 用户反馈 · 不成立)
+
+### 现象 (用户报告)
+
+用户报告：`flows/11-assignment-handler.json` handler FQCN 注册了, SPI 缺 task1/task2/task3/task4 + role_code。
+
+### 复测结果
+
+SPI dev 配置（`spi/dev/jsons/`）:
+- 13 用户: u_ceo, u_cto, u_rd_dir, u_arch, u_fe_lead, u_fe_senior, u_fe_eng, u_be_lead, u_be_senior1, u_be_senior2, u_be_eng, u_qa_lead, u_qa_eng
+- 8 角色: ceo / cto / rd_director / tech_lead / architect / senior_engineer / engineer / qa_engineer
+- 全部 task1/task2/task3/task4 handler FQCN 在 `vendor/jeeflow/builtin.py` 已注册
+
+流程默认 deploy 后报错 `[ValueError] 节点[task1] handler 'com.mldong.jeeflow.interceptor.impl.FormFieldAssigneeHandler' SPI 角色匹配为空（检查 role_code）` — **实际原因是 FormField handler 期望 variables.f_task1**，而非 SPI 缺数据。
+
+### 修复
+
+无需代码修复。流程使用说明补充到 docs/flow.md：
+- task1 (FormField): 必须传 `variables.f_task1 = "<userId>"`
+- task2 (Operator): 默认当前 operator，无需额外配置
+- task3 (DeptLeader): 引擎自动通过 SPI find_dept_leaders 解析发起人部门主管
+- task4 (TaskRole): 节点 properties.roleCode = "qa_engineer" → SPI 解析为 [u_qa_lead, u_qa_eng]
+
+### 复测
+
+| 节点 | handler | 解析路径 | 实测 actor | 结果 |
+|---|---|---|---|---|
+| task1 | FormFieldAssigneeHandler | variables.f_task1 | u_qa_lead + u_be_eng (applicant) | ✅ |
+| task2 | OperatorAssignmentHandler | operator | u_be_eng | ✅ |
+| task3 | DeptLeaderAssignmentHandler | SPI find_dept_leaders | u_be_lead | ✅ |
+| task4 | TaskRoleAssigneeHandler | SPI find_by_role("qa_engineer") | [u_qa_lead, u_qa_eng] | ✅ |
+
+state=20 ✅
+
+### 关联文档
+
+- `docs/flow.md §5.4`: handler 字段名 + 配套变量约定
+- `flows/11-assignment-handler.json`: 注释补充
+
+## §122 FIX-T117 handler 返回空时统一错误消息误导用户归咎 SPI 缺数据 (2026-09-22 BDD-DEV · 用户反馈 FB-0016)
+
+### 现象
+
+用户启动 `flows/11-assignment-handler.json` 报：
+```
+[ValueError] 节点[task1] handler 'com.mldong.jeeflow.interceptor.impl.FormFieldAssigneeHandler' 
+SPI 角色匹配为空（检查 role_code）
+```
+
+用户报告：**"SPI 数据层问题, 引擎无法修"**。但 SPI dev 完整（13 users / 8 roles / qa_engineer 都有）。
+
+**实际原因**：FormFieldAssigneeHandler 期望 `variables.f_task1`，调用方没传 → handler 返回 `[]` → 引擎抛"统一"错误，用户**误读**为 SPI 角色数据缺失。
+
+### 根因
+
+`vendor/jeeflow/engine.py:760` (旧) + `main_common.py:install_resolve_actors_wrapper:448` 都用统一措辞：
+
+```python
+raise ValueError(f"节点[{node.id}] handler '{handler_name}' SPI 角色匹配为空（检查 role_code）")
+```
+
+→ 把所有"handler 返回空" 归到"SPI role_code 缺失"，FormField 缺 `f_<node>`、TaskRole roleCode 错、DeptLeader 无部门主管都被同一句话掩盖。
+
+### 修复 (FIX-T117)
+
+1. `vendor/jeeflow/engine.py:_create_task` 按 `_last_resolve_meta.source` 给具体错误：
+   - `form_field`: "FormFieldAssigneeHandler 返回空：未找到 variables['f_<node>']"
+   - `task_role`: "TaskRoleAssigneeHandler 返回空：roleCode='<rc>' 在 SPI 角色表中无用户"
+   - `dept_leader`: "DeptLeaderAssignmentHandler 返回空：发起人无部门主管"
+   - `operator`: "OperatorAssignmentHandler 返回空：操作人为空"
+2. `vendor/jeeflow/engine.py:_resolve_actors` 记录 `_last_resolve_meta = {source, handlerName, roleCode}`
+3. `main_common.py:install_resolve_actors_wrapper:444-449` 移除冗余 raise，让 engine 内部错误透传
+
+### 复测
+
+| handler | 输入 | 旧错误 | 新错误 |
+|---------|------|--------|--------|
+| FormField (缺 f_task1) | `variables={u_userId: u_be_eng}` | "SPI 角色匹配为空 (检查 role_code)" | "FormFieldAssigneeHandler 返回空：未找到 variables['f_task1']" |
+| TaskRole (roleCode=不存在) | `properties.roleCode="no_such_role"` | "SPI 角色匹配为空" | "TaskRoleAssigneeHandler 返回空：roleCode='no_such_role' 在 SPI 角色表中无用户" |
+| DeptLeader (正常) | `operator=u_be_eng` | n/a | 解析为 u_be_lead ✅ |
+| 11-assignment-handler + f_task1 | 加 f_task1 | (成功) | (成功) ✅ |
+
+19 流程全量回归 19/19 state=20 ✅，零回归。
+
+### 文档同步
+
+- `docs/flow.md §5.4`: 明确 handler 错误诊断表
+
+### 关联文档
+
+- `vendor/jeeflow/engine.py:760-798` (FIX-T117 错误分派)
+- `vendor/jeeflow/engine.py:917-925` (_last_resolve_meta 记录)
+- `main_common.py:444-449` (移除冗余 raise)
+- `bdd/bdd-dev-handler-error-clarify_20260922000000.md` (本节)
+
+---
+

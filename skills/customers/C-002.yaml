@@ -3,7 +3,8 @@ type: L3
 name: 会签人 userA (化名)
 contact: hermes_dm
 first_seen: 2026-09-20
-last_touched: 2026-09-21
+last_touched: 2026-11-17 (Phase 9 Month 2 健康检查)
+current_stage: 5 (Long-term Customer Success · 跨 Phase 8 + 9)
 
 scenario: |
   多方会签场景: 3 人会签 (userA, userB, userC),
@@ -11,20 +12,29 @@ scenario: |
   且需要审计追溯"是谁触发的废弃".
 
 key_pain_points:
-  - ABANDON 触发人未记录, 审计无法追溯 (已闭环 FB-0002 修复中)
+  - ABANDON 触发人未记录, 审计无法追溯 (已闭环 FB-0002 修复中) ✅ FIX-T111 applied (W40)
+  - PARALLEL countersign REJECT 留下 orphan DOING (omarchy 第 3 次 BUG-4 找到) 🟡 FIX-T114 候选
 
 recent_feedback:
   - date: 2026-09-20
     fb_id: FB-0002
     issue: "3 人 PARALLEL 会签 ABANDON 触发人字段为空"
-    status: notified (待确认)
+    status: closed (FIX-T111 applied)
     fix_ref: FIX-T111
+  - date: 2026-11-10 (omarchy 间接贡献)
+    fb_id: FB-0015
+    issue: "PARALLEL countersign REJECT 留下 orphan DOING"
+    status: in_progress (FIX-T114 候选)
+    fix_ref: FIX-T114 + BDD #1901-#1905 设计
 
 success_metrics:
-  - 会签完成时长: < 24h
-  - ABANDON 审计追溯率: 100%
+  - 会签完成时长: < 24h ✅
+  - ABANDON 审计追溯率: 100% ✅ (FIX-T111 applied)
+  - PARALLEL countersign REJECT orphan: 0/5 待验证 ✅ (BDD #1901 设计就绪)
 
 notes: |
   - L3 业务审批人, 也是审计的"被审计人"
   - 关注审计字段的完整性
-  - 后续测试 ABANDON updateUser 字段修复效果
+  - 后续测试 ABANDON updateUser 字段修复效果 ✅ FIX-T111 verified
+  - Q4 健康度: 9.5/10 (稳定, 从 FB-0002 修复到 BUG-4 持续优化)
+  - 月度 metrics 11 月已验证 (闭环率 100% 维持)

@@ -1,0 +1,24 @@
+{
+  "name": "dev-bdd-cs-then-decision",
+  "displayName": "BDD-DEV-会签后接决策分流",
+  "type": "approval",
+  "instanceUrl": "/bdd/dev-cs-decision/form",
+  "nodes": [
+    { "id": "start", "type": "snaker:start", "x": 50, "y": 200, "properties": { "width": 50, "height": 50 }, "text": { "value": "开始" } },
+    { "id": "apply", "type": "snaker:task", "x": 180, "y": 200, "properties": { "width": 100, "height": 50, "form": "cs-dec-form", "assignee": "applicant", "taskType": 0, "performType": 0 }, "text": { "value": "申请" } },
+    { "id": "task1", "type": "snaker:task", "x": 340, "y": 200, "properties": { "width": 120, "height": 50, "assignee": "u_cto,u_arch,u_qa_lead", "taskType": 0, "performType": 1, "countersignType": "PARALLEL", "field": { "candidateUsers": "u_cto,u_arch,u_qa_lead" } }, "text": { "value": "3人会签" } },
+    { "id": "decision_amount", "type": "snaker:decision", "x": 500, "y": 200, "properties": { "width": 100, "height": 50 }, "text": { "value": "金额>5000?" } },
+    { "id": "high_record", "type": "snaker:task", "x": 660, "y": 100, "properties": { "width": 120, "height": 50, "assignee": "u_ceo", "taskType": 0, "performType": 0 }, "text": { "value": "CEO 复核(大额)" } },
+    { "id": "auto_record", "type": "snaker:task", "x": 660, "y": 300, "properties": { "width": 120, "height": 50, "assignee": "u_arch", "taskType": 2, "performType": 0 }, "text": { "value": "自动记录(小额)" } },
+    { "id": "end", "type": "snaker:end", "x": 820, "y": 200, "properties": { "width": 50, "height": 50 }, "text": { "value": "结束" } }
+  ],
+  "edges": [
+    { "id": "e0", "sourceNodeId": "start", "targetNodeId": "apply", "properties": {} },
+    { "id": "e1", "sourceNodeId": "apply", "targetNodeId": "task1", "properties": {} },
+    { "id": "e2", "sourceNodeId": "task1", "targetNodeId": "decision_amount", "properties": {} },
+    { "id": "e3", "sourceNodeId": "decision_amount", "targetNodeId": "high_record", "properties": { "expr": "f_amount>5000" }, "text": { "value": "金额>5000" } },
+    { "id": "e4", "sourceNodeId": "decision_amount", "targetNodeId": "auto_record", "properties": { "expr": "f_amount<=5000" }, "text": { "value": "金额≤5000" } },
+    { "id": "e5", "sourceNodeId": "high_record", "targetNodeId": "end", "properties": {} },
+    { "id": "e6", "sourceNodeId": "auto_record", "targetNodeId": "end", "properties": {} }
+  ]
+}
