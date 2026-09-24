@@ -89,15 +89,21 @@ sequenceDiagram
 
 ### A · 发起流程（initiator 视角）
 
-| action | 用途 | 用到的流程 |
-|--------|------|-----------|
-| `processDefine/page` | 列可发起流程清单 | 通用 |
-| `processDefine/detail` | 流程定义详情 + Job Card URL | 通用 |
-| `processDefine/getJobCardContent` | **读 job_card markdown 内容（作为工作指导）** | **fdep** / **invoice-approval** |
-| `processDefine/startAndExecute`（或 `startAndExecute`） | 发起实例 + 首 task | **fdep** / **invoice-approval** |
-| `processInstance/page` | 我发起的实例列表 | 通用 |
-| `processInstance/detail` | 实例详情 + 当前节点 + Job Card | 通用 |
-| `processInstance/withdraw` | 撤回（未流转时可用） | 通用 |
+| action | 用途 | 用到的流程 | 角色 |
+|--------|------|-----------|------|
+| `processDesign/listByType` | **列可发起流程清单**（已发布 + active） | 通用 | **参与者** ✅ |
+| `processDefine/page` | 列所有流程（含未发布 / inactive） | 通用 | **开发者/管理员** 🛠️ |
+| `processDefine/detail` | 流程定义详情 + Job Card URL | 通用 | 通用 |
+| `processDefine/getJobCardContent` | **读 job_card markdown 内容（作为工作指导）** | **fdep** / **invoice-approval** | 通用 |
+| `processDefine/startAndExecute`（或 `startAndExecute`） | 发起实例 + 首 task | **fdep** / **invoice-approval** | 通用 |
+| `processInstance/page` | 我发起的实例列表 | 通用 | 通用 |
+| `processInstance/detail` | 实例详情 + 当前节点 + Job Card | 通用 | 通用 |
+| `processInstance/withdraw` | 撤回（未流转时可用） | 通用 | 通用 |
+
+> **Endpoint 使用边界**：
+> - **参与者**（flow-operator）发起流程时，用 `processDesign/listByType` —— 只看已发布的流程
+> - **开发者/管理员**用 `processDefine/page` —— 包含未发布 / inactive 的所有版本（用于运维/调试）
+> - 最小知情原则：参与者不应知道未发布版本的存在
 
 ### B · 处理待办（assignee 视角）
 
