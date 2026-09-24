@@ -3,7 +3,7 @@
 > **节点定义**：[../../fdep.json](../../fdep.json) `nodes[id=stage_feedback]`
 > **节点手册**：[../NODES.md#stage_feedback](../NODES.md#stage_feedbacksnaker-task)
 > **Decision Mem 协议**：[../RESPONSES.md §0](../RESPONSES.md)
-> **执行者**：`u_fdp_pm` (SPI 角色 R5)
+> **执行者**：`u_fdp_pm`
 > **角色**：R5（知识） / `fdep_kb` / u_fdp_pm（R3 反馈收集待 fork-join）
 > **触发**：stage_review 完成后 → 引擎自动加入 todoList（operator=u_fdp_pm）
 
@@ -15,7 +15,6 @@
 - node: stage_feedback
 - type: snaker:task
 - assignee: u_fdp_pm
-- spi_role: R5
 - stage: 5. 反馈 / 知识沉淀
 - form: kb-template
 - trigger: 拾起 todoList 中 taskName="stage_feedback" 且 operator=u_fdp_pm

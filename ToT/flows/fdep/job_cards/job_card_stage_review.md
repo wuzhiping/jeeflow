@@ -3,7 +3,7 @@
 > **节点定义**：[../../fdep.json](../../fdep.json) `nodes[id=stage_review]`
 > **节点手册**：[../NODES.md#stage_review](../NODES.md#stage_reviewsnaker-task)
 > **Decision Mem 协议**：[../RESPONSES.md §0](../RESPONSES.md)
-> **执行者**：`u_fdp_pm` (SPI 角色 R6)
+> **执行者**：`u_fdp_pm`
 > **角色**：R6（评审） / `fdep_review` / u_fdp_pm（R3 验收留待 fork-join）
 > **触发**：stage_dev 完成后 → 引擎自动加入 todoList（operator=u_fdp_pm）
 
@@ -15,7 +15,6 @@
 - node: stage_review
 - type: snaker:task
 - assignee: u_fdp_pm
-- spi_role: R6
 - stage: 4. 评审 / 验收 / 发布
 - form: review-template
 - trigger: 拾起 todoList 中 taskName="stage_review" 且 operator=u_fdp_pm

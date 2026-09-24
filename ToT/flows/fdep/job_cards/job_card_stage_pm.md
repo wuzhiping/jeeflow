@@ -3,7 +3,7 @@
 > **节点定义**：[../../fdep.json](../../fdep.json) `nodes[id=stage_pm]`
 > **节点手册**：[../NODES.md#stage_pm](../NODES.md#stage_pmsnaker-task)
 > **Decision Mem 协议**：[../RESPONSES.md §0](../RESPONSES.md)
-> **执行者**：`u_fdp_pm` (SPI 角色 R3)
+> **执行者**：`u_fdp_pm`
 > **角色**：R3 / `fdep_rml` / u_fdp_pm
 > **触发**：decision_intake 完成后 → 引擎自动加入 todoList（operator=u_fdp_pm）
 
@@ -15,7 +15,6 @@
 - node: stage_pm
 - type: snaker:task
 - assignee: u_fdp_pm
-- spi_role: R3
 - stage: 1. RML 立项
 - form: rml-template
 - trigger: 拾起 todoList 中 taskName="stage_pm" 且 operator=u_fdp_pm

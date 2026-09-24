@@ -125,13 +125,11 @@ def parse_flow_edges(text: str) -> dict:
 # ---------- 卡片渲染 ----------
 def render_card(node_id: str, node_def: dict, edges_map: dict,
                 nodes_info: dict, mem_template: str) -> str:
-    """渲染单张 Job Card"""
+"""渲染单张 Job Card"""
     props = node_def.get("properties", {})
-    text_val = node_def.get("text", {}).get("value", "")
-
-    # 解析 text 拿 SPI 角色提示（如 "SPI 角色 R3"）
-    spi_match = re.search(r"SPI \u89d2\u8272\s+(\S+)", text_val)
-    spi_hint = spi_match.group(1) if spi_match else ""
+    # text.value 仅用于节点名展示，不参与 SPI 角色等元信息输出
+    # （避免 future 回归：text.value 啰嗦版也不会再自动生成 SPI 角色信息）
+    # SPI 角色 / assignee 等元信息走 NODES.md "关联角色" 行 + properties.assignee
 
     assignee = props.get("assignee", "?")
     stage = props.get("stage", "?")
