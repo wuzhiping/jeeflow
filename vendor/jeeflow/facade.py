@@ -1226,11 +1226,17 @@ class JeeflowFacade:
                 "type": def_.type, "state": def_.state, "version": def_.version}
 
     async def _processDefine_getJobCardContent(self, args: dict) -> dict:
-        """读 job_card markdown 作为工作指导（v0.1）
+        """读 job_card / initiate.md markdown 作为工作指导（v0.2）
 
-        请求: {processDefineName: "<flow-id>", url: "<ToT/flows/<flow-id>/job_cards/...>"}
+        请求: {processDefineName: "<flow-id>", url: "<ToT/flows/<flow-id>/...>"}
         返回: {url, content, length}
-        安全: url 必须以 ToT/flows/<flow-id>/job_cards/ 开头（防越界）
+        安全: url 必须以 ToT/flows/<flow-id>/ 开头（流程目录下任意 .md 文件）
+              不允许 ToT/flows/<flow-id>.json（流程定义文件）
+              标准化：自动补 .md 后缀
+
+        适用文件类型：
+        - ToT/flows/<flow>/job_cards/job_card_<taskName>.md（task job card）
+        - ToT/flows/<flow>/initiate.md（流程发起指南）
         """
         name = str(args.get("processDefineName", ""))
         url = str(args.get("url", ""))
@@ -1244,18 +1250,21 @@ class JeeflowFacade:
             raise ValueError(f"流程定义不存在: {name}")
         # 标准化 url（自动补 .md 后缀）
         normalized_url = url if url.endswith(".md") else url + ".md"
-        # 安全：必须在 ToT/flows/<name>/job_cards/ 下
-        expected_prefix = f"ToT/flows/{name}/job_cards/"
-        if not normalized_url.startswith(expected_prefix):
+        # 安全：必须在 ToT/flows/<name>/ 子目录下（不能跨级，也不能读 <name>.json）
+        expected_dir = f"ToT/flows/{name}/"
+        if not normalized_url.startswith(expected_dir):
             raise ValueError(
-                f"url 不安全: {url}（应位于 {expected_prefix}）"
+                f"url 不安全: {url}（应位于 {expected_dir} 下）"
             )
+        # 进一步禁止读 .json 等敏感文件（设计层文件）
+        if not normalized_url.endswith(".md"):
+            raise ValueError(f"url 后缀必须为 .md: {normalized_url}")
         # 读文件
         try:
             with open(normalized_url, encoding="utf-8") as f:
                 content = f.read()
         except FileNotFoundError:
-            raise ValueError(f"job_card 文件不存在: {normalized_url}")
+            raise ValueError(f"文档文件不存在: {normalized_url}")
         except Exception as e:
             raise ValueError(f"读失败: {e}")
         return {

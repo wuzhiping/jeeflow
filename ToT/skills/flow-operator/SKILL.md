@@ -105,6 +105,13 @@ sequenceDiagram
 > - **开发者/管理员**用 `processDefine/page` —— 包含未发布 / inactive 的所有版本（用于运维/调试）
 > - 最小知情原则：参与者不应知道未发布版本的存在
 
+#### 发起前可读 initiate guide
+
+- 文件位置：`ToT/flows/<processDefineName>/initiate.md`（如 `ToT/flows/fdep/initiate.md`）
+- 读取方式：复用 `processDefine/getJobCardContent`，传 `url: "ToT/flows/<flow>/initiate.md"`
+- 内容包含：何时发起 / 必填参数 / 发起后预期路径 / 注意事项
+- 适用场景：发起流程前**总览**该流程的业务触发条件、首 task、终态分支
+
 ### B · 处理待办（assignee 视角）
 
 | action | 用途 | 用到的流程 |
