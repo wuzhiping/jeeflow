@@ -3,7 +3,10 @@
 > **来源**：https://jeeflow-doc.mldong.com/spec/06-facade
 > **定位**：给流程设计者（环境已部署 / 组织架构与用户已落地）使用的**统一门面契约参考**——理解每个 action 的输入参数 / 返回结构 / 设计语义是正确调用的前提。
 >
-> **本仓实现版本**：`vendor/jeeflow/facade.py:63 JeeflowFacade.flow(action, args)`；**实际注册 action 数 = 60+**（远超 PRD 声明的 38，因含本仓新增的 `transferAndAdd` / `delegate` / `delegateHistory` / `withForm` / `comment` / `extra` / `suspend` / `resume` / `stats_overview` / `stats_trend` / `stats_group` / `getJobCardContent` 等 12+ 个）。
+> **本仓实现版本**：`vendor/jeeflow/facade.py:63 JeeflowFacade.flow(action, args)`；**实际 `/wf/{action}` 公开端点 = 57**（`./docs/openapi.json` 实测；2026-09-24 修正：原 PRD「38」为 v1.0.0 基线）。
+> **facade 内部**：`_*` 私有方法约 83 个（路由方法）+ 25 个 internal helper（`_flow_with_trace` / `_verify` / `_deploy` 等）= 共 108 个下划线方法。
+> **唯一 action 名 = 47**（`./docs/actions.md` 数；含 2 个公共别名 `startAndExecute` / `taskAddActor`）。
+> **增量来源**：本仓新增 `transferAndAdd` / `delegate` / `delegateHistory` / `withForm` / `comment` / `extra` / `suspend` / `resume` / `stats/overview` / `stats/trend` / `stats/group` / `getJobCardContent` / `processDesignHis/page` 等 19 个。
 >
 > **裁剪记录**：§1 / §2 / §3 / §4.1-§4.6 / §5 / §7 保留 + 加本仓实测注解；§6 集成 SPI 表裁掉（属框架集成者职责）；失败 msg 文案表跨栈字面量统一保留。
 
@@ -24,7 +27,7 @@ flow(action, args) → {code, msg, data}
 | 异常处理 | 门面内部异常捕获转 `{code: 99999999, msg: 异常信息}`，不向上抛 |
 | 未知 action | `{code: 99999999, msg: "未知 action: xxx"}` |
 
-> **本仓实测**（`vendor/jeeflow/facade.py:63`）：`flow()` 通过 `_dispatch_action()` 路由到 `_processDefine_*` / `_processInstance_*` / `_processTask_*` / `_processDesign_*` / `_processSurrogate_*` 等 60+ 私有方法；统一过 `_verify(args)` (facade.py:107) 参数校验、`_ok(data)` (facade.py:79) / `_ok_with_stringify_ids(data)` (facade.py:98) 出口封装。
+> **本仓实测**（`vendor/jeeflow/facade.py:63`）：`flow()` 通过 `_dispatch_action()` 路由到 `_processDefine_*` / `_processInstance_*` / `_processTask_*` / `_processDesign_*` / `_processSurrogate_*` 等 **57 个公开 action + ~83 个 _* 路由方法**（含 25 个 internal helper）；统一过 `_verify(args)` (facade.py:107) 参数校验、`_ok(data)` (facade.py:79) / `_ok_with_stringify_ids(data)` (facade.py:98) 出口封装。
 
 **HTTP 约定**：
 
@@ -142,9 +145,10 @@ flow(action, args) → {code, msg, data}
 
 ---
 
-## §3. action 清单（本仓 60+ 个）
+## §3. action 清单（本仓 57 个 `/wf/` 端点）
 
-> **本仓实测**（`vendor/jeeflow/facade.py`）：实际注册 **60+ action**（远超 PRD 声明的 38）。
+> **本仓实测**（`./docs/openapi.json` 2026-09-21 实测）：**57 个 `/wf/{action}` 公开端点**（2026-09-24 修正：原 PRD「38」为 v1.0.0 基线）。
+> **facade.py 实际**：108 个 `_*` 方法（83 路由 + 25 internal helper）；唯一 action 名 = 47（`./docs/actions.md`，含 2 别名）。
 
 | 分组 | action | 数量 |
 |---|---|---|

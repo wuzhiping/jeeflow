@@ -71,7 +71,7 @@
 | 1 | **`wf_process_submit_type` 缺 `7 转办`（TRANSFER）**| 上游 9 枚举；本仓 `metadata.py:34 _DICTS` 字典仅 8 项，缺 `7` | `model.py:70 SubmitType` 含 `7 TRANSFER`；**2026-09-24 重核**：`metadata.py:34-38` 确认仅 8 项，缺 `7` | **修字典**（加 `DictItem("7", "转办")`）| ✅ 已验证 / ⏳ 待修 |
 | 2 | **`wf_process_submit_type` label 重复**：`20` 与 `2` 都是「拒绝申请」| 字典表 `metadata.py:34` label 重复 | 枚举 `20=COUNTERSIGN_DISAGREE` / `2=REJECT` 语义不同；**2026-09-24 重核**：`metadata.py:35` + `:37` 确认重复 | **改 label**：`20` → 「会签拒绝」 | ✅ 已验证 / ⏳ 待修 |
 | 3 | **`BUILTIN_ASSIGNMENT_METAS` 用完整版 FQCN 但运行时实际加载简化版** | `metadata.py:77-99` 注册 5 个 `…OrgUserAssignmentHandlers$…` | `builtin.py:170-183` 同时注册 12 个 key：7 简化版主用 + 5 完整版别名；**2026-09-24 重核**：`metadata.py:82/85/88/91/97` 5 项用完整版，`builtin.py:15-23` 主用简化版 | **统一字典源**——`BUILTIN_ASSIGNMENT_METAS` 改为简化版主用 7 项 | ✅ 已验证 / ⏳ 待修 |
-| 4 | **PRD 声明 38 actions vs facade 实际 60+ actions** | `PRD.md` §核心端点列 38 个；本仓 `facade.py` 实际 60+ | 缺：**`transferAndAdd`** / `delegate` / `delegateHistory` / `withForm` / `comment` / `extra` / `suspend` / `resume` / `stats_overview` / `stats_trend` / `stats_group` / `getJobCardContent` 等 12+ | **更新 PRD**（或确认 38 仅指「核心 38」）| ⏳ 待确认 |
+| 4 | **PRD 声明 38 actions vs facade 实际 60+ actions** | `PRD.md` §核心端点列 38 个；本仓 `facade.py` 实际 60+ | 缺：**`transferAndAdd`** / `delegate` / `delegateHistory` / `withForm` / `comment` / `extra` / `suspend` / `resume` / `stats_overview` / `stats_trend` / `stats_group` / `getJobCardContent` 等 12+ | **更新 PRD**（或确认 38 仅指「核心 38」）| ✅ 已修复（PRD 38→57 + ToT/docs/spec/06-facade.md 同步，详见 §3.1.4）|
 | 5 | **ea-compliance 44/44 PASS 是 2026-09-23 状态** | `spec/08-compliance.md` §本仓实测状态 | 每次合规测试结果会变 | **按版本快照**（每发版打 snapshot）| ⏳ 待确认 |
 | 6 | **`docs/BUGS.md` 27 FIX + 0 仍存 是 2026-09-20 状态** | `spec/06-facade.md` / `spec/08-compliance.md` / 顶部差异 | 新 FIX-T 编号会改变总数 | **按版本快照** | ⏳ 待确认 |
 | 7 | **上游 `/guides/02-flow-definition` 与本仓 `flows/` 数量不一致** | 上游 `02-flow-definition` 引 14 个 demo sample；本仓 `flows/` 含 **17 个** + 2 个废弃名（`08-countersign-sequential-approve` + `08-custom-node`）| 上游少 4 个（`13-one-vote-veto` / `14-decision-submitType` / `16-delegate-test` / `17-suspend-resume-test`）| 文档保持指向上游 14；本仓额外 3 个在 `spec/08-compliance.md` 列出 | ✅ 已记录 |
@@ -128,7 +128,41 @@
 | #2 | 暂缓 | 低-中（设计时 UI 体验）| 每发版 review |
 | #3 | 暂缓 | 低（运行时）/ 中（演进性）| 触发 A/E 即 review |
 
-**Phase 2 状态**：**已验证 + 暂缓处理**。未改 `vendor/jeeflow/*.py` 任何字节。
+#### #4（已修复：PRD 38 → 57 + ToT/docs/spec/06-facade.md 同步）
+
+- **实测数据**（2026-09-24 重核）：
+  - `./PRD.md` 声明「**38** 个 `/wf/{action}` 端点」（v1.0.0 初版基线）
+  - `./docs/openapi.json` 实测：**57** 个 `/wf/` 路径
+  - `./docs/actions.md` 实测：**47** 个唯一 action 名（含 2 公共别名）
+  - `./vendor/jeeflow/facade.py` 实测：**108** 个 `_*` 方法（83 路由 + 25 internal helper）
+- **增量来源**（19 个）：
+  - Phase 2 FIX-T72~T78：`transferAndAdd` / `delegateHistory` / `withForm` / `suspend` / `resume` = 5
+  - 会签 / 抄送 / 统计：`createCCInstance` / `updateCCStatus` / `ccList` / `stats/group` / `stats/trend` = 5
+  - 流程设计历史：`processDesignHis/page` = 1
+  - 任务侧补充：`comment` / `extra` / `removeCandidate` / `jumpAbleTaskNameList` / `doneList` / `latest` / `surrogate` / `candidatePage` / `transfer` = 9（部分与基线重复，去重后约 8）
+- **决策**：**方案 A+（改数 + 注脚）**
+- **改动**：
+  - `./PRD.md` 第 5 行：「38」→「**57**」+ 末尾加注脚（原 38 为 v1.0.0 基线 / Phase 2 NEW 实测 57）
+  - `./PRD.md` §核心端点 表格：从 5 行扩到 10 行（细分类别：流程定义 9 / 流程设计 9 / 流程设计历史 1 / 流程实例 19 / 任务操作 17 / 委托代理 5 / 审计 1 / 监控 6 / 异步 1 / SPI 数据 6）
+  - `./PRD.md` §文档：追加 `openapi.json` + `actions.md` 链接
+  - `./ToT/docs/spec/06-facade.md` 第 6 行：60+ → 57 + 标注 5 个数的实测位置（PRD / openapi.json / actions.md / facade.py）
+  - `./ToT/docs/spec/06-facade.md` §3 标题：「本仓 60+ 个」→「本仓 57 个 `/wf/` 端点」
+- **未改**：`./vendor/jeeflow/*.py` 零字节修改（仅文档同步）
+- **回访触发**：
+  - 触发 A（代码改动）：新增 action 但未同步 PRD / openapi.json
+  - 触发 E（PRD 改动）：变更端点数声明
+  - 每发版 review（季度 cadence）
+
+#### 暂缓总账（更新）
+
+| 项 | 决策 | 风险等级 | 状态 |
+|---|---|---|---|
+| #1 | 暂缓 | 低（运行时）| ⏳ 待修 |
+| #2 | 暂缓 | 低-中（设计时 UI 体验）| ⏳ 待修 |
+| #3 | 暂缓 | 低（运行时）/ 中（演进性）| ⏳ 待修 |
+| **#4** | **已修复** | **低（仅文档漂移）** | **✅ 已修复** |
+
+**Phase 2 状态**：**#4 已修复，#1/#2/#3 已验证 + 暂缓**。未改 `vendor/jeeflow/*.py` 任何字节。
 
 ---
 
@@ -246,12 +280,12 @@ Step 5: 留档
 - ✅ 演进态 = `vendor/jeeflow/` 14 文件（38 FIX 全 PASS）
 - ✅ 文档不是事实，需持续对齐（§4 流程）
 - ✅ §3 #1/#2/#3：**已验证 + 暂缓不改代码**（2026-09-24 决策，详见 §3.1 处置记录）
+- ✅ §3 #4：**已修复**（PRD 38 → 57 + 4 文档同步，详见 §3.1.4）
 - ✅ manual/ 起草策略：**部署细节大裁剪、保留设计契约与本仓实测警示**（2026-09-24）
 - ✅ BUILTIN_ASSIGNMENT_METAS 不一致由 `builtin.py:179-183` 双注册兜底，运行时零风险
 
 ### 7.2 未决（需 R1b / R5 决策）
 
-- ⏳ §3 #4（PRD 38 vs facade 60+ actions）方向决策——是否更新 PRD 还是声明「38 仅核心」
 - ⏳ §3 #5 / #6（ea-compliance / BUGS.md 快照基线）—— 是否建 `ToT/sop/snapshot-YYYY-MM-DD.md`
 - ⏳ §3 #10（facade 累计修改范围）—— 是否建 `CHANGELOG.md`
 - ⏳ 4 个新脚本（§4.5）的优先级与实现时间表
@@ -332,11 +366,11 @@ vendor/jeeflow/           (Sep 24 2026, 14 文件)
 2026-09-24  ToT/docs/manual/ 起草完成（11 篇：README + 8 章 + 2 附录）
 2026-09-24  ToT/docs/README.md 建立（知识库工程起点）
 2026-09-24  Phase 2 部分完成：§3 #1/#2/#3 已验证 + 暂缓（详见 §3.1 处置记录）
+2026-09-24  Phase 2 #4 已修复：PRD 38 → 57 + 4 文档同步（详见 §3.1.4）
 ```
 
 ---
 
 > **下次动作**：
-> 1. R5 知识管理员按 §3 表继续处理 **#4 / #5 / #6 / #10**（决策方向）
-> 2. 决策 #4 之前可跑 `grep -E "^async def " /opt/jupyter/src/RD/projects/jeeFlow/vendor/jeeflow/facade.py | wc -l` 实测 facade 实际方法数
-> 3. Phase 3 启动前先评估 4 个新脚本（§4.5）的优先级
+> 1. R5 知识管理员按 §3 表继续处理 **#5 / #6 / #10**（决策方向）
+> 2. Phase 3 启动前先评估 4 个新脚本（§4.5）的优先级
