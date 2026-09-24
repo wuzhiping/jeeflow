@@ -3,7 +3,7 @@
 > **来源**：https://jeeflow-doc.mldong.com/concepts/05-spi-design
 > **定位**：给流程设计者（环境已部署 / 组织架构与用户已落地）使用的**SPI 设计原理参考**——理解哪些 SPI 是必选 / 可选、为什么 `ProcessRepository` 是唯一必选、为什么 `UserProvider` / `OrgUserProvider` / `ExpressionEvaluator` 都可选，是把握引擎扩展边界的基础。
 >
-> **本仓实测**：`vendor/jeeflow/spi.py:6 ABC` 定义（`ProcessRepository` / `UserProvider` / `OrgUserProvider` / `IDGenerator` / `ExpressionEvaluator` / `ProcessExtRepository`）。
+> **本仓实测**：`vendor/jeeflow/spi.py` 定义 **6 个 ABC**（`ProcessRepository` / `UserProvider` / `OrgUserProvider` / `IDGenerator` / `ExpressionEvaluator` / `ProcessExtRepository`），分别位于 `:16 / :157 / :161 / :182 / :186 / :190`。
 >
 > **裁剪记录**：§1-§6 保留 + 加本仓实测；§7 6 语言实现表裁掉 5 语言仅留 Python。
 

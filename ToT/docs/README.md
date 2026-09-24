@@ -234,7 +234,7 @@ Step 5: 留档
 | `ToT/sop/ea-compliance.py` | 44 项 EA 合规检查 | ✅ 已有（44/44 PASS，2026-09-23） |
 | `ToT/sop/flow_completeness.py` | 单流程 0-100% 打分 | ✅ 已有 |
 | `ToT/sop/tdd-flow.py` | BDD/TDD baseline 生成 | ✅ 已有 |
-| `ToT/sop/doc-link-checker.py`（建议）| 扫描 `ToT/docs/**/*.md` 中所有 `<行号>` 引用 + `vendor/jeeflow/<file>.py` 行号比对 | ❌ 待建 |
+| `ToT/sop/doc-link-checker.py` | 扫描 `ToT/docs/**/*.md` 中所有 `vendor/jeeflow/<file>.py:<line>` 引用 + 行号比对 | ✅ 已建（2026-09-24；初版扫描 134 条引用，0 drift） |
 | `ToT/sop/doc-archive-snapshot.py`（建议）| 每次发版时 `git tag ToT/docs/vX.Y.Z` | ❌ 待建 |
 | `ToT/sop/doc-vs-code-drift.py`（建议）| §3 10 个不一致项自动检测脚本 | ❌ 待建 |
 
@@ -268,7 +268,7 @@ Step 5: 留档
 | **Phase 1**（已完成）| 2026-09-24 | 起草 27 篇文档（9+10+8）| ✅ |
 | **Phase 1b**（已完成）| 2026-09-24 | 起草 11 篇 manual（README + 8 章 + 2 附录）| ✅ |
 | **Phase 2**（部分完成）| 2026-09-24 | §3 #1/#2/#3 已验证 + 暂缓（详见 §3.1）；#4-#6 / #10 仍待确认；#7/#8 已记录 | 🟡 部分完成 |
-| **Phase 3** | 2026-Q4 | 新增 `doc-link-checker.py` / `doc-archive-snapshot.py` / `doc-vs-code-drift.py` | ⏳ 待规划 |
+| **Phase 3** | 2026-Q4 | 新增 `doc-link-checker.py`（**✅ 已完成 2026-09-24**）/ `doc-archive-snapshot.py` / `doc-vs-code-drift.py` | 🟡 部分完成 |
 | **Phase 4** | 2026-Q4 | CI 集成（每次 PR 跑 link-checker）| ⏳ 待规划 |
 | **Phase 5** | 2027-Q1 | 第 1 次全量季度 review（验证知识库工程流程有效）| ⏳ 待规划 |
 

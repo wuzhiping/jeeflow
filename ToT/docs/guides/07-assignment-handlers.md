@@ -309,7 +309,7 @@ startAndExecute({ processDefineId, operator, f_nextNodeOperator: "finA" })
 
 两者最终都走引擎同一读取链（`resolveActors` 第一优先），`f_` 只是发起场景的便捷入口。
 
-> **本仓实现**（`vendor/jeeflow/engine.py:25-28`）：
+> **本仓实现**（`vendor/jeeflow/engine.py:26-28 KEY_NEXT_NODE_OPERATOR / KEY_PROCESS_START_NEXT_NODE_OPERATOR`）：
 >
 > ```python
 > KEY_NEXT_NODE_OPERATOR = "tf_nextNodeOperator"           # v1.0.1

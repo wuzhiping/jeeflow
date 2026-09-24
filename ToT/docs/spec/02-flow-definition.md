@@ -44,7 +44,7 @@
 
 > 兼容：`type` 接受 `snaker:task` 与 `task` 两种写法（设计器导出带前缀，手写可省略）。
 >
-> **本仓实测**（`vendor/jeeflow/model.py:8 _parse_flow_model`）：未知字段**严格丢弃**——写入额外键（如设计器 UI 元数据）不会存入实例变量，也不参与执行。如需任务回显，写入 `properties` 内任一命名键即可（运行时透传）。
+> **本仓实测**（`vendor/jeeflow/model.py:9 class FlowModel` + `parse_flow_model` 函数）：未知字段**严格丢弃**——写入额外键（如设计器 UI 元数据）不会存入实例变量，也不参与执行。如需任务回显，写入 `properties` 内任一命名键即可（运行时透传）。
 
 ---
 

@@ -24,7 +24,7 @@
 > - Assignment handler（顶层单 callable）→ `EngineExtensions.assignment_handler=callable`
 > - Assignment handler（Registry 形式）→ `HandlerRegistry.register_assignment(name, IAssignmentHandler实例)` + `EngineExtensions.registry=registry`
 >
-> 详见 `../main_common.py:301 apply_extensions` + `../vendor/jeeflow/extensions.py:86 EngineExtensions`。
+> 详见 `../main_common.py:301 apply_extensions` + `../vendor/jeeflow/extensions.py:89 EngineExtensions`。
 
 ---
 

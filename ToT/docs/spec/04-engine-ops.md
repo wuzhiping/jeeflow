@@ -130,7 +130,7 @@ execute_and_jump_task(task_id, operator, args, target_task_name) → ProcessInst
 execute_and_jump_task(task_id, operator, args, target_task_name=None) → ProcessTask[]
 ```
 
-> **本仓实测实现**（`vendor/jeeflow/engine.py:239` + `:245`）：`ROLLBACK` 路径对齐 Java `rejectTask` 语义。
+> **本仓实测实现**（`vendor/jeeflow/engine.py:221 execute_and_jump_to_end` + `:241 execute_and_jump_task` + `:274 execute_and_jump_to_first_task_node`）：`ROLLBACK` 路径对齐 Java `rejectTask` 语义。
 
 **语义（本仓实测 8 步血缘版）**：
 
