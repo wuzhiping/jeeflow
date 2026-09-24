@@ -2,7 +2,7 @@
   "name": "fdep",
   "displayName": "jeeFlow 协作主流程 (Foundational Development & Engagement Process)",
   "type": "collaboration",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "schema": "snaker-2",
   "metadata": {
     "owner": "R1b",
