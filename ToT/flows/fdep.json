@@ -48,7 +48,7 @@
         "exitCriteria": "登记完成 + 决定（立项 submitType=1 / 驳回 submitType=2）"
       },
       "text": {
-        "value": "0. 接收/登记 (u_fdp_pm 直接, SPI 角色 R3 → u_fdp_pm 映射待 v0.7+ 用 assignmentHandler)"
+        "value": "0. 接收/登记"
       }
     },
     {
@@ -83,7 +83,7 @@
         "exitCriteria": "RML 通过 R3 自审并指派下一阶段"
       },
       "text": {
-        "value": "1. RML 立项 (u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ 用 assignmentHandler)"
+        "value": "1. RML 立项"
       }
     },
     {
@@ -104,7 +104,7 @@
         "exitCriteria": "接口编号连续、Mock 数据覆盖正常/异常场景"
       },
       "text": {
-        "value": "2. 架构/接口设计 (u_fdp_pm 直接, SPI 角色 R7 映射待 v0.7+ 用 assignmentHandler)"
+        "value": "2. 架构/接口设计"
       }
     },
     {
@@ -125,7 +125,7 @@
         "exitCriteria": "通过 R6 自动评审 + 自测通过"
       },
       "text": {
-        "value": "3. 开发实现 (u_fdp_pm 直接, SPI 角色 R2 映射待 v0.7+ 用 assignmentHandler)"
+        "value": "3. 开发实现"
       }
     },
     {
@@ -146,7 +146,7 @@
         "exitCriteria": "R6 评审通过 + R3 验收签字"
       },
       "text": {
-        "value": "4. 评审/验收/发布 (u_fdp_pm 直接, SPI 角色 R6 映射待 v0.7+ 用 assignmentHandler)"
+        "value": "4. 评审/验收/发布"
       }
     },
     {
@@ -167,7 +167,7 @@
         "exitCriteria": "每条反馈关联到 Task 或 Issue；无孤立文档"
       },
       "text": {
-        "value": "5. 反馈/知识沉淀 (u_fdp_pm 直接, SPI 角色 R5 映射待 v0.7+ 用 assignmentHandler)"
+        "value": "5. 反馈/知识沉淀"
       }
     },
     {
