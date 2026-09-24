@@ -186,3 +186,50 @@ ToT/flows/<flow>/
 - invoice-approval 补 initiate.md（B 计划）
 - leave-approval 流程的 initiate.md（如果未来添加）
 - gen-job-cards.py 是否需扩展：检测 `initiate.md` 存在性？
+
+---
+
+## 8. customer-test 验证（deploy 后）
+
+### 8.1 healthz
+
+```json
+{"status":"UP","backend":"python","pg":"ok"}
+```
+
+### 8.2 listByType（确认 fdep active）
+
+```json
+{
+  "processDesignId": "1790223050110000",
+  "name": "fdep",
+  "displayName": "jeeFlow 协作主流程 (...)",
+  "processDefineId": "1790232633116000",
+  "processDefineState": 1,        ← active
+  "jsonObject": { "version": "0.6.2" }
+}
+```
+
+**fdep v0.6.2 active 保持**（无需重 deploy，因 jsonObject 没改）。
+
+### 8.3 6/6 测试在 customer-test 通过
+
+| # | 测试 | 结果 |
+|---|------|------|
+| 1 | 读 initiate.md | ✅ code 0, 1073 chars |
+| 2 | 读 job_card（向后兼容）| ✅ code 0, 2900 chars |
+| 3 | 拒绝 `../../../etc/passwd` | ✅ 99999999, "应位于 ToT/flows/fdep/ 下" |
+| 4 | 拒绝 `ToT/flows/fdep.json`（设计层）| ✅ 99999999 |
+| 5 | 越界（invoice-approval 目录）| ✅ 99999999 |
+| 6 | 自动补 `.md` 后缀 | ✅ code 0 |
+
+**关键证据**：3 项安全测试错误信息均含 `ToT/flows/fdep/`（不再有 `job_cards/`），证明 **v0.2 endpoint 代码已生效**。
+
+### 8.4 部署产物清单
+
+| 类型 | 内容 | 来源 |
+|------|------|------|
+| 引擎代码 | `_processDefine_getJobCardContent` v0.2 | git commit `ce63407` |
+| 新文档 | `ToT/flows/fdep/initiate.md` (1073 chars) | git commit `ce63407` |
+| Skill 文档 | `SKILL.md §A` "发起前可读 initiate guide" | git commit `ce63407` |
+| **无需重 deploy** | fdep jsonObject 没改 | ✅ |
