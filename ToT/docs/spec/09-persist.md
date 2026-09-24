@@ -68,8 +68,8 @@ class DynamicTableWriter(ABC):
 | 4 | **列匹配**（v1.8.0，issues/20）：默认宽松（驼峰↔下划线归一匹配）；`set_strict_column_match(True)` 严格 | `persist.py:258 _find_table_column` + `:100 strict_column_match` |
 | 5 | **系统字段**：`create_time` / `create_user` / `update_time` / `update_user` / `is_deleted`（可配置列名，`null` 禁用） | `persist.py:231 fill_system_fields` |
 | 6 | **用户列默认值**（v1.8.0，issues/19）：`create_user`/`update_user` 优先取 `apply_user_id`（= 流程 operator）；无 operator 回落配置（缺省 `"system"`） | `persist.py:250 _resolve_default_user` + `:97 default_user_value` |
-| 7 | **主键生成**（v1.8.0，issues/21）：自增检测 + 可配置生成器 `set_primary_key_generator(表名→主键值)`；data 已有主键用之 → 自增不生成 → 非自增未配置生成器抛清晰错误 | `persist.py:101 primary_key_generator` + `:183 raise ValueError` |
-| 8 | **schema 限定**（v1.8.0，issues/22）：information_schema 探测限定当前 schema（MySQL `DATABASE()`；PG/H2 `CURRENT_SCHEMA()`）| `persist.py:130 MySQL` + `:140 PG/H2` |
+| 7 | **主键生成**（v1.8.0，issues/21）：自增检测 + 可配置生成器 `set_primary_key_generator(表名→主键值)`；data 已有主键用之 → 自增不生成 → 非自增未配置生成器抛清晰错误 | `persist.py:102 primary_key_generator` + `:183 raise ValueError` |
+| 8 | **schema 限定**（v1.8.0，issues/22）：information_schema 探测限定当前 schema（MySQL `DATABASE()`；PG/H2 `CURRENT_SCHEMA()`）| `persist.py:129 dialect == "mysql"` + `:142 else PG/H2` |
 
 ---
 
@@ -141,7 +141,7 @@ class DynamicTableWriter(ABC):
 | `2` | 可编辑 | 更新 |
 | `3` | 隐藏 | 不更新 |
 
-> **v1.8.2 起引擎办理入口过滤**（`persist.py:453 _is_editable` + `engine.py:filterFieldByPerm`）：值非 EDIT(2) 的 `f_*` 字段在入变量前即被剔除——被拒值无法经流程变量落到下游节点写入。1.8.0/1.8.1 只有拦截器写入侧过滤，上游只读可被下游绕过。
+> **v1.8.2 起引擎办理入口过滤**（`persist.py:466 _is_editable` + `engine.py:filterFieldByPerm`）：值非 EDIT(2) 的 `f_*` 字段在入变量前即被剔除——被拒值无法经流程变量落到下游节点写入。1.8.0/1.8.1 只有拦截器写入侧过滤，上游只读可被下游绕过。
 
 **状态字段**（SYNC）：值 = 实例状态码（10 / 20 / 45 / 50），列名优先 `{节点ID}_{状态码}`（如 `task1_10`），无该列回落 `{节点ID}`（如 `task1`）——列探测过滤，表无对应列则跳过。
 

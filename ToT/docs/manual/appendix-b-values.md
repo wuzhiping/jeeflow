@@ -71,7 +71,7 @@
 
 | 界面字段 | 形态 | 净装镜像里的选项 | 本仓实测位置 |
 |---|---|---|---|
-| 流程属性 → 前置拦截器 | 下拉 | 无注册项 | `engine.py:1071 _resolve_interceptors`（未注册抛 `ValueError`）|
+| 流程属性 → 前置拦截器 | 下拉 | 无注册项 | `engine.py:1054 _resolve_interceptors`（未注册抛 `ValueError`）|
 | **流程属性 → 后置拦截器** | 下拉 | **业务数据自动入库**（`com.mldong.jeeflow.persist.interceptor.PersistPostInterceptor`）| `persist.py:486 register_persist_meta` 自动注册到 `HandlerRegistry` |
 | 节点高级配置 → 前置 / 后置拦截器 | 文本框 | 填类全限定名，多个用逗号分隔 | `extensions.py:92 interceptor_registry: dict[str, FlowInterceptor]` |
 
@@ -83,9 +83,9 @@
 
 | 值 | 界面 | 效果 | 本仓实现 |
 |---|---|---|---|
-| `1` | 只读 | 可见不可改 | `persist.py:457 PERM_READ_ONLY` |
-| `2` | 可编辑 | 正常填写 | `persist.py:458 PERM_EDIT`（**缺省**）|
-| `3` | 不可见 | 该节点不渲染这个字段 | `persist.py:459 PERM_HIDDEN` |
+| `1` | 只读 | 可见不可改 | `persist.py:302 PERM_READ_ONLY` |
+| `2` | 可编辑 | 正常填写 | `persist.py:303 PERM_EDIT`（**缺省**）|
+| `3` | 不可见 | 该节点不渲染这个字段 | `persist.py:304 PERM_HIDDEN` |
 
 存储形式是节点属性里的 `field.PERMISSION_{字段名}`；发起表单字段带 `f_` 前缀，故实际键名形如 `PERMISSION_f_days`。
 

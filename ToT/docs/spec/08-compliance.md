@@ -38,7 +38,7 @@
 | 14 | `updateInstance` 级联 | 聚合根任务状态随实例更新落库 | `spi.py:37 update_instance`（v1.0.1 契约）|
 | 15 | 门面路由 | `flow(action, map)` 各 action 返回 `code=0` + 正确 data | `facade.py:63` |
 
-> **关键行为契约**（`model.py:177 ProcessInstance.withdraw` + `:270 TaskState.abandon`）：
+> **关键行为契约**（`model.py:112 ProcessInstance.withdraw` + `TaskState.abandon`）：
 > - `update_instance` 走同一连接持久化——撤回/挂起/终止等聚合命令改完任务状态后级联落库
 > - 引擎在完成任务后同步聚合内任务副本——确保下次 `update_instance` 拿到的是最新状态
 
@@ -108,7 +108,7 @@
 
 > **上游原文**：测试流程 JSON 文件唯一编辑源在 `jeeflow-java` 仓库的 `test/resources/flows/`（15 个）；各语言仓自带 `flows/` 入库副本，测试读本仓副本，维护者机器执行时由 resolver 精确镜像同步（全量复制+删孤儿）。
 
-> **本仓实测**：本仓 `flows/` 含 **17 个 sample**（`01-simple` / `02-multi-task` / `03-decision-expr` / `04-fork-join` / `05-countersign-parallel` / `06-countersign-sequential` / `07-countersign-ratio` / `08-countersign-sequential-approve` / `08-custom-node` / `09-with-reject` / `10-mixed-mode` / `11-assignee-vars` / `11-assignment-handler` / `12-candidate-page` / `13-countersign-one-vote-veto` / `14-decision-submitType` / `15-decision-amount` / `16-delegate-test` / `17-suspend-resume-test`），覆盖上游 15 个 + 本仓额外 4 个（一票否决 + decision+submitType + delegate + suspend/resume）。
+> **本仓实测**：本仓 `flows/` 含 **19 个 sample**（`01-simple` / `02-multi-task` / `03-decision-expr` / `04-fork-join` / `05-countersign-parallel` / `06-countersign-sequential` / `07-countersign-ratio` / `08-countersign-sequential-approve` / `08-custom-node` / `09-with-reject` / `10-mixed-mode` / `11-assignee-vars` / `11-assignment-handler` / `12-candidate-page` / `13-countersign-one-vote-veto` / `14-decision-submitType` / `15-decision-amount` / `16-delegate-test` / `17-suspend-resume-test`），覆盖上游 15 个 + 本仓额外 4 个（一票否决 + decision+submitType + delegate + suspend/resume）。注：08 与 11 各有 2 个同名文件（前缀复用），独立内容。
 >
 > 本仓测试驱动（**双端 PASS**）：
 > - **BDD**（1131 个）：`bash bdd/bdd-1001-1060-p0-regression.sh` 等 4 个 phase 脚本

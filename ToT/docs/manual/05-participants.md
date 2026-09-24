@@ -3,7 +3,7 @@
 > **来源**：https://jeeflow-doc.mldong.com/manual/05-participants
 > **定位**：给流程设计者（环境已部署 / 组织架构与用户已落地）使用的**操作手册第 5 章**——这是流程能不能跑通的分水岭。配错了不报错，只是**没人收到待办**。入口：设计器 → 点节点 → 常规配置 → 人员配置。
 >
-> **本仓实测**：基于 `vendor/jeeflow/engine.py:874 _resolve_actors` + `extensions.py:50 IAssignmentHandler` + `builtin.py:170-183` 注册 12 个 key（7 简化版主用 + 5 完整版别名）。
+> **本仓实测**：基于 `vendor/jeeflow/engine.py:761 _resolve_actors` + `extensions.py:50 IAssignmentHandler` + `builtin.py:170-183` 注册 12 个 key（7 简化版主用 + 5 完整版别名）。
 >
 > **裁剪记录**：§1 解析顺序 + §2 固定参与人 + §3 7 个处理类 + §4 候选 + §5 会签 + §6 临时改道 + §7 卡住了 **全部保留并重写为本仓实测**。
 
@@ -11,7 +11,7 @@
 
 ## §1. 引擎按什么顺序找人
 
-> **本仓实测**（`vendor/jeeflow/engine.py:874 _resolve_actors`）：
+> **本仓实测**（`vendor/jeeflow/engine.py:761 _resolve_actors`）：
 
 ```
 1. tf_nextNodeOperator 变量          → 动态指定下一节点处理人（最高优先）
@@ -110,7 +110,7 @@
 
 会签节点的办理按钮与普通节点不同：只有 **同意**、**不同意**、**加签**，没有退回上一步和跳转。
 
-> **本仓实测 4 模式**（`docs/flow.md §3.3` + `engine.py:_create_countersign_tasks`）：
+> **本仓实测 4 模式**（`docs/flow.md §3.3` + `engine.py:394 _create_task_with_actors` 会签任务创建；详见 `ToT/docs/diffs.md` §3-2）：
 >
 > | 模式 | 配置 | 完成条件 |
 > |---|---|---|

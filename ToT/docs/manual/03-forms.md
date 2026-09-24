@@ -3,7 +3,7 @@
 > **来源**：https://jeeflow-doc.mldong.com/manual/03-forms
 > **定位**：给流程设计者（环境已部署 / 组织架构与用户已落地）使用的**操作手册第 3 章**——表单是流程能跑的前提。本章覆盖**字段权限 / f_ 前缀 / 任务表单绑定 / 数据模型与流程变量映射**等核心契约。
 >
-> **本仓实测**：基于 `vendor/jeeflow/docs/flow.md` §3.3 + `persist.py:453 _is_editable` + `model.py:177 ProcessInstance.variables`。
+> **本仓实测**：基于 `docs/flow.md` §3.3 + `persist.py:466 _is_editable` + `model.py:112 ProcessInstance.variables`。
 >
 > **裁剪记录**：§1 两种表单（元数据 vs 自定义 Vue 组件）+ §2 元数据表单（数据模型 + 模型字段）+ §3 绑定到流程（流程级 / 节点级）**保留**并加本仓实测；§4 字段权限 + §5 表单与条件分支 + §7 卡住了（6 排错）**保留并重写为本仓实测**；§6 已知缺陷（前端 Vue 组件白屏）**整段裁剪**（本项目不输出 UI）。
 
@@ -70,7 +70,7 @@
 
 选中节点 → **表单配置** → **任务表单**，从下拉里选。**不选则该节点办理时只有审批意见区，没有业务表单**。
 
-> **本仓实测**（`vendor/jeeflow/docs/flow.md §3.3`）：任务节点 `properties.form` 字段即表单 key：
+> **本仓实测**（`docs/flow.md §3.3`）：任务节点 `properties.form` 字段即表单 key：
 >
 > ```json
 > {
@@ -107,7 +107,7 @@
 - 审批节点：全设只读（`1`）
 - 特殊审批节点（如「财务复核」）：把 `amount` 单独放开可编辑（`2`），其他仍只读
 
-> **本仓实测双键格式**（`vendor/jeeflow/persist.py:453 _is_editable`，v1.8.1+ issues/25）：
+> **本仓实测双键格式**（`vendor/jeeflow/persist.py:466 _is_editable`，v1.8.1+ issues/25）：
 >
 > ```json
 > {
@@ -144,7 +144,7 @@ f_days <= 3     → 直接结束
 f_days > 3      → 进分管领导审批
 ```
 
-> **本仓实测**（`vendor/jeeflow/engine.py:1381 _eval_decision_expr` + `SimpleExprEvaluator`，FIX-T37 §20）：
+> **本仓实测**（`vendor/jeeflow/engine.py` 内联实现，FIX-T37 §20）：
 >
 > - 表达式支持 `#var` 与直接变量名两种写法：`#f_days > 3` / `f_days > 3` 等价
 > - 字段名**区分大小写**——`f_Days` ≠ `f_days`
@@ -166,7 +166,7 @@ f_days > 3      → 进分管领导审批
 | 条件分支不按预期走 | 表达式里的变量名与字段名不一致（区分大小写）| §5，对齐 `f_<字段名>` |
 | **本仓实测补充**：`taskType=2` RECORD 模式自动完成，**不等待人工 execute** | 节点 properties.taskType 误设为 `2`（记录模式）| 改回 `0`（主办）或 `1`（协办），详见 `../docs/flow.md §3.3 taskType 设计陷阱` |
 
-> **本仓实测警示**（`vendor/jeeflow/engine.py:466 _create_task`）：taskType=2 创建后**自动完成**——`taskState=20` 直接进审批记录，下游节点（`TODO` 节点）**不出现**在待办列表。设计师期望"汇合后由人办理"应使用 `taskType=0`（主办）。详见 `../ToT/guides/02-flow-definition.md` §4 + `../docs/known-issues.md`。
+> **本仓实测警示**（`vendor/jeeflow/engine.py:752 _create_task`）：taskType=2 创建后**自动完成**——`taskState=20` 直接进审批记录，下游节点（`TODO` 节点）**不出现**在待办列表。设计师期望"汇合后由人办理"应使用 `taskType=0`（主办）。详见 `../ToT/guides/02-flow-definition.md` §4 + `../docs/known-issues.md`。
 
 ---
 

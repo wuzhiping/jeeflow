@@ -164,7 +164,7 @@
 
 **建议**：decision 出边、fork 出边都写 `text.value` 标签——钉钉模式渲染在分支线上，没有标签线上是空的。
 
-> **本仓 task 节点多出边警告**（FIX-T110 §111 + verify W012）：**task 节点不应有多条无条件出边**。引擎 `engine.py:210 _follow_edges` 遍历所有出边不分流；当 task 节点 ≥2 出边且 target 含 end 节点时，end 会被提前遍历 → `inst.finish()` → instance.state=20 DONE，**但同时创建的 DOING task 因 instance.state=20 而无法 `execute`**（code=99999999）。
+> **本仓 task 节点多出边警告**（FIX-T110 §111 + verify W012）：**task 节点不应有多条无条件出边**。引擎 `engine.py:1147 _follow_edges` 遍历所有出边不分流；当 task 节点 ≥2 出边且 target 含 end 节点时，end 会被提前遍历 → `inst.finish()` → instance.state=20 DONE，**但同时创建的 DOING task 因 instance.state=20 而无法 `execute`**（code=99999999）。
 >
 > - 需要分支时**用 decision 节点分隔**（每条 decision 出边配显式 `expr`），或用 fork 节点（必须 join 汇合）；
 > - verify 规则 **W012** 会在 deploy 时警告此反模式（不阻塞 save/deploy）。
@@ -213,7 +213,7 @@ finalAmount >= 5000
 
 生产接入时按需选型（Java 用 SpEL、Python 用 simpleeval 等），引擎不内置。
 
-> **本仓 SimpleExprEvaluator 实际能力**（`vendor/jeeflow/engine.py:SimpleExprEvaluator`，FIX-T37 §20）：上游 demo 仅支持数值比较过于简化，本仓实际支持：
+> **本仓决策表达式实际能力**（`vendor/jeeflow/engine.py` 内联实现；`SimpleExprEvaluator` 类不存在，详见 `ToT/docs/diffs.md` §3-6；FIX-T37 §20）：上游 demo 仅支持数值比较过于简化，本仓实际支持：
 >
 > | 能力 | 语法 | 示例 |
 > |---|---|---|

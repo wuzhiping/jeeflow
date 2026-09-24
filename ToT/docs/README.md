@@ -28,7 +28,7 @@
 | `builtin.py` | 已演进（含 12 个 key 注册：7 简化版 + 5 完整版别名）|
 | `engine.py` | 已演进（含 SurrogateInterceptor 内置默认开启 issues/116）|
 | `extensions.py` | 已演进（`EngineExtensions` 6 字段 + `IDGenerator` 等）|
-| `facade.py` | 已演进（60+ action，PRD 声明 38）|
+| `facade.py` | 已演进（**57 个 `/wf/` 端点 / 83 个 _* 路由方法**，PRD 声明 38）|
 | `memory.py` | 已演进 |
 | `meta.py` | 已演进（`AsyncMetaTableReader` / `AsyncJdbcTableReader`）|
 | `model.py` | 已演进（`InstanceState` 7 值 / `TaskState` 6 值 / `SubmitType` 9 枚举）|
@@ -64,17 +64,20 @@
 
 > 这些是起草时实测发现的"文档与代码不一致"点，**不一定是 bug**——可能是上游文档滞后于本地改进，也可能本地字典表 / 注册表就是不一致实现。每条都需人工判断方向。
 >
-> **Phase 2 进度**（2026-09-24 重核）：#1 / #2 / #3 已直接实测验证。
+> **Phase 2 进度**（2026-09-24 重核 + 4 批次修复）：
+> - #1 / #2 / #3 已直接实测验证 + 暂缓（不改代码决策）
+> - #4 已修复（PRD 38→57）
+> - **全文逐条差异库**：见 `ToT/docs/diffs.md`（**65% 已修复**，~25 项待修/待复测）
 
 | # | 不一致点 | 文档侧（上游 + 本仓 ToT/docs）| 代码侧（本仓实测）| 建议方向 | 状态 |
 |---|---|---|---|---|---|
 | 1 | **`wf_process_submit_type` 缺 `7 转办`（TRANSFER）**| 上游 9 枚举；本仓 `metadata.py:34 _DICTS` 字典仅 8 项，缺 `7` | `model.py:70 SubmitType` 含 `7 TRANSFER`；**2026-09-24 重核**：`metadata.py:34-38` 确认仅 8 项，缺 `7` | **修字典**（加 `DictItem("7", "转办")`）| ✅ 已验证 / ⏳ 待修 |
 | 2 | **`wf_process_submit_type` label 重复**：`20` 与 `2` 都是「拒绝申请」| 字典表 `metadata.py:34` label 重复 | 枚举 `20=COUNTERSIGN_DISAGREE` / `2=REJECT` 语义不同；**2026-09-24 重核**：`metadata.py:35` + `:37` 确认重复 | **改 label**：`20` → 「会签拒绝」 | ✅ 已验证 / ⏳ 待修 |
 | 3 | **`BUILTIN_ASSIGNMENT_METAS` 用完整版 FQCN 但运行时实际加载简化版** | `metadata.py:77-99` 注册 5 个 `…OrgUserAssignmentHandlers$…` | `builtin.py:170-183` 同时注册 12 个 key：7 简化版主用 + 5 完整版别名；**2026-09-24 重核**：`metadata.py:82/85/88/91/97` 5 项用完整版，`builtin.py:15-23` 主用简化版 | **统一字典源**——`BUILTIN_ASSIGNMENT_METAS` 改为简化版主用 7 项 | ✅ 已验证 / ⏳ 待修 |
-| 4 | **PRD 声明 38 actions vs facade 实际 60+ actions** | `PRD.md` §核心端点列 38 个；本仓 `facade.py` 实际 60+ | 缺：**`transferAndAdd`** / `delegate` / `delegateHistory` / `withForm` / `comment` / `extra` / `suspend` / `resume` / `stats_overview` / `stats_trend` / `stats_group` / `getJobCardContent` 等 12+ | **更新 PRD**（或确认 38 仅指「核心 38」）| ✅ 已修复（PRD 38→57 + ToT/docs/spec/06-facade.md 同步，详见 §3.1.4）|
+| 4 | **PRD 声明 38 actions vs facade 实际 57 个 `/wf/` 端点** | `PRD.md` §核心端点列 38 个；本仓 `facade.py` 实际 57（openapi.json）+ 83 个 _* 路由方法 | 缺：**`transferAndAdd`** / `delegate` / `delegateHistory` / `withForm` / `comment` / `extra` / `suspend` / `resume` / `stats_overview` / `stats_trend` / `stats_group` / `getJobCardContent` 等 12+ | **更新 PRD**（或确认 38 仅指「核心 38」）| ✅ 已修复（PRD 38→57 + ToT/docs/spec/06-facade.md 同步，详见 §3.1.4）|
 | 5 | **ea-compliance 44/44 PASS 是 2026-09-23 状态** | `spec/08-compliance.md` §本仓实测状态 | 每次合规测试结果会变 | **按版本快照**（每发版打 snapshot）| ⏳ 待确认 |
 | 6 | **`docs/BUGS.md` 27 FIX + 0 仍存 是 2026-09-20 状态** | `spec/06-facade.md` / `spec/08-compliance.md` / 顶部差异 | 新 FIX-T 编号会改变总数 | **按版本快照** | ⏳ 待确认 |
-| 7 | **上游 `/guides/02-flow-definition` 与本仓 `flows/` 数量不一致** | 上游 `02-flow-definition` 引 14 个 demo sample；本仓 `flows/` 含 **17 个** + 2 个废弃名（`08-countersign-sequential-approve` + `08-custom-node`）| 上游少 4 个（`13-one-vote-veto` / `14-decision-submitType` / `16-delegate-test` / `17-suspend-resume-test`）| 文档保持指向上游 14；本仓额外 3 个在 `spec/08-compliance.md` 列出 | ✅ 已记录 |
+| 7 | **上游 `/guides/02-flow-definition` 与本仓 `flows/` 数量不一致** | 上游 `02-flow-definition` 引 14 个 demo sample；本仓 `flows/` 含 **19 个** + 2 个同号（`08-countersign-sequential-approve` + `08-custom-node` 共前缀 + `11-assignee-vars` + `11-assignment-handler` 共前缀）| 上游少 4 个（`13-one-vote-veto` / `14-decision-submitType` / `16-delegate-test` / `17-suspend-resume-test`）| 文档保持指向上游 14；本仓额外 3 个在 `spec/08-compliance.md` 列出 | ✅ 已记录（**Batch 3-a 已同步 17→19**）|
 | 8 | **路由路径差异**：上游 `processDefine/startAndExecute` vs 本仓 `processInstance/startAndExecute`（兼容路径）| `guides/01-quick-start.md` §3 已加本仓对齐注解 | 两条路径本仓都注册，但语义有差异（启动 vs 启动并自动完成）| **保留兼容路径**，文档注明语义差 | ✅ 已记录 |
 | 9 | **`vendor/jeeflow-original/README.md` 存在但 `vendor/jeeflow/` 无** | — | 上游有 README；本地 README 在仓库根 `README.md` | 保留上游 README 作为演进基线 | — |
 | 10 | **`facade.py` 累计修改 vs 上游 `facade.py` 改动范围** | — | `diff` 显示 11 个 .py 文件改动 + 1 个新增（`verify.py`）| 演进历史应在 `CHANGELOG.md` / 迭代记录归档 | ⏳ 待补 |
@@ -146,7 +149,7 @@
   - `./PRD.md` §核心端点 表格：从 5 行扩到 10 行（细分类别：流程定义 9 / 流程设计 9 / 流程设计历史 1 / 流程实例 19 / 任务操作 17 / 委托代理 5 / 审计 1 / 监控 6 / 异步 1 / SPI 数据 6）
   - `./PRD.md` §文档：追加 `openapi.json` + `actions.md` 链接
   - `./ToT/docs/spec/06-facade.md` 第 6 行：60+ → 57 + 标注 5 个数的实测位置（PRD / openapi.json / actions.md / facade.py）
-  - `./ToT/docs/spec/06-facade.md` §3 标题：「本仓 60+ 个」→「本仓 57 个 `/wf/` 端点」
+  - `./ToT/docs/spec/06-facade.md` §3 标题：「本仓 60+ 个」→「本仓 57 个 `/wf/` 端点」（已应用）
 - **未改**：`./vendor/jeeflow/*.py` 零字节修改（仅文档同步）
 - **回访触发**：
   - 触发 A（代码改动）：新增 action 但未同步 PRD / openapi.json

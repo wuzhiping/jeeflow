@@ -1,7 +1,7 @@
 # 设计原理 07 · 管理扩展与统一门面——v1.1.0 的两个关键决策
 
 > **来源**：https://jeeflow-doc.mldong.com/concepts/07-admin-and-facade
-> **定位**：给流程设计者（环境已部署 / 组织架构与用户已落地）使用的**v1.1.0 两个关键决策原理参考**——理解「管理扩展走扩展仓储 SPI 而非核心仓储」+「统一门面 `flow(action, args)`」的设计动机，是理解委托 / 抄送 / 设计器 CRUD / 60+ action 的基础。
+> **定位**：给流程设计者（环境已部署 / 组织架构与用户已落地）使用的**v1.1.0 两个关键决策原理参考**——理解「管理扩展走扩展仓储 SPI 而非核心仓储」+「统一门面 `flow(action, args)`」的设计动机，是理解委托 / 抄送 / 设计器 CRUD / **57 个 `/wf/` 端点（47 唯一 action）**的基础。
 >
 > **本仓实测**：`vendor/jeeflow/spi.py:190 ProcessExtRepository(ABC)` + `vendor/jeeflow/facade.py:63 JeeflowFacade.flow(action, args)` + `engine.py` 内置 `SurrogateInterceptor`（v1.9.0+ 默认开启，issues/116）。
 >
@@ -107,7 +107,7 @@ flow(action, map) → { code, msg, data }
 >
 > ```python
 > async def flow(self, action: str, args: Optional[dict] = None) -> dict:
->     """统一入口：60+ action 全覆盖
+>     """统一入口：57 个 `/wf/` 端点全覆盖
 >
 >     API 兼容性：新增 endpoint（走 /wf/{action:path} 路由）
 >     """
@@ -115,7 +115,7 @@ flow(action, map) → { code, msg, data }
 >     # 返回统一结构：{code, msg, data} 或 {code, msg, data, ...}
 > ```
 >
-> - **60+ action** 完整覆盖上游 demo + 本仓新增（详见 `../spec/06-facade.md` §3 清单）
+> - **57 个 `/wf/` 端点（47 唯一 action）**完整覆盖上游 demo + 本仓新增（详见 `../spec/06-facade.md` §3 清单）
 > - **HTTP 入口**：`main.py` / `main_pg.py` 注册 `POST /wf/{action:path}` 路由
 > - **统一响应**：`{code, msg, data}` 三字段；`code=0` 成功 / `code=99999999` 业务失败（详细见 `../spec/06-facade.md` §2.1）
 
@@ -156,9 +156,9 @@ flow(action, map) → { code, msg, data }
 >
 > | 版本 | 关键里程碑 | 本仓实测对应 |
 > |---|---|---|
-> | **v1.0.0** | 基础架构 + 27 引擎核心场景 | `flows/01-17`（17 个 sample + BDD 1131 + TDD 19）|
+> | **v1.0.0** | 基础架构 + 27 引擎核心场景 | `flows/01-17`（**19 个 sample** + BDD 1131 + TDD 19；含 2 个同号 08/11）|
 > | **v1.0.1** | 集成反馈：`save_define` / `update_instance` 级联契约 | `spi.py:25 save_define` + `:37 update_instance` |
-> | **v1.1.0** | 管理扩展（`ProcessExtRepository`）+ 27 个 action | `spi.py:190 ProcessExtRepository` + `facade.py:60+ action` |
+> | **v1.1.0** | 管理扩展（`ProcessExtRepository`）+ 27 个 action | `spi.py:190 ProcessExtRepository` + `facade.py:83 个 _* 路由方法（57 公开 /wf/ 端点）` |
 > | **v1.2.0** | 13 个视图端点补齐（highLight / approvalRecord / candidatePage / latest / 抄送）| `facade.py:1276 highLight` / `:1405 approvalRecord` / `:1535 candidatePage` 等 |
 > | **v1.3.0** | `ccList` 分页（核心分页 SPI）+ `addTaskActor` 追加语义修复 | `spi.py:70 page_cc_instances` + `:53 add_task_actor` |
 > | **v1.4.0** | 元数据能力（枚举字典 + HandlerRegistry 注册式清单）| `metadata.py:55 enum_dict_keys` + `:102 HandlerRegistry` |
@@ -166,14 +166,14 @@ flow(action, map) → { code, msg, data }
 > | **v1.8.0** | 业务数据持久化（ARCHIVE/SYNC 双模式）+ 元数据驱动落库 | `persist.py:307 PersistPostInterceptor` + `meta.py:141 MetaTableWriter` |
 > | **v1.9.0** | SurrogateInterceptor 内置默认开启 + 27 BUG 全部修复 | `engine.py:SurrogateInterceptor` + `docs/BUGS.md` 27/27 PASS |
 >
-> 详见 `../spec/06-facade.md` + `../ToT/ea/roadmap.md` + `docs/BUGS.md`。
+> 详见 `../spec/06-facade.md` + `../roadmap.md` + `docs/BUGS.md`。
 
 ---
 
 ## 跨文档交叉引用
 
 - 扩展仓储 12 方法完整契约：`../spec/05-spi.md` §扩展仓储
-- Facade 60+ action 完整契约 + 响应结构 + 分页 + id 字符串化：`../spec/06-facade.md`
+- Facade 57 个 `/wf/` 端点 + 83 个 _* 路由方法完整契约 + 响应结构 + 分页 + id 字符串化：`../spec/06-facade.md`
 - SurrogateInterceptor 运行期 6 条语义 + 委托查询判据 4 条件：`../spec/06-facade.md` §4.5 + `../concepts/04-extensions.md`
-- 27 合规测试场景 + 路线图：`../spec/08-compliance.md` + `../ToT/ea/roadmap.md`
+- 27 合规测试场景 + 路线图：`../spec/08-compliance.md` + `../roadmap.md`
 - mldong 集成视角（私用项目不引入）：`../ToT/guides/10-mldong-integration.md`

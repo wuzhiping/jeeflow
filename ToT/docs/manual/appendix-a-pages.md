@@ -54,7 +54,7 @@
 > - `superAdmin` 全部放行
 > - 普通角色需在 **角色管理 → 授权菜单** 里勾上对应按钮
 > - 改完重新登录生效
-> - 完整 60+ action 权限码映射详见 `../spec/06-facade.md` §3
+> - 完整 57 个 /wf/ 端点 权限码映射详见 `../spec/06-facade.md` §3
 > - 默认规则 + OR 语义 + 放行清单详见 `../spec/06-facade.md` §2.6
 > - 部分 action 为 OR 语义（如 `processDefine/detail` → `wf:processDefine:detail` 或 `wf:processDesign:listByType`）
 
@@ -66,7 +66,7 @@
 
 | 设计师关心 | 应看文档 |
 |---|---|
-| 哪些 action 可调用 | `../spec/06-facade.md` §3 清单（60+ action）|
+| 哪些 action 可调用 | `../spec/06-facade.md` §3 清单（57 个 /wf/ 端点）|
 | 权限码默认规则 + OR 语义 | `../spec/06-facade.md` §2.6 |
 | 接口参数 + 返回结构 | `../spec/06-facade.md` §4 各 action 详解 |
 | 失败 msg 跨栈字面量 | `../spec/06-facade.md`「失败 msg 跨栈统一文案」 |
@@ -76,7 +76,7 @@
 
 ## 跨文档交叉引用
 
-- Facade 60+ action 完整契约 + 权限码默认规则 + 失败 msg 字面量：`../spec/06-facade.md`
+- Facade 57 个 /wf/ 端点 完整契约 + 权限码默认规则 + 失败 msg 字面量：`../spec/06-facade.md`
 - 7 个内置 assignmentHandler + 解析 4 优先级：`../ToT/guides/07-assignment-handlers.md`
 - `OrgUserProvider` SPI 契约（3 方法）：`../spec/05-spi.md` §IOrgUserProvider
 - 集成方权限码 SPI（`IActionPermissionProvider` 默认映射）：`../spec/06-facade.md` §2.6

@@ -21,20 +21,18 @@ FlowModel（流程定义）
 执行状态 = ProcessInstance + 当前节点指针（通过 task.taskName 反查节点）
 ```
 
-**关键设计**：任务完成后，引擎通过 `task.taskName` 在 FlowModel 里反查节点，再 `follow_edges` 找到下一个节点——**不需要在实例里维护"当前节点"指针**，任务本身就是指针。这简化了持久化模型（8 张表，无游标表）。
+**关键设计**：任务完成后，引擎通过 `task.taskName` 在 FlowModel 里反查节点，再 `follow_edges` 找到下一个节点——**不需要在实例里维护"当前节点"指针**，任务本身就是指针。这简化了持久化模型（PG 端 9 张表，无游标表）。
 
-> **本仓实测**（`vendor/jeeflow/engine.py:210 _follow_edges` + `:282 find_node`）：
+> **本仓实测**（`vendor/jeeflow/engine.py:1147 _follow_edges`）：
 >
 > ```python
-> def _follow_edges(self, flow, current_node) -> list[FlowNode]:
->     """从 current_node 的所有出边获取目标节点"""
->     edges = [e for e in flow["edges"] if e["sourceNodeId"] == current_node.id]
->     return [find_node(flow, e["targetNodeId"]) for e in edges]
->
-> def find_node(self, flow, node_id) -> Optional[FlowNode]:
->     """按 task.taskName 反查节点"""
->     return next((n for n in flow["nodes"] if n["id"] == node_id), None)
+> def _follow_edges(flow: FlowModel, source_id: str) -> list[FlowNode]:
+>     """从 source_id 的所有出边获取目标节点（顶层模块函数）"""
+>     edges = [e for e in flow.edges if e.source_node_id == source_id]
+>     return [_find_node(flow, e.target_node_id) for e in edges]
 > ```
+>
+> **命名变更**：`find_node` v1.0 草稿曾为具名函数；现为 `_find_node` 内联在 `_follow_edges` 内（无独立定义）—— 推测命名错误（详见 `ToT/docs/diffs.md` §3-1）。
 
 ---
 
@@ -93,7 +91,7 @@ execute_process_task(task_id, operator, args):
              JOIN     → 若无进行中任务才放行
 ```
 
-> **本仓实测**（`vendor/jeeflow/engine.py:707 execute_process_task`）：
+> **本仓实测**（`vendor/jeeflow/engine.py:140 execute_process_task`）：
 > - 12 步核心路径：load → check → complete_task 聚合根 → save_task + fire TASK_COMPLETE → find_node → switch by node type
 > - task.is_allowed(`operator`) 系统代执行：`flow.auto` / `flow.admin` 恒放行
 > - 推进核心 4 节点类型分支：END / TASK / DECISION / FORK / JOIN / CUSTOM
@@ -114,11 +112,11 @@ evaluate_decision(node):
 
 **优先级设计理由**：Registry（注册的处理器）是编译期可确定的强约定；表达式是运行期自由求值。有处理器走处理器，没有才回退表达式——业务方按需选择。
 
-> **本仓实测**（`vendor/jeeflow/engine.py:1381 _eval_decision_expr` + `SimpleExprEvaluator`）：
+> **本仓实测**（`vendor/jeeflow/engine.py`）：
 >
 > - 第 1 优先级：`HandlerRegistry.resolve_decision(name)` → `IDecisionHandler.decide(node, instance, vars)`
 > - 第 2 优先级：`EngineExtensions.decision_handler`（单 callable）→ `async def decide(flow, inst, vars) -> str`
-> - 第 3 优先级：出边 `expr` 表达式求值（OGNL 风格 `#var` / 直接变量名）
+> - 第 3 优先级：出边 `expr` 表达式求值（OGNL 风格 `#var` / 直接变量名）—— **该表达式求值逻辑内联在决策节点分支路径中**，无独立具名函数 `_eval_decision_expr`；`SimpleExprEvaluator` 类亦不存在（v1.0 草稿命名错误，详见 `ToT/docs/diffs.md` §3-4 / §3-6）
 > - **兜底**（FIX-T112 §113）：所有 expr 评估失败且无默认边 → 走第一条边（可能创建孤儿 DOING task）→ `verify W013` 警告
 >
 > 详见 `../ToT/guides/02-flow-definition.md` §5。
@@ -142,7 +140,8 @@ JOIN 放行条件 = inst 无任何 DOING 任务
 
 > **本仓实测**（`vendor/jeeflow/engine.py`）：
 > - FORK：`execute_node(fork)` → 遍历出边 → 每条出边递归 `execute_node(target)`
-> - JOIN：`is_all_tasks_finished()` 调聚合根（`model.py:280`）—— 实例 `tasks` 列表中**所有**任务 `taskState != DOING` 才放行
+> - JOIN：`is_all_tasks_finished()` 调聚合根（`model.py:210`）—— 实例 `tasks` 列表中**所有**任务 `taskState != DOING` 才放行
+> - **命名变更**：v1.0 草稿中 `_create_countersign_tasks` / `_check_doing_tasks` 不存在；当前会签任务通过 `_create_task_with_actors`（engine.py:394）创建，DOING 任务检查内联在 `_resolve_actors`（engine.py:761）内（详见 `ToT/docs/diffs.md` §3-2 / §3-3）
 > - 设计建议（FIX-T35 §30）：即便 FIX-T35 后已支持隐式 join，**推荐显式加 join 节点**——流程图可视化清晰 + 防 task 节点多条无条件出边陷阱（F-110）+ verify W012 警告
 >
 > 详见 `../ToT/guides/02-flow-definition.md` §3 + `../docs/known-issues.md §30`。
@@ -161,7 +160,7 @@ create_task: 为每个 actor 创建一个独立任务（同 task_name）
 全部完成：走下一节点
 ```
 
-> **本仓实测**（`engine.py:468 _create_countersign_tasks`）：逐 actor 调 `ProcessTask.create(...)` 落库；剩余 DOING 检测在 `engine.py:121 _check_doing_tasks`。
+> **本仓实测**（`engine.py:394 _create_task_with_actors`）：逐 actor 调 `ProcessTask.create(...)` 落库；剩余 DOING 检测内联在 `engine.py:761 _resolve_actors` 内。**注**：v1.0 草稿中 `_create_countersign_tasks` / `_check_doing_tasks` 不存在（详见 `ToT/docs/diffs.md` §3-2 / §3-3）。
 
 ### 6.2 串行会签（SEQUENTIAL）
 
@@ -226,10 +225,10 @@ execute_and_jump_to_first_task_node(task_id, operator, args):   # 退回发起�
 >
 > | 方法 | 实测位置 | 行号 |
 > |---|---|---|
-> | `execute_and_jump_to_end` | `_handle_end_jump` | `:239` |
-> | `execute_and_jump_task`（ROLLBACK / JUMP）| `_handle_rollback_jump` | `:245` |
-> | `execute_and_jump_to_first_task_node`（ROLLBACK_TO_OPERATOR=6）| `_handle_jump_to_first_task` | `:272` |
-> | `_resolve_actors` ROLLBACK 场景 | 行 `:356` |
+> | `execute_and_jump_to_end` | 内联分支（`submitType=2` 路径）| `:239` 起始 |
+> | `execute_and_jump_task`（ROLLBACK / JUMP）| 内联分支 | `:245` 起始 |
+> | `execute_and_jump_to_first_task_node`（ROLLBACK_TO_OPERATOR=6）| 内联分支 | `:272` 起始 |
+> | `_resolve_actors` ROLLBACK 场景 | `_rollback_actors` 同步子集 | `:355` |
 >
 > **submitType 行为**：`submitType=2(REJECT)` 调 `execute_and_jump_to_end`（实例→45，无新待办）；退回发起人用 `submitType=6` 调 `execute_and_jump_to_first_task_node`。详见 `../spec/04-engine-ops.md` + `../ToT/guides/05-scenarios.md` 场景一。
 
@@ -265,7 +264,7 @@ execute_node(node):
 > ```
 >
 > - 6 事件，与上游 5 事件 + 本仓实测 CC_CREATE
-> - 触发位置：`engine.py:108 _fire_event`（统一 fire） + 节点处理器 + 任务完成路径
+> - 触发位置：`engine.py:1109 _fire_event`（统一 fire） + 节点处理器 + 任务完成路径
 > - 监听入口：`EngineExtensions.event_listener = async_callable`（`extensions.py:95`）
 > - 「事件 → 消息」的字段组装 + 落库是**集成层职责**（详见 `../ToT/guides/04-extensions.md` §5 + `../concepts/04-extensions.md`）
 
@@ -295,13 +294,13 @@ execute_node(node):
 
 | 主题 | 本仓 Python 路径 |
 |---|---|
-| 启动 / 执行 / 跳转 | `vendor/jeeflow/engine.py`（`EngineImpl` 类） |
+| 启动 / 执行 / 跳转 | `vendor/jeeflow/engine.py`（`EngineImpl` 类 at :44）|
 | 节点遍历 `execute_node` | `vendor/jeeflow/engine.py:execute_node` |
-| 决策求值 | `vendor/jeeflow/engine.py:1381 _eval_decision_expr` + `SimpleExprEvaluator` |
-| 会签创建 | `vendor/jeeflow/engine.py:468 _create_countersign_tasks` |
-| 聚合根状态转换 | `vendor/jeeflow/model.py:177 ProcessInstance` + `:227 ProcessTask` |
+| 决策求值 | `vendor/jeeflow/engine.py:_eval_decision_expr`（内联实现，详见 `ToT/docs/diffs.md` §3-4）|
+| 会签创建 | `vendor/jeeflow/engine.py:394 _create_task_with_actors`（会签任务通过该方法创建）|
+| 聚合根状态转换 | `vendor/jeeflow/model.py:112 ProcessInstance` + `:230 ProcessTask` |
 | 事件枚举 | `vendor/jeeflow/extensions.py:8 EventType` |
-| 事件 fire | `vendor/jeeflow/engine.py:108 _fire_event` |
+| 事件 fire | `vendor/jeeflow/engine.py:1109 _fire_event` |
 
 ---
 

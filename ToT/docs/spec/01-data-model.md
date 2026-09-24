@@ -3,7 +3,7 @@
 > **来源**：https://jeeflow-doc.mldong.com/spec/01-data-model
 > **定位**：给流程设计者（环境已部署 / 组织架构与用户已落地）使用的**数据模型参考**——设计者需知道有哪些表、表内有哪些字段、各字段作用。
 >
-> **本仓实现版本**：PG 方言（`docs/pg_schema.sql`，2026-09-20 更新）；**8 张表**（上游 8 张 + 本仓额外 `wf_trace_span` 链路追踪表）；DDL 已含本仓实测补充字段（`owner_id` / `parent_status` / `version`）。
+> **本仓实现版本**：PG 方言（`docs/pg_schema.sql`，2026-09-20 更新）；**9 张表**（5 核心 + 3 扩展 + 1 本仓独有 `wf_trace_span` 链路追踪表，FIX-T99 §6.4.1）；DDL 已含本仓实测补充字段（`owner_id` / `parent_status` / `version`）。
 >
 > **裁剪记录**：header 通用约定 + 5 张核心表 + 3 张扩展表全部重写为本仓 PG 方言 DDL + 加本仓实测字段注解。
 
@@ -179,7 +179,7 @@ CREATE INDEX IF NOT EXISTS idx_wf_process_cc_instance_inst  ON wf_process_cc_ins
 | 0 | 未读 |
 | 1 | 已读 |
 
-> **本仓实测**：本仓**未提供** `createCcInstance` / `updateCcStatus` 公开 facade 端点，详见 `../ToT/guides/05-scenarios.md` 场景五抄送。当前由业务方监听 `CC_CREATE` 事件 + 自行实现查询接口。
+> **本仓实测**：本仓 facade **已提供** `processInstance/createCCInstance` / `updateCCStatus` / `ccList` 端点（`facade.py:1436/1449/1457`）；但「我的抄送」UI 与「已读回执」业务逻辑仍由集成方实现（详见 `../ToT/guides/05-scenarios.md` 场景五抄送）。
 
 ---
 

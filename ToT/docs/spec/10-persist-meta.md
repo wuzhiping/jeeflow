@@ -27,7 +27,7 @@
 
 ## §2. 元数据模型（本仓实测）
 
-> **本仓实现**：`vendor/jeeflow/meta.py:44 FieldMeta` + `:59 TableMeta` + `:24 StorageType(IntEnum)` —— 与上游契约完全一致。
+> **本仓实现**：`vendor/jeeflow/meta.py:45 FieldMeta` + `:60 TableMeta` + `:24 StorageType(IntEnum)` —— 与上游契约完全一致。
 
 ### 2.1 JSON 配置字段语义
 
@@ -39,7 +39,7 @@
 | `primaryKey` | string | `id` | 主键列名（ONE2ONE/ONE2MANY 子表外键缺省回落它）|
 | `fields` | array | 必填 | 字段定义列表 |
 
-**`fields[]` 元素**（本仓 `meta.py:44 FieldMeta` 数据类）：
+**`fields[]` 元素**（本仓 `meta.py:45 FieldMeta` 数据类）：
 
 | 字段 | 类型 | 缺省 | 语义 |
 |---|---|---|---|
@@ -140,7 +140,7 @@ class IDynamicMetaProvider:
 
 ## §6. 读取语义（MetaTableReader）
 
-> **本仓实现**：`vendor/jeeflow/meta.py:293 MetaTableReader.read_by_process_instance(table_name, process_instance_id)`。
+> **本仓实现**：`vendor/jeeflow/meta.py:331 MetaTableReader.read_by_process_instance(table_name, process_instance_id)`。
 
 | storageType | 读取 |
 |---|---|
@@ -158,7 +158,7 @@ class IDynamicMetaProvider:
 - 无元数据回落原始行（列名→值）
 - **Async 版本**（FIX-T95 §6.1.2）：`AsyncMetaTableReader` + `asyncpg pool` + 占位符 `$n`（PostgreSQL 风格）
 
-**调用入口**（facade.py:1077）：
+**调用入口**（facade.py:1076 `processInstance_bizData`）：
 
 ```python
 # 同步（sqlite / mysql）

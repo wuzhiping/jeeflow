@@ -51,7 +51,7 @@
 }
 ```
 
-> **本仓元数据模型**（`vendor/jeeflow/meta.py:44 FieldMeta` + `:59 TableMeta`）：
+> **本仓元数据模型**（`vendor/jeeflow/meta.py:45 FieldMeta` + `:60 TableMeta`）：
 >
 > | `FieldMeta` 字段 | 含义 |
 > |---|---|
@@ -157,7 +157,7 @@ curl -X POST http://localhost:8101/wf/processInstance/bizData \
 # table_name 从 process_define.content["relTableName"] 解析
 ```
 
-> **本仓 facade 解析**：bizData 增强接口在 `facade.py:1077+`，读侧必须先注入 `meta_reader`（即 `facade.set_meta_reader(...)`），否则清晰报错。
+> **本仓 facade 解析**：bizData 增强接口在 `facade.py:1076 processInstance_bizData`，读侧必须先注入 `meta_reader`（即 `facade.set_meta_reader(...)`），否则清晰报错。
 
 ---
 

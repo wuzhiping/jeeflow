@@ -43,7 +43,7 @@
 |---|---|
 | 权限码 `wf:{action}` 形式（设计器配置 action 权限用）| `../spec/06-facade.md` §2.6 |
 | 哪些 action 需要权限码 / 哪些放行 | `../spec/06-facade.md` §2.6 |
-| Facade 60+ action 完整清单 | `../spec/06-facade.md` §3 |
+| Facade 57 个 /wf/ 端点 完整清单 | `../spec/06-facade.md` §3 |
 | 集成方权限码 SPI 实测 | `../spec/05-spi.md` §可选 SPI |
 
 > **下一步**：若设计者关心「发起 → 审批 → 完成」端到端链路（账号切换 / 待办 / 流程图高亮 / 审批记录），应转 `manual/06-start-and-approve.md`（待起草）；若关心业务数据如何落到业务表，转 `manual/08-persist.md`（待起草）；若关心本仓流程设计者完整知识图谱，转 `../README.md` §2 文档覆盖。
@@ -54,6 +54,6 @@
 
 - 引擎契约层（默认规则 / OR 语义 / 放行清单）：`../spec/06-facade.md` §2.6
 - 集成方权限码 SPI（`IActionPermissionProvider` 默认映射）：`../spec/05-spi.md` §可选 SPI + `../spec/06-facade.md` §2.6
-- Facade 60+ action 完整契约：`../spec/06-facade.md` §3 + §4
+- Facade 57 个 /wf/ 端点 完整契约：`../spec/06-facade.md` §3 + §4
 - 用户视角权限流程（发起页 / 我的待办 / 审批页）：`manual/06-start-and-approve.md`（待补）
 - 设计者知识图谱：`../../README.md` §2 + §8.1

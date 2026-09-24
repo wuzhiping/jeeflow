@@ -63,7 +63,7 @@
 | 业务数据落库（ARCHIVE / SYNC + 字段权限双兼容）| [../ToT/guides/08-persist.md](../guides/08-persist.md) + [../ToT/guides/09-persist-meta.md](../guides/09-persist-meta.md) |
 | submitType 9 枚举 + 退回/跳转/拒绝语义 | [../spec/04-engine-ops.md](../spec/04-engine-ops.md) + [../ToT/guides/05-scenarios.md](../guides/05-scenarios.md) |
 | 流程详情回显（address 对象 / JSON / 子表）| [../ToT/guides/09-persist-meta.md](../guides/09-persist-meta.md) §6 |
-| Facade 60+ action 完整契约 | [../spec/06-facade.md](../spec/06-facade.md) |
+| Facade 57 个 /wf/ 端点 完整契约 | [../spec/06-facade.md](../spec/06-facade.md) |
 | 27 合规测试场景 | [../spec/08-compliance.md](../spec/08-compliance.md) |
 
 > **设计者无需关心**：`/manual/` 中「部署细节」（01）/「演示账号」（03）/「30 分钟实操」（04）/「排错」（07）—— 这些是部署运维与最终用户上手内容，本仓定位的「流程设计师」不接触。

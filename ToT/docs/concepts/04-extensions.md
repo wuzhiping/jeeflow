@@ -274,7 +274,7 @@ resolve_actors(node):
   4. 都没有                   → 不创建任务
 ```
 
-> **本仓实测**（`vendor/jeeflow/engine.py:874 _resolve_actors`）：`tf_nextNodeOperator` 优先级高于 Registry；`assignee` 与 `assignmentHandler` 互斥时 `assignee` 优先（静态优先于动态）。
+> **本仓实测**（`vendor/jeeflow/engine.py:761 _resolve_actors`）：`tf_nextNodeOperator` 优先级高于 Registry；`assignee` 与 `assignmentHandler` 互斥时 `assignee` 优先（静态优先于动态）。
 >
 > 详见 `../ToT/guides/07-assignment-handlers.md` §1。
 
@@ -287,7 +287,7 @@ evaluate_decision(node):
   3. 出边 expr 表达式求值
 ```
 
-> **本仓实测**（`vendor/jeeflow/engine.py:1381 _eval_decision_expr` + `SimpleExprEvaluator`）：
+> **本仓实测**（`vendor/jeeflow/engine.py` 内联决策分支）：
 >
 > - 详细决策 3 优先级 + 表达式兜底语义（FIX-T112）：`../concepts/03-execution-engine.md` §4
 > - 完整决策节点字段：`../ToT/guides/02-flow-definition.md` §5
@@ -336,7 +336,7 @@ execute_node(node):
 |---|---|
 | 拦截器 | `vendor/jeeflow/extensions.py:31 FlowInterceptor(ABC)`（`pre_handle` / `post_handle` / `order` 三方法）|
 | 事件枚举 | `vendor/jeeflow/extensions.py:8 EventType(Enum)`（6 事件：`PROCESS_START` / `PROCESS_FINISH` / `PROCESS_REJECT` / `TASK_CREATE` / `TASK_COMPLETE` / `CC_CREATE`）|
-| 事件字段 | `extensions.py:18 ProcessEvent`（`type` / `instanceId` / `taskId` / `taskName` / `operator` / `ccActorId`）|
+| 事件字段 | `extensions.py:19 ProcessEvent`（`type` / `instanceId` / `taskId` / `taskName` / `operator` / `ccActorId`）|
 | 事件挂载形态 | `EngineExtensions.event_listener`（**单回调** async callable）|
 | Handler Registry | `extensions.py:66 HandlerRegistry`（`register_assignment` / `register_decision` / `resolve_assignment` / `resolve_decision`）|
 | 内置 assignment | `builtin.py:162 register_builtin_assignments`（12 个 key：7 简化版主用 + 5 完整版别名）|

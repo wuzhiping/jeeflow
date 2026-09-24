@@ -3,7 +3,10 @@
 > **来源**：https://jeeflow-doc.mldong.com/spec/03-state-machine
 > **定位**：给流程设计者（环境已部署 / 组织架构与用户已落地）使用的**流程实例 / 任务状态码权威参考**——理解状态转换是设计 submitType 路由、调试卡死实例的前提。
 >
-> **本仓实现版本**：`vendor/jeeflow/model.py:46 InstanceState` IntEnum（7 值）+ `:55 TaskState` IntEnum（6 值）。**命名差异**说明：上游状态表用 `FINISHED` / `ABANDON`，本仓枚举对应为 **`DONE`** / **`ABANDONED`** —— 数据库列 `state` 数值与上游一致，仅 Python 枚举属性名不同。
+> **本仓实现版本**：`vendor/jeeflow/model.py:46 InstanceState` IntEnum（7 值）+ `:55 TaskState` IntEnum（6 值）。**命名差异**说明：
+> - 终态：上游 `FINISHED` → 本仓 `InstanceState.DONE` / `TaskState.DONE`（**两者**均无 ED 后缀）
+> - 废弃态：**不一致**——上游统一 `ABANDON`，本仓 `InstanceState.ABANDON`（无 ED）/ `TaskState.ABANDONED`（**带 ED 后缀**）
+> - 数据库列 `state` 数值与上游一致（20 / 99），仅 Python 枚举属性名部分差异；跨语言契约以**数值**为准。
 >
 > **裁剪记录**：流程实例状态表 + 状态图 + 任务状态表 + 状态图 + 转换规则全部保留 + 加本仓实现验证。
 
@@ -94,7 +97,7 @@
 
 ## 状态转换规则
 
-> **本仓实现**（`vendor/jeeflow/model.py:177 ProcessInstance.withdraw` + `:270 TaskState` 转换）：
+> **本仓实现**（`vendor/jeeflow/model.py:112 ProcessInstance.withdraw` + `TaskState` 转换）：
 >
 > ```python
 > # 流程实例撤回

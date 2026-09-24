@@ -125,7 +125,7 @@ apply_extensions(engine, registry=registry)
 > **本仓接口签名**（`vendor/jeeflow/extensions.py:58 IDecisionHandler`）：`async def decide(self, node, instance, vars: dict) -> str`。
 > - 返回值为**目标边的 id**（`edges[].id`），引擎据此跳转；
 > - 若返回的边 id 不存在，引擎按顺序找第一条出边（F-112 兜底）；
-> - 与 §2 决策表达式（OGNL/SimpleExprEvaluator）的关系：handler 用于"查库等表达式干不了的事"；表达式用于纯变量运算。
+> - 与 §2 决策表达式（OGNL 风格表达式，内联在 engine.py 决策分支）的关系：handler 用于"查库等表达式干不了的事"；表达式用于纯变量运算。
 
 ---
 

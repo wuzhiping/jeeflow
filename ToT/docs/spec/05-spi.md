@@ -90,7 +90,7 @@ class OrgUserProvider(ABC):
 | 接口 | 方法 | 说明 | 本仓默认 |
 |---|---|---|---|
 | `IDGenerator` | `next_id() -> int` | ID 生成 | 雪花 / 数据库自增（按后端）|
-| `ExpressionEvaluator` | `eval(expr, vars) -> Any` | 决策表达式求值 | `SimpleExprEvaluator`（内置，比较+逻辑+OGNL，FIX-T37）|
+| `ExpressionEvaluator` | `eval(expr, vars) -> Any` | 决策表达式求值 | `engine.py` 内联决策分支（默认；`SimpleExprEvaluator` 类不存在，详见 `ToT/docs/diffs.md` §3-6；FIX-T37 支持比较 + 逻辑 + OGNL）|
 | `IJsonProvider` | `to_json(obj)` / `from_json(str)` | JSON 序列化 | `json` 标准库（隐式）|
 | `ITransactionTemplate` | `execute(action)` | 事务管理 | `main_common.py:with_tx` ContextVar（详见下）|
 

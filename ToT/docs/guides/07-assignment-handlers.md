@@ -18,7 +18,7 @@
 
 > **静态优先于动态**：`assignee` 配置了就按静态走，`assignmentHandler` 不生效——避免"两个都配了，结果不确定"。
 >
-> **本仓实现**（`vendor/jeeflow/engine.py:874 _resolve_actors`）：
+> **本仓实现**（`vendor/jeeflow/engine.py:761 _resolve_actors`）：
 >
 > | 优先级 | 字段 | 来源 |
 > |---|---|---|

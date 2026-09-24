@@ -121,7 +121,7 @@ class ProcessRepository(ABC):
 
 **a) 面向"聚合"而非"表"**
 
-接口操作的是 `ProcessInstance` 整体和 `ProcessTask` 整体，不是 `update_state()` 这种字段级方法。仓储实现内部映射到 8 张表，引擎不感知表结构——这正是"同一套表可被不同语言共享"的前提。
+接口操作的是 `ProcessInstance` 整体和 `ProcessTask` 整体，不是 `update_state()` 这种字段级方法。仓储实现内部映射到 PG 端 9 张表（5 核心 + 3 扩展 + 1 链路追踪），引擎不感知表结构——这正是"同一套表可被不同语言共享"的前提。
 
 **b) 读方法返回"完整聚合"**
 
@@ -220,7 +220,7 @@ class ExpressionEvaluator(ABC):
 
 **为什么不做内置实现**？表达式语言是典型的"可以有很多答案"的问题：Java 可用 SpEL / MVEL / Aviator；Python 可用 `simpleeval`；Go 有 govaluate。引擎不做选择，业务方选自己熟悉的。
 
-> **本仓实测**：默认 `SimpleExprEvaluator`（`vendor/jeeflow/engine.py` 内置）——支持**比较 + 逻辑运算 + OGNL 风格变量访问**（FIX-T37 §20）：
+> **本仓实测**：默认决策表达式求值**内联在 `engine.py` 决策分支路径中**（`SimpleExprEvaluator` 类不存在；详见 `ToT/docs/diffs.md` §3-6）——支持**比较 + 逻辑运算 + OGNL 风格变量访问**（FIX-T37 §20）：
 >
 > | 能力 | 语法 | 示例 |
 > |---|---|---|
@@ -292,7 +292,7 @@ registry.register_assignment("deptLeaderHandler", DeptLeaderHandler())
 
 不需要服务定位器（ServiceLocator）——全局单例的隐式依赖是测试地狱。
 
-> **本仓实测补充**（`extensions.py:88 EngineExtensions`）：
+> **本仓实测补充**（`extensions.py:89 EngineExtensions`）：
 >
 > - 6 个字段（`interceptors` / `interceptor_registry` / `assignment_handler` / `decision_handler` / `event_listener` / `registry` / `custom_handler_registry`）
 > - 详细构造位置：`main_common.py:301 apply_extensions`
@@ -308,7 +308,7 @@ registry.register_assignment("deptLeaderHandler", DeptLeaderHandler())
 | 仓储（必选）| `vendor/jeeflow/spi.py:16 ProcessRepository(ABC)` + `memory.py` / `repository/jdbc.py` |
 | 用户（可选）| `vendor/jeeflow/spi.py:157 UserProvider(ABC)` |
 | 组织用户（可选）| `vendor/jeeflow/spi.py:161 OrgUserProvider(ABC)` |
-| 表达式（可选）| `vendor/jeeflow/spi.py:186 ExpressionEvaluator(ABC)` + `engine.py:SimpleExprEvaluator`（默认）|
+| 表达式（可选）| `vendor/jeeflow/spi.py:186 ExpressionEvaluator(ABC)` + `engine.py` 内联决策分支（默认；`SimpleExprEvaluator` 类不存在，详见 `ToT/docs/diffs.md` §3-6）|
 | ID 生成（可选）| `vendor/jeeflow/spi.py:182 IDGenerator(ABC)` |
 | 内存仓储 | `vendor/jeeflow/memory.py:MemoryRepository` |
 | PG 仓储 | `vendor/jeeflow/repository/jdbc.py:JdbcRepository` |

@@ -61,7 +61,7 @@
 | `relTableName` | string | ✅ | 关联业务表名——`bizData` 回显定位表；缺省回落 `name` |
 | `persistMode` | string | ✅ | 业务落表模式：`ARCHIVE`（缺省）/ `SYNC`，见 `../ToT/guides/08-persist.md` |
 | `preInterceptors` | string[] | ✅ | 流程级前置拦截器注册名（逗号分隔/数组）；**v1.9.0+ FIX-T34 已修复生效**（老版本静默不生效，见 `../docs/known-issues.md §34`）|
-| `postInterceptors` | string[] | ✅ | 流程级后置拦截器注册名——persist 办理节点权限判定路径，**必须配置**（未注册 `engine.py:1071` 抛错）|
+| `postInterceptors` | string[] | ✅ | 流程级后置拦截器注册名——persist 办理节点权限判定路径，**必须配置**（未注册 `engine.py:1054 _resolve_interceptors` 抛错）|
 | `instanceUrl` | string | 预留 | 实例详情 URL（前端用）|
 | `instanceNoClass` | string | 预留 | 业务号生成类（前端 / 集成方用）|
 | `selectUserOnInitiate` | int | 前端 | 发起时选择处理人（0/1）|

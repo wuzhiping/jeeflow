@@ -37,7 +37,7 @@
 >     # dataclass 分支（issues/76 FIX）收口「嵌套 dataclass 列表整表外泄 int id」
 > ```
 >
-> 应用点（`facade.py:79` / `:98`）：所有 facade 出口统一过 `_stringify_ids`，**无需业务方自行处理**。
+> 应用点（`_ok` 函数定义于 `facade.py:1795`，`flow()` 内调用点 `facade.py:79` / `:98`，`_stringify_ids` 定义于 `facade.py:2444`）：所有 facade 出口统一过 `_stringify_ids`，**无需业务方自行处理**。
 >
 > 与上游其他语言对齐：
 >

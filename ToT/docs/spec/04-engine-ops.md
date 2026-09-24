@@ -3,7 +3,7 @@
 > **来源**：https://jeeflow-doc.mldong.com/spec/04-engine-ops
 > **定位**：给流程设计者（环境已部署 / 组织架构与用户已落地）使用的**引擎核心操作语义契约**——理解每个操作的执行语义是设计 submitType 路由与排查卡死实例的基础。
 >
-> **本仓实现版本**：基于 `vendor/jeeflow/engine.py` + `model.py:70 SubmitType(IntEnum)` + `model.py:177 ProcessInstance` + `:227 ProcessTask` 聚合根方法。
+> **本仓实现版本**：基于 `vendor/jeeflow/engine.py` + `model.py:70 SubmitType(IntEnum)` + `model.py:112 ProcessInstance` + `:230 ProcessTask` 聚合根方法。
 >
 > **裁剪记录**：启动 / 完成任务 / 驳回 / 跳转 / 退回上一步 / 会签 / 流程变量约定 / 聚合根方法清单全部保留 + 加本仓实测注解；各语言实现位置表裁掉仅留本仓 Python 路径。
 
@@ -20,7 +20,7 @@
 | `2` | `REJECT` | 拒绝 | 实例 → 45 REJECT + 余者 ABANDON |
 | `3` | `ROLLBACK` | 退回上一步 | 新建上一节点任务（血缘版） |
 | `4` | `JUMP` | 跳转到指定节点 | 重新执行目标节点输出边 |
-| `5` | `RESUBMIT` | 重新提交 | 同 `APPLY` |
+| `5` | `RE_APPLY` | 重新提交 | 同 `APPLY` |
 | `6` | `ROLLBACK_TO_OPERATOR` | 退回发起人 | 强制指派给 `inst.operator`，实例保持 10 |
 | `7` | `DELEGATE` | 转办 | `processTask/delegate` 端点（F-69）|
 | `20` | `COUNTERSIGN_DISAGREE` | 会签拒绝 | 一票否决模式立即流转 + 余者 ABANDON |
@@ -194,7 +194,7 @@ execute_and_jump_task(task_id, operator, args, target_task_name=None) → Proces
 
 ## 聚合根方法清单（跨语言 DDD 契约）
 
-> **本仓实现**：`vendor/jeeflow/model.py:177 ProcessInstance` + `:227 ProcessTask`（dataclass + 方法）。引擎薄编排（`engine.py:execute_node` / `decision evaluation` / `actor resolution` / `repository`），业务规则收敛到聚合根。
+> **本仓实现**：`vendor/jeeflow/model.py:112 ProcessInstance` + `:230 ProcessTask`（dataclass + 方法）。引擎薄编排（`engine.py:execute_node` / `decision evaluation` / `actor resolution` / `repository`），业务规则收敛到聚合根。
 
 ### ProcessInstance（聚合根）
 
@@ -224,7 +224,7 @@ execute_and_jump_task(task_id, operator, args, target_task_name=None) → Proces
 
 | 角色 | 本仓位置 |
 |---|---|
-| 聚合根 | `vendor/jeeflow/model.py:177 ProcessInstance` + `:227 ProcessTask` |
+| 聚合根 | `vendor/jeeflow/model.py:112 ProcessInstance` + `:230 ProcessTask` |
 | 引擎（薄编排）| `vendor/jeeflow/engine.py` |
 | submitType 枚举 | `vendor/jeeflow/model.py:70 SubmitType(IntEnum)` |
 | 流程变量常量 | `vendor/jeeflow/engine.py:KEY_NEXT_NODE_OPERATOR` 等 |

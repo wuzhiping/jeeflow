@@ -5,7 +5,7 @@
 >
 > **本仓实测**：`vendor/jeeflow/model.py:70 SubmitType(IntEnum)` + `engine.py:_resolve_actors`（applicant 解析）+ facade 9 submitType 路由。
 >
-> **裁剪记录**：§1-§5 / §7 保留 + 加本仓实测；§6.1 端点清单保留并重写为本仓 60+ action；§6.2 mldong 框架差异裁掉（与本项目无关）；§6.3 重写为本仓实测对齐；§6.4 服务地址裁掉 6 语言仅留本仓 :8101。
+> **裁剪记录**：§1-§5 / §7 保留 + 加本仓实测；§6.1 端点清单保留并重写为本仓 **57 个 `/wf/` 端点**（83 个 _* 路由方法）；§6.2 mldong 框架差异裁掉（与本项目无关）；§6.3 重写为本仓实测对齐；§6.4 服务地址裁掉 6 语言仅留本仓 :8101。
 
 ---
 
@@ -137,11 +137,11 @@
 
 ## §6. Demo 接口层（参考实现，非引擎契约）
 
-> ⚠️ **这不是"通用约定"**。以下接口是六版 demo 为对齐 mldong 快速开发框架的接口规范而提供的**参考实现**。本仓 `facade.py:63 JeeflowFacade.flow(action, args)` 是契约的具体实现 + `60+ action`。
+> ⚠️ **这不是"通用约定"**。以下接口是六版 demo 为对齐 mldong 快速开发框架的接口规范而提供的**参考实现**。本仓 `facade.py:63 JeeflowFacade.flow(action, args)` 是契约的具体实现 + **57 个 `/wf/` 端点（83 个 _* 路由方法）**。
 
-### 6.1 端点清单（本仓实测 60+ action）
+### 6.1 端点清单（本仓实测 57 个 `/wf/` 端点）
 
-> **本仓实测**：`vendor/jeeflow/facade.py:63 flow(action, args)` 统一入口，**60+ action** 完整覆盖上游 demo 端点 + 本仓新增：
+> **本仓实测**：`vendor/jeeflow/facade.py:63 flow(action, args)` 统一入口，**57 个 `/wf/` 端点（83 个 _* 路由方法）**完整覆盖上游 demo 端点 + 本仓新增：
 
 | 类别 | action 路径 | 数量 |
 |---|---|---|
@@ -151,7 +151,7 @@
 | 流程设计 | `processDesign/{page,designHis_page,detail,save,update,updateDefine,deploy,redeploy,remove,listByType}` | **10** |
 | 委托代理 | `processSurrogate/{page,save,update,detail,remove}` | **5** |
 | 审计 | `auditLog/export` | **1** |
-| **合计** | — | **60+** |
+| **合计** | — | **57** |
 
 > 完整契约详见 `../spec/06-facade.md` §3 清单。
 
@@ -191,5 +191,5 @@
 - 启动流程 + `applicant` 解析 + `startAndExecute` 契约：`../spec/04-engine-ops.md` §启动流程
 - submitType 9 枚举完整语义 + 退回 / 跳转 / 一票否决 + 拓扑约束：`../spec/04-engine-ops.md` §submitType 枚举 + `../ToT/guides/02-flow-definition.md` §2.5
 - `u_*` 7 变量注入实测 + 决策表达式作用域铁律（FB-0011）：`../ToT/guides/06-deployment.md` §5.1 + `../docs/known-issues.md §115`
-- Facade 60+ action 完整契约（响应结构 / 分页 / id 字符串化）：`../spec/06-facade.md`
+- Facade 57 个 `/wf/` 端点完整契约（响应结构 / 分页 / id 字符串化）：`../spec/06-facade.md`
 - 27 合规测试场景 + 流程 JSON 契约维持：`../spec/08-compliance.md`

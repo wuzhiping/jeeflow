@@ -161,5 +161,5 @@ boot4 此前有 4 个扫描器（assignment / candidate / pre / post）各自扫
 - 字典差异警示（缺 `7 转办` / `20 与 2 label 重复`）：`../spec/07-metadata.md` §枚举字典
 - HandlerRegistry 与 builtin.py 注册 key 不一致警示：`../spec/07-metadata.md` §SPI 实现清单
 - 集成方扫描 → 注册 → 字典流程 + 集成方 controller "40 → 1" 收益：`../concepts/07-admin-and-facade.md`
-- Facade 60+ action 完整契约：`../spec/06-facade.md`
+- Facade 57 个 /wf/ 端点 完整契约：`../spec/06-facade.md`
 - v1.4.0 元数据能力合规测试场景 21-22：`../spec/08-compliance.md` §5

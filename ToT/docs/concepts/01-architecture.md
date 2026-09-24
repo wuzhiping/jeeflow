@@ -33,7 +33,7 @@
 引擎只做三件事：解析流程定义、遍历节点、调用聚合根
 ```
 
-> **本仓实测**（`vendor/jeeflow/model.py:177 ProcessInstance` + `:227 ProcessTask`）：聚合根封装状态转换、参与者追加、任务完成、废弃等业务规则；引擎（`engine.py`）只做编排（流程遍历、决策求值、参与者解析、仓储调用）。详见 `../spec/03-state-machine.md` + `../spec/04-engine-ops.md`。
+> **本仓实测**（`vendor/jeeflow/model.py:112 ProcessInstance` + `:230 ProcessTask`）：聚合根封装状态转换、参与者追加、任务完成、废弃等业务规则；引擎（`engine.py`）只做编排（流程遍历、决策求值、参与者解析、仓储调用）。详见 `../spec/03-state-machine.md` + `../spec/04-engine-ops.md`。
 
 ### 决策三：引擎不做业务决策，只定契约
 
@@ -116,7 +116,7 @@
   │◀────────────────────│ 返回 ProcessInstance   │                    │
 ```
 
-> **本仓实测时序点**（`vendor/jeeflow/facade.py:155 _startAndExecute` + `engine.py:108 _flow_with_trace`）：
+> **本仓实测时序点**（`vendor/jeeflow/facade.py:155 _startAndExecute` + `facade.py:84 _flow_with_trace`）：
 >
 > 1. `facade._startAndExecute(args)` 接收 `processDefineId` / `operator` / `f_*` args
 > 2. `engine.find_define_by_id(define_id)` 异步加载 `ProcessDefine`
@@ -150,7 +150,7 @@
 | PG 仓储 | `vendor/jeeflow/repository/jdbc.py`（含 `JdbcRepository` / `JdbcProcessExtRepository`） |
 | 持久化（persist）| `vendor/jeeflow/persist.py`（`DynamicTableWriter` / `JdbcDynamicTableWriter` / `PersistPostInterceptor`） |
 | 元数据（persist-meta）| `vendor/jeeflow/meta.py`（`StorageType` / `FieldMeta` / `TableMeta` / `MetaTableWriter` / `MetaTableReader`） |
-| Facade 门面 | `vendor/jeeflow/facade.py`（60+ action） |
+| Facade 门面 | `vendor/jeeflow/facade.py`（57 个 /wf/ 端点） |
 | 入口装配 | `main_common.py`（`apply_extensions` / `build_*_handlers`） |
 | 启动入口 | `main.py`（内存后端，:8101）/ `main_pg.py`（PG 后端，:8101） |
 
@@ -164,8 +164,8 @@
 
 | 主题 | 本仓 Python 路径 |
 |---|---|
-| 引擎入口 | `vendor/jeeflow/engine.py:53 EngineImpl` |
-| 聚合根 | `vendor/jeeflow/model.py:177 ProcessInstance` + `:227 ProcessTask` |
+| 引擎入口 | `vendor/jeeflow/engine.py:44 EngineImpl` |
+| 聚合根 | `vendor/jeeflow/model.py:112 ProcessInstance` + `:230 ProcessTask` |
 | 仓储 SPI | `vendor/jeeflow/spi.py:16 ProcessRepository(ABC)` |
 | 内存仓储 | `vendor/jeeflow/memory.py:MemoryRepository` |
 | PG 仓储 | `vendor/jeeflow/repository/jdbc.py` |
@@ -175,7 +175,7 @@
 | 持久化拦截器 | `vendor/jeeflow/persist.py:307 PersistPostInterceptor` |
 | 元数据驱动 | `vendor/jeeflow/meta.py:141 MetaTableWriter` + `:293 MetaTableReader` |
 | Facade 入口 | `vendor/jeeflow/facade.py:63 JeeflowFacade.flow` |
-| 测试样本 | `flows/01-17`（17 个 sample）+ `bdd/`（1131 个 BDD）+ `tdd/`（19 个 TDD baseline）|
+| 测试样本 | `flows/01-17`（**19 个 sample**，含 2 个同号 08/11）+ `bdd/`（1131 个 BDD）+ `tdd/`（19 个 TDD baseline）|
 
 ---
 
@@ -187,7 +187,7 @@
 |---|---|
 | **命名** | 全部 `snake_case`（`find_define_by_id` / `save_instance` / `add_task_actor`）—— 与上游 Java camelCase / Go PascalCase / Rust snake_case 保持对齐（`vendor/jeeflow/spi.py`） |
 | **异步** | 引擎方法返回 `awaitable`（`async def find_define_by_id(...)`），上层 `async/await` 链（`facade.py` / `engine.py` / `spi.py`） |
-| **领域层实现** | `@dataclass + 方法` —— 行为与 Java class 等价，字段声明更简洁（`model.py:177` / `:227`）|
+| **领域层实现** | `@dataclass + 方法` —— 行为与 Java class 等价，字段声明更简洁（`model.py:112` / `:230`）|
 | **Facade 出口 id 字符串化** | `_stringify_ids` 递归处理 dict / list / dataclass；dataclass 分支（issues/76 FIX）收口"嵌套 dataclass 列表整表外泄 int id"（`facade.py:2444`）|
 | **id 雪花精度** | PG 后端 19 位雪花 ID 走 `_stringify_ids` 出口转字符串；JS 端按字符串处理（避免 `>2^53` 精度丢失）|
 

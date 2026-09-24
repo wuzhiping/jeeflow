@@ -3,7 +3,7 @@
 > **来源**：https://jeeflow-doc.mldong.com/concepts/02-domain-model
 > **定位**：给流程设计者（环境已部署 / 组织架构与用户已落地）使用的**DDD 聚合根设计原理参考**——理解为什么状态转换逻辑必须收敛到聚合根而不是散落在引擎/服务层。
 >
-> **本仓实测**：`vendor/jeeflow/model.py:177 ProcessInstance` + `:227 ProcessTask`（`@dataclass + 方法` 充血模型）。
+> **本仓实测**：`vendor/jeeflow/model.py:112 ProcessInstance` + `:230 ProcessTask`（`@dataclass + 方法` 充血模型）。
 >
 > **裁剪记录**：§1 / §2 / §3 / §4 保留 + 加本仓 DDD 实测位置 + 伪代码；§5 6 语言对照裁掉 5 语言仅留 Python；§6 聚合根方法清单保留并加本仓实测。
 
@@ -41,7 +41,7 @@ public class ProcessTaskServiceImpl {
 2. 领域对象对自身状态没有任何约束——谁都能 `setState(DONE)`，规则无法内聚
 3. 代码膨胀：服务类越来越大，越来越难测
 
-> **本仓实测位置**：本仓 `vendor/jeeflow/model.py:177 ProcessInstance` + `:227 ProcessTask` 走**充血模型**——状态转换逻辑（finish / abandon / reject 等）作为 `@dataclass` 方法内聚。`engine.py` 只做编排，**不**写 `task.taskState = 20`。
+> **本仓实测位置**：本仓 `vendor/jeeflow/model.py:112 ProcessInstance` + `:230 ProcessTask` 走**充血模型**——状态转换逻辑（finish / abandon / reject 等）作为 `@dataclass` 方法内聚。`engine.py` 只做编排，**不**写 `task.taskState = 20`。
 
 ---
 
@@ -75,7 +75,7 @@ ProcessTask（子实体）
 2. **不变量**：`isAllTasksFinished()` 决定 join 是否放行、实例是否完成——这些规则只能由聚合根统一判断
 3. **状态机归属**：实例的 `10→20→45` 转换、任务的 `10→20/99` 转换，只允许通过聚合根方法发生
 
-> **本仓实测**（`vendor/jeeflow/model.py:177-265`）：
+> **本仓实测**（`vendor/jeeflow/model.py:112-...`）：
 >
 > ```python
 > @dataclass
@@ -97,7 +97,7 @@ ProcessTask（子实体）
 >         self.state = InstanceState.REJECT
 > ```
 >
-> `model.py:343 ProcessTask`（子实体）：
+> `model.py:230 ProcessTask`（子实体）：
 >
 > ```python
 > @dataclass
@@ -144,7 +144,7 @@ task.finish(operator, vars, now):
 
 六版实现完全一致，仅语法不同。
 
-> **本仓实测对应**（`vendor/jeeflow/model.py:265 ProcessTask.finish`）：
+> **本仓实测对应**（`vendor/jeeflow/model.py:252 ProcessTask.finish`）：
 >
 > ```python
 > def finish(self, operator: str, vars_: dict, now: datetime) -> None:
@@ -155,7 +155,7 @@ task.finish(operator, vars, now):
 >     self.variables = vars_
 > ```
 >
-> `ProcessInstance.complete_task`（`model.py:177-200`）调 `task.finish(...)` 后合并 `vars_` 到 `self.variables` + 更新 `update_time`——**完整对应伪代码**。
+> `ProcessInstance.complete_task`（`model.py` `ProcessInstance.complete_task` 方法）调 `task.finish(...)` 后合并 `vars_` 到 `self.variables` + 更新 `update_time`——**完整对应伪代码**。
 
 ---
 
@@ -169,7 +169,7 @@ task.finish(operator, vars, now):
 
 聚合根把这三件事内聚成一个方法后：引擎调用一次，规则只维护一处，单测直接测 `complete_task`。
 
-> **本仓实测警示**（`vendor/jeeflow/engine.py:466 _create_task` + `:868 _fire_event`）：
+> **本仓实测警示**（`vendor/jeeflow/engine.py:752 _create_task` + `:1109 _fire_event`）：
 >
 > - 引擎**调** `ProcessTask.create(...)` 工厂（不直接构造）+ `task.finish(...)`（不直接改 `taskState`）
 > - 唯一例外：`ProcessInstance.withdraw` 调 `self.state = InstanceState.WITHDRAW` 是**聚合根内部**对自身状态的合法修改（聚合根对自身有不变量约束，外部代码不可绕过）
@@ -185,7 +185,7 @@ task.finish(operator, vars, now):
 |---|---|---|
 | **Python（本仓）** | `@dataclass + 方法`（充血模型）| `vendor/jeeflow/model.py` |
 
-> **本仓实测补充**（`model.py:177-265`）：
+> **本仓实测补充**（`model.py:112` 起的 `ProcessInstance` 区块）：
 >
 > - `ProcessInstance` 用 `@dataclass` —— 字段声明简洁（`state: InstanceState = InstanceState.DOING`）
 > - 行为方法与字段同 class 内聚（`finish()` / `reject()` / `withdraw()` / `complete_task()` / `create_task()` / `abandon_all_doing()` / `is_all_tasks_finished()` 等）
@@ -201,20 +201,20 @@ task.finish(operator, vars, now):
 
 | 方法 | 职责 | 本仓实现位置 | 引擎调用场景 |
 |---|---|---|---|
-| `create(...)` | 工厂，state=10 | `model.py:177 ProcessInstance.create` | 启动流程（`facade._startAndExecute`）|
-| `complete_task(task, operator, vars)` | 完成任务 + 合并变量 | `model.py:200 ProcessInstance.complete_task` | `execute_process_task`（`engine.py:311`）|
-| `abandon_all_doing(now)` | 废弃进行中任务 | `model.py:235 ProcessInstance.abandon_all_doing` | 驳回 / 跳转 / 委托撤回 |
-| `finish()` | 实例 `10→20` | `model.py:182 ProcessInstance.finish` | 到达 end 节点 |
-| `reject()` | 实例 `10→45` | `model.py:182 ProcessInstance.reject` | `submitType=2 REJECT` 跳结束 |
-| `withdraw()` | 实例 + 所有 DOING 任务 → WITHDRAW(30) | `model.py:177 ProcessInstance.withdraw` | `processInstance/withdraw`（facade.py:565）|
-| `create_task(...)` | 子实体工厂 | `model.py:220 ProcessInstance.create_task` | 所有任务创建点（引擎 `engine.py:466`）|
-| `is_all_tasks_finished()` | join 判断 | `model.py:280 ProcessInstance.is_all_tasks_finished` | 引擎 join 节点 |
-| `add_variable(vars)` | 追加流程变量 | `model.py:265 ProcessInstance.add_variable` | 拦截器 / 事件扩展点 |
-| `abandon_task(task)` | 废弃单个任务 | `model.py:227 ProcessInstance.abandon_task` | 一票否决 / 比例会签余者 / ROLLBACK 重构 |
-| `ProcessTask.finish(operator, vars, now)` | `10→20`，记录操作人 | `model.py:265 ProcessTask.finish` | 子实体由 `complete_task` 调用 |
-| `ProcessTask.abandon(now)` | `10→99` | `model.py:273 ProcessTask.abandon` | `abandon_all_doing` / `abandon_task` |
+| `create(...)` | 工厂，state=10 | `model.py:112 ProcessInstance` 类方法 | 启动流程（`facade._startAndExecute`）|
+| `complete_task(task, operator, vars)` | 完成任务 + 合并变量 | `model.py:143 ProcessInstance.complete_task` | `execute_process_task`（`engine.py:311`）|
+| `abandon_all_doing(now)` | 废弃进行中任务 | `model.py:160 ProcessInstance.abandon_all_doing` | 驳回 / 跳转 / 委托撤回 |
+| `finish()` | 实例 `10→20` | `model.py:170 ProcessInstance.finish` | 到达 end 节点 |
+| `reject()` | 实例 `10→45` | `model.py:180 ProcessInstance.reject` | `submitType=2 REJECT` 跳结束 |
+| `withdraw()` | 实例 + 所有 DOING 任务 → WITHDRAW(30) | `model.py:112 ProcessInstance.withdraw` | `processInstance/withdraw`（facade.py:565）|
+| `create_task(...)` | 子实体工厂 | `model.py:213 ProcessInstance.create_task` | 所有任务创建点（引擎 `engine.py:752 _create_task`）|
+| `is_all_tasks_finished()` | join 判断 | `model.py:210 ProcessInstance.is_all_tasks_finished` | 引擎 join 节点 |
+| `add_variable(vars)` | 追加流程变量 | `model.py:200 ProcessInstance.add_variable` | 拦截器 / 事件扩展点 |
+| `abandon_task(task)` | 废弃单个任务 | `model.py:150 ProcessInstance.abandon_task` | 一票否决 / 比例会签余者 / ROLLBACK 重构 |
+| `ProcessTask.finish(operator, vars, now)` | `10→20`，记录操作人 | `model.py:252 ProcessTask.finish` | 子实体由 `complete_task` 调用 |
+| `ProcessTask.abandon(now)` | `10→99` | `model.py:261 ProcessTask.abandon` | `abandon_all_doing` / `abandon_task` |
 | `ProcessTask.is_allowed(operator)` | 参与者权限判断 | `model.py:284 ProcessTask.is_allowed` | `execute_process_task` 鉴权 |
-| `ProcessTask.is_doing()` / `is_finished()` | 状态判断 | `model.py:278 ProcessTask.is_doing` | 引擎节点流转条件 |
+| `ProcessTask.is_doing()` / `is_finished()` | 状态判断 | `model.py:278 ProcessTask.is_doing` / `:281 ProcessTask.is_finished` | 引擎节点流转条件 |
 
 > **设计者实操**：设计时若需扩展领域行为（如"完成任务自动发钉钉通知"），应**作为拦截器 / 事件监听**实现，而非扩展聚合根。聚合根的扩展点有限（已收敛为 14 个核心方法），新规则走 `EngineExtensions.event_listener` / `EngineExtensions.interceptor_registry` 而非改 `model.py`。
 

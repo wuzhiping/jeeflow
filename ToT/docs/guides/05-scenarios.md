@@ -53,7 +53,7 @@ start → apply(applicant) → 组长审批(leader) → 经理审批(manager) �
 > | `6` | 退回发起人 | 保持 state=10 DOING | 强制指派给 `inst.operator`，实例继续 |
 >
 > - 上游示例 processDefineId=2 / 100 / 101 / 102 为占位 id，**本仓禁止硬编码**——必须从 `processDesign/deploy` 响应取 `data.processDefineId`、从 `processTask/todoList` 响应取 `data.rows[].id`。
-> - `submitType=2/3/4` 是 ROLLBACK 变种（FIX-T36 §52），`submitType=3/4` 显式传 `taskName`/`targetTaskName` 可指定回退节点；不传时按 ROLLBACK 默认行为覆写 `assignee`。
+> - `submitType` 路由：`2=REJECT`（跳结束）/ `3=ROLLBACK`（血缘版回退）/ `4=JUMP`（命名 target 跳转）。其中 `3/4` 同走 `execute_and_jump_task`，`taskName`/`targetTaskName` 显式传 → 指定节点；不传 → ROLLBACK 默认行为（覆写 `assignee`，FIX-T36 §52）。
 > - 详细 facade 行为见 `../docs/actions.md`。
 
 ### 审批记录（完整闭环）
@@ -208,7 +208,7 @@ start → apply → fork1 ─┬→ 财务审核(checker) ─┐
 
 ## 场景五：抄送
 
-> **引擎 SPI 预留 `createCcInstance / updateCcStatus`，demo 未内置接口。接入方式**：
+> **引擎 SPI 已实现 `createCcInstance / updateCcStatus`，facade 端点 `processInstance/createCCInstance / updateCCStatus / ccList` 已开放（`facade.py:1436/1449/1457`）。业务接入方式**：
 
 ```
 ① 流程完成/任务完成事件中，业务方调用 createCcInstance(instanceId, creator, actorIds...)
@@ -222,9 +222,9 @@ start → apply → fork1 ─┬→ 财务审核(checker) ─┐
 > |---|---|---|
 > | CC 字段存储 | `engine.py` 任务表已有 `cc_actor_id` 字段 | ✅ 数据落库 |
 > | CC_CREATE 事件 | `extensions.py:15 EventType.CC_CREATE` 已注册 | ✅ 业务方可监听 |
-> | `createCcInstance` 公开 facade | ❌ **未提供** | ❌ |
-> | `updateCcStatus` 公开 facade | ❌ **未提供** | ❌ |
-> | 「我的抄送」列表查询 API | ❌ **未提供**（业务层自行实现）| ❌ |
+> | `createCcInstance` 公开 facade | ✅ **已提供** `processInstance/createCCInstance`（`facade.py:1436`）| ✅ |
+> | `updateCcStatus` 公开 facade | ✅ **已提供** `processInstance/updateCCStatus`（`facade.py:1449`）| ✅ |
+> | 「我的抄送」列表查询 API | ✅ **已提供** `processInstance/ccList`（`facade.py:1457`）| ✅ |
 >
 > **本仓抄送能力的实际工作流**：
 >
@@ -245,7 +245,7 @@ start → apply → fork1 ─┬→ 财务审核(checker) ─┐
 > 2. 提供「我的抄送」查询 API
 > 3. 提供已读回执 update API
 >
-> 抄送相关的本仓 facade 端点（`createCcInstance` / `updateCcStatus`）**规划中**，详见 `../docs/api.md` §1 + 待补 Issue。
+> 抄送相关的本仓 facade 端点（`createCCInstance` / `updateCCStatus` / `ccList`）**v1.9.0 已完整提供**（详见 `docs/actions.md` §4 + `../spec/06-facade.md` §4.6）。
 
 ---
 

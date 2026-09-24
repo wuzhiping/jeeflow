@@ -41,7 +41,7 @@
 > - `relTableName` → 落库目标表（缺省回落流程 `name`）
 > - `persistMode` → `ARCHIVE`（缺省）/ `SYNC`（非 SYNC 一律回落 ARCHIVE）
 > - `postInterceptors` → 字符串 key "persistPost"，引擎按名从 `interceptor_registry` 解析
-> - **未注册时** → `engine.py:1071` 抛 `ValueError(拦截器未注册: persistPost)`
+> - **未注册时** → `engine.py:1054 _resolve_interceptors` 抛 `ValueError(拦截器未注册: persistPost)`
 >
 > 详见 `../spec/09-persist.md` §4.0 + `../ToT/guides/08-persist.md` §3。
 
@@ -102,7 +102,7 @@ curl -s -X POST http://localhost:8101/wf/processInstance/bizData \
 #   }
 ```
 
-> **本仓实测**（`facade.py:1076 processInstance_bizData` + `meta.py:293 MetaTableReader`）：
+> **本仓实测**（`facade.py:1076 processInstance_bizData` + `meta.py:331 MetaTableReader`）：
 >
 > - **未注入 `meta_reader`** → 抛 `ValueError("业务数据读取器未注册（facade.set_meta_reader(MetaTableReader(...))，需引入 jeeflow.meta）")`
 > - 注入 `facade.set_meta_reader(MetaTableReader(JdbcTableReader(conn), JsonMetaProvider("persist-meta")))` 后按 `persist-meta/<table>.json` 元数据驱动读
@@ -120,7 +120,7 @@ psql "postgresql://postgres:postgres@127.0.0.1:5432/biz" \
 # 内存后端无持久化，重启后数据丢失——仅用于 demo / 单测
 ```
 
-> **本仓实测 DDL**（`docs/pg_schema.sql`）：PG 方言 CREATE TABLE IF NOT EXISTS 幂等；8 张表（5 核心 + 3 扩展）+ 1 张本仓独有 `wf_trace_span`（FIX-T99 §6.4.1）。详见 `../spec/01-data-model.md`。
+> **本仓实测 DDL**（`docs/pg_schema.sql`）：PG 方言 CREATE TABLE IF NOT EXISTS 幂等；**9 张表**（5 核心 + 3 扩展 + 1 张本仓独有 `wf_trace_span`，FIX-T99 §6.4.1）。详见 `../spec/01-data-model.md`。
 
 ---
 
@@ -136,7 +136,7 @@ psql "postgresql://postgres:postgres@127.0.0.1:5432/biz" \
 > - 拦截器写入侧过滤保留为**双保险**
 >
 > ```python
-> # persist.py:453 _is_editable
+> # persist.py:466 _is_editable
 > def _is_editable(self, field_perm, field_name):
 >     if not field_perm:
 >         return True
@@ -175,7 +175,7 @@ psql "postgresql://postgres:postgres@127.0.0.1:5432/biz" \
 - 字段权限双兼容（PERMISSION_f_* 优先）+ v1.8.2 引擎入口过滤：`../spec/09-persist.md` §4.2 + `../docs/known-issues.md §115`
 - 元数据驱动落库（地址对象 / JSON / 子表）：`../spec/10-persist-meta.md` + `../ToT/guides/09-persist-meta.md`
 - `processInstance/bizData` 端点 + 复杂表单回显：`../spec/06-facade.md` §4.2 + `../spec/10-persist-meta.md` §6
-- PG 后端 DDL（8 张表 + 1 张本仓独有 `wf_trace_span`）：`../spec/01-data-model.md`
+- PG 后端 DDL（9 张表 + 1 张本仓独有 `wf_trace_span`）：`../spec/01-data-model.md`
 - 9 submitType 路由 + 失败 msg 字面量：`../spec/06-facade.md` §2.8
 - 数据模型建表 + 字段定义：`manual/03-forms.md` §2 + `../ToT/guides/08-persist.md` §3
 - 27 合规测试场景（落库部分）：`../spec/08-compliance.md` §6（18 用例）

@@ -130,7 +130,7 @@ engine.set_extensions(ext)
 > 2. `json.loads(define.content)` 解 JSON
 > 3. 读 `meta["relTableName"]`（缺省回落 `meta["name"]`）+ `meta["persistMode"]`
 >
-> **拦截器挂载机制**：本仓 `postInterceptors` 字段为字符串 key（按名从 `interceptor_registry` 取实例）；未注册时 `engine.py:1071` 抛 `ValueError(拦截器未注册: persistPost)`。
+> **拦截器挂载机制**：本仓 `postInterceptors` 字段为字符串 key（按名从 `interceptor_registry` 取实例）；未注册时 `engine.py:1054 _resolve_interceptors` 抛 `ValueError(拦截器未注册: persistPost)`。
 
 ---
 
@@ -148,9 +148,9 @@ u_deptId = "D01"
 
 | 列 | 值 | 来源 |
 |---|---|---|
-| `title` | 年假申请 | `f_title` 去前缀（`_extract_fields` 行 436）|
+| `title` | 年假申请 | `f_title` 去前缀（`_extract_fields` 行 427）|
 | `amount` | 800 | `f_amount` 去前缀 |
-| `process_instance_id` | 123 | 流程上下文（幂等键，`_fill_context` 行 478）|
+| `process_instance_id` | 123 | 流程上下文（幂等键，`_fill_context` 行 476）|
 | `apply_user_id` | user1 | 发起人 |
 | `apply_dept_id` | D01 | 发起部门 |
 | `create_time` / `create_user` | 2026-08-04 10:00:00 / user1（operator）| writer 系统字段（`fill_system_fields` 行 231）|

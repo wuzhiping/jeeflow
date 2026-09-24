@@ -3,7 +3,7 @@
 > **来源**：https://jeeflow-doc.mldong.com/manual/07-verify-and-troubleshoot
 > **定位**：给流程设计者（环境已部署 / 组织架构与用户已落地）使用的**操作手册第 7 章**——「跑通 ≠ 跑对」。本章给"看哪里、看什么、状态码什么意思"，以及一份跨章排错总表。
 >
-> **本仓实测**：基于 `vendor/jeeflow/facade.py` 60+ action + `model.py:46 InstanceState` 7 枚举 + `:55 TaskState` 6 枚举 + `:70 SubmitType` 9 枚举。
+> **本仓实测**：基于 `vendor/jeeflow/facade.py` 57 个 /wf/ 端点 + `model.py:46 InstanceState` 7 枚举 + `:55 TaskState` 6 枚举 + `:70 SubmitType` 9 枚举。
 >
 > **裁剪记录**：§1 三处回看 + §2 提交类型对照**保留**+ 加本仓 facade 端点实测；§3 用接口自己验一遍 + §4 跨章排错总表**重写为本仓实测**；§5 还是没解决**保留原文**（反馈 3 件套是协作规范）。上游 §3 中 mldong 框架专属的 `sys/login` + `Authorization` token 流程裁掉（本仓不引入 mldong 框架）。
 
@@ -111,7 +111,7 @@ curl -s -X POST http://localhost:8101/wf/processInstance/approvalRecord \
 | `99990403` | 登录态失效 | 集成层负责（mldong 框架惯例）|
 | `99990406` | 权限码不足 | 检查 `wf:{action}` 权限码分配 |
 
-> **本仓实测统一响应**（`facade.py:79 _ok` + `:98 _ok_with_stringify_ids`）：所有 action 返回 `{code, msg, data}` 三字段结构；`code=0` 成功；`code=99999999` 业务失败；其他码由集成层框架（如 sa-token / Spring Security）返回。详见 `../spec/06-facade.md` §2.1。
+> **本仓实测统一响应**（`_ok(data)` 函数定义于 `facade.py:1795` + 调用点 `facade.py:79 / :98`）：所有 action 返回 `{code, msg, data}` 三字段结构；`code=0` 成功；`code=99999999` 业务失败；其他码由集成层框架（如 sa-token / Spring Security）返回。详见 `../spec/06-facade.md` §2.1。
 
 **接口正常、界面异常** → 问题在前端；**接口就报错** → 问题在后端或数据。
 
@@ -155,7 +155,7 @@ curl -s -X POST http://localhost:8101/wf/processInstance/approvalRecord \
 ## 跨文档交叉引用
 
 - 状态机全集（InstanceState 7 + TaskState 6）：`../spec/03-state-machine.md`
-- Facade 60+ action 完整契约：`../spec/06-facade.md`
+- Facade 57 个 /wf/ 端点 完整契约：`../spec/06-facade.md`
 - 流程图高亮 + 节点成员进度：`../spec/06-facade.md` §4.6
 - 字段权限 + 任务表单绑定：`manual/03-forms.md`
 - 部门 / 角色数据前提：`manual/02-dept-user-role.md`

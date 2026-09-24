@@ -17,10 +17,10 @@
 | 维度 | `main.py`（内存后端）| `main_pg.py`（PG 后端）| 何时选 |
 |---|---|---|---|
 | 监听端口 | `:8101` | `:8101`（同端口，绑不同进程）| — |
-| 数据存储 | `MemoryRepository`（dict 内存）| `JdbcRepository`（PG 9 表）| 单机 demo / dev → main.py；生产 / 多节点 / HA → main_pg.py |
+| 数据存储 | `MemoryRepository`（dict 内存）| `JdbcRepository`（PG 9 张表 = 5 核心 + 3 扩展 + 1 链路追踪）| 单机 demo / dev → main.py；生产 / 多节点 / HA → main_pg.py |
 | 拦截器未注册 | **静默通过** `code=0`（历史行为；FIX-T34 后建议用 main_pg 排查）| **抛错** `code=99999999` | 拦截器 / handler 测试建议 main_pg.py |
 | ID 格式 | 整数自增 1, 2, ...（UPSERT 累计）| 19 位雪花 ID（time-ordered bigint）| 均为引擎内部，**禁止硬编码** |
-| reset 行为 | 清 instances / tasks / actors / cc / designs | + TRUNCATE PG 表 | `POST /api/reset` 不在 38 个 action 清单 |
+| reset 行为 | 清 instances / tasks / actors / cc | + TRUNCATE PG 表（含 design / design_his **保留**）| `POST /api/reset` 不在 57 个 `/wf/` 端点清单（旁路运维接口）|
 | 引擎核心 | 共享 `vendor/jeeflow/engine.py` | 共享 `vendor/jeeflow/engine.py` | 行为差异仅在 `_resolve_interceptors` / `reset` 等少数点 |
 | `v1.5.x` 修复 | 含 v1.5.1 / v1.5.2 / v1.5.3 | 含 v1.5.1-PG / v1.5.2-PG / v1.5.3-PG | 兼容矩阵见 `../docs/BUGS.md` |
 
@@ -73,7 +73,7 @@
 | **变量读不到：决策 expr 看不到 `tf_*`** | 启动传 `f_*`（持久化）或重启动时传 `f_<name>` | FB-0011 / FIX-DOC-4 §115 |
 | **submitType=3/4 默认 ROLLBACK 覆写 assignee** | 不传 taskName 时引擎覆写 `assignee=前任务完成人 or operator`；原 assignee 失 re-process 能力，需显式传 taskName | FIX-T114 §118 |
 
-> **设计者自检 SOP**：写完流程 JSON 跑 `../ToT/sop/flow_completeness.py <flow>.json` 看 0-100% 评分 + 下一步建议；跑 `../ToT/sop/tdd-flow.py <flow>.json` 生成 baseline + scenarios；跑 `../ToT/sop/ea-compliance.py` 看 31/31 PASS。
+> **设计者自检 SOP**：写完流程 JSON 跑 `../ToT/sop/flow_completeness.py <flow>.json` 看 0-100% 评分 + 下一步建议；跑 `../ToT/sop/tdd-flow.py <flow>.json` 生成 baseline + scenarios；跑 `../ToT/sop/ea-compliance.py` 看 **44/44** PASS（2026-09-23 snapshot；详见 `ToT/docs/README.md §3-5`）。
 
 ---
 

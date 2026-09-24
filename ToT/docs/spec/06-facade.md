@@ -27,7 +27,7 @@ flow(action, args) → {code, msg, data}
 | 异常处理 | 门面内部异常捕获转 `{code: 99999999, msg: 异常信息}`，不向上抛 |
 | 未知 action | `{code: 99999999, msg: "未知 action: xxx"}` |
 
-> **本仓实测**（`vendor/jeeflow/facade.py:63`）：`flow()` 通过 `_dispatch_action()` 路由到 `_processDefine_*` / `_processInstance_*` / `_processTask_*` / `_processDesign_*` / `_processSurrogate_*` 等 **57 个公开 action + ~83 个 _* 路由方法**（含 25 个 internal helper）；统一过 `_verify(args)` (facade.py:107) 参数校验、`_ok(data)` (facade.py:79) / `_ok_with_stringify_ids(data)` (facade.py:98) 出口封装。
+> **本仓实测**（`vendor/jeeflow/facade.py:63`）：`flow()` 通过 `_dispatch_action()` 路由到 `_processDefine_*` / `_processInstance_*` / `_processTask_*` / `_processDesign_*` / `_processSurrogate_*` 等 **57 个公开 action + ~83 个 _* 路由方法**（含 25 个 internal helper）；统一过 `_verify(args)` (facade.py:107) 参数校验、`_ok(data)` (facade.py:1795) / `_ok_with_stringify_ids(data)` (facade.py 内 `flow()` 调用点 :79 / :98) 出口封装。
 
 **HTTP 约定**：
 
