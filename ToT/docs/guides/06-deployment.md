@@ -40,7 +40,7 @@
 | `wf_process_task_actor` | 任务参与者（多对多）| 读 |
 | `wf_process_cc_instance` | 抄送实例 | 读 |
 | `wf_process_surrogate` | 全局委派（surrogate）| 读 |
-| `wf_trace_span` | 链路追踪（FIX-T99 §6.4.1）| 只读（运维）|
+| `wf_trace_span` | 链路追踪 span（FIX-T99 / v1.9.0 起；`§6.4.1` 章节号在 issues 域，known-issues.md 仅按 FIX-T 编号）| 只读（运维）|
 
 > **设计者唯一写入入口**：`POST /wf/processDesign/save` + `/wf/processDesign/deploy`（仅 design / define 两层），**严禁**直接 SQL 写实例 / 任务表。
 > 字段语义：`owner_id` = 流程发起人 userId（FIX-T9 §66）；`parent_status` = 主子状态联动（FIX-T72 §3.1.1 取值 `CHILD_DONE` / `CHILD_REJECT`）；`version` = 乐观锁（FIX-T87 §4.4.2）。

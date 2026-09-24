@@ -3,7 +3,7 @@
 > **来源**：https://jeeflow-doc.mldong.com/manual/04-design-and-publish
 > **定位**：给流程设计者（环境已部署 / 组织架构与用户已落地）使用的**操作手册第 4 章**——从零画一条审批流到发布上线的**完整操作流程**。本章讲"在哪里点、填了会怎样"；属性字段的引擎语义查[规范 02 · 配置项完整参考](../spec/02-flow-definition.md)。
 >
-> **本仓实测**：基于 `vendor/jeeflow/facade.py` 57 个 /wf/ 端点 中的 `processDesign/*`（10 个）+ `processDefine/*`（9 个）+ 节点 properties 21 字段（spec/02）。
+> **本仓实测**：基于 `vendor/jeeflow/facade.py` 57 个 /wf/ 端点 中的 `processDesign/*`（10 个）+ `processDefine/*`（9 个）+ 节点 properties 18 字段（spec/02 §4，含 5 项未实现）。
 >
 > **裁剪记录**：§1 设计稿 vs 流程定义 + §2 新建设计稿 + §3 设计器 + §4 节点属性（4 页签）+ §5 流程属性 + §6 保存与发布 2 步 + §7 怎么算成功 + §8 卡住了（7 排错）**全部保留并重写为本仓实测**；§9 下一步仅保留跨链引用（11/12 设计器二开与本项目不输出 UI 无关）。
 
@@ -84,7 +84,7 @@
 | 候选用户组 | 角色多选 | 同上，按工作流角色给候选人 |
 | 候选用户处理类 | 下拉 | 净装镜像里没有注册项，下拉为空属正常 |
 
-> **本仓实测**（`docs/flow.md §3.3` 任务节点 properties 21 字段）：
+> **本仓实测**（`docs/flow.md §3.3` 任务节点 properties 18 字段）：
 >
 > - **参与人和参与人处理类不要同时填**：填了参与人就按参与人走，处理类不生效
 > - 7 个内置处理类实测位置：`vendor/jeeflow/builtin.py:170-183` 注册 12 个 key（7 简化版主用 + 5 完整版别名）
@@ -208,7 +208,7 @@
 ## 跨文档交叉引用
 
 - 流程定义 JSON 完整契约（顶层字段 + 节点 properties + 边 properties）：`../spec/02-flow-definition.md`
-- 任务节点 properties 21 字段 + 5 未实现注解：`../ToT/guides/02-flow-definition.md` §4
+- 任务节点 properties 18 字段 + 5 未实现注解：`../ToT/guides/02-flow-definition.md` §4
 - 7 个内置 assignmentHandler + 解析优先级：`../ToT/guides/07-assignment-handlers.md`
 - 字段权限 1/2/3 + 双键格式：`manual/03-forms.md` §4 + `../spec/02-flow-definition.md` §4.1
 - 业务数据落库（relTableName + persistMode）：`../spec/09-persist.md` §4.0 + `../ToT/guides/08-persist.md` §3

@@ -49,7 +49,7 @@
 | 6 | 退回发起人 |
 | 20 | **拒绝申请** ← **与 `2` 重复** |
 
-> ⚠️ **本仓实测 2 处不一致**（与 `vendor/jeeflow/model.py:70 SubmitType` 枚举对比）：
+> ⚠️ **本仓实测 2 处不一致**（与 `vendor/jeeflow/model.py:70 SubmitType` 枚举对比）—— 详见 `../README.md §3 #1/#2` 决策记录 + `diffs.md` §3.1：
 >
 > 1. **缺失 `7 转办`（TRANSFER）**——`SubmitType` 枚举含 `7`，但字典无该项。前端"转办"提交类型显示需绕开字典或自定义补充
 > 2. **`20 拒绝申请` 与 `2 拒绝申请` 重复**——`20` 在枚举是 `COUNTERSIGN_DISAGREE`（会签拒绝），与 `2 REJECT` 语义不同，但字典 label 重复易混淆

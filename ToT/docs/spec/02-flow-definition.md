@@ -50,7 +50,7 @@
 
 ## 2. 顶层属性（流程级）
 
-> **本仓实测**（`vendor/jeeflow/model.py:316 _KNOWN_MODEL` + `parse_flow_model`）：本仓实际识别 **8 个顶层字段**（name / displayName / type / instanceUrl / preInterceptors / postInterceptors / nodes / edges），其他字段（`expireTime` / `relTableName` / `persistMode` / `instanceNoClass` / 5 个前端字段）**预读但不解析**，交由 persist / 拦截器 / 前端消费。
+> **本仓实测**（`vendor/jeeflow/model.py:366 _KNOWN_MODEL = {"name", "displayName", "type", "nodes", "edges"}` 5 个字段 + `parse_flow_model`）：引擎**严格过滤未知字段**——`_KNOWN_MODEL` 外字段（如 `expireTime` / `relTableName` / `persistMode` / `instanceUrl` / `preInterceptors` / `postInterceptors` / `instanceNoClass` / 5 个前端字段）写入**额外键**会被丢弃，不参与引擎执行；如需任务回显，写入 `properties` 内任一命名键即可（运行时透传）。注：`_KNOWN_MODEL` 仅 5 个**核心引擎字段**，`preInterceptors` / `postInterceptors` 等由 facade 单独解析（详见 `vendor/jeeflow/facade.py:155 _startAndExecute`）。
 
 | 字段 | 类型 | 引擎 | 说明 |
 |---|---|---|---|

@@ -103,7 +103,7 @@
 > # 流程实例撤回
 > def withdraw(self):
 >     self.state = InstanceState.WITHDRAW       # 实例级 30
->     # 同步级联所有 DOING 任务 → 30 WITHDRAW
+>     # 级联 DOING 任务 → 30 WITHDRAW（已完成 20 / 已终止 40 / 已废弃 99 等**不**被改写）
 >     # 走 update_instance 同一连接持久化（v1.0.1 契约）
 >
 > # 任务废弃（FIX-T111 §112）

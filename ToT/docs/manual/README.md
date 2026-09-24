@@ -15,18 +15,18 @@
 
 | # | 文件 | 上游章节 | 起草状态 |
 |---|---|---|---|
-| 01 | `01-deploy-and-accounts.md` | 部署细节与多账号测试 | ⏳ 待补 |
-| 02 | `02-dept-user-role.md` | 部门、用户与角色 | ⏳ 待补 |
-| 03 | `03-forms.md` | 表单 | ⏳ 待补 |
-| 04 | `04-design-and-publish.md` | 画流程与发布 | ⏳ 待补 |
-| 05 | `05-participants.md` | 参与人：任务派给谁 | ⏳ 待补 |
-| 06 | `06-start-and-approve.md` | 发起与办理 | ⏳ 待补 |
-| 07 | `07-verify-and-troubleshoot.md` | 验证与排错 | ⏳ 待补 |
-| 08 | `08-persist.md` | 让审批结果落到业务表 | ⏳ 待补 |
-| A | `appendix-a-pages.md` | 页面与入口清单 | ⏳ 待补 |
-| B | `appendix-b-values.md` | 下拉与状态值对照 | ⏳ 待补 |
+| 01 | `01-deploy-and-accounts.md` | 部署细节与多账号测试 | ✅ 已完成（58 行 / 仅保留 §5 权限码）|
+| 02 | `02-dept-user-role.md` | 部门、用户与角色 | ✅ 已完成（135 行 / 含 OrgUserProvider SPI 实测）|
+| 03 | `03-forms.md` | 表单 | ✅ 已完成（179 行 / 含字段权限 + f_ 前缀 + 任务表单绑定）|
+| 04 | `04-design-and-publish.md` | 画流程与发布 | ✅ 已完成（216 行 / 流程设计 → 发布全流程）|
+| 05 | `05-participants.md` | 参与人：任务派给谁 | ✅ 已完成（176 行 / 7 handler + 会签 4 模式 + 委托）|
+| 06 | `06-start-and-approve.md` | 发起与办理 | ✅ 已完成（191 行 / 9 submitType 路由 + 退回/撤回）|
+| 07 | `07-verify-and-troubleshoot.md` | 验证与排错 | ✅ 已完成（164 行 / 状态机 + 跨章排错）|
+| 08 | `08-persist.md` | 让审批结果落到业务表 | ✅ 已完成（180 行 / 3 开关 + 8 排错）|
+| A | `appendix-a-pages.md` | 页面与入口清单 | ✅ 已完成（82 行 / 系统设置 + 权限码）|
+| B | `appendix-b-values.md` | 下拉与状态值对照 | ✅ 已完成（190 行 / 9 表对照 + 字典差异警示）|
 
-> **下一步**：按链接顺序逐 link 处理（请提供 `https://jeeflow-doc.mldong.com/manual/01-deploy-and-accounts` 等）。
+> **11 篇全部完成**（2026-09-24）。下表参见 `../README.md §8.1` 同步列表。
 
 ---
 

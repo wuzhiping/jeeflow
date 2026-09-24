@@ -3,7 +3,7 @@
 > **来源**：https://jeeflow-doc.mldong.com/spec/01-data-model
 > **定位**：给流程设计者（环境已部署 / 组织架构与用户已落地）使用的**数据模型参考**——设计者需知道有哪些表、表内有哪些字段、各字段作用。
 >
-> **本仓实现版本**：PG 方言（`docs/pg_schema.sql`，2026-09-20 更新）；**9 张表**（5 核心 + 3 扩展 + 1 本仓独有 `wf_trace_span` 链路追踪表，FIX-T99 §6.4.1）；DDL 已含本仓实测补充字段（`owner_id` / `parent_status` / `version`）。
+> **本仓实现版本**：PG 方言（`docs/pg_schema.sql`，2026-09-20 更新）；**9 张表**（5 核心 + 3 扩展 + 1 本仓独有 `wf_trace_span` 链路追踪表，FIX-T99 / v1.9.0 起；`§6.4.1` 为 issues 域章节号）；DDL 已含本仓实测补充字段（`owner_id` / `parent_status` / `version`）。
 >
 > **裁剪记录**：header 通用约定 + 5 张核心表 + 3 张扩展表全部重写为本仓 PG 方言 DDL + 加本仓实测字段注解。
 
@@ -260,11 +260,11 @@ CREATE TABLE IF NOT EXISTS wf_process_surrogate (
 
 ---
 
-## 本仓补充表（1 张，FIX-T99 §6.4.1）
+## 本仓补充表（1 张，FIX-T99 / v1.9.0 起）
 
 ### `wf_trace_span`（链路追踪 span）
 
-> **本仓额外**——上游未列。链路追踪 span 持久化（FIX-T99 §6.4.1，2026-09-20）。
+> **本仓额外**——上游未列。链路追踪 span 持久化（FIX-T99 / v1.9.0 起；`§6.4.1` 为 issues 域章节号，2026-09-20）。
 
 ```sql
 CREATE TABLE IF NOT EXISTS wf_trace_span (

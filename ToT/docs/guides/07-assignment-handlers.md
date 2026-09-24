@@ -96,7 +96,7 @@
 节点 id: "task_01" → 匹配变量 "task"（找不到 task_01 时）
 ```
 
-> **本仓实测**（`vendor/jeeflow/engine.py:773`）：未找到 `variables['f_{node.id}']` → 引擎 warning `FormFieldAssigneeHandler 返回空：未找到 variables['f_{node.id}']`。**注意**：本仓**实际查 `f_<node.id>` 而非 `<node.id>`**——上游示例「变量 task1」在本仓需传 `f_task1`。这是上游示例与本仓实现的差异。
+> **本仓实测**（`vendor/jeeflow/builtin.py:47 FormFieldAssigneeHandler` + `engine.py:773`）：**优先级查找 `f_<node.id>` → 回落 `<node.id>` → 回落 `_数字` 去后缀匹配**（`f_task_01` 找不到时匹配 `f_task`）。上游示例「变量 task1」在本仓**推荐传 `f_task1`**——直接传 `task1` 也能匹配但易混。
 
 ### 3.3 当前操作人部门领导 —— `DeptLeaderAssignmentHandler`
 
@@ -327,6 +327,6 @@ startAndExecute({ processDefineId, operator, f_nextNodeOperator: "finA" })
 - **`assignee` 和 `assignmentHandler` 都配了？** `assignee` 生效，handler 被忽略
 
 > **本仓补充 3 条**：
-> - **FormFieldAssigneeHandler 变量名带 `f_` 前缀**：本仓实际查 `f_<node.id>`（`engine.py:773`）；上游文档示例「`task1`」在本仓需传 `f_task1`
+> - **FormFieldAssigneeHandler 变量名带 `f_` 前缀**：本仓优先查 `f_<node.id>`，回落 `<node.id>`（`engine.py:773`）；上游文档示例「`task1`」在本仓推荐传 `f_task1`，直接传 `task1` 也能匹配
 > - **TaskRoleAssigneeHandler roleCode 双轨**：`properties.roleCode` 优先，回落 `node.id`（FIX-T8 §68）
 > - **完整版 FQCN 别名兼容**：历史流程写 `…OrgUserAssignmentHandlers$XXX` 仍能跑（`builtin.py:179-183` 别名注册），但新流程建议用简化版 `…XXX`
