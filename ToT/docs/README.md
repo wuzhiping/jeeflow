@@ -48,7 +48,8 @@
 | `guides/` | **9 篇** | 上游 `/guides/01/02/04/05/06/07/08/09/10`（03 设计器已裁——本项目不输出 UI）| 用户视角操作手册 |
 | `spec/` | **10 篇** | 上游 `/spec/01-10` 全集 | 规范契约（必须怎么做）|
 | `concepts/` | **8 篇** | 上游 `/concepts/01-08` 全集 | 设计原理（为什么这么做）|
-| **合计** | **27 篇** | — | — |
+| `manual/` | **待补** | 上游 `/manual/` 总览 + 8 章 + 2 附录（运营视角，部署后怎么用）| 部署后端到端操作 |
+| **合计** | **27+ 篇**（manual 起草中）| — | — |
 
 每篇文档统一包含 4 段元数据：
 
@@ -62,12 +63,14 @@
 ## 3. 起草时已发现的「文档 ≠ 现状」清单（待确认）
 
 > 这些是起草时实测发现的"文档与代码不一致"点，**不一定是 bug**——可能是上游文档滞后于本地改进，也可能本地字典表 / 注册表就是不一致实现。每条都需人工判断方向。
+>
+> **Phase 2 进度**（2026-09-24 重核）：#1 / #2 / #3 已直接实测验证。
 
 | # | 不一致点 | 文档侧（上游 + 本仓 ToT/docs）| 代码侧（本仓实测）| 建议方向 | 状态 |
 |---|---|---|---|---|---|
-| 1 | **`wf_process_submit_type` 缺 `7 转办`（TRANSFER）**| 上游 9 枚举；本仓 `metadata.py:34 _DICTS` 字典仅 8 项，缺 `7` | `model.py:70 SubmitType` 含 `7 TRANSFER`；`SubmitType` 枚举 = 字典源 → 字典应自动包含 | **修字典**（自动生成而非手写）| ⏳ 待确认 |
-| 2 | **`wf_process_submit_type` label 重复**：`20` 与 `2` 都是「拒绝申请」| 字典表 `metadata.py:34` label 重复 | 枚举 `20=COUNTERSIGN_DISAGREE` / `2=REJECT` 语义不同 | **改 label**：`20` → 「会签拒绝」 | ⏳ 待确认 |
-| 3 | **`BUILTIN_ASSIGNMENT_METAS` 用完整版 FQCN 但运行时实际加载简化版** | `metadata.py:77-99` 注册 5 个 `…OrgUserAssignmentHandlers$…` | `builtin.py:170-183` 同时注册 12 个 key：7 简化版主用 + 5 完整版别名；运行解析按简化版命中 | **统一字典源**——`BUILTIN_ASSIGNMENT_METAS` 应与 `builtin.py` 注册 key 一致 | ⏳ 待确认 |
+| 1 | **`wf_process_submit_type` 缺 `7 转办`（TRANSFER）**| 上游 9 枚举；本仓 `metadata.py:34 _DICTS` 字典仅 8 项，缺 `7` | `model.py:70 SubmitType` 含 `7 TRANSFER`；**2026-09-24 重核**：`metadata.py:34-38` 确认仅 8 项，缺 `7` | **修字典**（加 `DictItem("7", "转办")`）| ✅ 已验证 / ⏳ 待修 |
+| 2 | **`wf_process_submit_type` label 重复**：`20` 与 `2` 都是「拒绝申请」| 字典表 `metadata.py:34` label 重复 | 枚举 `20=COUNTERSIGN_DISAGREE` / `2=REJECT` 语义不同；**2026-09-24 重核**：`metadata.py:35` + `:37` 确认重复 | **改 label**：`20` → 「会签拒绝」 | ✅ 已验证 / ⏳ 待修 |
+| 3 | **`BUILTIN_ASSIGNMENT_METAS` 用完整版 FQCN 但运行时实际加载简化版** | `metadata.py:77-99` 注册 5 个 `…OrgUserAssignmentHandlers$…` | `builtin.py:170-183` 同时注册 12 个 key：7 简化版主用 + 5 完整版别名；**2026-09-24 重核**：`metadata.py:82/85/88/91/97` 5 项用完整版，`builtin.py:15-23` 主用简化版 | **统一字典源**——`BUILTIN_ASSIGNMENT_METAS` 改为简化版主用 7 项 | ✅ 已验证 / ⏳ 待修 |
 | 4 | **PRD 声明 38 actions vs facade 实际 60+ actions** | `PRD.md` §核心端点列 38 个；本仓 `facade.py` 实际 60+ | 缺：**`transferAndAdd`** / `delegate` / `delegateHistory` / `withForm` / `comment` / `extra` / `suspend` / `resume` / `stats_overview` / `stats_trend` / `stats_group` / `getJobCardContent` 等 12+ | **更新 PRD**（或确认 38 仅指「核心 38」）| ⏳ 待确认 |
 | 5 | **ea-compliance 44/44 PASS 是 2026-09-23 状态** | `spec/08-compliance.md` §本仓实测状态 | 每次合规测试结果会变 | **按版本快照**（每发版打 snapshot）| ⏳ 待确认 |
 | 6 | **`docs/BUGS.md` 27 FIX + 0 仍存 是 2026-09-20 状态** | `spec/06-facade.md` / `spec/08-compliance.md` / 顶部差异 | 新 FIX-T 编号会改变总数 | **按版本快照** | ⏳ 待确认 |
@@ -75,6 +78,57 @@
 | 8 | **路由路径差异**：上游 `processDefine/startAndExecute` vs 本仓 `processInstance/startAndExecute`（兼容路径）| `guides/01-quick-start.md` §3 已加本仓对齐注解 | 两条路径本仓都注册，但语义有差异（启动 vs 启动并自动完成）| **保留兼容路径**，文档注明语义差 | ✅ 已记录 |
 | 9 | **`vendor/jeeflow-original/README.md` 存在但 `vendor/jeeflow/` 无** | — | 上游有 README；本地 README 在仓库根 `README.md` | 保留上游 README 作为演进基线 | — |
 | 10 | **`facade.py` 累计修改 vs 上游 `facade.py` 改动范围** | — | `diff` 显示 11 个 .py 文件改动 + 1 个新增（`verify.py`）| 演进历史应在 `CHANGELOG.md` / 迭代记录归档 | ⏳ 待补 |
+
+### 3.1 处置记录（Phase 2 重核：2026-09-24）
+
+> **决策依据**：用户对 #1 / #2 / #3 的处理选择「不修代码，只追加处置记录（已验证 + 暂缓）」。本节固化决策，便于后续会话追溯。
+
+#### #1 `wf_process_submit_type` 缺 `7 转办`
+
+- **已实测**（`metadata.py:34-38` + `model.py:70 SubmitType`）：字典表 8 项，枚举 9 项，缺 `DictItem("7", "转办")`。
+- **决策**：**暂缓不改代码**。
+- **风险**：
+  - 设计时：表单「提交类型」下拉框不会显示「转办」选项，但实际 JSON 里可以写 `submitType=7`，运行行为正常（`engine.py` 按 enum 解析）。
+  - 运行时：零影响。
+- **回访触发**：
+  - 触发 B（BUG FIX）：发现「设计器无法选转办」类工单
+  - 触发 E（PRD 改动）：明确要求设计器必须可配置 `submitType=7`
+- **复现命令**：`diff <(grep -E '^\s*DictItem\("[0-9]+"' /opt/jupyter/src/RD/projects/jeeFlow/vendor/jeeflow/metadata.py | sed -n '/wf_process_submit_type/,/wf_process_task_state/p') <(grep -E '^\s*[A-Z_]+ = ' /opt/jupyter/src/RD/projects/jeeFlow/vendor/jeeflow/model.py | grep SubmitType | head -20)`
+
+#### #2 `20` 与 `2` label 重复「拒绝申请」
+
+- **已实测**（`metadata.py:35` + `:37`）：两行 label 都是 `拒绝申请`，但 enum 语义不同（`2=REJECT` 申请人拒绝；`20=COUNTERSIGN_DISAGREE` 会签拒绝）。
+- **决策**：**暂缓不改代码**。
+- **风险**：
+  - 设计时：UI 显示两个同名条目，操作员可能误选 → 但实际业务中「会签拒绝」多出现在会签节点（sub-flow 上下文），与主流程「拒绝申请」不冲突，**操作员感知概率低**。
+  - 运行时：零影响（按 value 路由，不按 label）。
+- **回访触发**：
+  - 触发 B：实际工单显示操作员选错
+  - 触发 A：任何代码改动触及 `metadata.py:34-38` 时连带改
+- **推荐改法（未执行）**：`DictItem("20", "会签拒绝")`
+
+#### #3 `BUILTIN_ASSIGNMENT_METAS` 用完整版 FQCN vs 运行时简化版
+
+- **已实测**（`metadata.py:77-99` + `builtin.py:170-183`）：元数据 5 项用完整版 FQCN；运行时 7 简化版主用 + 5 完整版别名注册。
+- **决策**：**暂缓不改代码**。
+- **风险**：
+  - 设计时：参与者下拉框显示完整版 FQCN（如 `…OrgUserAssignmentHandlers$DeptLeaderAssignmentHandler`），**视觉冗长**但不影响配置。
+  - 运行时：零影响（`builtin.py:179-183` 双注册兜底，JSON 写哪种都命中）。
+  - 演进性：未来若删除完整版别名，**老 JSON 流程会找不到 handler**——但本仓 v1.9.0+ 保留双注册策略无变更意图。
+- **回访触发**：
+  - 触发 A：删除完整版别名 / 重构 `builtin.py`
+  - 触发 E（PRD）：UI 文本必须简化
+- **推荐改法（未执行）**：把 `metadata.py:82/85/88/91/97` 的 5 项 className 改成 `…jeeflow.interceptor.impl.{X}AssignmentHandler`（无 `OrgUserAssignmentHandlers$` 前缀）
+
+#### 暂缓总账
+
+| 项 | 决策 | 风险等级 | 回访频率 |
+|---|---|---|---|
+| #1 | 暂缓 | 低（运行时）| 按需 |
+| #2 | 暂缓 | 低-中（设计时 UI 体验）| 每发版 review |
+| #3 | 暂缓 | 低（运行时）/ 中（演进性）| 触发 A/E 即 review |
+
+**Phase 2 状态**：**已验证 + 暂缓处理**。未改 `vendor/jeeflow/*.py` 任何字节。
 
 ---
 
@@ -175,7 +229,8 @@ Step 5: 留档
 | 阶段 | 时间 | 目标 | 状态 |
 |---|---|---|---|
 | **Phase 1**（已完成）| 2026-09-24 | 起草 27 篇文档（9+10+8）| ✅ |
-| **Phase 2**（进行中）| 2026-09-25 → | 处理 §3 10 个不一致项（逐项确认方向）| 🟡 待启动 |
+| **Phase 1b**（已完成）| 2026-09-24 | 起草 11 篇 manual（README + 8 章 + 2 附录）| ✅ |
+| **Phase 2**（部分完成）| 2026-09-24 | §3 #1/#2/#3 已验证 + 暂缓（详见 §3.1）；#4-#6 / #10 仍待确认；#7/#8 已记录 | 🟡 部分完成 |
 | **Phase 3** | 2026-Q4 | 新增 `doc-link-checker.py` / `doc-archive-snapshot.py` / `doc-vs-code-drift.py` | ⏳ 待规划 |
 | **Phase 4** | 2026-Q4 | CI 集成（每次 PR 跑 link-checker）| ⏳ 待规划 |
 | **Phase 5** | 2027-Q1 | 第 1 次全量季度 review（验证知识库工程流程有效）| ⏳ 待规划 |
@@ -190,11 +245,15 @@ Step 5: 留档
 - ✅ 起点 = `vendor/jeeflow-original/` Sep 18 2025 快照
 - ✅ 演进态 = `vendor/jeeflow/` 14 文件（38 FIX 全 PASS）
 - ✅ 文档不是事实，需持续对齐（§4 流程）
+- ✅ §3 #1/#2/#3：**已验证 + 暂缓不改代码**（2026-09-24 决策，详见 §3.1 处置记录）
+- ✅ manual/ 起草策略：**部署细节大裁剪、保留设计契约与本仓实测警示**（2026-09-24）
+- ✅ BUILTIN_ASSIGNMENT_METAS 不一致由 `builtin.py:179-183` 双注册兜底，运行时零风险
 
 ### 7.2 未决（需 R1b / R5 决策）
 
-- ⏳ §3 表 10 个不一致项的具体方向（修代码 / 修文档 / 双改）
-- ⏳ 是否建立 `CHANGELOG.md` 跟踪 doc 变更历史
+- ⏳ §3 #4（PRD 38 vs facade 60+ actions）方向决策——是否更新 PRD 还是声明「38 仅核心」
+- ⏳ §3 #5 / #6（ea-compliance / BUGS.md 快照基线）—— 是否建 `ToT/sop/snapshot-YYYY-MM-DD.md`
+- ⏳ §3 #10（facade 累计修改范围）—— 是否建 `CHANGELOG.md`
 - ⏳ 4 个新脚本（§4.5）的优先级与实现时间表
 - ⏳ CI 集成（Phase 4）是否纳入 `bdd-regression.sh` 流水线
 
@@ -238,6 +297,19 @@ https://jeeflow-doc.mldong.com/
     ├── 06-contracts.md
     ├── 07-admin-and-facade.md
     └── 08-metadata.md
+
+└── /manual/        总览 + 8 章 + 2 附录 →  ToT/docs/manual/  ✅ 已完成
+    ├── README.md                      ✅ 总览 · 30 分钟跑通一条流程
+    ├── 01-deploy-and-accounts.md       ✅ 仅保 §5 权限码
+    ├── 02-dept-user-role.md            ✅ OrgUserProvider / TaskRoleAssigneeHandler
+    ├── 03-forms.md                     ✅ 字段权限 / f_ 前缀 / 任务表单绑定
+    ├── 04-design-and-publish.md        ✅ 流程设计 → 发布全流程
+    ├── 05-participants.md              ✅ 7 handler + 会签 4 模式 + 委托
+    ├── 06-start-and-approve.md         ✅ 9 submitType 路由 + 退回/撤回
+    ├── 07-verify-and-troubleshoot.md    ✅ 状态机 + 跨章排错
+    ├── 08-persist.md                   ✅ 3 开关 + 8 排错
+    ├── appendix-a-pages.md             ✅ 系统设置 + 权限码
+    └── appendix-b-values.md            ✅ 9 表对照 + 字典差异警示
 ```
 
 ### 8.2 本仓代码演进基线
@@ -253,12 +325,18 @@ vendor/jeeflow/           (Sep 24 2026, 14 文件)
 ### 8.3 合规基线
 
 ```
+2026-09-19  v1.9.0 里程碑（38 FIX 全 PASS，详见 docs/BUGS.md）
 2026-09-20  BUGS.md 27/27 PASS（v1.9.0 里程碑）
 2026-09-23  ea-compliance.py 44/44 PASS
-2026-09-24  ToT/docs 起草完成（27 篇）
+2026-09-24  ToT/docs 起草完成（27 篇：9 guides + 10 spec + 8 concepts）
+2026-09-24  ToT/docs/manual/ 起草完成（11 篇：README + 8 章 + 2 附录）
 2026-09-24  ToT/docs/README.md 建立（知识库工程起点）
+2026-09-24  Phase 2 部分完成：§3 #1/#2/#3 已验证 + 暂缓（详见 §3.1 处置记录）
 ```
 
 ---
 
-> **下次动作**：R5 知识管理员按 §3 表逐条处理（Phase 2 启动）；先 §3-1 / §3-2（字典差异，最易修）。
+> **下次动作**：
+> 1. R5 知识管理员按 §3 表继续处理 **#4 / #5 / #6 / #10**（决策方向）
+> 2. 决策 #4 之前可跑 `grep -E "^async def " /opt/jupyter/src/RD/projects/jeeFlow/vendor/jeeflow/facade.py | wc -l` 实测 facade 实际方法数
+> 3. Phase 3 启动前先评估 4 个新脚本（§4.5）的优先级
