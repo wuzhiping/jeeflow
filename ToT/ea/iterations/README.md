@@ -1,4 +1,4 @@
-# EA Iterations Index · 2026-09-22 ~ 24 · 35 圈飞轮
+# EA Iterations Index · 2026-09-22 ~ 24 · 36 圈飞轮
 
 > **目的**：所有 EA 体系迭代记录的统一索引
 > **按日期排序**：新→旧
@@ -6,10 +6,11 @@
 
 ---
 
-## 0. 时间线总览（22 圈 → 35 圈）
+## 0. 时间线总览（22 圈 → 36 圈）
 
 | 圈数 | 日期 | 标题 | Iter 文件 |
 |------|------|------|----------|
+| **#36** | 2026-09-24 | initiate guide · 流程级工作指南 | [`2026-09-24_initiate-guide.md`](./2026-09-24_initiate-guide.md) |
 | **#35** | 2026-09-24 | text.value 简化 + save/deploy 双层结构发现 | [`2026-09-24_text-value-save-deploy.md`](./2026-09-24_text-value-save-deploy.md) |
 | **#34** | 2026-09-23 | 新 endpoint + Work Guidance · 解决 Job Card 内容读取 | [`2026-09-23_job-card-endpoint.md`](./2026-09-23_job-card-endpoint.md) |
 | **#33** | 2026-09-23 | flow-operator skill 增强：Config + FeedBack + fdep auto验证 | [`2026-09-23_flow-operator-config.md`](./2026-09-23_flow-operator-config.md) |
