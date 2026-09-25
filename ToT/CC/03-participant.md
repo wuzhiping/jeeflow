@@ -140,9 +140,9 @@
 - **位置**：`ToT/CC/feedback/inbox.md`（共享收件箱）
 - **动作**：
   - 在 `/wf/processTask/execute` 错误响应中嵌入「反馈这条错误」的链接（前端后续）
-  - CLI 工具：执行失败时提示「是否记录到反馈？y/n」
+  - CLI 工具：执行失败时提示「是否记录到反馈？y/n」— ✅ `ToT/sop/jffeedback.py` 已建
   - 所有反馈自动归到 `feedback/03-participant-<seq>.md`
-- **ETA**：W2 末
+- **ETA**：W2 末 — ✅ CLI 部分完成（前端嵌入待续）
 - **成功标准**：周均 ≥ 3 条反馈（基线 0）
 
 ---

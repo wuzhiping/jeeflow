@@ -80,8 +80,9 @@ def parse_feedback(md_file: Path) -> dict:
     m = re.search(r"^##\s+现象[^\n]*\n([\s\S]*?)(?=^##|\Z)", text, re.M)
     if m:
         out["phenomenon"] = m.group(1).strip()[:200]
-    # Status
-    if "状态: 已闭环" in text or "已闭环" in text[:500]:
+    # Status (支持 "已闭环" / "状态: 已闭环" / "状态：已闭环" / "**状态**: 已闭环" 等格式)
+    text_lower = text.lower()
+    if ("已闭环" in text or "closed" in text_lower) and "open" not in text_lower[:200]:
         out["status"] = "closed"
     return out
 

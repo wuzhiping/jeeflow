@@ -27,6 +27,7 @@ SNAPSHOT="$REPO_ROOT/ToT/sop/doc-archive-snapshot.py"
 DIFF="$REPO_ROOT/ToT/sop/doc-vs-code-drift.py"
 CHANGELOG="$REPO_ROOT/ToT/docs/CHANGELOG.md"
 INIT_PY="$REPO_ROOT/vendor/jeeflow/__init__.py"
+HEALTH_CHECK="$REPO_ROOT/ToT/sop/health-check.py"
 
 # 从 LABEL 提取版本号（去掉 v 前缀）
 VERSION="$(echo "$LABEL" | sed -E 's/^v//' | sed -E 's/-.*$//' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+' || echo "")"
@@ -41,6 +42,18 @@ echo "  Label: $LABEL"
 [ -n "$VERSION" ] && echo "  Version: $VERSION"
 echo "  Git SHA: $GIT_SHA"
 echo "=========================================="
+echo
+
+echo "▶ Step 0: health-check.py（综合门禁，01/04 A6）"
+HEALTH_OUTPUT=$(python3 "$HEALTH_CHECK" 2>&1)
+echo "$HEALTH_OUTPUT" | tail -15
+HEALTH_SCORE=$(python3 "$HEALTH_CHECK" --json 2>/dev/null | python3 -c "import sys,json;print(json.load(sys.stdin)['overall_score'])" 2>/dev/null || echo 0)
+if [ "${HEALTH_SCORE:-0}" -lt 100 ]; then
+    echo ""
+    echo "❌ 健康度不达标 ($HEALTH_SCORE/100)，发布被阻止"
+    echo "请修复退化维度（参考 health-check.py 输出）"
+    exit 1
+fi
 echo
 
 echo "▶ Step 1: doc-link-checker.py"

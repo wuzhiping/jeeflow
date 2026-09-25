@@ -95,8 +95,8 @@
 - **位置**：`ToT/sop/fdep-trend.py`（新建）
 - **动作**：每周扫 `/api/admin/stats/overview` × N 个流程 → 输出退化榜单
 - **输出**：Markdown 表（流程名 / 7d 趋势 / 是否需要改进）+ 自动 commit 到 ToT/sop/snapshots/fdep-trend-*.md
-- **ETA**：W4 末
-- **成功标准**：管理者每周一打开就有榜单
+- **ETA**：W4 末 — ✅ 已完成 2026-09-25
+- **成功标准**：管理者每周一打开就有榜单 — ✅ 已生成 `fdep-trend-latest.md` + 6 个流程监控
 
 ---
 

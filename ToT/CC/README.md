@@ -146,4 +146,21 @@ feedback/03-*.md 加「## 闭环」字段
 | W3 | 季度 NPS 调研 | 执行分流到的行动 | 月度 release |
 | W4 | release + 复盘 RPM | release + 同步 FAQ | **季度回顾**：RPM / 自助解决率 / NPS |
 
+---
+
+## 8. 季度回顾与故事沉淀
+
+- **2026 Q3 回顾**：[`_quarterly_retrospective_2026Q3.md`](./_quarterly_retrospective_2026Q3.md)（2026-09-18 → 2026-09-25）
+- **故事 001**：[`_story_001_annual_leave.md`](./_story_001_annual_leave.md)（销售部小李请假 3 天）
+- **飞轮 E2E 演示**：[`_flywheel_demo_e2e.md`](./_flywheel_demo_e2e.md)（3 反馈 100% 闭环）
+
+---
+
+## 9. 下季度方向
+
+- **故事 002**：合同审批 3 部门会签（更复杂的会签链路 + 加签 / 转办）
+- **真实反馈累积**：推 jffeedback CLI + 季度 NPS
+- **容量基线实测**：跑 50 并发 / 1000 用户/天，写入 `capacity-baseline.md`
+- **API 字段变更自动检测**：防止 FB-0009 类 rename 事件
+
 **飞轮加速器**：当自助解决率 ↑，反馈量 ↑，闭环时长 ↓ → RPM ↑ → 体验更好 → 飞轮加速。
