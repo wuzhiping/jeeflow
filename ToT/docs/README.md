@@ -239,8 +239,11 @@ Step 5: 留档
 | `ToT/sop/doc-vs-code-drift.py` | 跨 snapshot 对比（文件级 sha256 + drift 状态变化 + 新增/已修复项）| ✅ 已建（2026-09-24；首次对比 v1.9.0-final → v1.9.0-postfix）|
 | `ToT/sop/gen-changelog.py` | 从 snapshots 累积生成 Markdown CHANGELOG | ✅ 已建（2026-09-24）|
 | `ToT/sop/release.sh` | 本地 release 脚本（drift gate + snapshot + diff + changelog + 更新 `__version__`）| ✅ 已建（2026-09-24，2026-09-25 扩展：自动 sed 更新 `vendor/jeeflow/__init__.py`）|
-| `ToT/sop/health-check.py` | 综合健康度评分（Drift/Snapshot/API/Freshness/Consistency 5 维度 + 加权综合分 0-100）| ✅ 已建（2026-09-25，当前 92/100）|
+| `ToT/sop/health-check.py` | 综合健康度评分（Drift/Snapshot/API/Freshness/Consistency 5 维度 + 加权综合分 0-100）| ✅ 已建（2026-09-25，当前 100/100）|
 | `ToT/sop/health-check.md` | 健康度脚本设计文档 | ✅ 已建（2026-09-25）|
+| `ToT/sop/health-report.py` | 生成 `ToT/docs/REPORT.html` 可视化报告（gauge + 5 维度 + 趋势图 + 表格）| ✅ 已建（2026-09-25）|
+| `ToT/CC/` | Customer Central 客户中心 — 4 类 persona 量身计划 + 飞轮中枢（03-participant）+ 12 个应用层 doc（quickstart/decision-tree/faq/api-index/runbook/monitoring/audit 等）| ✅ 已建（2026-09-25）|
+| `ToT/sop/feedback-triage.py` | 03-participant 反馈自动分流到 01/02/04 plan | ✅ 已建（2026-09-25）|
 
 ---
 
