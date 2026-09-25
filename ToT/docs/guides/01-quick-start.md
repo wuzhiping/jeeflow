@@ -12,6 +12,7 @@
 > - **端口**：上游文档默认 `8100`（Python 后端），本仓 jeeFlow 监听 `8101`（内存）或 `8102`（PG）。请将下述示例的端口替换为本仓端口。
 > - **action 路径**：上游写 `processDefine/startAndExecute`，本仓 **57 个 `/wf/` 端点**中**对应入口是 `processInstance/startAndExecute`**（详见 `../docs/api.md` §1；详细清单 `docs/openapi.json` + `docs/actions.md`）。
 > - **语义**：operator / submitType / processTaskId 字段名与本仓一致，跨后端可直接照搬。
+> - **底层引擎**：本仓 `Engine`（接口，`vendor/jeeflow/engine.py:35`）+ `EngineImpl`（实现，`engine.py:44`）；通过 `JeeflowFacade` 暴露给上层（详见 `../concepts/09-core-types.md §1` + `../spec/06-facade.md`）。
 
 不启动前端，用 curl 走完一个流程：
 

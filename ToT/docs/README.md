@@ -239,6 +239,8 @@ Step 5: 留档
 | `ToT/sop/doc-vs-code-drift.py` | 跨 snapshot 对比（文件级 sha256 + drift 状态变化 + 新增/已修复项）| ✅ 已建（2026-09-24；首次对比 v1.9.0-final → v1.9.0-postfix）|
 | `ToT/sop/gen-changelog.py` | 从 snapshots 累积生成 Markdown CHANGELOG | ✅ 已建（2026-09-24）|
 | `ToT/sop/release.sh` | 本地 release 脚本（drift gate + snapshot + diff + changelog + 更新 `__version__`）| ✅ 已建（2026-09-24，2026-09-25 扩展：自动 sed 更新 `vendor/jeeflow/__init__.py`）|
+| `ToT/sop/health-check.py` | 综合健康度评分（Drift/Snapshot/API/Freshness/Consistency 5 维度 + 加权综合分 0-100）| ✅ 已建（2026-09-25，当前 92/100）|
+| `ToT/sop/health-check.md` | 健康度脚本设计文档 | ✅ 已建（2026-09-25）|
 
 ---
 

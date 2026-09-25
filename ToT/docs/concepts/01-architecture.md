@@ -33,7 +33,7 @@
 引擎只做三件事：解析流程定义、遍历节点、调用聚合根
 ```
 
-> **本仓实测**（`vendor/jeeflow/model.py:112 ProcessInstance` + `:230 ProcessTask`）：聚合根封装状态转换、参与者追加、任务完成、废弃等业务规则；引擎（`engine.py`）只做编排（流程遍历、决策求值、参与者解析、仓储调用）。详见 `../spec/03-state-machine.md` + `../spec/04-engine-ops.md`。
+> **本仓实测**（`vendor/jeeflow/model.py:112 ProcessInstance` + `:230 ProcessTask`）：聚合根封装状态转换、参与者追加、任务完成、废弃等业务规则；引擎 `Engine`（接口，`engine.py:35`）/ `EngineImpl`（实现，`engine.py:44`）只做编排（流程遍历、决策求值、参与者解析、仓储调用）。详见 `../spec/03-state-machine.md` + `../spec/04-engine-ops.md` + `../concepts/09-core-types.md §1`。
 
 ### 决策三：引擎不做业务决策，只定契约
 

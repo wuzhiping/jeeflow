@@ -3,7 +3,7 @@
 > **来源**：https://jeeflow-doc.mldong.com/concepts/03-execution-engine
 > **定位**：给流程设计者（环境已部署 / 组织架构与用户已落地）使用的**执行引擎原理参考**——理解图遍历、任务指针设计、决策优先级、Fork/Join 语义、会签四模式、驳回跳转、6 事件挂载点是把握引擎行为的基础。
 >
-> **本仓实测**：`vendor/jeeflow/engine.py` + `model.py` + `extensions.py:8 EventType` 枚举 + `persist.py`。
+> **本仓实测**：`vendor/jeeflow/engine.py:35 Engine` 接口 + `:44 EngineImpl` 实现 + `model.py` + `extensions.py:8 EventType` 枚举 + `persist.py`。
 >
 > **裁剪记录**：§1-§9 保留 + 加本仓实测伪代码与路径；§10 6 语言源码表裁掉 5 语言仅留 Python。
 

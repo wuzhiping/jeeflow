@@ -15,7 +15,7 @@ from .builtin import (register_builtin_assignments, OperatorAssignmentHandler, F
 # 版本元数据（单一来源）
 # - release 时由 ToT/sop/release.sh 自动更新
 # - healthz + admin_health + /version 端点统一读这里
-__version__ = "1.10.4"
-__version_full__ = "1.10.4+9c4cb5b"
-__git_sha__ = "9c4cb5b"
-__build_time__ = "2026-09-25T00:08:03Z"
+__version__ = "1.10.6"
+__version_full__ = "1.10.6+acb1144"
+__git_sha__ = "acb1144"
+__build_time__ = "2026-09-25T00:19:39Z"
