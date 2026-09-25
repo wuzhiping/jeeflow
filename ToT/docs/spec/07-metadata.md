@@ -36,7 +36,7 @@
 | `wf_process_task_perform_type` | 0 普通参与 / 1 会签参与 | ✅ 完整（2 项）|
 | `wf_countersign_type` | 0 并行会签 / 1 串行会签 | ✅ 完整（2 项）|
 
-**`wf_process_submit_type` 本仓实测字典**（`metadata.py:34`）：
+**`wf_process_submit_type` 本仓实测字典**（`metadata.py:34`，2026-09-24 已修复）：
 
 | value | label |
 |---|---|
@@ -47,14 +47,15 @@
 | 4 | 跳转 |
 | 5 | 重新提交 |
 | 6 | 退回发起人 |
-| 20 | **拒绝申请** ← **与 `2` 重复** |
+| 7 | **转办** ✅（2026-09-24 补） |
+| 20 | **会签拒绝** ✅（2026-09-24 改 label，与 `2 拒绝申请` 区分） |
 
-> ⚠️ **本仓实测 2 处不一致**（与 `vendor/jeeflow/model.py:70 SubmitType` 枚举对比）—— 详见 `../README.md §3 #1/#2` 决策记录 + `diffs.md` §3.1：
+> ✅ **本仓字典已与枚举完全对齐**（2026-09-24 修复）：
 >
-> 1. **缺失 `7 转办`（TRANSFER）**——`SubmitType` 枚举含 `7`，但字典无该项。前端"转办"提交类型显示需绕开字典或自定义补充
-> 2. **`20 拒绝申请` 与 `2 拒绝申请` 重复**——`20` 在枚举是 `COUNTERSIGN_DISAGREE`（会签拒绝），与 `2 REJECT` 语义不同，但字典 label 重复易混淆
+> 1. ✅ **补 `7 转办`** —— `SubmitType` 枚举含 `7`，字典现已含「转办」项
+> 2. ✅ **`20 拒绝申请` → `20 会签拒绝`** —— 与枚举 `COUNTERSIGN_DISAGREE` 语义对齐，不再与 `2 REJECT` 混淆
 >
-> 设计者实操：调 `enum_dict("wf_process_submit_type")` 取字典做表单下拉时，**按 `value` 区分**，避免依赖 label 判别。
+> 详见 `../diffs.md §3.1` 修复记录 + `../README.md §3 #1/#2`。
 
 ### API 速查
 
@@ -96,27 +97,22 @@ class HandlerMeta:
     group: Optional[str] = None                    # 拦截器 pre/post 分组，可为空
 ```
 
-### BUILTIN_ASSIGNMENT_METAS 7 项实测（本仓字典源）
+### BUILTIN_ASSIGNMENT_METAS 7 项实测（本仓字典源，2026-09-24 已修复）
 
-> ⚠️ **实测差异警示**：本仓 `BUILTIN_ASSIGNMENT_METAS` 与 `vendor/jeeflow/builtin.py` 注册的 7 简化版主用 key **部分不一致**——
+> ✅ **字典源与运行时已统一**（2026-09-24）：本仓 `BUILTIN_ASSIGNMENT_METAS` 改为 7 个**简化版主用** FQCN，与 `vendor/jeeflow/builtin.py:170-183 register_builtin_assignments` 注册的 7 主用 key 完全一致。
 
 | order | className（本仓 metadata 注册）| displayName |
 |---|---|---|
 | -9999 | `com.mldong.jeeflow.interceptor.impl.OperatorAssignmentHandler` | 流程发起人 |
-| 10 | `com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$ApplicantDeptLeaderAssignmentHandler` | 发起人所属部门经理 |
-| 20 | `com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$ApplicantDeptMainLeaderAssignmentHandler` | 发起人所属部门分管领导 |
-| 30 | `com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$DeptLeaderAssignmentHandler` | 当前用户所属部门经理 |
-| 40 | `com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$DeptMainLeaderAssignmentHandler` | 当前用户所属部门分管领导 |
+| 10 | `com.mldong.jeeflow.interceptor.impl.ApplicantDeptLeaderAssignmentHandler` | 发起人所属部门经理 |
+| 20 | `com.mldong.jeeflow.interceptor.impl.ApplicantDeptMainLeaderAssignmentHandler` | 发起人所属部门分管领导 |
+| 30 | `com.mldong.jeeflow.interceptor.impl.DeptLeaderAssignmentHandler` | 当前用户所属部门经理 |
+| 40 | `com.mldong.jeeflow.interceptor.impl.DeptMainLeaderAssignmentHandler` | 当前用户所属部门分管领导 |
 | 50 | `com.mldong.jeeflow.interceptor.impl.FormFieldAssigneeHandler` | 根据表单字段值分配参与者 |
-| 60 | `com.mldong.jeeflow.interceptor.impl.OrgUserAssignmentHandlers$TaskRoleAssigneeHandler` | 根据任务节点唯一编码关联角色分配参与者 |
+| 60 | `com.mldong.jeeflow.interceptor.impl.TaskRoleAssigneeHandler` | 根据任务节点唯一编码关联角色分配参与者 |
 
-> **关键差异**：
-> - `OperatorAssignmentHandler` / `FormFieldAssigneeHandler`：metadata 注册**简化版**（无 `OrgUserAssignmentHandlers$` 嵌套）
-> - 5 个组织维度 / 角色 handler：metadata 注册**完整版**（带 `OrgUserAssignmentHandlers$` 嵌套）
->
-> 而 `vendor/jeeflow/builtin.py:170-183 register_builtin_assignments` **同时**注册简化版主用 + 完整版别名（12 个 key）。
->
-> ⇒ 前端设计器从 `HandlerRegistry.list_handlers("AssignmentHandler")` 拿到的字典与引擎运行时实际加载的 handler 集合**部分不一致**——若设计器按 metadata 字典生成的 candidateUsers 默认值，运行时会抛 `ValueError(handler 未注册: ...)`。**建议**集成方在字典返回前显式过滤 / 替换为简化版主用 key。
+> **字典源 / 运行时一致性**：`builtin.py:179-183` 仍保留 5 个完整版 FQCN 别名（兼容历史 JSON），新流程统一用简化版。设计器字典源 = 运行时加载集合，无 `ValueError(handler 未注册)` 风险。
+> 详见 `../diffs.md §3.1 #3` 修复记录 + `../README.md §3 #3`。
 
 ### HandlerRegistry API 速查（本仓 Python 实测）
 

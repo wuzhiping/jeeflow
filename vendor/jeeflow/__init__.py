@@ -11,3 +11,11 @@ from .builtin import (register_builtin_assignments, OperatorAssignmentHandler, F
                       TaskRoleAssigneeHandler, HANDLER_OPERATOR_ASSIGNMENT, HANDLER_FORM_FIELD_ASSIGNEE,
                       HANDLER_DEPT_LEADER, HANDLER_DEPT_MAIN_LEADER, HANDLER_APPLICANT_DEPT_LEADER,
                       HANDLER_APPLICANT_DEPT_MAIN_LEADER, HANDLER_TASK_ROLE_ASSIGNEE)
+
+# 版本元数据（单一来源）
+# - release 时由 ToT/sop/release.sh 自动更新
+# - healthz + admin_health + /version 端点统一读这里
+__version__ = "1.10.4"
+__version_full__ = "1.10.4+9c4cb5b"
+__git_sha__ = "9c4cb5b"
+__build_time__ = "2026-09-25T00:08:03Z"

@@ -71,9 +71,9 @@
 
 | # | 不一致点 | 文档侧（上游 + 本仓 ToT/docs）| 代码侧（本仓实测）| 建议方向 | 状态 |
 |---|---|---|---|---|---|
-| 1 | **`wf_process_submit_type` 缺 `7 转办`（TRANSFER）**| 上游 9 枚举；本仓 `metadata.py:34 _DICTS` 字典仅 8 项，缺 `7` | `model.py:70 SubmitType` 含 `7 TRANSFER`；**2026-09-24 重核**：`metadata.py:34-38` 确认仅 8 项，缺 `7` | **修字典**（加 `DictItem("7", "转办")`）| ✅ 已验证 / ⏳ 待修 |
-| 2 | **`wf_process_submit_type` label 重复**：`20` 与 `2` 都是「拒绝申请」| 字典表 `metadata.py:34` label 重复 | 枚举 `20=COUNTERSIGN_DISAGREE` / `2=REJECT` 语义不同；**2026-09-24 重核**：`metadata.py:35` + `:37` 确认重复 | **改 label**：`20` → 「会签拒绝」 | ✅ 已验证 / ⏳ 待修 |
-| 3 | **`BUILTIN_ASSIGNMENT_METAS` 用完整版 FQCN 但运行时实际加载简化版** | `metadata.py:77-99` 注册 5 个 `…OrgUserAssignmentHandlers$…` | `builtin.py:170-183` 同时注册 12 个 key：7 简化版主用 + 5 完整版别名；**2026-09-24 重核**：`metadata.py:82/85/88/91/97` 5 项用完整版，`builtin.py:15-23` 主用简化版 | **统一字典源**——`BUILTIN_ASSIGNMENT_METAS` 改为简化版主用 7 项 | ✅ 已验证 / ⏳ 待修 |
+| 1 | **`wf_process_submit_type` 缺 `7 转办`（TRANSFER）**| 上游 9 枚举；本仓 `metadata.py:34 _DICTS` 字典仅 8 项，缺 `7` | `model.py:70 SubmitType` 含 `7 TRANSFER`；**2026-09-24 重核**：`metadata.py:34-38` 确认仅 8 项，缺 `7` | **修字典**（加 `DictItem("7", "转办")`）| ✅ 已修复（2026-09-24 修 metadata.py:37，加 DictItem("7", "转办")；详见 §3.1 #1） |
+| 2 | **`wf_process_submit_type` label 重复**：`20` 与 `2` 都是「拒绝申请」| 字典表 `metadata.py:34` label 重复 | 枚举 `20=COUNTERSIGN_DISAGREE` / `2=REJECT` 语义不同；**2026-09-24 重核**：`metadata.py:35` + `:37` 确认重复 | **改 label**：`20` → 「会签拒绝」 | ✅ 已修复（2026-09-24 修 metadata.py:37，label 改为「会签拒绝」；详见 §3.1 #2） |
+| 3 | **`BUILTIN_ASSIGNMENT_METAS` 用完整版 FQCN 但运行时实际加载简化版** | `metadata.py:77-99` 注册 5 个 `…OrgUserAssignmentHandlers$…` | `builtin.py:170-183` 同时注册 12 个 key：7 简化版主用 + 5 完整版别名；**2026-09-24 重核**：`metadata.py:82/85/88/91/97` 5 项用完整版，`builtin.py:15-23` 主用简化版 | **统一字典源**——`BUILTIN_ASSIGNMENT_METAS` 改为简化版主用 7 项 | ✅ 已修复（2026-09-24 修 metadata.py:77-99，5 个 OrgUserAssignmentHandlers$ 改简化版；详见 §3.1 #3） |
 | 4 | **PRD 声明 38 actions vs facade 实际 57 个 `/wf/` 端点** | `PRD.md` §核心端点列 38 个；本仓 `facade.py` 实际 57（openapi.json）+ 83 个 _* 路由方法 | 缺：**`transferAndAdd`** / `delegate` / `delegateHistory` / `withForm` / `comment` / `extra` / `suspend` / `resume` / `stats_overview` / `stats_trend` / `stats_group` / `getJobCardContent` 等 12+ | **更新 PRD**（或确认 38 仅指「核心 38」）| ✅ 已修复（PRD 38→57 + ToT/docs/spec/06-facade.md 同步，详见 §3.1.4）|
 | 5 | **ea-compliance 44/44 PASS 是 2026-09-23 状态** | `spec/08-compliance.md` §本仓实测状态 | 每次合规测试结果会变 | **按版本快照**（每发版打 snapshot）| ⏳ 待确认 |
 | 6 | **`docs/BUGS.md` 27 FIX + 0 仍存 是 2026-09-20 状态** | `spec/06-facade.md` / `spec/08-compliance.md` / 顶部差异 | 新 FIX-T 编号会改变总数 | **按版本快照** | ⏳ 待确认 |
@@ -165,7 +165,7 @@
 | #3 | 暂缓 | 低（运行时）/ 中（演进性）| ⏳ 待修 |
 | **#4** | **已修复** | **低（仅文档漂移）** | **✅ 已修复** |
 
-**Phase 2 状态**：**#4 已修复，#1/#2/#3 已验证 + 暂缓**。未改 `vendor/jeeflow/*.py` 任何字节。
+**Phase 2 状态**：**#1/#2/#3 字典差异已修复 + #4 已修复**。已改 `vendor/jeeflow/metadata.py:34-37` (字典表) + `:77-99` (BUILTIN_ASSIGNMENT_METAS)；由 4 个自动化脚本（`doc-link-checker.py` / `doc-archive-snapshot.py` / `doc-vs-code-drift.py` / `gen-changelog.py`）兜底回归。
 
 ---
 
@@ -235,8 +235,10 @@ Step 5: 留档
 | `ToT/sop/flow_completeness.py` | 单流程 0-100% 打分 | ✅ 已有 |
 | `ToT/sop/tdd-flow.py` | BDD/TDD baseline 生成 | ✅ 已有 |
 | `ToT/sop/doc-link-checker.py` | 扫描 `ToT/docs/**/*.md` 中所有 `vendor/jeeflow/<file>.py:<line>` 引用 + 行号比对 | ✅ 已建（2026-09-24；初版扫描 134 条引用，0 drift） |
-| `ToT/sop/doc-archive-snapshot.py`（建议）| 每次发版时 `git tag ToT/docs/vX.Y.Z` | ❌ 待建 |
-| `ToT/sop/doc-vs-code-drift.py`（建议）| §3 10 个不一致项自动检测脚本 | ❌ 待建 |
+| `ToT/sop/doc-archive-snapshot.py` | 每发版打快照（per-file sha256 + drift 报告 + git 元数据）| ✅ 已建（2026-09-24；首次快照 v1.9.0-final）|
+| `ToT/sop/doc-vs-code-drift.py` | 跨 snapshot 对比（文件级 sha256 + drift 状态变化 + 新增/已修复项）| ✅ 已建（2026-09-24；首次对比 v1.9.0-final → v1.9.0-postfix）|
+| `ToT/sop/gen-changelog.py` | 从 snapshots 累积生成 Markdown CHANGELOG | ✅ 已建（2026-09-24）|
+| `ToT/sop/release.sh` | 本地 release 脚本（drift gate + snapshot + diff + changelog + 更新 `__version__`）| ✅ 已建（2026-09-24，2026-09-25 扩展：自动 sed 更新 `vendor/jeeflow/__init__.py`）|
 
 ---
 
@@ -256,7 +258,7 @@ Step 5: 留档
 
 ### 5.3 验证期（建议新增）
 
-- CI 流程加入 `doc-link-checker.py`（每次 PR）
+- CI 流程加入 `doc-link-checker.py`（每次 PR） — ✅ 本地 pre-commit hook 已建（2026-09-24）
 - `ea-compliance.py` 含「文档链接完整性」子项（检查所有 `../spec/XX` / `../concepts/XX` 链接指向的文件存在）
 
 ---
@@ -267,9 +269,9 @@ Step 5: 留档
 |---|---|---|---|
 | **Phase 1**（已完成）| 2026-09-24 | 起草 27 篇文档（9+10+8）| ✅ |
 | **Phase 1b**（已完成）| 2026-09-24 | 起草 11 篇 manual（README + 8 章 + 2 附录）| ✅ |
-| **Phase 2**（部分完成）| 2026-09-24 | §3 #1/#2/#3 已验证 + 暂缓（详见 §3.1）；#4-#6 / #10 仍待确认；#7/#8 已记录 | 🟡 部分完成 |
-| **Phase 3** | 2026-Q4 | 新增 `doc-link-checker.py`（**✅ 已完成 2026-09-24**）/ `doc-archive-snapshot.py` / `doc-vs-code-drift.py` | 🟡 部分完成 |
-| **Phase 4** | 2026-Q4 | CI 集成（每次 PR 跑 link-checker）| ⏳ 待规划 |
+| **Phase 2** | 2026-09-24 | §3 #1/#2/#3 字典差异 + #4 全部修复（详见 §3.1）；#5/#6/#10 仍待决策；#7/#8 已记录 | ✅ 完成 |
+| **Phase 3** | 2026-Q4 | 4 项全部完成：`doc-link-checker.py`（✅）/ `doc-archive-snapshot.py`（✅）/ `doc-vs-code-drift.py`（✅）/ `gen-changelog.py`（✅）| ✅ 完成 |
+| **Phase 4** | 2026-Q4 | CI 集成 — 本地 pre-commit hook + release.sh + `__version__` 自动更新（**✅ 已完成 2026-09-24/25**）；远程 GitHub Actions **已取消**（2026-09-25） | ✅ 已完成 |
 | **Phase 5** | 2027-Q1 | 第 1 次全量季度 review（验证知识库工程流程有效）| ⏳ 待规划 |
 
 ---
@@ -368,7 +370,7 @@ vendor/jeeflow/           (Sep 24 2026, 14 文件)
 2026-09-24  ToT/docs 起草完成（27 篇：9 guides + 10 spec + 8 concepts）
 2026-09-24  ToT/docs/manual/ 起草完成（11 篇：README + 8 章 + 2 附录）
 2026-09-24  ToT/docs/README.md 建立（知识库工程起点）
-2026-09-24  Phase 2 部分完成：§3 #1/#2/#3 已验证 + 暂缓（详见 §3.1 处置记录）
+2026-09-24  Phase 2 完成：§3 #1/#2/#3 字典差异修复（metadata.py:37 补 7 + 改 20 label；:77-99 改简化版）
 2026-09-24  Phase 2 #4 已修复：PRD 38 → 57 + 4 文档同步（详见 §3.1.4）
 ```
 

@@ -45,7 +45,8 @@
 
 | 方法 | 路径 | 用途 | 来源 |
 | --- | --- | --- | --- |
-| GET | `/healthz` | 健康检查 | `./main.py:180` |
+| GET | `/healthz` | 健康检查 + 版本号（`version` / `version_full` / `git_sha` / `build_time`，来自 `vendor/jeeflow/__init__.py:__version__` 等；release 时由 `ToT/sop/release.sh` 自动更新） | `./main.py:180` / `./main_common.py:829` |
+| GET | `/version` | 版本元数据查询（仅 `version` / `version_full` / `git_sha` / `build_time` 4 字段，无 status/pg；客户支持场景专用）| `./main_common.py:848` |
 | POST | `/api/reset` | 重置内存中所有实例 / 设计 / 定义 | `./main_pg.py:526` |
 | GET | `/api/stats/users` | 列出用户 | `./main_pg.py` |
 | GET | `/api/stats/roles` | 列出角色 | `./main_pg.py` |

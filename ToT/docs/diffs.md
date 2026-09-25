@@ -188,7 +188,7 @@
 | # | 项 | 备注 | 状态 |
 |---|---|---|---|
 | 8-1 | Phase 2 §3 #4 PRD 38→57 | 2026-09-24 已修复 | ✅ |
-| 8-2 | Phase 2 §3 #1/#2/#3 字典差异 | 已验证 + 暂缓（不改代码）| ⏳ 待 Phase 3 决策 |
+| 8-2 | Phase 2 §3 #1/#2/#3 字典差异 | **2026-09-24 已修复**：`metadata.py:37` 补 `DictItem("7", "转办")` + 改 `DictItem("20", "拒绝申请")` → `DictItem("20", "会签拒绝")`；`metadata.py:77-99` 改 5 个 `OrgUserAssignmentHandlers$` 为简化版 FQCN | ✅ 已修复（2026-09-24 Phase 2 复盘）+ ToT/docs/spec/07-metadata.md / manual/appendix-b-values.md / README.md §3 #1/#2/#3 全部同步更新 |
 | 8-3 | Phase 2 §3 #5/#6/#10 快照基线 / CHANGELOG | 待决策（建议 Phase 3 实现 doc-archive-snapshot.py + 建 CHANGELOG.md）| ⏳ 待 Phase 3 |
 | 8-4 | manual/README §6 起草状态表 | 2026-09-24 已修复（11 篇全部 ✅）+ manual/README.md 第 16-29 行同步 | ✅ |
 | 8-5 | 27 FIX 编号 + BUG 列表 | 跨多处引用（PRD / facade / spec/08）；建议建 CHANGELOG.md 跟踪（Phase 3 #10 待决策）| ⏳ 待 Phase 3 |

@@ -44,7 +44,7 @@ python3 ToT/sop/doc-link-checker.py --md-file ToT/docs/spec/06-facade.md
 
 - **不依赖第三方包**（仅 Python 3.10+ 标准库 `re` / `json` / `pathlib`）
 - **从 §3.1 / §3.2 / §3 差异审计中提炼**：95+ 项 doc 行号漂移，多数为「调用站点」或「函数体内语句」而非「定义行」，所以脚本接受所有缩进行为有效上下文
-- **支持 CI 集成**：`--json` 输出标准结构，可接入 GitHub Actions / bdd-regression 流水线
+- **支持 CI 集成**：`--json` 输出标准结构，可接入 bdd-regression 流水线（~~GitHub Actions 已取消 2026-09-25~~）
 - **支持单文件扫**：`--md-file` 参数，方便 PR 时只扫变动 doc
 
 ## 已知限制
@@ -65,4 +65,4 @@ python3 ToT/sop/doc-link-checker.py --md-file ToT/docs/spec/06-facade.md
 - [ ] 支持多行范围校验（`engine.py:170-183` 同时校验两端）
 - [ ] 加入 `docs/flow.md` / `docs/api.md` 等仓库级文档
 - [ ] 集成 `doc-archive-snapshot.py`（每发版打 snapshot，比对两版本 drift）
-- [ ] JSON 输出加入 GitHub Actions annotation 格式（`::error file=...,col=...`）
+- ~~[ ] JSON 输出加入 GitHub Actions annotation 格式（`::error file=...,col=...`）~~ **取消 2026-09-25**（无需远程 CI）

@@ -1,0 +1,1382 @@
+{
+  "schema": "doc-archive-snapshot/v1",
+  "timestamp": "2026-09-24T235123Z",
+  "label": "v1.9.0-final",
+  "git": {
+    "commit": "9c4cb5b1cf17c33d2d8eaa06194993edf89f2204",
+    "short_sha": "9c4cb5b1",
+    "branch": "dev",
+    "dirty": true
+  },
+  "docs_root": "ToT/docs",
+  "summary": {
+    "file_count": 40,
+    "total_lines": 8486,
+    "total_bytes": 480992,
+    "drift": {
+      "total": 134,
+      "ok": 134,
+      "near_match": 0,
+      "drift": 0,
+      "tolerance": 5
+    }
+  },
+  "files": {
+    "ToT/docs/README.md": {
+      "path": "ToT/docs/README.md",
+      "size": 22373,
+      "lines": 379,
+      "sha256": "4980c9fea053515894579ceb3a4841e9470c97758baa914871c36f1d5e3e1fda",
+      "mtime": 1790293778.4988334
+    },
+    "ToT/docs/concepts/01-architecture.md": {
+      "path": "ToT/docs/concepts/01-architecture.md",
+      "size": 12401,
+      "lines": 198,
+      "sha256": "515207063382a20bb157c68d5b6ac87c2d98d2f0c088af823581eb4628427f4b",
+      "mtime": 1790293316.1740308
+    },
+    "ToT/docs/concepts/02-domain-model.md": {
+      "path": "ToT/docs/concepts/02-domain-model.md",
+      "size": 11342,
+      "lines": 228,
+      "sha256": "76711cb7fa138c5222400ad7bb0bfdd343a30182acb3e6bc7e1555f09b0f0de3",
+      "mtime": 1790292812.5610151
+    },
+    "ToT/docs/concepts/03-execution-engine.md": {
+      "path": "ToT/docs/concepts/03-execution-engine.md",
+      "size": 15807,
+      "lines": 314,
+      "sha256": "ace992e704fb4b9012e557ecbc538d804df1478fb1ad278b03cfdd929e626135",
+      "mtime": 1790293149.5816948
+    },
+    "ToT/docs/concepts/04-extensions.md": {
+      "path": "ToT/docs/concepts/04-extensions.md",
+      "size": 16115,
+      "lines": 354,
+      "sha256": "74d610150c94c8a939161d8961f0a9495cd79de7da8d81c7984bd9145e95cf7e",
+      "mtime": 1790292909.1931357
+    },
+    "ToT/docs/concepts/05-spi-design.md": {
+      "path": "ToT/docs/concepts/05-spi-design.md",
+      "size": 16379,
+      "lines": 327,
+      "sha256": "c3130cf317b81cf36ffded2b63eab7f0453c688a812aee93a4651180d3049df9",
+      "mtime": 1790293765.826813
+    },
+    "ToT/docs/concepts/06-contracts.md": {
+      "path": "ToT/docs/concepts/06-contracts.md",
+      "size": 11777,
+      "lines": 195,
+      "sha256": "f30965fcbd6a76a097853dcaa7042bb71d5d08b49fc30158034ce1197841ac6f",
+      "mtime": 1790293308.0900152
+    },
+    "ToT/docs/concepts/07-admin-and-facade.md": {
+      "path": "ToT/docs/concepts/07-admin-and-facade.md",
+      "size": 10676,
+      "lines": 179,
+      "sha256": "c02db2724fc847ccca2417a50d437b0c27eeb90443b3f95e5cf06642a6cd2463",
+      "mtime": 1790293299.9739995
+    },
+    "ToT/docs/concepts/08-metadata.md": {
+      "path": "ToT/docs/concepts/08-metadata.md",
+      "size": 9482,
+      "lines": 165,
+      "sha256": "fe56ecfd9bcea0e99dac35bf7316e226c320d7270701f5f1ec40a55cb0c5fb95",
+      "mtime": 1790293316.1700306
+    },
+    "ToT/docs/diffs.md": {
+      "path": "ToT/docs/diffs.md",
+      "size": 33839,
+      "lines": 282,
+      "sha256": "d707188d4a6982a84c223d64e9028be8b401156e197ccc5c39ca1c66f12d7adc",
+      "mtime": 1790293590.3185236
+    },
+    "ToT/docs/guides/01-quick-start.md": {
+      "path": "ToT/docs/guides/01-quick-start.md",
+      "size": 4096,
+      "lines": 86,
+      "sha256": "bc21e27ba78de16dfaafb01a50914ef65c2c7ea19c88eb60be52bf92d2e7edad",
+      "mtime": 1790293154.1337044
+    },
+    "ToT/docs/guides/02-flow-definition.md": {
+      "path": "ToT/docs/guides/02-flow-definition.md",
+      "size": 13865,
+      "lines": 250,
+      "sha256": "825694a7bcbd59dad1f0033d932d6a754a921c3d9b7f5e122902d2a061daf2df",
+      "mtime": 1790292902.025127
+    },
+    "ToT/docs/guides/04-extensions.md": {
+      "path": "ToT/docs/guides/04-extensions.md",
+      "size": 11125,
+      "lines": 243,
+      "sha256": "fef41148ed891d594d56404370274166c12b98a0bf4387eacdc5e372d3a276f6",
+      "mtime": 1790293765.8308132
+    },
+    "ToT/docs/guides/05-scenarios.md": {
+      "path": "ToT/docs/guides/05-scenarios.md",
+      "size": 13023,
+      "lines": 279,
+      "sha256": "e3a9db41e2458d8f807aa433828c8f7d6c29775871eae98187482de71ab6be53",
+      "mtime": 1790293232.4218662
+    },
+    "ToT/docs/guides/06-deployment.md": {
+      "path": "ToT/docs/guides/06-deployment.md",
+      "size": 6528,
+      "lines": 82,
+      "sha256": "499c9af26aca7f316bbb33a703c43ded196f563e0d396310ab030d8977bdf882",
+      "mtime": 1790293545.1424463
+    },
+    "ToT/docs/guides/07-assignment-handlers.md": {
+      "path": "ToT/docs/guides/07-assignment-handlers.md",
+      "size": 15646,
+      "lines": 332,
+      "sha256": "9a5bcd6e38b2553d39457d9b375a5539f8e29f8777f326cff54f47f358c080e9",
+      "mtime": 1790293765.8308132
+    },
+    "ToT/docs/guides/08-persist.md": {
+      "path": "ToT/docs/guides/08-persist.md",
+      "size": 13814,
+      "lines": 296,
+      "sha256": "4d7dd16adb83b421e71266e1a81321a8d9e6d72f61fb001c96f4c002ba663805",
+      "mtime": 1790292890.3171122
+    },
+    "ToT/docs/guides/09-persist-meta.md": {
+      "path": "ToT/docs/guides/09-persist-meta.md",
+      "size": 10988,
+      "lines": 213,
+      "sha256": "c51ae24c551d0888fd8df2272c40438e77a860997b3667d2f7f80650b122eea3",
+      "mtime": 1790292828.9530356
+    },
+    "ToT/docs/guides/10-mldong-integration.md": {
+      "path": "ToT/docs/guides/10-mldong-integration.md",
+      "size": 3926,
+      "lines": 62,
+      "sha256": "60fac8e52613b6030396d4469332258244237212b198fa05f1d76a71c692dca3",
+      "mtime": 1790292608.1727593
+    },
+    "ToT/docs/manual/01-deploy-and-accounts.md": {
+      "path": "ToT/docs/manual/01-deploy-and-accounts.md",
+      "size": 4405,
+      "lines": 59,
+      "sha256": "c636c1f02d326643189c110c8f874ff78d87d45a2bbf042cb8f6dc00ae5cd3b7",
+      "mtime": 1790293316.1780307
+    },
+    "ToT/docs/manual/02-dept-user-role.md": {
+      "path": "ToT/docs/manual/02-dept-user-role.md",
+      "size": 8791,
+      "lines": 136,
+      "sha256": "13fe998de3c8cfb14721a0f39d5d9a4474e97f87b75de419bd09138b29a3a8e5",
+      "mtime": 1790261809.5005183
+    },
+    "ToT/docs/manual/03-forms.md": {
+      "path": "ToT/docs/manual/03-forms.md",
+      "size": 8876,
+      "lines": 180,
+      "sha256": "e7c908c809835b44d082430c288fdf58b9181d6256abfbbc66933df427484b02",
+      "mtime": 1790293043.4574606
+    },
+    "ToT/docs/manual/04-design-and-publish.md": {
+      "path": "ToT/docs/manual/04-design-and-publish.md",
+      "size": 12640,
+      "lines": 217,
+      "sha256": "42153490502412dc5be20a53895dfdc9b145a3da57ea84cf28c524a0a6bb0667",
+      "mtime": 1790293484.5983405
+    },
+    "ToT/docs/manual/05-participants.md": {
+      "path": "ToT/docs/manual/05-participants.md",
+      "size": 12403,
+      "lines": 177,
+      "sha256": "99e5ca317fc84db06f2a594c5315ec2f3132e43856685a68c6ddfe5bc09acd93",
+      "mtime": 1790292902.025127
+    },
+    "ToT/docs/manual/06-start-and-approve.md": {
+      "path": "ToT/docs/manual/06-start-and-approve.md",
+      "size": 10679,
+      "lines": 192,
+      "sha256": "90cb13cd37133b2333d9c727f47c9efffe5c06464631d6805f76ad3e6caecc16",
+      "mtime": 1790262008.8247495
+    },
+    "ToT/docs/manual/07-verify-and-troubleshoot.md": {
+      "path": "ToT/docs/manual/07-verify-and-troubleshoot.md",
+      "size": 10275,
+      "lines": 165,
+      "sha256": "2e0da0b8a001a59365f022ee0b2f841f4767908fd0a0bde7c42389da0cb30f9c",
+      "mtime": 1790293316.1860306
+    },
+    "ToT/docs/manual/08-persist.md": {
+      "path": "ToT/docs/manual/08-persist.md",
+      "size": 10086,
+      "lines": 181,
+      "sha256": "d44b2b197e53589e5b0505bfc8c65a024679dfbc3a49ee0d38da60be37c42c77",
+      "mtime": 1790293030.601431
+    },
+    "ToT/docs/manual/README.md": {
+      "path": "ToT/docs/manual/README.md",
+      "size": 5857,
+      "lines": 80,
+      "sha256": "04accb7d56997403b4aa7cb5be8d145b8918992a200f43af4b8fca7cb2e931c0",
+      "mtime": 1790293533.4664261
+    },
+    "ToT/docs/manual/appendix-a-pages.md": {
+      "path": "ToT/docs/manual/appendix-a-pages.md",
+      "size": 4620,
+      "lines": 83,
+      "sha256": "a70e8d801d63aa58d5b66c53ad0923239724331094ff4e97da04aa8bba1cdc1f",
+      "mtime": 1790293316.1940308
+    },
+    "ToT/docs/manual/appendix-b-values.md": {
+      "path": "ToT/docs/manual/appendix-b-values.md",
+      "size": 10457,
+      "lines": 191,
+      "sha256": "9946feb45e738b0ea7b0ecf4ec46a245e2b2facc8912b91b0dd61e35325a5962",
+      "mtime": 1790292828.5770352
+    },
+    "ToT/docs/spec/01-data-model.md": {
+      "path": "ToT/docs/spec/01-data-model.md",
+      "size": 12387,
+      "lines": 290,
+      "sha256": "8e80b32440ca7f75fe507cfe46fecebe59eac9c878798f12737d20d7f70f1ddf",
+      "mtime": 1790293554.4624624
+    },
+    "ToT/docs/spec/02-flow-definition.md": {
+      "path": "ToT/docs/spec/02-flow-definition.md",
+      "size": 20364,
+      "lines": 345,
+      "sha256": "448131410252a15b1512a937c1cdaa69b7de70dca30cf6c6019fbbfda1242880",
+      "mtime": 1790293765.8308132
+    },
+    "ToT/docs/spec/03-state-machine.md": {
+      "path": "ToT/docs/spec/03-state-machine.md",
+      "size": 6922,
+      "lines": 126,
+      "sha256": "5cc01d238f775097dd09e5d2d18c4108f9b73f22244946818d3007328bcc800b",
+      "mtime": 1790293509.9663851
+    },
+    "ToT/docs/spec/04-engine-ops.md": {
+      "path": "ToT/docs/spec/04-engine-ops.md",
+      "size": 12851,
+      "lines": 247,
+      "sha256": "cf14acb48cf031798a7fea29199780ae80282ced45edac0af1c3699bc3ca6b18",
+      "mtime": 1790293765.834813
+    },
+    "ToT/docs/spec/05-spi.md": {
+      "path": "ToT/docs/spec/05-spi.md",
+      "size": 10742,
+      "lines": 186,
+      "sha256": "562b6225da1fd6d21b8b520abd561b0d7b066f19a9fd79f968296507980ce09c",
+      "mtime": 1790292902.025127
+    },
+    "ToT/docs/spec/06-facade.md": {
+      "path": "ToT/docs/spec/06-facade.md",
+      "size": 20706,
+      "lines": 388,
+      "sha256": "0a3356cfa23e33b26f8862fd978f5bc6c13a1acfc33b5ab3947dba2ee3d54eee",
+      "mtime": 1790292608.1687593
+    },
+    "ToT/docs/spec/07-metadata.md": {
+      "path": "ToT/docs/spec/07-metadata.md",
+      "size": 9518,
+      "lines": 183,
+      "sha256": "20bf54463ed4e9b8fb3ec0942f0c62205d38a733d6163cc482368a7ce4f26d71",
+      "mtime": 1790293514.2863927
+    },
+    "ToT/docs/spec/08-compliance.md": {
+      "path": "ToT/docs/spec/08-compliance.md",
+      "size": 11073,
+      "lines": 130,
+      "sha256": "a8e1520a10fbadb9337c5dc3a9205c693b62920e2ec2b0ec09fa600a1bbd5962",
+      "mtime": 1790293030.5334308
+    },
+    "ToT/docs/spec/09-persist.md": {
+      "path": "ToT/docs/spec/09-persist.md",
+      "size": 14359,
+      "lines": 272,
+      "sha256": "a56ff2d9569f6c7c2c12db2f670d09ba9eb2b3a2c5828495e3b4e361c482e92f",
+      "mtime": 1790292854.5490677
+    },
+    "ToT/docs/spec/10-persist-meta.md": {
+      "path": "ToT/docs/spec/10-persist-meta.md",
+      "size": 9779,
+      "lines": 194,
+      "sha256": "f06296866451a04f2f8fbbca69d492576e0377af9df63d32707912aa485a1d17",
+      "mtime": 1790292829.1010358
+    }
+  },
+  "drift_report": {
+    "OK": [
+      {
+        "md_file": "ToT/docs/concepts/01-architecture.md",
+        "md_line": 36,
+        "code_file": "model.py",
+        "code_line": 112,
+        "context": "做三件事：解析流程定义、遍历节点、调用聚合根 ```  > **本仓实测**（`vendor/jeeflow/model.py:112 ProcessInstance` + `:230 ProcessTask`）：",
+        "actual": "class ProcessInstance:"
+      },
+      {
+        "md_file": "ToT/docs/concepts/01-architecture.md",
+        "md_line": 119,
+        "code_file": "facade.py",
+        "code_line": 155,
+        "context": "                  │ ```  > **本仓实测时序点**（`vendor/jeeflow/facade.py:155 _startAndExecute` + `facade.py:84 _flow",
+        "actual": "async def _processDefine_startAndExecute(self, args: dict) -> dict:"
+      },
+      {
+        "md_file": "ToT/docs/concepts/01-architecture.md",
+        "md_line": 167,
+        "code_file": "engine.py",
+        "code_line": 44,
+        "context": "主题 | 本仓 Python 路径 | |---|---| | 引擎入口 | `vendor/jeeflow/engine.py:44 EngineImpl` | | 聚合根 | `vendor/jeeflow/m",
+        "actual": "class EngineImpl(Engine):"
+      },
+      {
+        "md_file": "ToT/docs/concepts/01-architecture.md",
+        "md_line": 168,
+        "code_file": "model.py",
+        "code_line": 112,
+        "context": "low/engine.py:44 EngineImpl` | | 聚合根 | `vendor/jeeflow/model.py:112 ProcessInstance` + `:230 ProcessTask` |",
+        "actual": "class ProcessInstance:"
+      },
+      {
+        "md_file": "ToT/docs/concepts/01-architecture.md",
+        "md_line": 169,
+        "code_file": "spi.py",
+        "code_line": 16,
+        "context": "nce` + `:230 ProcessTask` | | 仓储 SPI | `vendor/jeeflow/spi.py:16 ProcessRepository(ABC)` | | 内存仓储 | `ven",
+        "actual": "class ProcessRepository(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/concepts/01-architecture.md",
+        "md_line": 173,
+        "code_file": "extensions.py",
+        "code_line": 66,
+        "context": "_parse_flow_model`（`8` 行起）| | 拦截器注册表 | `vendor/jeeflow/extensions.py:66 HandlerRegistry` | | 内置 assignment hand",
+        "actual": "class HandlerRegistry:"
+      },
+      {
+        "md_file": "ToT/docs/concepts/01-architecture.md",
+        "md_line": 174,
+        "code_file": "builtin.py",
+        "code_line": 162,
+        "context": "rRegistry` | | 内置 assignment handler | `vendor/jeeflow/builtin.py:162 register_builtin_assignments` | | 持久化拦截",
+        "actual": "def register_builtin_assignments(registry: HandlerRegistry,"
+      },
+      {
+        "md_file": "ToT/docs/concepts/01-architecture.md",
+        "md_line": 175,
+        "code_file": "persist.py",
+        "code_line": 307,
+        "context": "ster_builtin_assignments` | | 持久化拦截器 | `vendor/jeeflow/persist.py:307 PersistPostInterceptor` | | 元数据驱动 | `ve",
+        "actual": "class PersistPostInterceptor(FlowInterceptor):"
+      },
+      {
+        "md_file": "ToT/docs/concepts/01-architecture.md",
+        "md_line": 176,
+        "code_file": "meta.py",
+        "code_line": 141,
+        "context": "07 PersistPostInterceptor` | | 元数据驱动 | `vendor/jeeflow/meta.py:141 MetaTableWriter` + `:293 MetaTableReade",
+        "actual": "class MetaTableWriter(DynamicTableWriter):"
+      },
+      {
+        "md_file": "ToT/docs/concepts/01-architecture.md",
+        "md_line": 177,
+        "code_file": "facade.py",
+        "code_line": 63,
+        "context": "`:293 MetaTableReader` | | Facade 入口 | `vendor/jeeflow/facade.py:63 JeeflowFacade.flow` | | 测试样本 | `flows/0",
+        "actual": "async def flow(self, action: str, args: Optional[dict] = None) -> dict:"
+      },
+      {
+        "md_file": "ToT/docs/concepts/02-domain-model.md",
+        "md_line": 6,
+        "code_file": "model.py",
+        "code_line": 112,
+        "context": "转换逻辑必须收敛到聚合根而不是散落在引擎/服务层。 > > **本仓实测**：`vendor/jeeflow/model.py:112 ProcessInstance` + `:230 ProcessTask`（`",
+        "actual": "class ProcessInstance:"
+      },
+      {
+        "md_file": "ToT/docs/concepts/02-domain-model.md",
+        "md_line": 44,
+        "code_file": "model.py",
+        "code_line": 112,
+        "context": "3. 代码膨胀：服务类越来越大，越来越难测  > **本仓实测位置**：本仓 `vendor/jeeflow/model.py:112 ProcessInstance` + `:230 ProcessTask` 走",
+        "actual": "class ProcessInstance:"
+      },
+      {
+        "md_file": "ToT/docs/concepts/02-domain-model.md",
+        "md_line": 78,
+        "code_file": "model.py",
+        "code_line": 112,
+        "context": "`10→20/99` 转换，只允许通过聚合根方法发生  > **本仓实测**（`vendor/jeeflow/model.py:112-...`）： > > ```python > @dataclass > cla",
+        "actual": "class ProcessInstance:"
+      },
+      {
+        "md_file": "ToT/docs/concepts/02-domain-model.md",
+        "md_line": 147,
+        "code_file": "model.py",
+        "code_line": 252,
+        "context": "ars ```  六版实现完全一致，仅语法不同。  > **本仓实测对应**（`vendor/jeeflow/model.py:252 ProcessTask.finish`）： > > ```python > d",
+        "actual": "def finish(self, operator: str, vars_: dict, now) -> None:"
+      },
+      {
+        "md_file": "ToT/docs/concepts/02-domain-model.md",
+        "md_line": 172,
+        "code_file": "engine.py",
+        "code_line": 752,
+        "context": "处，单测直接测 `complete_task`。  > **本仓实测警示**（`vendor/jeeflow/engine.py:752 _create_task` + `:1109 _fire_event`）： >",
+        "actual": "async def _create_task(self, node: FlowNode, inst: ProcessInstance, operator: st"
+      },
+      {
+        "md_file": "ToT/docs/concepts/03-execution-engine.md",
+        "md_line": 26,
+        "code_file": "engine.py",
+        "code_line": 1147,
+        "context": "这简化了持久化模型（PG 端 9 张表，无游标表）。  > **本仓实测**（`vendor/jeeflow/engine.py:1147 _follow_edges`）： > > ```python > def _f",
+        "actual": "def _follow_edges(flow: FlowModel, source_id: str) -> list[FlowNode]:"
+      },
+      {
+        "md_file": "ToT/docs/concepts/03-execution-engine.md",
+        "md_line": 63,
+        "code_file": "facade.py",
+        "code_line": 155,
+        "context": "纯审批流（自动跳过）。引擎保持中立，由调用方选择。 > > **本仓实测**（`vendor/jeeflow/facade.py:155 _startAndExecute`）：契约由 facade 实现，引擎不感知；",
+        "actual": "async def _processDefine_startAndExecute(self, args: dict) -> dict:"
+      },
+      {
+        "md_file": "ToT/docs/concepts/03-execution-engine.md",
+        "md_line": 94,
+        "code_file": "engine.py",
+        "code_line": 140,
+        "context": " JOIN     → 若无进行中任务才放行 ```  > **本仓实测**（`vendor/jeeflow/engine.py:140 execute_process_task`）： > - 12 步核心路径：lo",
+        "actual": "async def execute_process_task(self, task_id: int, operator: str, args: dict[str"
+      },
+      {
+        "md_file": "ToT/docs/concepts/03-execution-engine.md",
+        "md_line": 254,
+        "code_file": "extensions.py",
+        "code_line": 8,
+        "context": "     抄送人创建（issues/102） ```  > **本仓实测**（`vendor/jeeflow/extensions.py:8 EventType(Enum)`）： > > ```python > clas",
+        "actual": "class EventType(Enum):"
+      },
+      {
+        "md_file": "ToT/docs/concepts/03-execution-engine.md",
+        "md_line": 300,
+        "code_file": "engine.py",
+        "code_line": 394,
+        "context": "详见 `ToT/docs/diffs.md` §3-4）| | 会签创建 | `vendor/jeeflow/engine.py:394 _create_task_with_actors`（会签任务通过该方法创建）|",
+        "actual": "async def _create_task_with_actors(self, node: FlowNode, inst: ProcessInstance, "
+      },
+      {
+        "md_file": "ToT/docs/concepts/03-execution-engine.md",
+        "md_line": 301,
+        "code_file": "model.py",
+        "code_line": 112,
+        "context": "with_actors`（会签任务通过该方法创建）| | 聚合根状态转换 | `vendor/jeeflow/model.py:112 ProcessInstance` + `:230 ProcessTask` |",
+        "actual": "class ProcessInstance:"
+      },
+      {
+        "md_file": "ToT/docs/concepts/03-execution-engine.md",
+        "md_line": 302,
+        "code_file": "extensions.py",
+        "code_line": 8,
+        "context": "tance` + `:230 ProcessTask` | | 事件枚举 | `vendor/jeeflow/extensions.py:8 EventType` | | 事件 fire | `vendor/jeeflo",
+        "actual": "class EventType(Enum):"
+      },
+      {
+        "md_file": "ToT/docs/concepts/03-execution-engine.md",
+        "md_line": 303,
+        "code_file": "engine.py",
+        "code_line": 1109,
+        "context": "tensions.py:8 EventType` | | 事件 fire | `vendor/jeeflow/engine.py:1109 _fire_event` |  ---  ## 跨文档交叉引用  - 引擎核心",
+        "actual": "async def _fire_event(self, evt: ProcessEvent):"
+      },
+      {
+        "md_file": "ToT/docs/concepts/04-extensions.md",
+        "md_line": 6,
+        "code_file": "extensions.py",
+        "code_line": 31,
+        "context": "动机与边界，是判断\"加新能力\"该走哪条路径的基础。 > > **本仓实测**：`vendor/jeeflow/extensions.py:31 FlowInterceptor(ABC)` + `:8 EventType(E",
+        "actual": "class FlowInterceptor(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/concepts/04-extensions.md",
+        "md_line": 40,
+        "code_file": "extensions.py",
+        "code_line": 31,
+        "context": "owInterceptor）  ### 3.1 设计  ```python # vendor/jeeflow/extensions.py:31 class FlowInterceptor(ABC):     \"\"\"流程拦截",
+        "actual": "class FlowInterceptor(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/concepts/04-extensions.md",
+        "md_line": 88,
+        "code_file": "extensions.py",
+        "code_line": 8,
+        "context": "）  ### 4.1 事件清单（本仓实测 6 事件）  > **本仓实测**（`vendor/jeeflow/extensions.py:8 EventType(Enum)`）：  | 事件 | 触发时机 | 关键字段 ",
+        "actual": "class EventType(Enum):"
+      },
+      {
+        "md_file": "ToT/docs/concepts/04-extensions.md",
+        "md_line": 104,
+        "code_file": "extensions.py",
+        "code_line": 95,
+        "context": "栈对齐。  ### 4.2 监听器怎么写（本仓实测）  ```python # vendor/jeeflow/extensions.py:95 event_listener: Optional[Callable[[Proc",
+        "actual": "event_listener: Optional[Callable[[ProcessEvent], Awaitable[None]]] = None"
+      },
+      {
+        "md_file": "ToT/docs/concepts/04-extensions.md",
+        "md_line": 161,
+        "code_file": "extensions.py",
+        "code_line": 95,
+        "context": "*：去空、仅纯数字 ID、去重；过滤后为空则不发  > **本仓实测补充**（`vendor/jeeflow/extensions.py:95`）： > > - `event_listener` 是**单个** async",
+        "actual": "event_listener: Optional[Callable[[ProcessEvent], Awaitable[None]]] = None"
+      },
+      {
+        "md_file": "ToT/docs/concepts/04-extensions.md",
+        "md_line": 186,
+        "code_file": "extensions.py",
+        "code_line": 66,
+        "context": "───┘ ```  ### 5.2 设计（本仓实测）  ```python # vendor/jeeflow/extensions.py:66 HandlerRegistry class HandlerRegistry: ",
+        "actual": "class HandlerRegistry:"
+      },
+      {
+        "md_file": "ToT/docs/concepts/04-extensions.md",
+        "md_line": 208,
+        "code_file": "extensions.py",
+        "code_line": 50,
+        "context": " ```  ```python # IAssignmentHandler 接口（vendor/jeeflow/extensions.py:50） class IAssignmentHandler(ABC):     @ab",
+        "actual": "class IAssignmentHandler(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/concepts/04-extensions.md",
+        "md_line": 220,
+        "code_file": "builtin.py",
+        "code_line": 170,
+        "context": " 内置通用 handler（v1.6.0，开箱即用）  > **本仓实测**（`vendor/jeeflow/builtin.py:170-183`）：注册 **12 个 key** —— **7 个简化版主用 + 5 个完整",
+        "actual": "registry.register_assignment(HANDLER_OPERATOR_ASSIGNMENT, OperatorAssignmentHand"
+      },
+      {
+        "md_file": "ToT/docs/concepts/04-extensions.md",
+        "md_line": 277,
+        "code_file": "engine.py",
+        "code_line": 761,
+        "context": "               → 不创建任务 ```  > **本仓实测**（`vendor/jeeflow/engine.py:761 _resolve_actors`）：`tf_nextNodeOperator`",
+        "actual": "actors = await self._resolve_actors(node, inst, operator, vars_)"
+      },
+      {
+        "md_file": "ToT/docs/concepts/04-extensions.md",
+        "md_line": 337,
+        "code_file": "extensions.py",
+        "code_line": 31,
+        "context": " 主题 | 本仓 Python 实现 | |---|---| | 拦截器 | `vendor/jeeflow/extensions.py:31 FlowInterceptor(ABC)`（`pre_handle` / `p",
+        "actual": "class FlowInterceptor(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/concepts/04-extensions.md",
+        "md_line": 338,
+        "code_file": "extensions.py",
+        "code_line": 8,
+        "context": "`post_handle` / `order` 三方法）| | 事件枚举 | `vendor/jeeflow/extensions.py:8 EventType(Enum)`（6 事件：`PROCESS_START` /",
+        "actual": "class EventType(Enum):"
+      },
+      {
+        "md_file": "ToT/docs/concepts/05-spi-design.md",
+        "md_line": 37,
+        "code_file": "spi.py",
+        "code_line": 16,
+        "context": "么它是唯一的必须 SPI  ### 2.1 接口边界  ```python # vendor/jeeflow/spi.py:16 class ProcessRepository(ABC):     # 流程定",
+        "actual": "class ProcessRepository(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/concepts/05-spi-design.md",
+        "md_line": 167,
+        "code_file": "spi.py",
+        "code_line": 157,
+        "context": " §3. `UserProvider`——为什么可选  ```python # vendor/jeeflow/spi.py:157 class UserProvider(ABC):     @abstractm",
+        "actual": "class UserProvider(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/concepts/05-spi-design.md",
+        "md_line": 188,
+        "code_file": "spi.py",
+        "code_line": 161,
+        "context": "rProvider`——组织维度取人（v1.6.0）  ```python # vendor/jeeflow/spi.py:161 class OrgUserProvider(ABC):     @abstra",
+        "actual": "class OrgUserProvider(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/concepts/05-spi-design.md",
+        "md_line": 213,
+        "code_file": "spi.py",
+        "code_line": 186,
+        "context": "xpressionEvaluator`——为什么可选  ```python # vendor/jeeflow/spi.py:186 class ExpressionEvaluator(ABC):     @ab",
+        "actual": "class ExpressionEvaluator(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/concepts/05-spi-design.md",
+        "md_line": 308,
+        "code_file": "spi.py",
+        "code_line": 16,
+        "context": "I | 本仓 Python 实现 | |---|---| | 仓储（必选）| `vendor/jeeflow/spi.py:16 ProcessRepository(ABC)` + `memory.py` /",
+        "actual": "class ProcessRepository(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/concepts/05-spi-design.md",
+        "md_line": 309,
+        "code_file": "spi.py",
+        "code_line": 157,
+        "context": "py` / `repository/jdbc.py` | | 用户（可选）| `vendor/jeeflow/spi.py:157 UserProvider(ABC)` | | 组织用户（可选）| `vendo",
+        "actual": "class UserProvider(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/concepts/05-spi-design.md",
+        "md_line": 310,
+        "code_file": "spi.py",
+        "code_line": 161,
+        "context": "y:157 UserProvider(ABC)` | | 组织用户（可选）| `vendor/jeeflow/spi.py:161 OrgUserProvider(ABC)` | | 表达式（可选）| `ven",
+        "actual": "class OrgUserProvider(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/concepts/05-spi-design.md",
+        "md_line": 311,
+        "code_file": "spi.py",
+        "code_line": 186,
+        "context": "161 OrgUserProvider(ABC)` | | 表达式（可选）| `vendor/jeeflow/spi.py:186 ExpressionEvaluator(ABC)` + `engine.py`",
+        "actual": "class ExpressionEvaluator(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/concepts/05-spi-design.md",
+        "md_line": 312,
+        "code_file": "spi.py",
+        "code_line": 182,
+        "context": "ToT/docs/diffs.md` §3-6）| | ID 生成（可选）| `vendor/jeeflow/spi.py:182 IDGenerator(ABC)` | | 内存仓储 | `vendor/je",
+        "actual": "class IDGenerator(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/concepts/05-spi-design.md",
+        "md_line": 315,
+        "code_file": "spi.py",
+        "code_line": 190,
+        "context": "/jdbc.py:JdbcRepository` | | 扩展仓储（可选）| `vendor/jeeflow/spi.py:190 ProcessExtRepository(ABC)`（设计 / 历史 / 委托",
+        "actual": "class ProcessExtRepository(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/concepts/06-contracts.md",
+        "md_line": 6,
+        "code_file": "model.py",
+        "code_line": 70,
+        "context": "与边界，是编写流程 JSON 与跨框架移植的前提。 > > **本仓实测**：`vendor/jeeflow/model.py:70 SubmitType(IntEnum)` + `engine.py:_reso",
+        "actual": "class SubmitType(IntEnum):"
+      },
+      {
+        "md_file": "ToT/docs/concepts/06-contracts.md",
+        "md_line": 74,
+        "code_file": "model.py",
+        "code_line": 70,
+        "context": "untersignDisagreeFlag=1` |  > **本仓实测**（`vendor/jeeflow/model.py:70 SubmitType(IntEnum)`）：9 枚举完整对应。枚举**取值与行",
+        "actual": "class SubmitType(IntEnum):"
+      },
+      {
+        "md_file": "ToT/docs/concepts/06-contracts.md",
+        "md_line": 144,
+        "code_file": "facade.py",
+        "code_line": 63,
+        "context": " 端点清单（本仓实测 57 个 `/wf/` 端点）  > **本仓实测**：`vendor/jeeflow/facade.py:63 flow(action, args)` 统一入口，**57 个 `/wf/` ",
+        "actual": "async def flow(self, action: str, args: Optional[dict] = None) -> dict:"
+      },
+      {
+        "md_file": "ToT/docs/concepts/07-admin-and-facade.md",
+        "md_line": 6,
+        "code_file": "spi.py",
+        "code_line": 190,
+        "context": "/` 端点（47 唯一 action）**的基础。 > > **本仓实测**：`vendor/jeeflow/spi.py:190 ProcessExtRepository(ABC)` + `vendor/je",
+        "actual": "class ProcessExtRepository(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/concepts/07-admin-and-facade.md",
+        "md_line": 6,
+        "code_file": "facade.py",
+        "code_line": 63,
+        "context": "pi.py:190 ProcessExtRepository(ABC)` + `vendor/jeeflow/facade.py:63 JeeflowFacade.flow(action, args)` + `en",
+        "actual": "async def flow(self, action: str, args: Optional[dict] = None) -> dict:"
+      },
+      {
+        "md_file": "ToT/docs/concepts/07-admin-and-facade.md",
+        "md_line": 28,
+        "code_file": "spi.py",
+        "code_line": 190,
+        "context": "等可选 SPI 同构；集成方不需要管理端功能时零成本  > **本仓实测**（`vendor/jeeflow/spi.py:190 ProcessExtRepository(ABC)`）： > > ```pyt",
+        "actual": "class ProcessExtRepository(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/concepts/07-admin-and-facade.md",
+        "md_line": 106,
+        "code_file": "facade.py",
+        "code_line": 63,
+        "context": "monResult`，controller 一行转发  > **本仓实测**（`vendor/jeeflow/facade.py:63`）： > > ```python > async def flow(self,",
+        "actual": "async def flow(self, action: str, args: Optional[dict] = None) -> dict:"
+      },
+      {
+        "md_file": "ToT/docs/concepts/08-metadata.md",
+        "md_line": 6,
+        "code_file": "metadata.py",
+        "code_line": 55,
+        "context": " / HandlerRegistry 行为的基础。 > > **本仓实测**：`vendor/jeeflow/metadata.py:55 enum_dict_keys()` + `:60 enum_dict(key)",
+        "actual": "def enum_dict_keys() -> list[str]:"
+      },
+      {
+        "md_file": "ToT/docs/concepts/08-metadata.md",
+        "md_line": 51,
+        "code_file": "metadata.py",
+        "code_line": 60,
+        "context": "etadata.md` §枚举字典。  ### 设计  ```python # vendor/jeeflow/metadata.py:60 def enum_dict(key: str) -> list[DictIte",
+        "actual": "def enum_dict(key: str) -> list[DictItem]:"
+      },
+      {
+        "md_file": "ToT/docs/concepts/08-metadata.md",
+        "md_line": 111,
+        "code_file": "metadata.py",
+        "code_line": 102,
+        "context": "a / Go / Python 新增独立类 / 模块  > **本仓实测**（`vendor/jeeflow/metadata.py:102 HandlerRegistry` + `:68 HandlerMeta`）： ",
+        "actual": "class HandlerRegistry:"
+      },
+      {
+        "md_file": "ToT/docs/guides/02-flow-definition.md",
+        "md_line": 90,
+        "code_file": "builtin.py",
+        "code_line": 170,
+        "context": "反射加载）  > ⚠️ **本仓实现性差异（v1.9.0 起关键）**：本仓 `vendor/jeeflow/builtin.py:170-183` **同时注册 12 个 key** —— **7 个简化版主用 + 5 个完",
+        "actual": "registry.register_assignment(HANDLER_OPERATOR_ASSIGNMENT, OperatorAssignmentHand"
+      },
+      {
+        "md_file": "ToT/docs/guides/04-extensions.md",
+        "md_line": 27,
+        "code_file": "extensions.py",
+        "code_line": 89,
+        "context": "n_common.py:301 apply_extensions` + `../vendor/jeeflow/extensions.py:89 EngineExtensions`。  ---  ## 2. 动态参与者（最常",
+        "actual": "class EngineExtensions:"
+      },
+      {
+        "md_file": "ToT/docs/guides/04-extensions.md",
+        "md_line": 50,
+        "code_file": "extensions.py",
+        "code_line": 50,
+        "context": "er(dept_id).user_id] ```  > **本仓接口签名**（`vendor/jeeflow/extensions.py:50 IAssignmentHandler`）：`async def assign(",
+        "actual": "class IAssignmentHandler(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/guides/04-extensions.md",
+        "md_line": 125,
+        "code_file": "extensions.py",
+        "code_line": 58,
+        "context": "DecisionHandler\" } } ```  > **本仓接口签名**（`vendor/jeeflow/extensions.py:58 IDecisionHandler`）：`async def decide(se",
+        "actual": "class IDecisionHandler(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/guides/04-extensions.md",
+        "md_line": 185,
+        "code_file": "engine.py",
+        "code_line": 1071,
+        "context": "截器**立即抛 `ValueError(拦截器未注册: realname)`（`vendor/jeeflow/engine.py:1071`）—— 不静默跳过 > - 拦截器未注册的行为（main.py 内存后端 vs",
+        "actual": "registry = self.ext.interceptor_registry or {}"
+      },
+      {
+        "md_file": "ToT/docs/guides/04-extensions.md",
+        "md_line": 212,
+        "code_file": "extensions.py",
+        "code_line": 8,
+        "context": "t_extensions(ext) ```  **事件清单**（本仓实际枚举，`vendor/jeeflow/extensions.py:8 EventType`，6 种）：  | 事件 | 触发时机 | 关键字段 | ",
+        "actual": "class EventType(Enum):"
+      },
+      {
+        "md_file": "ToT/docs/guides/04-extensions.md",
+        "md_line": 223,
+        "code_file": "extensions.py",
+        "code_line": 19,
+        "context": "tanceId`, `ccActorId` |  > **本仓与上游差异**（`vendor/jeeflow/extensions.py:19 ProcessEvent`）： > - 上游文档列 4 事件（`PROCESS",
+        "actual": "class ProcessEvent:"
+      },
+      {
+        "md_file": "ToT/docs/guides/07-assignment-handlers.md",
+        "md_line": 21,
+        "code_file": "engine.py",
+        "code_line": 761,
+        "context": "er` 不生效——避免\"两个都配了，结果不确定\"。 > > **本仓实现**（`vendor/jeeflow/engine.py:761 _resolve_actors`）： > > | 优先级 | 字段 | 来源 ",
+        "actual": "actors = await self._resolve_actors(node, inst, operator, vars_)"
+      },
+      {
+        "md_file": "ToT/docs/guides/07-assignment-handlers.md",
+        "md_line": 34,
+        "code_file": "builtin.py",
+        "code_line": 170,
+        "context": " 内置 handler 速查表  > **本仓实际注册 12 个 key**（`vendor/jeeflow/builtin.py:170-183`）：**7 个简化版主用 + 5 个完整版别名**（兼容历史 FQCN）。  ",
+        "actual": "registry.register_assignment(HANDLER_OPERATOR_ASSIGNMENT, OperatorAssignmentHand"
+      },
+      {
+        "md_file": "ToT/docs/guides/07-assignment-handlers.md",
+        "md_line": 70,
+        "code_file": "engine.py",
+        "code_line": 793,
+        "context": "y.operator\"`（与 demo 契约一致）。  > **本仓实测**（`vendor/jeeflow/engine.py:793`）：若 `inst.operator` 为空 → 引擎 warning `节点",
+        "actual": "f\"节点[{node.id}] OperatorAssignmentHandler 返回空：操作人为空。\""
+      },
+      {
+        "md_file": "ToT/docs/guides/07-assignment-handlers.md",
+        "md_line": 99,
+        "code_file": "builtin.py",
+        "code_line": 47,
+        "context": " \"task\"（找不到 task_01 时） ```  > **本仓实测**（`vendor/jeeflow/builtin.py:47 FormFieldAssigneeHandler` + `engine.py:",
+        "actual": "class FormFieldAssigneeHandler(IAssignmentHandler):"
+      },
+      {
+        "md_file": "ToT/docs/guides/07-assignment-handlers.md",
+        "md_line": 119,
+        "code_file": "builtin.py",
+        "code_line": 19,
+        "context": "要**始终按发起人**算，用 §3.5。  > **本仓 FQCN 修正**（`vendor/jeeflow/builtin.py:19`）：**主用名是简化版** `…DeptLeaderAssignmentHan",
+        "actual": "HANDLER_DEPT_LEADER = \"com.mldong.jeeflow.interceptor.impl.DeptLeaderAssignmentH"
+      },
+      {
+        "md_file": "ToT/docs/guides/07-assignment-handlers.md",
+        "md_line": 173,
+        "code_file": "builtin.py",
+        "code_line": 143,
+        "context": "员列表。  > **本仓 roleCode 双轨制**（FIX-T8 §68，`vendor/jeeflow/builtin.py:143 TaskRoleAssigneeHandler`）： > > | 优先级 | ",
+        "actual": "class TaskRoleAssigneeHandler(IAssignmentHandler):"
+      },
+      {
+        "md_file": "ToT/docs/guides/07-assignment-handlers.md",
+        "md_line": 228,
+        "code_file": "extensions.py",
+        "code_line": 50,
+        "context": "，可区分\"当前操作人\"与\"发起人\"）：  ```python # Python（vendor/jeeflow/extensions.py:50 IAssignmentHandler） from jeeflow import",
+        "actual": "class IAssignmentHandler(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/guides/07-assignment-handlers.md",
+        "md_line": 312,
+        "code_file": "engine.py",
+        "code_line": 26,
+        "context": "s` 第一优先），`f_` 只是发起场景的便捷入口。  > **本仓实现**（`vendor/jeeflow/engine.py:26-28 KEY_NEXT_NODE_OPERATOR / KEY_PROCESS_ST",
+        "actual": "KEY_NEXT_NODE_OPERATOR = \"tf_nextNodeOperator\""
+      },
+      {
+        "md_file": "ToT/docs/guides/08-persist.md",
+        "md_line": 128,
+        "code_file": "persist.py",
+        "code_line": 404,
+        "context": "st\",   \"nodes\": [] } ```  > **本仓解析实现**（`vendor/jeeflow/persist.py:404 PersistPostInterceptor._resolve_define`",
+        "actual": "async def _resolve_define(self, instance: ProcessInstance) -> tuple[str, str]:"
+      },
+      {
+        "md_file": "ToT/docs/guides/08-persist.md",
+        "md_line": 190,
+        "code_file": "persist.py",
+        "code_line": 376,
+        "context": "`——保持 v1.6.2 起的\"结束同意归档\"行为不变）  ### 执行时序（`vendor/jeeflow/persist.py:376 _handle_sync`）  | 时机 | 动作 | 表内数据 | |---",
+        "actual": "async def _handle_sync(self, node, instance: ProcessInstance, table_name: str) -"
+      },
+      {
+        "md_file": "ToT/docs/guides/09-persist-meta.md",
+        "md_line": 21,
+        "code_file": "meta.py",
+        "code_line": 24,
+        "context": "基础 writer）|  > **本仓 StorageType 5 枚举**（`vendor/jeeflow/meta.py:24`，IntEnum 数字 / 名称双兼容）： > > | 值 | 名称 | 语义",
+        "actual": "class StorageType(IntEnum):"
+      },
+      {
+        "md_file": "ToT/docs/guides/09-persist-meta.md",
+        "md_line": 54,
+        "code_file": "meta.py",
+        "code_line": 45,
+        "context": " \"leave_id\" }   ] } ```  > **本仓元数据模型**（`vendor/jeeflow/meta.py:45 FieldMeta` + `:60 TableMeta`）： > > | `F",
+        "actual": "class FieldMeta:"
+      },
+      {
+        "md_file": "ToT/docs/guides/10-mldong-integration.md",
+        "md_line": 26,
+        "code_file": "facade.py",
+        "code_line": 2444,
+        "context": "..4288`），雪花 ID 跨进程必须按字符串处理  > **本仓实现**（`vendor/jeeflow/facade.py:2444 _stringify_ids`，issues/38 E9）： > > ```p",
+        "actual": "def _stringify_ids(v):"
+      },
+      {
+        "md_file": "ToT/docs/manual/02-dept-user-role.md",
+        "md_line": 6,
+        "code_file": "spi.py",
+        "code_line": 161,
+        "context": "配得没错却没人收到待办，九成是这里没配。** > > **本仓实测**：本仓 `vendor/jeeflow/spi.py:161 OrgUserProvider(ABC)` 3 方法（`find_dept_l",
+        "actual": "class OrgUserProvider(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/manual/02-dept-user-role.md",
+        "md_line": 6,
+        "code_file": "builtin.py",
+        "code_line": 170,
+        "context": "_dept_main_leaders` / `find_by_role`）+ `vendor/jeeflow/builtin.py:170-183` 注册 12 个 key —— 数据由集成方通过本 SPI 注入，**引擎核心",
+        "actual": "registry.register_assignment(HANDLER_OPERATOR_ASSIGNMENT, OperatorAssignmentHand"
+      },
+      {
+        "md_file": "ToT/docs/manual/02-dept-user-role.md",
+        "md_line": 25,
+        "code_file": "builtin.py",
+        "code_line": 111,
+        "context": "负责人，用到部门经理处理类的节点就不会产生任务。**  > **本仓实测**（`vendor/jeeflow/builtin.py:111 DeptLeaderAssignmentHandler` + `:118 De",
+        "actual": "class DeptLeaderAssignmentHandler(_OrgBase, IAssignmentHandler):"
+      },
+      {
+        "md_file": "ToT/docs/manual/02-dept-user-role.md",
+        "md_line": 50,
+        "code_file": "spi.py",
+        "code_line": 157,
+        "context": "到领导 - **角色**：候选用户组、按角色取人靠它  > **本仓实测**（`vendor/jeeflow/spi.py:157 UserProvider(ABC).get_user`）：用户信息注入流程变量",
+        "actual": "class UserProvider(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/manual/02-dept-user-role.md",
+        "md_line": 77,
+        "code_file": "builtin.py",
+        "code_line": 143,
+        "context": "成员就成为这个节点的参与人  > **本仓实测 roleCode 双轨制**（`vendor/jeeflow/builtin.py:143 TaskRoleAssigneeHandler`，FIX-T8 §68）： >",
+        "actual": "class TaskRoleAssigneeHandler(IAssignmentHandler):"
+      },
+      {
+        "md_file": "ToT/docs/manual/03-forms.md",
+        "md_line": 67,
+        "code_file": "model.py",
+        "code_line": 316,
+        "context": "计页 | 去 **在线开发** 的独立表单设计页 |  > **本仓实测**（`vendor/jeeflow/model.py:316 _KNOWN_MODEL`）：流程顶层 JSON 字段不存表单定义（仅存 `n",
+        "actual": "processName: str = \"\""
+      },
+      {
+        "md_file": "ToT/docs/manual/03-forms.md",
+        "md_line": 110,
+        "code_file": "persist.py",
+        "code_line": 466,
+        "context": "nt` 单独放开可编辑（`2`），其他仍只读  > **本仓实测双键格式**（`vendor/jeeflow/persist.py:466 _is_editable`，v1.8.1+ issues/25）： > > `",
+        "actual": "return int(perm) == PERM_EDIT"
+      },
+      {
+        "md_file": "ToT/docs/manual/03-forms.md",
+        "md_line": 169,
+        "code_file": "engine.py",
+        "code_line": 752,
+        "context": "md §3.3 taskType 设计陷阱` |  > **本仓实测警示**（`vendor/jeeflow/engine.py:752 _create_task`）：taskType=2 创建后**自动完成**——",
+        "actual": "async def _create_task(self, node: FlowNode, inst: ProcessInstance, operator: st"
+      },
+      {
+        "md_file": "ToT/docs/manual/04-design-and-publish.md",
+        "md_line": 90,
+        "code_file": "builtin.py",
+        "code_line": 170,
+        "context": "**：填了参与人就按参与人走，处理类不生效 > - 7 个内置处理类实测位置：`vendor/jeeflow/builtin.py:170-183` 注册 12 个 key（7 简化版主用 + 5 完整版别名） > - **5",
+        "actual": "registry.register_assignment(HANDLER_OPERATOR_ASSIGNMENT, OperatorAssignmentHand"
+      },
+      {
+        "md_file": "ToT/docs/manual/04-design-and-publish.md",
+        "md_line": 137,
+        "code_file": "persist.py",
+        "code_line": 404,
+        "context": "附件 | 控制发起与审批页上这几个输入项是否出现 |  > **本仓实测**（`vendor/jeeflow/persist.py:404 _resolve_define`）： > > - `关联业务表` = `rel",
+        "actual": "async def _resolve_define(self, instance: ProcessInstance) -> tuple[str, str]:"
+      },
+      {
+        "md_file": "ToT/docs/manual/05-participants.md",
+        "md_line": 6,
+        "code_file": "engine.py",
+        "code_line": 761,
+        "context": "器 → 点节点 → 常规配置 → 人员配置。 > > **本仓实测**：基于 `vendor/jeeflow/engine.py:761 _resolve_actors` + `extensions.py:50 IA",
+        "actual": "actors = await self._resolve_actors(node, inst, operator, vars_)"
+      },
+      {
+        "md_file": "ToT/docs/manual/05-participants.md",
+        "md_line": 14,
+        "code_file": "engine.py",
+        "code_line": 761,
+        "context": "**。  ---  ## §1. 引擎按什么顺序找人  > **本仓实测**（`vendor/jeeflow/engine.py:761 _resolve_actors`）：  ``` 1. tf_nextNodeO",
+        "actual": "actors = await self._resolve_actors(node, inst, operator, vars_)"
+      },
+      {
+        "md_file": "ToT/docs/manual/05-participants.md",
+        "md_line": 41,
+        "code_file": "builtin.py",
+        "code_line": 170,
+        "context": " ## §3. 参与人处理类（动态取人，7 个内置）  > **本仓实测**（`vendor/jeeflow/builtin.py:170-183 register_builtin_assignments`）：注册 **12 ",
+        "actual": "registry.register_assignment(HANDLER_OPERATOR_ASSIGNMENT, OperatorAssignmentHand"
+      },
+      {
+        "md_file": "ToT/docs/manual/08-persist.md",
+        "md_line": 6,
+        "code_file": "persist.py",
+        "code_line": 307,
+        "context": "c/10-persist-meta.md)。 > > **本仓实测**：基于 `vendor/jeeflow/persist.py:307 PersistPostInterceptor`（v1.8.0+ 完整实现）+ ",
+        "actual": "class PersistPostInterceptor(FlowInterceptor):"
+      },
+      {
+        "md_file": "ToT/docs/manual/appendix-a-pages.md",
+        "md_line": 27,
+        "code_file": "builtin.py",
+        "code_line": 111,
+        "context": " | 表单里 `ApiDict` 组件用的字典项 |  > **本仓实测**（`vendor/jeeflow/builtin.py:111/118/125/134 DeptLeaderAssignmentHandler",
+        "actual": "class DeptLeaderAssignmentHandler(_OrgBase, IAssignmentHandler):"
+      },
+      {
+        "md_file": "ToT/docs/manual/appendix-b-values.md",
+        "md_line": 6,
+        "code_file": "model.py",
+        "code_line": 46,
+        "context": "2-flow-definition.md)。 > > **本仓实测**：基于 `vendor/jeeflow/model.py:46 InstanceState(IntEnum)` + `:55 TaskStat",
+        "actual": "class InstanceState(IntEnum):"
+      },
+      {
+        "md_file": "ToT/docs/manual/appendix-b-values.md",
+        "md_line": 48,
+        "code_file": "builtin.py",
+        "code_line": 15,
+        "context": "。  ---  ## 参与人处理类（重写为本仓实测）  > **本仓实测**（`vendor/jeeflow/builtin.py:15-30`）：7 个简化版主用 + 5 个完整版别名 = 12 个 key。下表列出设计",
+        "actual": "HANDLER_OPERATOR_ASSIGNMENT = \"com.mldong.jeeflow.interceptor.impl.OperatorAssig"
+      },
+      {
+        "md_file": "ToT/docs/spec/02-flow-definition.md",
+        "md_line": 6,
+        "code_file": "model.py",
+        "code_line": 316,
+        "context": "、顶层字段、节点类型、边属性的官方解释。 > > **本仓实现版本**：基于 `vendor/jeeflow/model.py:316 _KNOWN_MODEL = {name,displayName,type,n",
+        "actual": "processName: str = \"\""
+      },
+      {
+        "md_file": "ToT/docs/spec/02-flow-definition.md",
+        "md_line": 47,
+        "code_file": "model.py",
+        "code_line": 9,
+        "context": "sk` 两种写法（设计器导出带前缀，手写可省略）。 > > **本仓实测**（`vendor/jeeflow/model.py:9 class FlowModel` + `parse_flow_model` 函",
+        "actual": "class FlowModel:"
+      },
+      {
+        "md_file": "ToT/docs/spec/02-flow-definition.md",
+        "md_line": 53,
+        "code_file": "model.py",
+        "code_line": 366,
+        "context": "透传）。  ---  ## 2. 顶层属性（流程级）  > **本仓实测**（`vendor/jeeflow/model.py:366 _KNOWN_MODEL = {\"name\", \"displayName\", ",
+        "actual": "_KNOWN_MODEL = {\"name\", \"displayName\", \"type\", \"nodes\", \"edges\"}"
+      },
+      {
+        "md_file": "ToT/docs/spec/02-flow-definition.md",
+        "md_line": 53,
+        "code_file": "facade.py",
+        "code_line": 155,
+        "context": "/ `postInterceptors` 等由 facade 单独解析（详见 `vendor/jeeflow/facade.py:155 _startAndExecute`）。  | 字段 | 类型 | 引擎 | 说",
+        "actual": "async def _processDefine_startAndExecute(self, args: dict) -> dict:"
+      },
+      {
+        "md_file": "ToT/docs/spec/03-state-machine.md",
+        "md_line": 6,
+        "code_file": "model.py",
+        "code_line": 46,
+        "context": "ubmitType 路由、调试卡死实例的前提。 > > **本仓实现版本**：`vendor/jeeflow/model.py:46 InstanceState` IntEnum（7 值）+ `:55 TaskS",
+        "actual": "class InstanceState(IntEnum):"
+      },
+      {
+        "md_file": "ToT/docs/spec/03-state-machine.md",
+        "md_line": 17,
+        "code_file": "model.py",
+        "code_line": 46,
+        "context": "f_process_instance.state`）  > **本仓实现**：`vendor/jeeflow/model.py:46 InstanceState(IntEnum)`，7 状态码与上游完全一致。  ",
+        "actual": "class InstanceState(IntEnum):"
+      },
+      {
+        "md_file": "ToT/docs/spec/03-state-machine.md",
+        "md_line": 60,
+        "code_file": "model.py",
+        "code_line": 55,
+        "context": "_process_task.task_state`）  > **本仓实现**：`vendor/jeeflow/model.py:55 TaskState(IntEnum)`，6 状态码与上游完全一致。**注意**",
+        "actual": "class TaskState(IntEnum):"
+      },
+      {
+        "md_file": "ToT/docs/spec/03-state-machine.md",
+        "md_line": 89,
+        "code_file": "model.py",
+        "code_line": 182,
+        "context": "          └───────┘ ```  > **状态转换触发点**（`vendor/jeeflow/model.py:182` 等）： > - `10 → 20 DONE`：`processTask/ex",
+        "actual": "self.state = InstanceState.REJECT"
+      },
+      {
+        "md_file": "ToT/docs/spec/03-state-machine.md",
+        "md_line": 100,
+        "code_file": "model.py",
+        "code_line": 112,
+        "context": "ING`：随实例挂起  ---  ## 状态转换规则  > **本仓实现**（`vendor/jeeflow/model.py:112 ProcessInstance.withdraw` + `TaskState`",
+        "actual": "class ProcessInstance:"
+      },
+      {
+        "md_file": "ToT/docs/spec/04-engine-ops.md",
+        "md_line": 14,
+        "code_file": "model.py",
+        "code_line": 70,
+        "context": "-  ## submitType 全枚举（本仓实测）  > **本仓实现**：`vendor/jeeflow/model.py:70 SubmitType(IntEnum)` —— 9 个值。  | code |",
+        "actual": "class SubmitType(IntEnum):"
+      },
+      {
+        "md_file": "ToT/docs/spec/04-engine-ops.md",
+        "md_line": 133,
+        "code_file": "engine.py",
+        "code_line": 221,
+        "context": "one) → ProcessTask[] ```  > **本仓实测实现**（`vendor/jeeflow/engine.py:221 execute_and_jump_to_end` + `:241 execut",
+        "actual": "async def execute_and_jump_to_end(self, task_id: int, operator: str, args: dict["
+      },
+      {
+        "md_file": "ToT/docs/spec/04-engine-ops.md",
+        "md_line": 197,
+        "code_file": "model.py",
+        "code_line": 112,
+        "context": "--  ## 聚合根方法清单（跨语言 DDD 契约）  > **本仓实现**：`vendor/jeeflow/model.py:112 ProcessInstance` + `:230 ProcessTask`（d",
+        "actual": "class ProcessInstance:"
+      },
+      {
+        "md_file": "ToT/docs/spec/04-engine-ops.md",
+        "md_line": 227,
+        "code_file": "model.py",
+        "code_line": 112,
+        "context": " 实现位置  | 角色 | 本仓位置 | |---|---| | 聚合根 | `vendor/jeeflow/model.py:112 ProcessInstance` + `:230 ProcessTask` |",
+        "actual": "class ProcessInstance:"
+      },
+      {
+        "md_file": "ToT/docs/spec/04-engine-ops.md",
+        "md_line": 229,
+        "code_file": "model.py",
+        "code_line": 70,
+        "context": "jeeflow/engine.py` | | submitType 枚举 | `vendor/jeeflow/model.py:70 SubmitType(IntEnum)` | | 流程变量常量 | `vend",
+        "actual": "class SubmitType(IntEnum):"
+      },
+      {
+        "md_file": "ToT/docs/spec/05-spi.md",
+        "md_line": 14,
+        "code_file": "spi.py",
+        "code_line": 16,
+        "context": " ## IProcessRepository（必选）  > **本仓实现**：`vendor/jeeflow/spi.py:16 ProcessRepository(ABC)`。本仓含 **30+ 方法**—",
+        "actual": "class ProcessRepository(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/spec/05-spi.md",
+        "md_line": 38,
+        "code_file": "spi.py",
+        "code_line": 157,
+        "context": " ---  ## IUserProvider（必选）  > **本仓实现**：`vendor/jeeflow/spi.py:157 UserProvider(ABC)`，1 个方法 + UserInfo 6 字",
+        "actual": "class UserProvider(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/spec/05-spi.md",
+        "md_line": 60,
+        "code_file": "spi.py",
+        "code_line": 161,
+        "context": "-  ## IOrgUserProvider（必选）  > **本仓实现**：`vendor/jeeflow/spi.py:161 OrgUserProvider(ABC)`，3 方法与上游完全对齐。  ```",
+        "actual": "class OrgUserProvider(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/spec/05-spi.md",
+        "md_line": 88,
+        "code_file": "spi.py",
+        "code_line": 182,
+        "context": "写 handler。  ---  ## 可选 SPI  > **本仓实现**：`vendor/jeeflow/spi.py:182` IDGenerator + `:186` ExpressionEvaluat",
+        "actual": "class IDGenerator(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/spec/05-spi.md",
+        "md_line": 128,
+        "code_file": "spi.py",
+        "code_line": 190,
+        "context": " IProcessExtRepository（可选）  > **本仓实现**：`vendor/jeeflow/spi.py:190 ProcessExtRepository(ABC)`，12 方法覆盖 3 张表",
+        "actual": "class ProcessExtRepository(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/spec/05-spi.md",
+        "md_line": 171,
+        "code_file": "spi.py",
+        "code_line": 16,
+        "context": "---|---| | `ProcessRepository` (ABC) | `vendor/jeeflow/spi.py:16` | | `UserProvider` (ABC) | `vendor/jee",
+        "actual": "class ProcessRepository(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/spec/05-spi.md",
+        "md_line": 172,
+        "code_file": "spi.py",
+        "code_line": 157,
+        "context": "/spi.py:16` | | `UserProvider` (ABC) | `vendor/jeeflow/spi.py:157` | | `OrgUserProvider` (ABC) | `vendor/",
+        "actual": "class UserProvider(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/spec/05-spi.md",
+        "md_line": 173,
+        "code_file": "spi.py",
+        "code_line": 161,
+        "context": ".py:157` | | `OrgUserProvider` (ABC) | `vendor/jeeflow/spi.py:161` | | `IDGenerator` (ABC) | `vendor/jeef",
+        "actual": "class OrgUserProvider(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/spec/05-spi.md",
+        "md_line": 174,
+        "code_file": "spi.py",
+        "code_line": 182,
+        "context": "/spi.py:161` | | `IDGenerator` (ABC) | `vendor/jeeflow/spi.py:182` | | `ExpressionEvaluator` (ABC) | `ven",
+        "actual": "class IDGenerator(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/spec/05-spi.md",
+        "md_line": 175,
+        "code_file": "spi.py",
+        "code_line": 186,
+        "context": "182` | | `ExpressionEvaluator` (ABC) | `vendor/jeeflow/spi.py:186` | | `ProcessExtRepository` (ABC) | `ve",
+        "actual": "class ExpressionEvaluator(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/spec/05-spi.md",
+        "md_line": 176,
+        "code_file": "spi.py",
+        "code_line": 190,
+        "context": "86` | | `ProcessExtRepository` (ABC) | `vendor/jeeflow/spi.py:190` | | `MemoryRepository` (内存后端实现) | `ven",
+        "actual": "class ProcessExtRepository(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/spec/05-spi.md",
+        "md_line": 181,
+        "code_file": "persist.py",
+        "code_line": 486,
+        "context": "x` | | 元数据注册（`register_persist_meta`）| `vendor/jeeflow/persist.py:486` |  > **设计者不直接接触 SPI**——SPI 是**框架集成者 / ",
+        "actual": "def register_persist_meta(registry: HandlerRegistry) -> None:"
+      },
+      {
+        "md_file": "ToT/docs/spec/06-facade.md",
+        "md_line": 6,
+        "code_file": "facade.py",
+        "code_line": 63,
+        "context": " / 返回结构 / 设计语义是正确调用的前提。 > > **本仓实现版本**：`vendor/jeeflow/facade.py:63 JeeflowFacade.flow(action, args)`；**实际 ",
+        "actual": "async def flow(self, action: str, args: Optional[dict] = None) -> dict:"
+      },
+      {
+        "md_file": "ToT/docs/spec/06-facade.md",
+        "md_line": 30,
+        "code_file": "facade.py",
+        "code_line": 63,
+        "context": " msg: \"未知 action: xxx\"}` |  > **本仓实测**（`vendor/jeeflow/facade.py:63`）：`flow()` 通过 `_dispatch_action()` 路由到 ",
+        "actual": "async def flow(self, action: str, args: Optional[dict] = None) -> dict:"
+      },
+      {
+        "md_file": "ToT/docs/spec/06-facade.md",
+        "md_line": 75,
+        "code_file": "facade.py",
+        "code_line": 2444,
+        "context": "/ BIGINT**——超 JS `2^53` 丢精度 - **本仓实测**（`vendor/jeeflow/facade.py:2444 _stringify_ids`）：递归处理 dict / list / dat",
+        "actual": "def _stringify_ids(v):"
+      },
+      {
+        "md_file": "ToT/docs/spec/07-metadata.md",
+        "md_line": 6,
+        "code_file": "metadata.py",
+        "code_line": 55,
+        "context": " 表单下拉 / 状态徽标的值漂移问题源头在此。 > > **本仓实现版本**：`vendor/jeeflow/metadata.py:55 enum_dict_keys()` + `:60 enum_dict(key)",
+        "actual": "def enum_dict_keys() -> list[str]:"
+      },
+      {
+        "md_file": "ToT/docs/spec/07-metadata.md",
+        "md_line": 14,
+        "code_file": "metadata.py",
+        "code_line": 25,
+        "context": "注册 key 兼容契约。  ---  ## 枚举字典  > **本仓实测**（`vendor/jeeflow/metadata.py:25 _DICTS`）：**7 个字典**，key 约定 `wf_` + 枚举名转下",
+        "actual": "_DICTS: dict[str, list[DictItem]] = {"
+      },
+      {
+        "md_file": "ToT/docs/spec/07-metadata.md",
+        "md_line": 52,
+        "code_file": "model.py",
+        "code_line": 70,
+        "context": "**与 `2` 重复** |  > ⚠️ **本仓实测 2 处不一致**（与 `vendor/jeeflow/model.py:70 SubmitType` 枚举对比）—— 详见 `../README.md §3",
+        "actual": "class SubmitType(IntEnum):"
+      },
+      {
+        "md_file": "ToT/docs/spec/07-metadata.md",
+        "md_line": 77,
+        "code_file": "metadata.py",
+        "code_line": 55,
+        "context": "(\"unknown_key\") # → [] ```  > **本仓实现**：`vendor/jeeflow/metadata.py:55 enum_dict_keys()` 返回 `list(_DICTS.keys(",
+        "actual": "def enum_dict_keys() -> list[str]:"
+      },
+      {
+        "md_file": "ToT/docs/spec/07-metadata.md",
+        "md_line": 85,
+        "code_file": "metadata.py",
+        "code_line": 68,
+        "context": " SPI 实现清单（HandlerRegistry）  > **本仓实现**：`vendor/jeeflow/metadata.py:68 HandlerMeta` + `:102 HandlerRegistry` +",
+        "actual": "class HandlerMeta:"
+      },
+      {
+        "md_file": "ToT/docs/spec/07-metadata.md",
+        "md_line": 117,
+        "code_file": "builtin.py",
+        "code_line": 170,
+        "context": "`OrgUserAssignmentHandlers$` 嵌套） > > 而 `vendor/jeeflow/builtin.py:170-183 register_builtin_assignments` **同时**注册简",
+        "actual": "registry.register_assignment(HANDLER_OPERATOR_ASSIGNMENT, OperatorAssignmentHand"
+      },
+      {
+        "md_file": "ToT/docs/spec/07-metadata.md",
+        "md_line": 157,
+        "code_file": "persist.py",
+        "code_line": 486,
+        "context": "ame 天然一致。  ### 元注册助手（本仓专属）  > **本仓实测**（`vendor/jeeflow/persist.py:486 register_persist_meta`）：  ```python fro",
+        "actual": "def register_persist_meta(registry: HandlerRegistry) -> None:"
+      },
+      {
+        "md_file": "ToT/docs/spec/09-persist.md",
+        "md_line": 33,
+        "code_file": "persist.py",
+        "code_line": 28,
+        "context": "bleWriter 接口（本仓 Python 实测）  > **本仓实现**：`vendor/jeeflow/persist.py:28 DynamicTableWriter(ABC)`，5 个 `@abstract",
+        "actual": "class DynamicTableWriter(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/spec/09-persist.md",
+        "md_line": 36,
+        "code_file": "persist.py",
+        "code_line": 28,
+        "context": "@abstractmethod` 完整对齐上游契约。  ```python # vendor/jeeflow/persist.py:28 class DynamicTableWriter(ABC):     @abs",
+        "actual": "class DynamicTableWriter(ABC):"
+      },
+      {
+        "md_file": "ToT/docs/spec/09-persist.md",
+        "md_line": 61,
+        "code_file": "persist.py",
+        "code_line": 66,
+        "context": "认实现 JdbcDynamicTableWriter  > **本仓实现**：`vendor/jeeflow/persist.py:66 JdbcDynamicTableWriter(DynamicTableWrit",
+        "actual": "class JdbcDynamicTableWriter(DynamicTableWriter):"
+      },
+      {
+        "md_file": "ToT/docs/spec/10-persist-meta.md",
+        "md_line": 30,
+        "code_file": "meta.py",
+        "code_line": 45,
+        "context": "。  ---  ## §2. 元数据模型（本仓实测）  > **本仓实现**：`vendor/jeeflow/meta.py:45 FieldMeta` + `:60 TableMeta` + `:24 Sto",
+        "actual": "class FieldMeta:"
+      },
+      {
+        "md_file": "ToT/docs/spec/10-persist-meta.md",
+        "md_line": 84,
+        "code_file": "meta.py",
+        "code_line": 96,
+        "context": "---  ## §3. SPI（本仓 Python）  > **本仓实现**：`vendor/jeeflow/meta.py:96 IDynamicMetaProvider`（abstract class，1 ",
+        "actual": "class IDynamicMetaProvider:"
+      },
+      {
+        "md_file": "ToT/docs/spec/10-persist-meta.md",
+        "md_line": 117,
+        "code_file": "meta.py",
+        "code_line": 141,
+        "context": " §5. 写入语义（MetaTableWriter）  > **本仓实现**：`vendor/jeeflow/meta.py:141 MetaTableWriter`，继承 `DynamicTableWriter",
+        "actual": "class MetaTableWriter(DynamicTableWriter):"
+      },
+      {
+        "md_file": "ToT/docs/spec/10-persist-meta.md",
+        "md_line": 143,
+        "code_file": "meta.py",
+        "code_line": 331,
+        "context": " §6. 读取语义（MetaTableReader）  > **本仓实现**：`vendor/jeeflow/meta.py:331 MetaTableReader.read_by_process_instanc",
+        "actual": "class MetaTableReader:"
+      }
+    ]
+  }
+}

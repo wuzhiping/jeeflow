@@ -145,12 +145,11 @@
 | `7` | `TRANSFER` | 转办 | `processTask/transfer`（不走 `execute`） | `remove_task_actor` + `add_task_actor` |
 | `20` | `COUNTERSIGN_DISAGREE` | 会签拒绝 | 不同意（会签节点） | `execute_process_task` + `countersignDisagreeFlag=1` |
 
-> **本仓实测差异警示**（`ToT/docs/README.md §3-1`）：
+> ✅ **字典已修复**（2026-09-24，详见 `diffs.md §3.1 #1/#2`）：
+> - `metadata.py:34 wf_process_submit_type` 现含完整 **9 项**（含 `7 转办`）
+> - `20` label 已改为「会签拒绝」，与 `2 拒绝申请` 区分
 >
-> - `metadata.py:34 wf_process_submit_type` 字典**缺 `7 TRANSFER`**（实测只有 8 项）
-> - `metadata.py:34 wf_process_submit_type` 字典**label 重复**：`20` 与 `2` 都是「拒绝申请」（语义不同：`2=REJECT` 普通拒绝 / `20=COUNTERSIGN_DISAGREE` 会签拒绝）
->
-> 设计者实操：调 `enum_dict("wf_process_submit_type")` 时**按 `value` 区分**，避免依赖 label。
+> 设计者实操：可放心按 `value` 或 `label` 调用 `enum_dict("wf_process_submit_type")`。
 
 ---
 

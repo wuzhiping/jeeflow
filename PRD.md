@@ -32,7 +32,7 @@ JEEFLOW_PG_POOL_MIN=5 JEEFLOW_PG_POOL_MAX=20 \
 | 任务操作 | `POST /wf/processTask/{todoList,doneList,execute,detail,jumpAbleTaskNameList,candidatePage,surrogate,addCandidate,removeCandidate,latest,transfer,transferAndAdd,comment,extra,delegate,delegateHistory,withForm}` | 17 个用户任务处理 |
 | 委托代理 | `POST /wf/processSurrogate/{page,save,update,detail,remove}` | 5 个代理配置 |
 | 审计 | `POST /wf/auditLog/export` | 1 个审计日志导出 |
-| 监控 | `GET /healthz` `GET /metrics` `GET /api/admin/stats/overview` `GET /api/admin/stats/trend` `GET /api/admin/stats/group` `GET /api/admin/trace` | 健康/指标/统计 |
+| 监控 | `GET /healthz`（含 `version` / `git_sha` / `build_time` 4 字段）`GET /version`（仅版本 4 字段，无 status/pg）`GET /metrics` `GET /api/admin/stats/overview` `GET /api/admin/stats/trend` `GET /api/admin/stats/group` `GET /api/admin/trace` | 健康/指标/统计 |
 | 异步 | `POST /api/admin/expire/scan` | 过期任务扫描 (替代 Celery) |
 | SPI 数据 | `GET /api/spi/{verify,status,users,users/{uid},depts,depts/{dept_id}}` | 组织/用户字典查询 |
 

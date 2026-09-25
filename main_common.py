@@ -833,7 +833,34 @@ def register_routes(app: FastAPI, *, get_facade: Callable, get_repo: Callable,
         if get_pool is not None:
             pool = get_pool()
             pool_ok = pool is not None and not pool._closing
-        return {"status": "UP", "backend": "python", "pg": "ok" if pool_ok else "down"}
+        # 版本元数据：来自 vendor/jeeflow/__init__.py（release.sh 自动更新）
+        import jeeflow
+        return {
+            "status": "UP",
+            "backend": "python",
+            "version": jeeflow.__version__,
+            "version_full": jeeflow.__version_full__,
+            "git_sha": jeeflow.__git_sha__,
+            "build_time": jeeflow.__build_time__,
+            "pg": "ok" if pool_ok else "down",
+        }
+
+    @app.get("/version")
+    @access_guard
+    async def version(request: Request):
+        """BDD #1201 FIX-T82 (2026-09-25) §4.1.2：版本元数据查询
+
+        仅返回版本元数据，不含 status/pg/checks。
+        客户支持场景：快速确认运行版本，无需扫描 health 报告。
+        单一来源：vendor/jeeflow/__init__.py（release.sh 自动更新）。
+        """
+        import jeeflow
+        return {
+            "version": jeeflow.__version__,
+            "version_full": jeeflow.__version_full__,
+            "git_sha": jeeflow.__git_sha__,
+            "build_time": jeeflow.__build_time__,
+        }
 
     @app.get("/api/admin/health")
     @access_guard
@@ -846,10 +873,15 @@ def register_routes(app: FastAPI, *, get_facade: Callable, get_repo: Callable,
         - repo 健康 (find_define_by_id 探测)
         - process count (active instances / active tasks)
         """
+        # 版本元数据：来自 vendor/jeeflow/__init__.py（release.sh 自动更新）
+        import jeeflow
         health = {
             "status": "UP",
             "backend": "python",
-            "version": "v1.9.0+",
+            "version": jeeflow.__version__,
+            "version_full": jeeflow.__version_full__,
+            "git_sha": jeeflow.__git_sha__,
+            "build_time": jeeflow.__build_time__,
             "checks": {}
         }
         # PG 端
