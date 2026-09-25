@@ -43,6 +43,8 @@
     </template>
 
     <!-- 内容区：按菜单渲染页面组件（refreshTick 变化 → 重挂载刷新数据） -->
+    <!-- 工作台页（03-participant 飞轮中枢对应）：在工作台顶部展示系统环境卡片，方便反馈时对齐版本 -->
+    <SystemInfoCard v-if="currentKey === 'workbench'" />
     <component :is="currentComponent" :key="`${currentKey}:${refreshTick}`" @goto="onSelect" />
   </JfLayout>
 </template>
@@ -54,6 +56,7 @@ import {
   JfWorkbenchPage, JfApplyListPage, JfMyInstancePage, JfTodoPage, JfDonePage, JfCcListPage,
   JfProcessDefinePage, JfProcessDesignPage, JfSurrogatePage,
 } from '@mldong/jeeflow-ui'
+import SystemInfoCard from './components/SystemInfoCard.vue'
 import { DEMO_USERS } from './demo-state.js'
 
 // ── demo 特性状态（从 .env 读取后端路径和 disabled 状态）──
