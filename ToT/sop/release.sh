@@ -65,6 +65,42 @@ if ! python3 "$CHECKER"; then
 fi
 echo
 
+echo "▶ Step 1.5: version-bump-guard.py（保护 __version__ 不被纯文档变更自动 bump）"
+GUARD_ARGS=""
+# 解析 --reason "<理由>" 转为 guard 的 --confirm-doc-only "<理由>"
+REASON=""
+PASSCMD=false
+for arg in "$@"; do
+    if [ "$PASSCMD" = "true" ]; then
+        REASON="$arg"
+        PASSCMD=false
+        continue
+    fi
+    if [ "$arg" = "--reason" ]; then
+        PASSCMD=true
+        continue
+    fi
+done
+if [ -n "$REASON" ]; then
+    GUARD_ARGS="--confirm-doc-only \"$REASON\""
+fi
+if [ -n "$GUARD_ARGS" ]; then
+    eval "python3 \"$REPO_ROOT/ToT/sop/version-bump-guard.py\" $GUARD_ARGS" || {
+        echo ""
+        echo "💡 提示：release.sh 支持 --reason \"<理由>\" 参数来确认文档变更也要 bump"
+        echo "   例：bash ToT/sop/release.sh v1.12.2 --reason \"同步健康度数据\""
+        exit 1
+    }
+else
+    python3 "$REPO_ROOT/ToT/sop/version-bump-guard.py" || {
+        echo ""
+        echo "💡 提示：release.sh 支持 --reason \"<理由>\" 参数来确认文档变更也要 bump"
+        echo "   例：bash ToT/sop/release.sh v1.12.2 --reason \"同步健康度数据\""
+        exit 1
+    }
+fi
+echo
+
 if [ "$SKIP_VERSION" != "true" ] && [ -n "$VERSION" ]; then
     echo "▶ Step 2: 更新 vendor/jeeflow/__init__.py:__version__"
     sed -i "s/^__version__ = .*/__version__ = \"$VERSION\"/" "$INIT_PY"
