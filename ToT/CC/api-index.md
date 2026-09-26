@@ -1,6 +1,14 @@
 # API Index · vendor/jeeflow 公开 API 速查
 
 > **来源**：`vendor/jeeflow/*.py` 全部 `class` / `def` / `async def`（73 个公开符号）
+
+> **与其他 API 文档的关系**（避免重复维护）：
+> - 本表覆盖 **73 个公开 API**（按文件分组的 class/def/async def）
+> - **59 个 `/wf/{action}` 端点**（门面层 HTTP 端点）→ 见 [`docs/actions.md`](../../docs/actions.md)
+> - **11 个核心 action 详解**（含请求/响应字段表）→ 见 [`docs/api.md`](../../docs/api.md)
+> - **AI Agent 调用协议**（config + Tools）→ 见 [`ToT/skills/flow-operator/SKILL.md`](../skills/flow-operator/SKILL.md)
+>
+> **自动核对**：`ToT/sop/health-check.py --dimension api --json` 输出本表覆盖率与 missing 列表
 > **数据**：自动生成于 `ToT/sop/health-check.py --dimension api --json`
 
 ---

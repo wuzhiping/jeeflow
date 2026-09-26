@@ -83,6 +83,25 @@ sequenceDiagram
     E-->>U: 统计概览
 ```
 
+## Knowledge · 与 ToT/docs/ 体系协同
+
+> **何时查**：当 API 签名不确定 / 字段含义不明 / 与上游 jeeflow 默认约定有差异时。
+
+| 主题 | 主入口 |
+|------|--------|
+| **73 个公开 API 索引**（签名 + 行号 + 用途）| [`ToT/CC/api-index.md`](../../../CC/api-index.md) |
+| **Engine 接口 vs 实现** | [`ToT/docs/concepts/09-core-types.md`](../../../docs/concepts/09-core-types.md) §1 |
+| **Engine extension hooks**（event/interceptor/handler）| [`ToT/docs/spec/extension-hooks.md`](../../../docs/spec/extension-hooks.md) |
+| **Flow / Row / Enum 类型** | 同上 §2-§3 |
+| **决策 + 会签四模式 + 一票否决** | [`ToT/docs/patterns/03-countersign-vote.md`](../../../docs/patterns/03-countersign-vote.md) |
+| **升级迁移 / 字段演进** | [`ToT/CC/upgrade-migration.md`](../../../CC/upgrade-migration.md) |
+
+**健康度检查**（drift / snapshot / API 覆盖）：`ToT/sop/health-check.py` —— 当前 100/100（drift 0/146 · API 73/73）
+
+**客户系统同步**：`/version` 端点返回 `vendor/jeeflow/__init__.py:__version__`（release.sh 自动注入）
+
+---
+
 ## Tools (REST API Endpoint list & Usage infomation)
 
 调用约定：所有业务 endpoint 通过 `POST /wf/{action}` 单入口调用，body 为 JSON；服务器从 `ToT/config/servers.json` 选。
@@ -256,6 +275,7 @@ curl -sS -X POST ${ACTIVE_SERVER}/wf/processDefine/getJobCardContent \
 - **content 大小**：单个 job_card 通常 1-5 KB，可放心读入 context
 - **首个 task 的 ext 不含 `job_card_url`**（fdep 设计）：job_card_url 在 execute body 里提交后透传到 `instance.variable.job_card_url`。agent **应基于 `taskName` 推断** job_card_url：`ToT/flows/<processDefineName>/job_cards/job_card_<taskName>.md`（fdep 的 taskName = `stage_<x>`，invoice-approval 的 taskName = `<stage>`）
 - **agent 推断失败时**：fallback 到 `processDefine/detail` 拿流程定义，再从 `nodes[]` 找当前节点的 metadata 推断 job_card
+- **端点规范完整签名**：见 [`ToT/CC/api-index.md`](../../../CC/api-index.md)（按文件分组的 73 个公开 API + 行号）或 [`docs/api.md`](../../../../docs/api.md)（11 个核心 action 详解）
 
 ## Others
 

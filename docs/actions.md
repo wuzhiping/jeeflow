@@ -6,6 +6,13 @@ action 命名约定：`{实体}/{动作}`，统一驼峰、不带前缀下划线
 
 源：`vendor/jeeflow/facade.py`（grep `^\s+async def _\w+\(self`）。`.venv/site-packages/jeeflow/` 保留作参考。
 
+> **与其他 API 文档的关系**（避免重复维护）：
+> - 本表只列 **59 个 `/wf/{action}` HTTP 端点**（门面层可见的动作）
+> - **73 个 vendor/jeeflow 公开 API**（含内部 helper / 模型 / 枚举）→ 见 [`ToT/CC/api-index.md`](../ToT/CC/api-index.md)
+> - **11 个核心 action 详解**（含请求/响应字段表 + 注意事项）→ 见 [`docs/api.md`](./api.md)
+>
+> **何时更新本表**：新增/修改 `/wf/{action}` 时；其余 API 用 `ToT/sop/health-check.py --dimension api --json` 自动核对覆盖率。
+
 ---
 
 ## 1. processDefine — 流程定义（`wf_process_define`）
