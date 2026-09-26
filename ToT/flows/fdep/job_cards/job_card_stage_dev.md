@@ -3,7 +3,7 @@
 > **节点定义**：[../../fdep.json](../../fdep.json) `nodes[id=stage_dev]`
 > **节点手册**：[../NODES.md#stage_dev](../NODES.md#stage_devsnaker-task)
 > **Decision Mem 协议**：[../RESPONSES.md §0](../RESPONSES.md)
-> **执行者**：`u_fdp_pm` (SPI 角色 R2)
+> **执行者**：`u_fdp_pm`
 > **角色**：R2 / `fdep_dev` / u_fdp_pm
 > **触发**：stage_design 完成后 → 引擎自动加入 todoList（operator=u_fdp_pm）
 
@@ -15,7 +15,6 @@
 - node: stage_dev
 - type: snaker:task
 - assignee: u_fdp_pm
-- spi_role: R2
 - stage: 3. 开发实现
 - form: code-template
 - trigger: 拾起 todoList 中 taskName="stage_dev" 且 operator=u_fdp_pm

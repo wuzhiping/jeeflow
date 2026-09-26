@@ -39,6 +39,26 @@ python3 ToT/sop/ea-compliance.py
 
 **当前状态**：43/43 PASS（§9.9 自动化 4/4 + §9.8 路径可移植性 4/4）。
 
+### 1.6 ToT/docs/ 知识体系（v2，2026-09-18+）
+
+> **重要**：本节是 ToT/docs/ 与本文档的协同说明。
+> 遇到术语不明 / API 签名不确定 / 与上游约定差异 → 进 `ToT/docs/`。
+
+| 角色 | 主入口 | 受众 |
+|------|--------|------|
+| **任意角色** | [`ToT/docs/README.md`](./docs/README.md) | ToT/docs/ 文档地图 |
+| **任意角色** | [`ToT/docs/REPORT.html`](./docs/REPORT.html) | 健康度可视化（100/100 🟢）|
+| **流程设计师** | `ToT/docs/concepts/`（10 文件）| 设计原理 |
+| **流程设计师** | `ToT/docs/patterns/`（5 文件）| 模式库 |
+| **开发者** | `ToT/docs/spec/`（11 文件）| 数据模型 + API |
+| **参与者** | [`ToT/CC/quickstart-card.md`](./CC/quickstart-card.md) | 5 分钟卡 |
+| **参与者** | [`ToT/CC/decision-tree.md`](./CC/decision-tree.md) | 决策树 |
+| **运维** | [`ToT/CC/monitoring-dashboard.md`](./CC/monitoring-dashboard.md) | 监控解读 |
+| **运维** | [`ToT/CC/runbook.md`](./CC/runbook.md) | 5 故障场景 |
+| **AI Agent** | [`ToT/skills/flow-operator/SKILL.md`](./skills/flow-operator/SKILL.md) | 流程执行技能 |
+
+**当前健康度**：100/100 🟢（drift 0/146 · API 73/73 覆盖 · 飞轮首次 E2E 演示通过）
+
 ---
 
 ## 2. 角色专属路径（按需看）
@@ -141,8 +161,8 @@ E. 清场（新会话）
    $ python3 ToT/sop/clean-customer-data.md # 清 customer-* 留档
 ```
 
-**关键文档**：`ToT/sop/env-config.md` + `ToT/sop/customer-data-reset.md` + `ToT/sop/flow-design.md §3 Step 5`
-**关键工具**：`server_config.py` + `issue_link.py`
+**关键文档**：`ToT/config/servers.json`（直接编辑）+ `ToT/sop/customer-data-reset.md` + `ToT/sop/flow-design.md §3 Step 5`
+**关键工具**：`server_config.py --list`（验证）+ `issue_link.py`
 **预期时间**：3 分钟切换环境，10 分钟处理 issue
 
 ---
@@ -264,8 +284,8 @@ python3 ToT/sop/flow_completeness.py ToT/flows/fdep.json
 | `flow-folder.md` | 流程文件组织规范 |
 | `tdd-flow.md` | 流程 TDD |
 | `customer-data-reset.md` | 客户数据 reset |
-| `env-config.md` | 环境配置管理 |
-| `ea-compliance.md` | EA 合规检查 SOP |
+| `server_config.py`（无对应 .md）| 环境配置管理：直接看 `ToT/config/servers.json` |
+| `ea-compliance.py`（无对应 .md）| EA 合规检查 SOP：直接看脚本输出 |
 
 ### 示例与流程
 

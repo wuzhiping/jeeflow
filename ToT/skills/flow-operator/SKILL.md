@@ -83,20 +83,55 @@ sequenceDiagram
     E-->>U: 统计概览
 ```
 
+## Knowledge · 与 ToT/docs/ 体系协同
+
+> **何时查**：当 API 签名不确定 / 字段含义不明 / 与上游 jeeflow 默认约定有差异时。
+
+| 主题 | 主入口 |
+|------|--------|
+| **73 个公开 API 索引**（签名 + 行号 + 用途）| [`ToT/CC/api-index.md`](../../../CC/api-index.md) |
+| **Engine 接口 vs 实现** | [`ToT/docs/concepts/09-core-types.md`](../../../docs/concepts/09-core-types.md) §1 |
+| **Engine extension hooks**（event/interceptor/handler）| [`ToT/docs/spec/extension-hooks.md`](../../../docs/spec/extension-hooks.md) |
+| **Flow / Row / Enum 类型** | 同上 §2-§3 |
+| **决策 + 会签四模式 + 一票否决** | [`ToT/docs/patterns/03-countersign-vote.md`](../../../docs/patterns/03-countersign-vote.md) |
+| **升级迁移 / 字段演进** | [`ToT/CC/upgrade-migration.md`](../../../CC/upgrade-migration.md) |
+
+**健康度检查**（drift / snapshot / API 覆盖）：`ToT/sop/health-check.py` —— 当前 100/100（drift 0/146 · API 73/73）
+
+**客户系统同步**：`/version` 端点返回 `vendor/jeeflow/__init__.py:__version__`（release.sh 自动注入）
+
+---
+
 ## Tools (REST API Endpoint list & Usage infomation)
 
 调用约定：所有业务 endpoint 通过 `POST /wf/{action}` 单入口调用，body 为 JSON；服务器从 `ToT/config/servers.json` 选。
 
+> **📌 单一真相源**：本节列的是 **执行层高频 30 个 action**（按发起/接单/追踪/统计/系统 5 类）。完整 73 个公开 API 索引（含 vendor/jeeflow/ 内部 class/def）见 [`ToT/CC/api-index.md`](../../../CC/api-index.md)；运行时新加 action 时，本节与 api-index.md 同步更新（详见 `ToT/sop/doc-freshness-check.py`）。
+
 ### A · 发起流程（initiator 视角）
 
-| action | 用途 | 用到的流程 |
-|--------|------|-----------|
-| `processDefine/page` | 列可发起流程清单 | 通用 |
-| `processDefine/detail` | 流程定义详情 + Job Card URL | 通用 |
-| `processDefine/startAndExecute`（或 `startAndExecute`） | 发起实例 + 首 task | **fdep** / **invoice-approval** |
-| `processInstance/page` | 我发起的实例列表 | 通用 |
-| `processInstance/detail` | 实例详情 + 当前节点 + Job Card | 通用 |
-| `processInstance/withdraw` | 撤回（未流转时可用） | 通用 |
+| action | 用途 | 用到的流程 | 角色 |
+|--------|------|-----------|------|
+| `processDesign/listByType` | **列可发起流程清单**（已发布 + active） | 通用 | **参与者** ✅ |
+| `processDefine/page` | 列所有流程（含未发布 / inactive） | 通用 | **开发者/管理员** 🛠️ |
+| `processDefine/detail` | 流程定义详情 + Job Card URL | 通用 | 通用 |
+| `processDefine/getJobCardContent` | **读 job_card markdown 内容（作为工作指导）** | **fdep** / **invoice-approval** | 通用 |
+| `processDefine/startAndExecute`（或 `startAndExecute`） | 发起实例 + 首 task | **fdep** / **invoice-approval** | 通用 |
+| `processInstance/page` | 我发起的实例列表 | 通用 | 通用 |
+| `processInstance/detail` | 实例详情 + 当前节点 + Job Card | 通用 | 通用 |
+| `processInstance/withdraw` | 撤回（未流转时可用） | 通用 | 通用 |
+
+> **Endpoint 使用边界**：
+> - **参与者**（flow-operator）发起流程时，用 `processDesign/listByType` —— 只看已发布的流程
+> - **开发者/管理员**用 `processDefine/page` —— 包含未发布 / inactive 的所有版本（用于运维/调试）
+> - 最小知情原则：参与者不应知道未发布版本的存在
+
+#### 发起前可读 initiate guide
+
+- 文件位置：`ToT/flows/<processDefineName>/initiate.md`（如 `ToT/flows/fdep/initiate.md`）
+- 读取方式：复用 `processDefine/getJobCardContent`，传 `url: "ToT/flows/<flow>/initiate.md"`
+- 内容包含：何时发起 / 必填参数 / 发起后预期路径 / 注意事项
+- 适用场景：发起流程前**总览**该流程的业务触发条件、首 task、终态分支
 
 ### B · 处理待办（assignee 视角）
 
@@ -198,7 +233,51 @@ curl -sS -X POST ${ACTIVE_SERVER}/wf/processDefine/startAndExecute \
 | `feedback_summary` | 简短问题说明 | ✅ |
 | `feedback_type` | bug / question / suggestion | ⛔ |
 | `feedback_severity` | low / medium / high | ⛔ |
-| `feedback_instance_id` | 相关实例 id（若有） | ⛔ |
+| `feedback_instance_id` | 相关实例 id | ⛔ |
+
+## Work Guidance · 读 Job Card 作为工作指导
+
+### 为什么需要这个能力
+
+Tools §B 的 `processTask/detail` 返回 `ext.job_card_url`（相对路径如 `ToT/flows/fdep/job_cards/job_card_xxx.md`），但 server-side API **不返回 markdown 内容**。
+
+要把 job_card 作为工作指导（设计模式），需调 `processDefine/getJobCardContent` 拿完整 markdown。
+
+### 工作流
+
+1. **接单**：`processTask/todoList` 拿 task id
+2. **拿 URL**：`processTask/detail` → `ext.job_card_url`
+3. **读工作指导**：
+
+```bash
+curl -sS -X POST ${ACTIVE_SERVER}/wf/processDefine/getJobCardContent \
+    -H "Content-Type: application/json" \
+    -d '{
+        "processDefineName": "<flow-id>",
+        "url": "<ToT/flows/<flow-id>/job_cards/<job_card>.md>"
+    }' | jq -r '.data.content'
+```
+
+4. **基于内容做决策** → `processTask/execute` 提交
+
+### endpoint 规范
+
+| 项 | 值 |
+|----|----|
+| action | `processDefine/getJobCardContent` |
+| 请求 | `{processDefineName: "<flow-id>", url: "<job_card 相对路径>"}` |
+| 返回 | `{url, content, length}` |
+| 安全 | url 必须以 `ToT/flows/<flow-id>/job_cards/` 开头（防越界）|
+| url 后缀 | 自动补 `.md`（不强制要求）|
+
+### 注意事项
+
+- **必须先部署流程**：`processDefineName` 必须在目标 server 已部署（否则 `流程定义不存在`）
+- **客户 server**：URL 路径相对仓库根，customer server 上 `ToT/flows/...` 必须存在（设计者部署时打包 job_cards）
+- **content 大小**：单个 job_card 通常 1-5 KB，可放心读入 context
+- **首个 task 的 ext 不含 `job_card_url`**（fdep 设计）：job_card_url 在 execute body 里提交后透传到 `instance.variable.job_card_url`。agent **应基于 `taskName` 推断** job_card_url：`ToT/flows/<processDefineName>/job_cards/job_card_<taskName>.md`（fdep 的 taskName = `stage_<x>`，invoice-approval 的 taskName = `<stage>`）
+- **agent 推断失败时**：fallback 到 `processDefine/detail` 拿流程定义，再从 `nodes[]` 找当前节点的 metadata 推断 job_card
+- **端点规范完整签名**：见 [`ToT/CC/api-index.md`](../../../CC/api-index.md)（按文件分组的 73 个公开 API + 行号）或 [`docs/api.md`](../../../../docs/api.md)（11 个核心 action 详解）
 
 ## Others
 

@@ -1,0 +1,90 @@
+{
+  "timestamp": "2026-09-25T00:16:52.613859+00:00",
+  "overall_score": 92,
+  "overall_grade": "🟢 健康",
+  "dimensions": [
+    {
+      "name": "Drift",
+      "score": 100,
+      "weight": 30,
+      "grade": "✅",
+      "details": {
+        "total": 134,
+        "ok": 134,
+        "near_match": 0,
+        "drift": 0
+      },
+      "recommendation": ""
+    },
+    {
+      "name": "Snapshot",
+      "score": 95,
+      "weight": 15,
+      "grade": "✅",
+      "details": {
+        "total": 9,
+        "recent_3d": 0
+      },
+      "recommendation": ""
+    },
+    {
+      "name": "API Coverage",
+      "score": 78,
+      "weight": 25,
+      "grade": "✅",
+      "details": {
+        "total": 73,
+        "covered": 57,
+        "missing_sample": [
+          "CountersignType",
+          "DefineRow",
+          "DefineState",
+          "Engine",
+          "FlowEdge",
+          "InstanceRow",
+          "InstanceStatsRow",
+          "MemoryExtRepository",
+          "PerformType",
+          "QueryCondition"
+        ]
+      },
+      "recommendation": "补齐 16 个公开 API（含 CountersignType, DefineRow, DefineState, Engine, FlowEdge ...）"
+    },
+    {
+      "name": "Freshness",
+      "score": 100,
+      "weight": 20,
+      "grade": "✅",
+      "details": {
+        "total_docs": 41,
+        "fresh": 41,
+        "stale_30_90": 0,
+        "stale_90_plus": 0,
+        "max_staleness_days": 0
+      },
+      "recommendation": ""
+    },
+    {
+      "name": "Consistency",
+      "score": 90,
+      "weight": 10,
+      "grade": "✅",
+      "details": {
+        "concepts": {
+          "Engine": 0,
+          "JeeflowFacade": 6,
+          "FlowInterceptor": 6,
+          "HandlerRegistry": 15,
+          "EventType": 6,
+          "ProcessEvent": 4,
+          "JdbcRepository": 4,
+          "MemoryRepository": 4,
+          "IAssignmentHandler": 5,
+          "ExpressionEvaluator": 4
+        },
+        "well_distributed": 9
+      },
+      "recommendation": ""
+    }
+  ]
+}

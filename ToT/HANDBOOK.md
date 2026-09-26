@@ -399,8 +399,36 @@ FDEP_ID=...  # 从 step 2 的 page 中拿
 
 ---
 
-## 12. 变更日志
+## 12. ToT/docs/ 知识体系索引（2026-09-18+ v2 体系）
+
+> **补充**：本文档（HANDBOOK.md）是工作规范手册；细节契约 / API / 用户手册见 `ToT/docs/`。
+> **何时查这里**：设计流程时遇到术语不明、API 签名不确定、与上游约定差异 → 直接进 `ToT/docs/`。
+
+| 主题 | 主入口 | 何时读 |
+|------|--------|--------|
+| **设计原理**（4.x）| `ToT/docs/concepts/`（10 文件）| 理解「为什么这样设计」 |
+| **核心类型 / Row / Enum** | [`ToT/docs/concepts/09-core-types.md`](./concepts/09-core-types.md) | Engine / FlowEdge / TaskRow 等 |
+| **FDEP 模块**（spi/fdep/ 8 文件 + 5 JSON）| [`ToT/docs/concepts/10-fdep.md`](./concepts/10-fdep.md) | 找人 / 找字典 |
+| **API 速查**（73 公开 API）| [`ToT/CC/api-index.md`](../CC/api-index.md) | 找方法签名 |
+| **用户指南**（9 文件）| `ToT/docs/guides/` | 用户视角快速开始 |
+| **用户手册**（11 文件）| `ToT/docs/manual/` | 部署 / 设计 / 发布 / 审批 |
+| **设计模式**（5 文件）| `ToT/docs/patterns/` | 多级 / 会签 / 驳回 / 条件分支 |
+| **CC 客户中心**（15 文件）| [`ToT/CC/README.md`](../CC/README.md) | 4 persona 计划 |
+| **CC 故事 001** | [`ToT/CC/_stories/_story_001_annual_leave.md`](../CC/_stories/_story_001_annual_leave.md) | 闭环自检案例 |
+| **飞轮 E2E 演示** | [`ToT/CC/_stories/_flywheel_demo_e2e.md`](../CC/_stories/_flywheel_demo_e2e.md) | 飞轮机制验证 |
+| **Q3 季度回顾** | [`ToT/CC/_stories/_quarterly_retrospective_2026Q3.md`](../CC/_stories/_quarterly_retrospective_2026Q3.md) | 9 月 18-25 复盘 |
+| **SOP 工具链**（22 个）| [`ToT/sop/`](./sop/) | 自动化脚本 |
+| **健康度门禁** | [`ToT/sop/health-check.py`](./sop/health-check.py) | 5 维度评分（当前 100/100）|
+| **健康度可视化** | [`ToT/docs/REPORT.html`](../docs/REPORT.html) | 浏览器打开看 |
+| **发版流水线** | [`ToT/sop/release.sh`](./sop/release.sh) | drift gate + 版本注入 |
+
+**当前健康度**：100/100 🟢（drift 0/146 · API 73/73 · 飞轮 1 RPM）
+
+---
+
+## 13. 变更日志
 
 | 版本 | 日期 | 变更 |
 |------|------|------|
 | v0.1 | 2026-09-22 | 初稿：知识手册主文档（30秒读懂 / 架构图 / 三环境拓扑 / 核心概念 / 快速开始 / 常见任务 / SOP 索引 / 文件索引 / 故障排查 / 维护 / 约定速查）；用户口头指令"use the jeeflow fdep.json, import the fdep.json, doc the knowledge"落地 |
+| v0.2 | 2026-09-26 | **§12 ToT/docs/ 知识体系索引**：补全与 `ToT/docs/`、`ToT/CC/`、`ToT/sop/` 的交叉引用；新增健康度数据；旧 §12 改 §13 变更日志 | |

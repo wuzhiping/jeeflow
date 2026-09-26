@@ -127,11 +127,9 @@ def render_card(node_id: str, node_def: dict, edges_map: dict,
                 nodes_info: dict, mem_template: str) -> str:
     """渲染单张 Job Card"""
     props = node_def.get("properties", {})
-    text_val = node_def.get("text", {}).get("value", "")
-
-    # 解析 text 拿 SPI 角色提示（如 "SPI 角色 R3"）
-    spi_match = re.search(r"SPI \u89d2\u8272\s+(\S+)", text_val)
-    spi_hint = spi_match.group(1) if spi_match else ""
+    # text.value 仅用于节点名展示，不参与 SPI 角色等元信息输出
+    # （避免 future 回归：text.value 啰嗦版也不会再自动生成 SPI 角色信息）
+    # SPI 角色 / assignee 等元信息走 NODES.md "关联角色" 行 + properties.assignee
 
     assignee = props.get("assignee", "?")
     stage = props.get("stage", "?")
@@ -196,7 +194,7 @@ def render_card(node_id: str, node_def: dict, edges_map: dict,
     lines.append(f"> **\u8282\u70b9\u5b9a\u4e49**\uff1a[../../fdep.json](../../fdep.json) `nodes[id={node_id}]`")
     lines.append(f"> **\u8282\u70b9\u624b\u518c**\uff1a[../NODES.md#{node_id}](../NODES.md#{node_id}snaker-task)")
     lines.append(f"> **Decision Mem \u534f\u8bae**\uff1a[../RESPONSES.md \u00a70](../RESPONSES.md)")
-    lines.append(f"> **\u6267\u884c\u8005**\uff1a`{assignee}`" + (f" (SPI \u89d2\u8272 {spi_hint})" if spi_hint else ""))
+    lines.append(f"> **\u6267\u884c\u8005**\uff1a`{assignee}`")
     lines.append(f"> **\u89d2\u8272**\uff1a{role or '(unknown)'}")
     lines.append(f"> **\u89e6\u53d1**\uff1a{prev_name} \u5b8c\u6210\u540e \u2192 \u5f15\u64ce\u81ea\u52a8\u52a0\u5165 todoList\uff08operator={assignee}\uff09")
     lines.append("")
@@ -210,8 +208,6 @@ def render_card(node_id: str, node_def: dict, edges_map: dict,
     lines.append(f"- node: {node_id}")
     lines.append("- type: snaker:task")
     lines.append(f"- assignee: {assignee}")
-    if spi_hint:
-        lines.append(f"- spi_role: {spi_hint}")
     lines.append(f"- stage: {stage}")
     lines.append(f"- form: {form}")
     lines.append("- trigger: \u62fe\u8d77 todoList \u4e2d taskName=\"" + node_id + "\" \u4e14 operator=" + assignee)

@@ -2,6 +2,14 @@
 
 本文档集中登记所有可调用的 HTTP 端点。引擎统一通过 `/wf/{action:path}` 单入口门面路由（`./main.py:180`），转发到 `Facade._<action>` 方法。
 
+> **与其他 API 文档的关系**（避免重复维护）：
+> - 本表覆盖 **11 个核心 action 详解**（含请求/响应字段表 + 注意事项）
+> - **59 个 `/wf/{action}` 全量端点列表**（表格形式）→ 见 [`docs/actions.md`](./actions.md)
+> - **73 个 vendor/jeeflow 公开 API**（含内部 helper / 模型 / 枚举）→ 见 [`ToT/CC/api-index.md`](../ToT/CC/api-index.md)
+> - **AI Agent 调用协议** → 见 [`ToT/skills/flow-operator/SKILL.md`](../ToT/skills/flow-operator/SKILL.md)
+>
+> **何时更新本文**：某个端点的请求/响应字段变更时（结构变化）；新增端点先加 `docs/actions.md`，待字段稳定后再加本文件详解。
+
 ---
 
 ## 1. 端点清单
@@ -45,7 +53,8 @@
 
 | 方法 | 路径 | 用途 | 来源 |
 | --- | --- | --- | --- |
-| GET | `/healthz` | 健康检查 | `./main.py:180` |
+| GET | `/healthz` | 健康检查 + 版本号（`version` / `version_full` / `git_sha` / `build_time`，来自 `vendor/jeeflow/__init__.py:__version__` 等；release 时由 `ToT/sop/release.sh` 自动更新） | `./main.py:180` / `./main_common.py:829` |
+| GET | `/version` | 版本元数据查询（仅 `version` / `version_full` / `git_sha` / `build_time` 4 字段，无 status/pg；客户支持场景专用）| `./main_common.py:848` |
 | POST | `/api/reset` | 重置内存中所有实例 / 设计 / 定义 | `./main_pg.py:526` |
 | GET | `/api/stats/users` | 列出用户 | `./main_pg.py` |
 | GET | `/api/stats/roles` | 列出角色 | `./main_pg.py` |

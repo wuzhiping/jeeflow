@@ -43,6 +43,27 @@
 
 **不强制 100%** —— 按需求演进。检测工具**主动提示**缺什么，用户按需补。
 
+### 2.3 文本极简原则（Text Minimalism）
+
+> **任务说清楚就足够**。`node.text.value` 只描述"这个节点做什么任务"。
+
+**规则**：
+- ✅ 允许：节点阶段名（如 "1. RML 立项"）、任务简称（如 "0. 接收/登记"）
+- ❌ 避免：角色分配说明（如 `u_fdp_pm 直接`）、SPI 角色代号（如 `R3`）、未来 TODO（如 `待 v0.7+ 用 assignmentHandler`）
+- ❌ 避免：括号补充说明（如 `(u_fdp_pm 直接, SPI 角色 R3 映射待 v0.7+ ...)`）
+
+**为什么**：括号里的元信息已经分散在 NODES.md / Job Card / DESIGN.md / CHANGELOG 中。流程图本身只需传达"流程走向 + 任务名"，多余的元信息增加阅读成本不增加理解价值。
+
+**元信息归宿**：
+| 信息类型 | 应放哪里 |
+|----------|----------|
+| 节点具体工作步骤 | NODES.md（每节点"工作步骤"段）|
+| 谁来做、什么角色 | properties.assignee + NODES.md |
+| 表单字段 | properties.form |
+| 出产物 / 出口标准 | properties.artifact + properties.exitCriteria |
+| 未来 TODO / 设计变更 | CHANGELOG.md / roadmap.md |
+| 完整工作指导（8 节）| job_cards/job_card_<node_id>.md |
+
 ## 3. 执行步骤（用户引导版）
 
 ### Step 1 · 启动设计助手

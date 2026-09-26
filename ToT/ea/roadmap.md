@@ -530,6 +530,10 @@ v4+ (候选：fork-join / 多 executor 接力 / 生产部署)
 
 > **目的**：让任何流程都能用本清单验证"是否遵循了 EA"。
 > **使用方法**：CI 门禁 + 手动 review。
+>
+> **🤖 自动化版本**：[`ToT/sop/ea-compliance.py`](../../sop/ea-compliance.py) 已实现本节所有检查项的自动化运行（**8 层 44 项，44/44 PASS**）。
+> 每次 release 前自动跑：`bash ToT/sop/release.sh` Step 0 → 健康度门禁会自动调用 ea-compliance。
+> 跑实时结果：`python3 ToT/sop/ea-compliance.py` → 1 秒内输出。
 
 ### 9.1 流程级（per-flow）
 

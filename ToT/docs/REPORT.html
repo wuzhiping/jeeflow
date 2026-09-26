@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>ToT/docs 健康度报告</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f9fafb; color: #111827; margin: 0; padding: 24px; }
+.container { max-width: 1100px; margin: 0 auto; }
+h1 { font-size: 28px; margin: 0 0 8px 0; }
+.subtitle { color: #6b7280; font-size: 14px; margin-bottom: 24px; }
+.section { background: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.section h2 { font-size: 18px; margin: 0 0 12px 0; }
+.gauge { display: block; margin: 0 auto; max-width: 280px; }
+.bar { background: #e5e7eb; border-radius: 6px; height: 10px; margin: 10px 0; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 6px; transition: width 0.3s; }
+.dim-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+.dim-card { background: white; border-radius: 10px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.dim-header { display: flex; justify-content: space-between; align-items: center; }
+.dim-header h3 { margin: 0; font-size: 16px; }
+.badge { color: white; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.dim-details { font-size: 13px; color: #4b5563; margin-top: 10px; }
+.detail { margin: 3px 0; }
+.detail span { color: #6b7280; }
+.dim-footer { color: #9ca3af; font-size: 12px; margin-top: 8px; }
+.rec { background: #fef3c7; border-left: 3px solid #f59e0b; padding: 6px 10px; margin-top: 8px; border-radius: 4px; font-size: 13px; }
+.chart { width: 100%; max-width: 600px; height: auto; }
+.api-table, .hist-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.api-table th, .api-table td, .hist-table th, .hist-table td { padding: 6px 10px; text-align: left; border-bottom: 1px solid #f3f4f6; }
+.api-table th, .hist-table th { background: #f9fafb; color: #6b7280; font-weight: 600; }
+.api-name { font-family: monospace; }
+.muted { color: #9ca3af; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>ToT/docs 健康度报告</h1>
+  <div class="subtitle">2026-09-25T03:26:43.453799+00:00 · 仓库 jeeFlow</div>
+
+  <div class="section">
+    
+    <svg viewBox="0 0 200 130" class="gauge">
+      <path d="M 20 100 A 80 80 0 0 1 180 100" stroke="#e5e7eb" stroke-width="14" fill="none" />
+      <path d="M 20 100 A 80 80 0 1 1 20.0 100.0" stroke="#22c55e" stroke-width="14" fill="none" stroke-linecap="round" />
+      <text x="100" y="95" text-anchor="middle" font-size="40" font-weight="bold" fill="#22c55e">100</text>
+      <text x="100" y="120" text-anchor="middle" font-size="14" fill="#6b7280">/ 100 · 🟢 健康</text>
+    </svg>
+    
+  </div>
+
+  <div class="section">
+    <h2>5 维度明细</h2>
+    <div class="dim-grid">
+      
+    <div class="dim-card">
+      <div class="dim-header">
+        <h3>Drift</h3>
+        <span class="badge" style="background:#22c55e">✅ 100/100</span>
+      </div>
+      <div class="bar"><div class="bar-fill" style="width:100%;background:#22c55e"></div></div>
+      <div class="dim-details"><div class="detail"><span>total</span>: 139</div><div class="detail"><span>ok</span>: 139</div><div class="detail"><span>near_match</span>: 0</div><div class="detail"><span>drift</span>: 0</div></div>
+      <div class="dim-footer">权重 30%</div>
+    </div>
+    
+
+    <div class="dim-card">
+      <div class="dim-header">
+        <h3>Snapshot</h3>
+        <span class="badge" style="background:#22c55e">✅ 100/100</span>
+      </div>
+      <div class="bar"><div class="bar-fill" style="width:100%;background:#22c55e"></div></div>
+      <div class="dim-details"><div class="detail"><span>total</span>: 17</div><div class="detail"><span>recent_3d</span>: 0</div></div>
+      <div class="dim-footer">权重 15%</div>
+    </div>
+    
+
+    <div class="dim-card">
+      <div class="dim-header">
+        <h3>API Coverage</h3>
+        <span class="badge" style="background:#22c55e">✅ 100/100</span>
+      </div>
+      <div class="bar"><div class="bar-fill" style="width:100%;background:#22c55e"></div></div>
+      <div class="dim-details"><div class="detail"><span>total</span>: 73</div><div class="detail"><span>covered</span>: 73</div></div>
+      <div class="dim-footer">权重 25%</div>
+    </div>
+    
+
+    <div class="dim-card">
+      <div class="dim-header">
+        <h3>Freshness</h3>
+        <span class="badge" style="background:#22c55e">✅ 100/100</span>
+      </div>
+      <div class="bar"><div class="bar-fill" style="width:100%;background:#22c55e"></div></div>
+      <div class="dim-details"><div class="detail"><span>total_docs</span>: 42</div><div class="detail"><span>fresh</span>: 42</div><div class="detail"><span>stale_30_90</span>: 0</div><div class="detail"><span>stale_90_plus</span>: 0</div><div class="detail"><span>max_staleness_days</span>: 0</div></div>
+      <div class="dim-footer">权重 20%</div>
+    </div>
+    
+
+    <div class="dim-card">
+      <div class="dim-header">
+        <h3>Consistency</h3>
+        <span class="badge" style="background:#22c55e">✅ 100/100</span>
+      </div>
+      <div class="bar"><div class="bar-fill" style="width:100%;background:#22c55e"></div></div>
+      <div class="dim-details"><div class="detail"><span>concepts</span>: Engine: 4, JeeflowFacade: 7, FlowInterceptor: 6, HandlerRegistry: 15, EventType: 7, ProcessEvent: 4, JdbcRepository: 5, MemoryRepository: 5, IAssignmentHandler: 5, ExpressionEvaluator: 5</div><div class="detail"><span>well_distributed</span>: 10</div></div>
+      <div class="dim-footer">权重 10%</div>
+    </div>
+    
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>历史趋势</h2>
+    
+    <svg viewBox="0 0 600 200" class="chart">
+      <text x="5" y="174.0" font-size="10" fill="#9ca3af">0</text><line x1="30" y1="170.0" x2="570" y2="170.0" stroke="#f3f4f6" stroke-width="1" /><text x="5" y="104.0" font-size="10" fill="#9ca3af">50</text><line x1="30" y1="100.0" x2="570" y2="100.0" stroke="#f3f4f6" stroke-width="1" /><text x="5" y="34.0" font-size="10" fill="#9ca3af">100</text><line x1="30" y1="30.0" x2="570" y2="30.0" stroke="#f3f4f6" stroke-width="1" />
+      <text x="30.0" y="195" text-anchor="middle" font-size="10" fill="#9ca3af">2026-09-25</text><text x="300.0" y="195" text-anchor="middle" font-size="10" fill="#9ca3af">2026-09-25</text><text x="570.0" y="195" text-anchor="middle" font-size="10" fill="#9ca3af">2026-09-25</text>
+      <polyline points="30.0,41.2 300.0,31.4 570.0,30.0" fill="none" stroke="#3b82f6" stroke-width="2" />
+      <circle cx="30.0" cy="41.2" r="4" fill="#22c55e" /><circle cx="300.0" cy="31.4" r="4" fill="#22c55e" /><circle cx="570.0" cy="30.0" r="4" fill="#22c55e" />
+    </svg>
+    
+  </div>
+
+  
+    <div class="section">
+      <h2>API 覆盖明细</h2>
+      <p><strong>73 / 73</strong> 公开 API 已记录（<span style="color:#22c55e">100%</span>）</p>
+      <table class="api-table">
+        <thead><tr><th>API</th><th>状态</th></tr></thead>
+        <tbody><tr><td colspan='2' class='muted'>✅ 全部覆盖</td></tr></tbody>
+      </table>
+    </div>
+    
+
+  
+    <div class="section">
+      <h2>历史快照（最近 15 条）</h2>
+      <table class="hist-table">
+        <thead><tr><th>时间</th><th>综合分</th><th>等级</th></tr></thead>
+        <tbody><tr><td>2026-09-25 00:16:52</td><td><strong style='color:#22c55e'>92/100</strong></td><td>🟢 健康</td></tr><tr><td>2026-09-25 00:18:12</td><td><strong style='color:#22c55e'>99/100</strong></td><td>🟢 健康</td></tr><tr><td>2026-09-25 00:19:41</td><td><strong style='color:#22c55e'>100/100</strong></td><td>🟢 健康</td></tr></tbody>
+      </table>
+    </div>
+    
+
+  <div class="section" style="text-align:center;color:#9ca3af;font-size:12px">
+    自动生成 · ToT/sop/health-report.py · 仅 Python 3.10+ 标准库 · 零外部依赖
+  </div>
+</div>
+</body>
+</html>

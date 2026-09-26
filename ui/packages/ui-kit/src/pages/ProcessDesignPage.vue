@@ -25,7 +25,7 @@
               <td class="jf-muted">{{ d.name }}</td>
               <td><strong>{{ d.displayName }}</strong></td>
               <td class="jf-muted">{{ d.type }}</td>
-              <td><JfBadge :type="d.isDeployed === 1 ? 'done' : 'info'">{{ d.isDeployed === 1 ? '已部署' : '未部署' }}</JfBadge></td>
+              <td><JfBadge :type="d.isDeployed ? 'done' : 'info'">{{ d.isDeployed ? '已部署' : '未部署' }}</JfBadge></td>
               <td class="jf-muted">{{ fmtTime(d.updateTime || d.createTime, true) }}</td>
               <td>
                 <div class="jf-btn-row">
@@ -35,7 +35,7 @@
                     v-if="can(['wf:processDesign:deploy'])"
                     class="jf-btn jf-btn--primary jf-btn--sm"
                     @click="deploy(d)"
-                  >{{ d.isDeployed === 1 ? '重新发布' : '发布' }}</button>
+                  >{{ d.isDeployed ? '重新发布' : '发布' }}</button>
                   <button
                     v-if="can(['wf:processDesign:remove'])"
                     class="jf-btn jf-btn--danger jf-btn--sm"
@@ -61,7 +61,7 @@
       <div class="jf-designer-bar">
         <input v-model="designName" class="jf-input" placeholder="流程编码（唯一，如 leave）" style="width:200px" />
         <input v-model="designDisplayName" class="jf-input" placeholder="显示名（如 请假审批）" style="width:200px" />
-        <span class="jf-muted" style="font-size:13px">{{ design?.isDeployed === 1 ? '（已发布，改动后需重新发布）' : '（未发布）' }}</span>
+        <span class="jf-muted" style="font-size:13px">{{ design?.isDeployed ? '（已发布，改动后需重新发布）' : '（未发布）' }}</span>
         <div style="flex:1"></div>
         <button class="jf-btn jf-btn--ghost" @click="designing = false; reload()">返回列表</button>
         <button class="jf-btn jf-btn--ghost" :disabled="saving" @click="saveDraft">保存草稿</button>
@@ -183,7 +183,7 @@ async function edit(d: DesignRow) {
 
 /** 发布/重新发布：未部署走 deploy；已部署走 redeploy（改版重发布，对齐 E2E S8） */
 async function deploy(d: DesignRow) {
-  const re = d.isDeployed === 1
+  const re = d.isDeployed
   if (!window.confirm(`确认${re ? '重新' : ''}发布设计「${d.displayName}」？（${re ? '已部署流程改版重发布' : '生成流程定义，版本+1'}）`)) return
   try {
     if (re) await api.processDesign.redeploy(d.id)

@@ -9,6 +9,14 @@
 >
 > 详见 `vendor/README.md §8` + `docs/AGENTS.md §6 #2`。
 
+> **与其他流程文档的关系**（避免重复维护）：
+> - 本文档 = **机器视角完整规范**（存储 / 字段枚举 / 解析路径），684 行
+> - **设计者视角入门**（10 节流程 JSON 写法 + 例子）→ 见 [`ToT/docs/guides/02-flow-definition.md`](../ToT/docs/guides/02-flow-definition.md)（249 行）
+> - **5 个本仓典型模式**（多级 / 跳转 / 会签 / 驳回 / 条件分支）→ 见 `ToT/docs/patterns/`
+>
+> **何时更新本文**：字段定义变化 / 解析路径变化 / schema 变化；
+> 设计模式示例 → 改 `ToT/docs/patterns/`，不污染本文。
+
 ---
 
 ## 1. 存储与解析

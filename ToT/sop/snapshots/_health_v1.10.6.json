@@ -1,0 +1,79 @@
+{
+  "timestamp": "2026-09-25T00:19:41.537810+00:00",
+  "overall_score": 100,
+  "overall_grade": "🟢 健康",
+  "dimensions": [
+    {
+      "name": "Drift",
+      "score": 100,
+      "weight": 30,
+      "grade": "✅",
+      "details": {
+        "total": 139,
+        "ok": 139,
+        "near_match": 0,
+        "drift": 0
+      },
+      "recommendation": ""
+    },
+    {
+      "name": "Snapshot",
+      "score": 100,
+      "weight": 15,
+      "grade": "✅",
+      "details": {
+        "total": 13,
+        "recent_3d": 0
+      },
+      "recommendation": ""
+    },
+    {
+      "name": "API Coverage",
+      "score": 100,
+      "weight": 25,
+      "grade": "✅",
+      "details": {
+        "total": 73,
+        "covered": 73,
+        "missing_sample": []
+      },
+      "recommendation": ""
+    },
+    {
+      "name": "Freshness",
+      "score": 100,
+      "weight": 20,
+      "grade": "✅",
+      "details": {
+        "total_docs": 41,
+        "fresh": 41,
+        "stale_30_90": 0,
+        "stale_90_plus": 0,
+        "max_staleness_days": 0
+      },
+      "recommendation": ""
+    },
+    {
+      "name": "Consistency",
+      "score": 100,
+      "weight": 10,
+      "grade": "✅",
+      "details": {
+        "concepts": {
+          "Engine": 4,
+          "JeeflowFacade": 7,
+          "FlowInterceptor": 6,
+          "HandlerRegistry": 15,
+          "EventType": 7,
+          "ProcessEvent": 4,
+          "JdbcRepository": 5,
+          "MemoryRepository": 5,
+          "IAssignmentHandler": 5,
+          "ExpressionEvaluator": 5
+        },
+        "well_distributed": 10
+      },
+      "recommendation": ""
+    }
+  ]
+}
