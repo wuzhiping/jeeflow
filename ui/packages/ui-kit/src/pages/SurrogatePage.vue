@@ -14,10 +14,10 @@
             <td>{{ s.processName || '全部流程' }}</td>
             <td><strong>{{ s.surrogate }}</strong></td>
             <td class="jf-muted">{{ fmtTime(s.startTime, true) }} ~ {{ fmtTime(s.endTime, true) }}</td>
-            <td><JfBadge :type="s.enabled === 1 ? 'done' : 'info'">{{ s.enabled === 1 ? '启用' : '停用' }}</JfBadge></td>
+            <td><JfBadge :type="s.enabled ? 'done' : 'info'">{{ s.enabled ? '启用' : '停用' }}</JfBadge></td>
             <td>
               <div class="jf-btn-row">
-                <button class="jf-btn jf-btn--ghost jf-btn--sm" @click="toggleEnabled(s)">{{ s.enabled === 1 ? '停用' : '启用' }}</button>
+                <button class="jf-btn jf-btn--ghost jf-btn--sm" @click="toggleEnabled(s)">{{ s.enabled ? '停用' : '启用' }}</button>
                 <button class="jf-btn jf-btn--ghost jf-btn--sm" @click="openForm(s)">编辑</button>
                 <button class="jf-btn jf-btn--danger jf-btn--sm" @click="remove(s)">删除</button>
               </div>
@@ -169,9 +169,9 @@ async function toggleEnabled(s: SurrogateRow) {
       surrogate: s.surrogate,
       startTime: s.startTime,
       endTime: s.endTime,
-      enabled: s.enabled === 1 ? 0 : 1,
+      enabled: s.enabled ? 0 : 1,
     })
-    toast.success(s.enabled === 1 ? '已停用' : '已启用')
+    toast.success(s.enabled ? '已停用' : '已启用')
     reload()
   } catch (e) {
     toast.error(`操作失败：${(e as Error).message}`)
