@@ -414,9 +414,9 @@ FDEP_ID=...  # 从 step 2 的 page 中拿
 | **用户手册**（11 文件）| `ToT/docs/manual/` | 部署 / 设计 / 发布 / 审批 |
 | **设计模式**（5 文件）| `ToT/docs/patterns/` | 多级 / 会签 / 驳回 / 条件分支 |
 | **CC 客户中心**（15 文件）| [`ToT/CC/README.md`](../CC/README.md) | 4 persona 计划 |
-| **CC 故事 001** | [`ToT/CC/_story_001_annual_leave.md`](../CC/_story_001_annual_leave.md) | 闭环自检案例 |
-| **飞轮 E2E 演示** | [`ToT/CC/_flywheel_demo_e2e.md`](../CC/_flywheel_demo_e2e.md) | 飞轮机制验证 |
-| **Q3 季度回顾** | [`ToT/CC/_quarterly_retrospective_2026Q3.md`](../CC/_quarterly_retrospective_2026Q3.md) | 9 月 18-25 复盘 |
+| **CC 故事 001** | [`ToT/CC/_stories/_story_001_annual_leave.md`](../CC/_stories/_story_001_annual_leave.md) | 闭环自检案例 |
+| **飞轮 E2E 演示** | [`ToT/CC/_stories/_flywheel_demo_e2e.md`](../CC/_stories/_flywheel_demo_e2e.md) | 飞轮机制验证 |
+| **Q3 季度回顾** | [`ToT/CC/_stories/_quarterly_retrospective_2026Q3.md`](../CC/_stories/_quarterly_retrospective_2026Q3.md) | 9 月 18-25 复盘 |
 | **SOP 工具链**（22 个）| [`ToT/sop/`](./sop/) | 自动化脚本 |
 | **健康度门禁** | [`ToT/sop/health-check.py`](./sop/health-check.py) | 5 维度评分（当前 100/100）|
 | **健康度可视化** | [`ToT/docs/REPORT.html`](../docs/REPORT.html) | 浏览器打开看 |

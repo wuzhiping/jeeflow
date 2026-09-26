@@ -150,9 +150,9 @@ feedback/03-*.md 加「## 闭环」字段
 
 ## 8. 季度回顾与故事沉淀
 
-- **2026 Q3 回顾**：[`_quarterly_retrospective_2026Q3.md`](./_quarterly_retrospective_2026Q3.md)（2026-09-18 → 2026-09-25）
-- **故事 001**：[`_story_001_annual_leave.md`](./_story_001_annual_leave.md)（销售部小李请假 3 天）
-- **飞轮 E2E 演示**：[`_flywheel_demo_e2e.md`](./_flywheel_demo_e2e.md)（3 反馈 100% 闭环）
+- **2026 Q3 回顾**：[`_stories/_quarterly_retrospective_2026Q3.md`](./_stories/_quarterly_retrospective_2026Q3.md)（2026-09-18 → 2026-09-25）
+- **故事 001**：[`_stories/_story_001_annual_leave.md`](./_stories/_story_001_annual_leave.md)（销售部小李请假 3 天）
+- **飞轮 E2E 演示**：[`_stories/_flywheel_demo_e2e.md`](./_stories/_flywheel_demo_e2e.md)（3 反馈 100% 闭环）
 
 ---
 
@@ -162,5 +162,46 @@ feedback/03-*.md 加「## 闭环」字段
 - **真实反馈累积**：推 jffeedback CLI + 季度 NPS
 - **容量基线实测**：跑 50 并发 / 1000 用户/天，写入 `capacity-baseline.md`
 - **API 字段变更自动检测**：防止 FB-0009 类 rename 事件
+
+---
+
+## 10. ⚠️ 重大变更公告 · 文档体系 3 层定位（2026-09-26 v3.9）
+
+> **重要**：所有 4 类 persona 在写文档前必读。
+
+### 3 层定位模型
+
+```
+docs/         初创期 · 落地指南 · 一次性
+ToT/          服务治理期 · 基本准则 · 持续运行
+ToT/docs/     初创期的相关外部文档的引入、修正 · 半永久资产
+```
+
+**含义**：
+- **docs/**（项目根）= 系统从 0 到 1 阶段的手册，教新人「怎么跑起来」
+- **ToT/** = 系统进入生产后的工作准则，SOP + 治理 + 飞轮
+- **ToT/docs/** = 上游 jeeflow-doc 的本地化裁剪产物，参考契约
+
+### 版本更新保护（v1.12.2+）
+
+> **原则**：`vendor/jeeflow/__init__.py:__version__` 反映**运行时行为变化**。纯文档变更不应自动 bump 版本。
+
+**变更**：
+- ✅ `bash ToT/sop/release.sh v1.12.2` → 代码变更，自动 bump
+- ⚠️ `bash ToT/sop/release.sh v1.12.2 --reason "同步健康度数据"` → 纯文档变更也 bump（需理由）
+- ❌ 默认情况下纯文档变更会被 `version-bump-guard.py` 阻止
+
+详见：
+- [`ToT/docs/_meta/layering.md`](../docs/_meta/layering.md)（完整 3 层定位）
+- `ToT/sop/version-bump-guard.py --help`（保护机制）
+
+### 影响
+
+| Persona | 变化 |
+|---|---|
+| 🟢 流程设计者 | 新建流程应写到 `ToT/flows/<name>/` 而非 `docs/` |
+| 🟡 流程审计者 | 审计清单在 `ea-compliance.py`，文档契约在 `ToT/docs/spec/` |
+| 🔵 部署运维 | 客户系统同步受 `version-bump-guard` 保护，文档更新不静默 bump |
+| 🟣 知识管理 | 案例/回顾放 `ToT/CC/_stories/`，契约放 `ToT/docs/spec/` |
 
 **飞轮加速器**：当自助解决率 ↑，反馈量 ↑，闭环时长 ↓ → RPM ↑ → 体验更好 → 飞轮加速。

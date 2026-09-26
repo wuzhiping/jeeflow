@@ -58,7 +58,7 @@ docker run --rm -p 8101:8101 shawoo/jeeflow
 | [`sla/check_bdds_dual.sh`](./sla/check_bdds_dual.sh) | 18 套 BDD 双端全量验证 | ↔ `bdd/*.sh` |
 | [`sla/HISTORY.md`](./sla/HISTORY.md) | SLA 历史记录 (v1→v7, 2026-09-20 含 §7 完成) | ↔ `sla/last_check.json` |
 | [`sla/POSTMORTEM.md`](./sla/POSTMORTEM.md) | SLA 作业复盘 (5 个错误 + 根因 + 防御, 防下次再犯) | ↔ `sla/check*.sh` |
-| `sla/last_check.json` | 最新 SLA 检查结果 (43/43 PASS, score=100) | ↔ `sla/check.sh` |
+| `sla/last_check.json` | 最新 SLA 检查结果 (44/44 PASS, score=100) | ↔ `sla/check.sh` |
 
 ## 🔧 引擎与 API 文档
 

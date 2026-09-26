@@ -106,6 +106,8 @@ sequenceDiagram
 
 调用约定：所有业务 endpoint 通过 `POST /wf/{action}` 单入口调用，body 为 JSON；服务器从 `ToT/config/servers.json` 选。
 
+> **📌 单一真相源**：本节列的是 **执行层高频 30 个 action**（按发起/接单/追踪/统计/系统 5 类）。完整 73 个公开 API 索引（含 vendor/jeeflow/ 内部 class/def）见 [`ToT/CC/api-index.md`](../../../CC/api-index.md)；运行时新加 action 时，本节与 api-index.md 同步更新（详见 `ToT/sop/doc-freshness-check.py`）。
+
 ### A · 发起流程（initiator 视角）
 
 | action | 用途 | 用到的流程 | 角色 |
