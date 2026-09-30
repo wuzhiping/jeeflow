@@ -604,11 +604,11 @@ async def auto_deploy_fdep(facade):
             "name": "fdep",
         })
         if deploy_resp.get("code") == 0:
-            print(f"[auto-deploy-fdep] ✅ 已部署: {deploy_resp.get('data')}")
+            print(f"[auto-deploy-fdep]  已部署: {deploy_resp.get('data')}")
         else:
-            print(f"[auto-deploy-fdep] ❌ 部署失败: {deploy_resp}")
+            print(f"[auto-deploy-fdep]  部署失败: {deploy_resp}")
     except Exception as e:
-        print(f"[auto-deploy-fdep] ❌ 部署异常: {e}")
+        print(f"[auto-deploy-fdep]  部署异常: {e}")
 
 
 def run_auto_deploy_fdep(facade):
