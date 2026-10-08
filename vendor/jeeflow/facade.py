@@ -930,10 +930,11 @@ class JeeflowFacade:
     async def _processDesign_update(self, args: dict) -> dict:
         """修改流程设计基本信息（对齐 boot3 ProcessDesignController.update，不写设计稿快照）"""
         ext = self._ext_repo()
-        # BDD #251：update 入口 verify（如提供 content）
-        content_for_verify = self._content(args, required=False)
-        if content_for_verify:
-            self._verify_or_raise(content_for_verify, args)
+        # BDD #251：update 入口 verify（仅当 args 显式带 content 字段才触发，
+        # 避免 _content() 兜底把元数据 {id,name,displayName,...} 当成流程定义 verify，
+        # 误报 E005 无 start / E006 无 end）
+        if args.get("content") is not None:
+            self._verify_or_raise(self._content(args, required=True), args)
         design_id = self._to_int(args.get("id"))
         if not design_id:
             raise ValueError("id 缺失或非法")
