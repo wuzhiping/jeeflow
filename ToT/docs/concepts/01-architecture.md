@@ -174,7 +174,7 @@
 | 内置 assignment handler | `vendor/jeeflow/builtin.py:162 register_builtin_assignments` |
 | 持久化拦截器 | `vendor/jeeflow/persist.py:307 PersistPostInterceptor` |
 | 元数据驱动 | `vendor/jeeflow/meta.py:141 MetaTableWriter` + `:293 MetaTableReader` |
-| Facade 入口 | `vendor/jeeflow/facade.py:63 JeeflowFacade.flow` |
+| Facade 入口 | `vendor/jeeflow/facade.py:74 JeeflowFacade.flow` |
 | 测试样本 | `flows/01-17`（**19 个 sample**，含 2 个同号 08/11）+ `bdd/`（1131 个 BDD）+ `tdd/`（19 个 TDD baseline）|
 
 ---

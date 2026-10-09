@@ -36,7 +36,7 @@
 | 12 | 系统代执行 | `flow.auto` / `flow.admin` 放行 + 跳过用户注入 | `engine.py:107 _resolve_actors` 系统代执行路径 |
 | 13 | 定义写操作 | `saveDefine` / `updateDefine` / `updateDefineState` / `removeDefine` | `flows/10-mixed-mode.json`（含 deploy）|
 | 14 | `updateInstance` 级联 | 聚合根任务状态随实例更新落库 | `spi.py:37 update_instance`（v1.0.1 契约）|
-| 15 | 门面路由 | `flow(action, map)` 各 action 返回 `code=0` + 正确 data | `facade.py:63` |
+| 15 | 门面路由 | `flow(action, map)` 各 action 返回 `code=0` + 正确 data | `facade.py:74` |
 
 > **关键行为契约**（`model.py:112 ProcessInstance.withdraw` + `TaskState.abandon`）：
 > - `update_instance` 走同一连接持久化——撤回/挂起/终止等聚合命令改完任务状态后级联落库

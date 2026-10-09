@@ -137,11 +137,11 @@
 
 ## §6. Demo 接口层（参考实现，非引擎契约）
 
-> ⚠️ **这不是"通用约定"**。以下接口是六版 demo 为对齐 mldong 快速开发框架的接口规范而提供的**参考实现**。本仓 `facade.py:63 JeeflowFacade.flow(action, args)` 是契约的具体实现 + **57 个 `/wf/` 端点（83 个 _* 路由方法）**。
+> ⚠️ **这不是"通用约定"**。以下接口是六版 demo 为对齐 mldong 快速开发框架的接口规范而提供的**参考实现**。本仓 `facade.py:74 JeeflowFacade.flow(action, args)` 是契约的具体实现 + **57 个 `/wf/` 端点（83 个 _* 路由方法）**。
 
 ### 6.1 端点清单（本仓实测 57 个 `/wf/` 端点）
 
-> **本仓实测**：`vendor/jeeflow/facade.py:63 flow(action, args)` 统一入口，**57 个 `/wf/` 端点（83 个 _* 路由方法）**完整覆盖上游 demo 端点 + 本仓新增：
+> **本仓实测**：`vendor/jeeflow/facade.py:74 flow(action, args)` 统一入口，**57 个 `/wf/` 端点（83 个 _* 路由方法）**完整覆盖上游 demo 端点 + 本仓新增：
 
 | 类别 | action 路径 | 数量 |
 |---|---|---|

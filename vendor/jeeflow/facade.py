@@ -27,8 +27,19 @@ SUBMIT_AGREE = 1
 SUBMIT_REJECT = 2
 SUBMIT_ROLLBACK = 3
 SUBMIT_JUMP = 4
+SUBMIT_RE_APPLY = 5
 SUBMIT_ROLLBACK_TO_OPERATOR = 6
 SUBMIT_COUNTERSIGN_DISAGREE = 20
+
+# BUG-I (2026-10-09)：execute 入口 submitType 白名单校验。
+# 之前 submitType=99 等非法值会被 _to_int() 解析为 int 99，
+# 落到 else 分支当成 SUBMIT_AGREE 处理 → 静默推进到下阶段。
+# 现在显式校验，任何不在白名单内的值（含 99/-1/字符串 "abc"）直接 40001 拒绝。
+VALID_SUBMIT_TYPES = frozenset({
+    SUBMIT_APPLY, SUBMIT_AGREE, SUBMIT_REJECT,
+    SUBMIT_ROLLBACK, SUBMIT_JUMP, SUBMIT_RE_APPLY,
+    SUBMIT_ROLLBACK_TO_OPERATOR, SUBMIT_COUNTERSIGN_DISAGREE,
+})
 
 
 class JeeflowFacade:
@@ -709,7 +720,27 @@ class JeeflowFacade:
         if not task_id:
             raise ValueError("processTaskId 缺失或非法")
         operator = str(args.get("operator", "user1"))
-        submit_type = self._to_int(args.get("submitType")) or SUBMIT_AGREE
+        # BUG-I (2026-10-09)：submitType 白名单校验。
+        # 之前 `self._to_int(...) or SUBMIT_AGREE` 会把 99/-1 等非法值：
+        #   - 99/-1：_to_int 解析为 int 但不在白名单，原代码 `or AGREE` 因 99 truthy → submit_type=99 → 走 else 分支
+        #   - "abc"：_to_int 返回 None → `None or AGREE` → submit_type=1 → 同 AGREE
+        # 两者都导致非法值被静默吞掉当成 AGREE 处理。现改为：
+        #   - 字段缺失 → 默认 AGREE（保留旧行为）
+        #   - 字段非 int（无法解析） → 40001
+        #   - 字段为 int 但不在白名单 → 40001
+        raw_st = args.get("submitType")
+        if raw_st is None:
+            submit_type = SUBMIT_AGREE
+        else:
+            submit_type = self._to_int(raw_st)
+            if submit_type is None:
+                raise ValueError(
+                    f"invalid submitType: {raw_st!r} (无法解析为整数，应为 {sorted(VALID_SUBMIT_TYPES)} 之一)"
+                )
+            if submit_type not in VALID_SUBMIT_TYPES:
+                raise ValueError(
+                    f"invalid submitType: {submit_type} (白名单 {sorted(VALID_SUBMIT_TYPES)})"
+                )
         flow_args = {k: v for k, v in args.items() if k not in ("processTaskId", "operator")}
         flow_args["submitType"] = submit_type
 
@@ -930,10 +961,11 @@ class JeeflowFacade:
     async def _processDesign_update(self, args: dict) -> dict:
         """修改流程设计基本信息（对齐 boot3 ProcessDesignController.update，不写设计稿快照）"""
         ext = self._ext_repo()
-        # BDD #251：update 入口 verify（如提供 content）
-        content_for_verify = self._content(args, required=False)
-        if content_for_verify:
-            self._verify_or_raise(content_for_verify, args)
+        # BDD #251：update 入口 verify（仅当 args 显式带 content 字段才触发，
+        # 避免 _content() 兜底把元数据 {id,name,displayName,...} 当成流程定义 verify，
+        # 误报 E005 无 start / E006 无 end）
+        if args.get("content") is not None:
+            self._verify_or_raise(self._content(args, required=True), args)
         design_id = self._to_int(args.get("id"))
         if not design_id:
             raise ValueError("id 缺失或非法")
