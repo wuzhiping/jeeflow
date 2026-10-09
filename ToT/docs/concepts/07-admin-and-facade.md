@@ -3,7 +3,7 @@
 > **来源**：https://jeeflow-doc.mldong.com/concepts/07-admin-and-facade
 > **定位**：给流程设计者（环境已部署 / 组织架构与用户已落地）使用的**v1.1.0 两个关键决策原理参考**——理解「管理扩展走扩展仓储 SPI 而非核心仓储」+「统一门面 `flow(action, args)`」的设计动机，是理解委托 / 抄送 / 设计器 CRUD / **57 个 `/wf/` 端点（47 唯一 action）**的基础。
 >
-> **本仓实测**：`vendor/jeeflow/spi.py:190 ProcessExtRepository(ABC)` + `vendor/jeeflow/facade.py:63 JeeflowFacade.flow(action, args)` + `engine.py` 内置 `SurrogateInterceptor`（v1.9.0+ 默认开启，issues/116）。
+> **本仓实测**：`vendor/jeeflow/spi.py:190 ProcessExtRepository(ABC)` + `vendor/jeeflow/facade.py:74 JeeflowFacade.flow(action, args)` + `engine.py` 内置 `SurrogateInterceptor`（v1.9.0+ 默认开启，issues/116）。
 >
 > **裁剪记录**：§1-§4 全部保留 + 加本仓实测。
 
@@ -103,7 +103,7 @@ flow(action, map) → { code, msg, data }
 - **args 显式携带 operator**——门面不感知登录态，集成方决定从哪注入当前用户
 - **返回统一结构**对齐 mldong `CommonResult`，controller 一行转发
 
-> **本仓实测**（`vendor/jeeflow/facade.py:63`）：
+> **本仓实测**（`vendor/jeeflow/facade.py:74`）：
 >
 > ```python
 > async def flow(self, action: str, args: Optional[dict] = None) -> dict:

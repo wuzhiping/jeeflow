@@ -49,7 +49,7 @@
 | 2-19 | `model.py:270 TaskState.abandon` | `spec/03-state-machine.md:42` | 实测：`TaskState` 定义在 :55；方法在 `ProcessTask.abandon = :261` | — | 已复测 | **✅ 已修复（2026-09-24 Batch 1-c，spec/03 §2 改为 `TaskState.abandon`）** |
 | 2-20 | `model.py:280 ProcessInstance.is_all_tasks_finished` | `concepts/02-domain-model.md:61/145/211` | 实测：`:210` | -70 | 已复测 | **✅ 已修复（2026-09-24 Batch 1-c）** |
 | 2-21 | `facade.py:79 _ok` | `guides/10-mldong-integration.md:40` + `manual/07-verify-and-troubleshoot.md:114` + `concepts/04-extensions.md:60` | **`facade.py:1795`** | **+1716** | 重大漂移（code 重构后函数搬到底部） | **✅ 已修复（2026-09-24 Batch 1-d，spec/06 + manual/07 + guides/10 同步）** |
-| 2-22 | `facade.py:63 JeeflowFacade.flow` | 多处 | **`facade.py:63`** | ✓ | OK | ✅ |
+| 2-22 | `facade.py:74 JeeflowFacade.flow` | 多处 | **`facade.py:74`** | ✓ | OK | ✅ |
 | 2-23 | `facade.py:107 _verify` | `spec/06-facade.md:6` 等 | **`facade.py:107`** | ✓ | OK | ✅ |
 | 2-24 | `facade.py:1880 processTask_transfer` | `spec/08-compliance.md:87` | 实测：`_processTask_transfer = :1880` ✓ | — | 已复测 | **✅ 已验证（2026-09-24 Batch 3-e，原 doc claim 正确）** |
 | 2-25 | `meta.py:44 FieldMeta` | `spec/10-persist-meta.md:30` + `guides/09-persist-meta.md:54` | **`meta.py:45`** | +1 | 接近 | **✅ 已修复（2026-09-24 Batch 2-d，spec/10 + guides/09）** |
