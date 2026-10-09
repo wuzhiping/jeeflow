@@ -262,9 +262,16 @@ class JdbcTableReader:
         sql = f"SELECT * FROM {table_name} WHERE {where_column} = ?"
         if limit > 0:
             sql += f" LIMIT {limit}"
-        cur = self._conn.execute(sql, (value,))
-        cols = [d[0] for d in cur.description]
-        return [dict(zip(cols, row)) for row in cur.fetchall()]
+        # BUG-G (2026-10-09)：业务表不存在时 (sqlite OperationalError / asyncpg UndefinedTableError)
+        # 视为"无数据"，返回 []。之前会冒泡到 bizData API, code=99999999。
+        try:
+            cur = self._conn.execute(sql, (value,))
+            cols = [d[0] for d in cur.description]
+            return [dict(zip(cols, row)) for row in cur.fetchall()]
+        except Exception as e:
+            if _is_missing_table_error(e):
+                return []
+            raise
 
 
 class AsyncJdbcTableReader:
@@ -285,9 +292,16 @@ class AsyncJdbcTableReader:
         sql = f'SELECT * FROM {table_name} WHERE "{where_column}" = $1'
         if limit > 0:
             sql += f" LIMIT {int(limit)}"
-        async with self._pool.acquire() as conn:
-            rows = await conn.fetch(sql, value)
-        return [dict(row) for row in rows]
+        # BUG-G (2026-10-09)：业务表不存在时 (asyncpg UndefinedTableError) 视为"无数据"。
+        # 之前会冒泡到 bizData API, code=99999999 (server error), 应降级为 data=null。
+        try:
+            async with self._pool.acquire() as conn:
+                rows = await conn.fetch(sql, value)
+            return [dict(row) for row in rows]
+        except Exception as e:
+            if _is_missing_table_error(e):
+                return []
+            raise
 
 
 class AsyncMetaTableReader:
@@ -324,6 +338,23 @@ def _check(table_name: str) -> None:
     """表名安全校验（读侧）"""
     from .persist import _check_table_name
     _check_table_name(table_name)
+
+
+def _is_missing_table_error(e: Exception) -> bool:
+    """BUG-G (2026-10-09)：业务表不存在判定。
+
+    后端类型：
+    - asyncpg.UndefinedTableError → "relation 'xxx' does not exist"
+    - sqlite3.OperationalError / sqlite.OperationalError → "no such table: xxx"
+    - psycopg2.errors.UndefinedTable → 同 asyncpg
+    通过类名 + 错误信息双判定（类名 import 安全,信息兼容 driver 差异）。
+    """
+    cls_name = type(e).__name__
+    if cls_name in ("UndefinedTableError", "UndefinedTable", "OperationalError"):
+        msg = str(e).lower()
+        if "does not exist" in msg or "no such table" in msg:
+            return True
+    return False
 
 
 # ─── MetaTableReader（读，流程回显最小闭环） ─────────────────────────────────────
